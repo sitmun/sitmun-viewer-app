@@ -9,19 +9,23 @@ import { PublicLayoutComponent } from './layout/public-layout/public-layout.comp
 import { FooterComponent } from './layout/footer/footer.component';
 import { AuthenticationModule } from '@auth/auth.module';
 import { UiModule } from '@ui/ui.module';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {
   AUTH_CONFIG_DI,
   AUTH_DETAILS_SERVICE_DI
 } from '@auth/authentication.options';
 import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
+import { AuthorizedNavigationBarComponent } from './layout/authorized-navigation-bar/authorized-navigation-bar/authorized-navigation-bar.component';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 @NgModule({
   declarations: [
     AppComponent,
     AuthorizedLayoutComponent,
     NavigationBarComponent,
+    AuthorizedNavigationBarComponent,
     PublicLayoutComponent,
     FooterComponent
   ],
@@ -30,7 +34,14 @@ import { CustomAuthConfig } from '@config/app.config';
     AppRoutingModule,
     AuthenticationModule,
     UiModule,
-    HttpClientModule
+    HttpClientModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    })
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
@@ -40,3 +51,7 @@ import { CustomAuthConfig } from '@config/app.config';
   bootstrap: [AppComponent]
 })
 export class AppModule {}
+
+export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
+  return new TranslateHttpLoader(http);
+}

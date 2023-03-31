@@ -1,0 +1,7 @@
+<div class="auth-nav-bar">
+  <app-navigation-bar class="public-nav-bar"/>
+  <div class="user-nav">
+    <h2>{{'authorizedLayout.hi' | translate}}{{username}}!</h2>
+    <button type="button" (click)="logout()">{{'authorizedLayout.logout' | translate}}</button>
+  </div>
+</div>

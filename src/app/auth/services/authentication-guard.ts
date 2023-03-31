@@ -38,16 +38,16 @@ export class AuthenticationGuard implements CanActivate {
       return false;
     }
 
-    if (isPublicUrl && isAuthenticated) {
-      // Send to default user page (if authenticated, cannot access to login, register...
-      const defaultUrl = AUTH_CONFIG.routes.defaultPath(
-        this.authenticationService.getLoggedDetails()
-      );
-      if (defaultUrl) {
-        return this.router.parseUrl(defaultUrl);
-      }
-      return false;
-    }
+    // if (isPublicUrl && isAuthenticated) {
+    //   // Send to default user page (if authenticated, cannot access to login, register...
+    //   const defaultUrl = AUTH_CONFIG.routes.defaultPath(
+    //     this.authenticationService.getLoggedDetails()
+    //   );
+    //   if (defaultUrl) {
+    //     return this.router.parseUrl(defaultUrl);
+    //   }
+    //   return false;
+    // }
 
     //  isAuthenticated && !isPublicUrl => OK
     //  !isAuthenticated && isPublicUrl => OK

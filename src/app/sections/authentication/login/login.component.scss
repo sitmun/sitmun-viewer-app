@@ -1,0 +1,71 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10%;
+}
+
+.container {
+  width: 25em;
+  height: 16em;
+  background: #eeeeee;
+  font-family: Segoe Ui, Arial, serif;
+  border-radius: 20px;
+
+  .title {
+    color: white;
+    background: orange;
+    border-radius: 20px 20px 0 0;
+    padding: 0.5em;
+
+    h1 {
+      margin: 0 0 0 0.5em;
+    }
+  }
+
+  .form {
+    padding: 1em;
+
+    form {
+      display: flex;
+      flex-flow: column;
+      margin: 1em;
+
+      input {
+        margin: 0.5em 0;
+        width: 10em;
+        height: 2em;
+        padding: 0 0.5em;
+        border-radius: 5px;
+        outline: 0;
+        border: none;
+        border-bottom: 2px solid grey;
+      }
+
+      input:hover {
+        border-bottom: 2px solid orange;
+      }
+
+      input:focus-visible {
+        border: none;
+        border-bottom: 2px solid dodgerblue;
+      }
+
+      button {
+        color: #6c6c6c;
+        background: white;
+        font-weight: bold;
+        margin: 0.5em 0;
+        width: 7em;
+        height: 3.5em;
+        border-radius: 5px;
+        border: none;
+      }
+
+      button:hover {
+        color: white;
+        background: orange;
+      }
+    }
+  }
+}

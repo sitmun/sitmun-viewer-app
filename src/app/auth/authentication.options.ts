@@ -27,10 +27,10 @@ export interface AuthDetailsService<T> {
 }
 
 export interface AuthenticationRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface AuthenticationResponse {
-  token: string;
+  id_token: string;
 }

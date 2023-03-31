@@ -1,1 +1,22 @@
-<p>login works!</p>
+<div class="login-page">
+  <div class="container">
+    <div class="title">
+      <h1>{{'loginPage.title' | translate}}</h1>
+    </div>
+    <div class="form">
+      <form (submit)="login()">
+        <input
+          type="text"
+          placeholder="{{'loginPage.usernamePlaceholder' | translate}}"
+          name="username"
+          [(ngModel)]="authenticationRequest.username" />
+        <input
+          type="password"
+          placeholder="{{'loginPage.passwordPlaceholder' | translate}}"
+          name="password"
+          [(ngModel)]="authenticationRequest.password" />
+        <button>{{'loginPage.submit' | translate}}</button>
+      </form>
+    </div>
+  </div>
+</div>

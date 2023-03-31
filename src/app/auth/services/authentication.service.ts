@@ -5,9 +5,14 @@ import {
   AUTH_CONFIG_DI,
   AUTH_DETAILS_SERVICE_DI,
   AuthConfig,
-  AuthDetailsService
+  AuthDetailsService,
+  AuthenticationRequest,
+  AuthenticationResponse
 } from '@auth/authentication.options';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { URL_AUTH_LOGIN } from '@api/api-config';
+import { tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +31,21 @@ export class AuthenticationService<T> {
     // TODO
     this.AUTH_TOKEN = this.config.localStoragePrefix + '_auth_token';
     this.AUTH_DETAILS = this.config.localStoragePrefix + '_auth_details';
+  }
+
+  login(authenticationRequest: AuthenticationRequest) {
+    return this.http
+      .post<AuthenticationResponse>(
+        environment.apiUrl + URL_AUTH_LOGIN,
+        authenticationRequest
+      )
+      .pipe(
+        tap((res: AuthenticationResponse) => {
+          if (res.id_token != null) {
+            this.setToken(res.id_token);
+          }
+        })
+      );
   }
 
   logout(): void {

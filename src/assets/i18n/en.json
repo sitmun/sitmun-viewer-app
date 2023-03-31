@@ -1,0 +1,13 @@
+{
+  "loginPage.title": "Login Page",
+  "loginPage.usernamePlaceholder": "Username",
+  "loginPage.passwordPlaceholder": "Password",
+  "loginPage.submit": "Access",
+  "loginPage.incorrectLogin": "Incorrect access data",
+  "authorizedLayout.hi": "Welcome, ",
+  "authorizedLayout.logout": "Log Out",
+  "dashboard.title": "Applications",
+  "dashboard.id": "Identifier",
+  "dashboard.name": "Name",
+  "dashboard.url": "Link"
+}

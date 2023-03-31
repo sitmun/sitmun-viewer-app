@@ -4,5 +4,5 @@
 
 export const environment = {
   production: false,
-  apiUrl: ''
+  apiUrl: 'https://sitmun-backend-core.herokuapp.com'
 };
