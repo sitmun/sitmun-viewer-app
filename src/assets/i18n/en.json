@@ -6,8 +6,9 @@
   "loginPage.incorrectLogin": "Incorrect access data",
   "authorizedLayout.hi": "Welcome, ",
   "authorizedLayout.logout": "Log Out",
-  "dashboard.title": "Applications",
-  "dashboard.id": "Identifier",
-  "dashboard.name": "Name",
-  "dashboard.url": "Link"
+  "dashboardPage.title": "Applications",
+  "dashboardPage.id": "Identifier",
+  "dashboardPage.name": "Name",
+  "dashboardPage.url": "Link",
+  "mapPage.title": "Sample map"
 }

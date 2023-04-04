@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { Injectable } from '@angular/core';
+import { NavigationPath } from '@config/app.config';
 
 @Injectable({
   providedIn: 'root'
@@ -38,16 +39,10 @@ export class AuthenticationGuard implements CanActivate {
       return false;
     }
 
-    // if (isPublicUrl && isAuthenticated) {
-    //   // Send to default user page (if authenticated, cannot access to login, register...
-    //   const defaultUrl = AUTH_CONFIG.routes.defaultPath(
-    //     this.authenticationService.getLoggedDetails()
-    //   );
-    //   if (defaultUrl) {
-    //     return this.router.parseUrl(defaultUrl);
-    //   }
-    //   return false;
-    // }
+    if (isPublicUrl && isAuthenticated) {
+      // Send to default user page (if authenticated, cannot access to login, register...)
+      this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+    }
 
     //  isAuthenticated && !isPublicUrl => OK
     //  !isAuthenticated && isPublicUrl => OK

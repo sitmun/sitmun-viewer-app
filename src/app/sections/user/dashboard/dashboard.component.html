@@ -1,8 +1,8 @@
 <div class="dashboard">
-  <h1>{{'dashboard.title' | translate}}</h1>
+  <h1>{{'dashboardPage.title' | translate}}</h1>
   <div class="application" *ngFor="let app of applicationsList">
-    <h2>{{'dashboard.id' | translate}}: {{app.id}}</h2>
-    <h2>{{'dashboard.name' | translate}}: {{app.name}}</h2>
-    <h2>{{'dashboard.url' | translate}}: {{app.url}}</h2>
+    <h2>{{'dashboardPage.id' | translate}}: {{app.id}}</h2>
+    <h2>{{'dashboardPage.name' | translate}}: {{app.name}}</h2>
+    <h2>{{'dashboardPage.url' | translate}}: <a href="/user/map">{{app.url}}</a></h2>
   </div>
 </div>

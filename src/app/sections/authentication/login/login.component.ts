@@ -3,6 +3,7 @@ import { AuthenticationService } from '@auth/services/authentication.service';
 import { Router } from '@angular/router';
 import { AuthenticationRequest } from '@auth/authentication.options';
 import { TranslateService } from '@ngx-translate/core';
+import { NavigationPath } from '@config/app.config';
 
 @Component({
   selector: 'app-login',
@@ -36,10 +37,7 @@ export class LoginComponent implements OnInit {
     ) {
       this.authenticationService.login(this.authenticationRequest).subscribe(
         () => {
-          console.log('User: ' + this.authenticationRequest?.username);
-          console.log('Password: ' + this.authenticationRequest?.password);
-          console.log('Token: ' + this.authenticationService.getLoggedToken());
-          this.router.navigateByUrl('/user/dashboard');
+          this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
         },
         (error) => {
           if (error.status && error.status === 401) {

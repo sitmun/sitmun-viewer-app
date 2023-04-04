@@ -6,8 +6,9 @@
   "loginPage.incorrectLogin": "Dades d'accés incorrectes",
   "authorizedLayout.hi": "Benvingut, ",
   "authorizedLayout.logout": "Tancar sessió",
-  "dashboard.title": "Aplicacions",
-  "dashboard.id": "Identificador",
-  "dashboard.name": "Nom",
-  "dashboard.url": "Enllaç"
+  "dashboardPage.title": "Aplicacions",
+  "dashboardPage.id": "Identificador",
+  "dashboardPage.name": "Nom",
+  "dashboardPage.url": "Enllaç",
+  "mapPage.title": "Mapa d'exemple"
 }
