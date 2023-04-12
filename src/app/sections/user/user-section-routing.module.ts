@@ -2,7 +2,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { RoutingDefault } from '@config/app.config';
 import { NgModule } from '@angular/core';
 import { DashboardComponent } from '@sections/user/dashboard/dashboard.component';
-import { MapComponent } from '@sections/user/map/map/map.component';
+import { MapComponent } from '@sections/user/map/map.component';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },

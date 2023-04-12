@@ -1,14 +1,21 @@
 {
   "loginPage.title": "Pàgina de login",
+  "loginPage.publicDashboardButton": "Veure aplicacions públiques",
   "loginPage.usernamePlaceholder": "Nom d'usuari",
   "loginPage.passwordPlaceholder": "Contrasenya",
   "loginPage.submit": "Accedir",
   "loginPage.incorrectLogin": "Dades d'accés incorrectes",
+  "publicDashboardPage.backToLoginButton": "Tornar a la pàgina de Login",
+  "publicDashboardPage.applicationsTitle": "Aplicacions Públiques",
+  "publicDashboardPage.territoriesTitle": "Territoris Públiques",
   "authorizedLayout.hi": "Benvingut, ",
   "authorizedLayout.logout": "Tancar sessió",
-  "dashboardPage.title": "Aplicacions",
+  "dashboardPage.showByApplications": "Mostra aplicacions",
+  "dashboardPage.showByTerritories": "Mostra territoris",
+  "dashboardPage.applicationsTitle": "Aplicacions",
+  "dashboardPage.territoriesTitle": "Territoris",
+  "dashboardPage.img": "Imatge",
   "dashboardPage.id": "Identificador",
   "dashboardPage.name": "Nom",
-  "dashboardPage.url": "Enllaç",
   "mapPage.title": "Mapa d'exemple"
 }

@@ -1,14 +1,21 @@
 {
   "loginPage.title": "Página de Login",
+  "loginPage.publicDashboardButton": "Ver aplicaciones públicas",
   "loginPage.usernamePlaceholder": "Nombre de usuario",
   "loginPage.passwordPlaceholder": "Contraseña",
   "loginPage.submit": "Acceder",
   "loginPage.incorrectLogin": "Datos de acceso incorrectos",
+  "publicDashboardPage.backToLoginButton": "Volver a la página de Login",
+  "publicDashboardPage.applicationsTitle": "Aplicaciones Públicas",
+  "publicDashboardPage.territoriesTitle": "Territorios Públicos",
   "authorizedLayout.hi": "Bienvenido, ",
   "authorizedLayout.logout": "Cerrar Sesión",
-  "dashboardPage.title": "Aplicaciones",
+  "dashboardPage.showByTerritories": "Mostrar territorios",
+  "dashboardPage.showByApplications": "Mostrar aplicaciones",
+  "dashboardPage.applicationsTitle": "Aplicaciones",
+  "dashboardPage.territoriesTitle": "Territorios",
+  "dashboardPage.img": "Imagen",
   "dashboardPage.id": "Identificador",
   "dashboardPage.name": "Nombre",
-  "dashboardPage.url": "Enlace",
   "mapPage.title": "Mapa de ejemplo"
 }

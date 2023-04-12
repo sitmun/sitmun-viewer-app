@@ -1,14 +1,21 @@
 {
   "loginPage.title": "Login Page",
+  "loginPage.publicDashboardButton": "View public apps",
   "loginPage.usernamePlaceholder": "Username",
   "loginPage.passwordPlaceholder": "Password",
   "loginPage.submit": "Access",
   "loginPage.incorrectLogin": "Incorrect access data",
+  "publicDashboardPage.backToLoginButton": "Back to Login page",
+  "publicDashboardPage.applicationsTitle": "Public Applications",
+  "publicDashboardPage.territoriesTitle": "Public Territories",
   "authorizedLayout.hi": "Welcome, ",
   "authorizedLayout.logout": "Log Out",
-  "dashboardPage.title": "Applications",
+  "dashboardPage.showByTerritories": "Show territories",
+  "dashboardPage.showByApplications": "Show applications",
+  "dashboardPage.applicationsTitle": "Applications",
+  "dashboardPage.territoriesTitle": "Territories",
+  "dashboardPage.img": "Image",
   "dashboardPage.id": "Identifier",
   "dashboardPage.name": "Name",
-  "dashboardPage.url": "Link",
   "mapPage.title": "Sample map"
 }

@@ -1,5 +1,8 @@
-<div class="dashboard">
+<div class="public-dashboard">
   <div class="header">
+    <div class="back-to-login">
+      <button type="button" (click)="backToLogin()"><- {{'publicDashboardPage.backToLoginButton' | translate}}</button>
+    </div>
     <div class="show-by-territories">
       <select #dashboardType (change)="onChange(dashboardType.value)">
         <option [value]="DashboardTypes.APPLICATIONS">{{'dashboardPage.showByApplications' | translate}}</option>
@@ -9,7 +12,7 @@
   </div>
   <div class="container">
     <ng-container *ngIf="type === DashboardTypes.APPLICATIONS">
-      <h1>{{'dashboardPage.applicationsTitle' | translate}}</h1>
+      <h1>{{'publicDashboardPage.applicationsTitle' | translate}}</h1>
       <div class="cards-container">
         <div class="application" *ngFor="let app of applicationsList" (click)="goToMap()">
           <div class="card-img">
@@ -24,7 +27,7 @@
       </div>
     </ng-container>
     <ng-container *ngIf="type === DashboardTypes.TERRITORIES">
-      <h1>{{'dashboardPage.territoriesTitle' | translate}}</h1>
+      <h1>{{'publicDashboardPage.territoriesTitle' | translate}}</h1>
       <div class="cards-container">
         <div class="application" *ngFor="let territory of territoriesList" (click)="goToMap()">
           <div class="card-img">

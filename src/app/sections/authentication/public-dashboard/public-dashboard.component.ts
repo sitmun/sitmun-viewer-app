@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { NavigationPath } from '@config/app.config';
 
 interface Item {
   img: string;
@@ -13,28 +14,28 @@ export enum DashboardTypes {
 }
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  selector: 'app-public-dashboard',
+  templateUrl: './public-dashboard.component.html',
+  styleUrls: ['./public-dashboard.component.scss']
 })
-export class DashboardComponent {
+export class PublicDashboardComponent {
   type: DashboardTypes;
 
   applicationsList: Item[] = [
     {
       img: '',
       id: 1,
-      name: 'App 1'
+      name: 'Public App 1'
     },
     {
       img: '',
       id: 2,
-      name: 'App 2'
+      name: 'Public App 2'
     },
     {
       img: '',
       id: 3,
-      name: 'App 3'
+      name: 'Public App 3'
     }
   ];
 
@@ -42,22 +43,26 @@ export class DashboardComponent {
     {
       img: '',
       id: 1,
-      name: 'Territory 1'
+      name: 'Public Territory 1'
     },
     {
       img: '',
       id: 2,
-      name: 'Territory 2'
+      name: 'Public Territory 2'
     },
     {
       img: '',
       id: 3,
-      name: 'Territory 3'
+      name: 'Public Territory 3'
     }
   ];
 
   constructor(private router: Router) {
     this.type = DashboardTypes.APPLICATIONS;
+  }
+
+  backToLogin() {
+    this.router.navigateByUrl(NavigationPath.Auth.Login);
   }
 
   onChange(type: string) {
@@ -66,7 +71,7 @@ export class DashboardComponent {
   }
 
   goToMap() {
-    this.router.navigateByUrl('/user/map');
+    this.router.navigateByUrl('/auth/map');
   }
 
   protected readonly DashboardTypes = DashboardTypes;

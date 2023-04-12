@@ -1,13 +1,28 @@
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.public-dashboard {
+  text-align: center;
 
   .header {
     display: flex;
     flex-direction: row;
-    justify-content: right;
-    width: 100%;
+    justify-content: space-between;
+
+    button {
+      padding: 0.8em;
+      color: black;
+      background: white;
+      font-weight: bold;
+      border: 2px solid black;
+    }
+    button:hover {
+      color: white;
+      background: orange;
+      border-color: white;
+    }
+
+    .back-to-login {
+      margin: 2em;
+      text-align: left;
+    }
 
     .show-by-territories {
       margin: 2em;
@@ -21,10 +36,6 @@
         border: 2px solid black;
       }
     }
-  }
-
-  h1 {
-    margin-top: 3em;
   }
 
   .container {

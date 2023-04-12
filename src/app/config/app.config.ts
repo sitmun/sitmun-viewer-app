@@ -8,7 +8,8 @@ export const NavigationPath = {
     Login: '/auth/login',
     ForgotPassword: '/auth/forgot-password',
     Register: '/auth/register',
-    ChangePassword: '/auth/confirm-recover-password'
+    ChangePassword: '/auth/confirm-recover-password',
+    Public: '/auth/public'
   },
   Section: {
     User: {
