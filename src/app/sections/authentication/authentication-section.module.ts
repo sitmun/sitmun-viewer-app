@@ -5,6 +5,7 @@ import { AuthenticationRoutingModule } from '@sections/authentication/authentica
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { PublicDashboardComponent } from './public-dashboard/public-dashboard.component';
+import { UiModule } from '@ui/ui.module';
 
 @NgModule({
   declarations: [LoginComponent, PublicDashboardComponent],
@@ -12,7 +13,8 @@ import { PublicDashboardComponent } from './public-dashboard/public-dashboard.co
     CommonModule,
     AuthenticationRoutingModule,
     FormsModule,
-    TranslateModule
+    TranslateModule,
+    UiModule
   ]
 })
 export class AuthenticationSectionModule {}
