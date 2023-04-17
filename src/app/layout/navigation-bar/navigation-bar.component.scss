@@ -1,36 +1,47 @@
+@use 'src/styles/colors';
+@use 'src/styles/dimensions';
+
 .nav-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  height: 5em;
-  color: white;
-  background: orange;
+  height: dimensions.$navigation-bar-height;
+  color: colors.$common-color-font-primary;
+  background: colors.$common-color-background-navbar;
 
   .logo {
-    margin-left: 2em;
+    margin-left: dimensions.$navigation-bar-logo-margin-left;
+    margin-top: dimensions.$navigation-bar-logo-margin-top;
+    margin-bottom: dimensions.$navigation-bar-logo-margin-top;
+    height: dimensions.$navigation-bar-logo-height;
+    width: dimensions.$navigation-bar-logo-width;
+
+    img {
+      width: auto;
+      height: 100%;
+    }
   }
 
   .lang-buttons {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-right: 2em;
+    margin-right: dimensions.$navigation-bar-lang-margin;
 
     button {
-      color: black;
-      background: white;
+      color: colors.$common-color-font-button;
+      background: colors.$navigation-bar-lang-button-background;
       font-weight: bold;
-      margin: 0 0.5em;
-      height: 2.5em;
-      width: 3.5em;
+      height: dimensions.$navigation-bar-lang-button-height;
+      width: dimensions.$navigation-bar-lang-button-width;
       border: none;
-      border-radius: 10px;
+      font-size: dimensions.$navigation-bar-lang-button-font-size;
+      padding: 0;
     }
 
     button:hover {
-      color: white;
-      background: #ff9300;
+      transform: scale(1.25);
     }
   }
 }

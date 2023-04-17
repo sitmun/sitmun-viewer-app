@@ -1,0 +1,59 @@
+// Base
+$base-border: 1px;
+$base-border-2: $base-border * 2;
+$base-border-3: $base-border * 3;
+
+$base-breakpoint-lg: 960px;
+
+$base-font-size-xs: 12px;
+$base-font-size-sm: 13px;
+$base-font-size: 14px;
+$base-font-size-lg: 16px;
+$base-font-size-xl: 22px;
+
+$base-margin: 4px;
+$base-margin-1-5: $base-margin * 1.5;
+$base-margin-2: $base-margin * 2;
+$base-margin-3: $base-margin * 3;
+$base-margin-4: $base-margin * 4;
+$base-margin-5: $base-margin * 5;
+$base-margin-6: $base-margin * 6;
+$base-margin-7: $base-margin * 7;
+$base-margin-8: $base-margin * 8;
+
+$base-touchable-item-size: 48px;
+
+
+// Common
+$common-application-bar-height: 56px;
+
+// Component-specific
+
+// Login page
+$login-page-button-font: 20px;
+$login-page-button-height: 48px;
+$login-page-button-radius: calc($login-page-button-height / 2);
+$login-page-button-width: 180px;
+$login-page-input-width: 432px;
+$login-page-input-height: 48px;
+$login-page-input-radius: calc($login-page-input-height / 2);
+$login-page-input-font-size: 20px;
+$login-page-height: 100vh;
+
+// Navigation bar
+$navigation-bar-height: 80px;
+$navigation-bar-logo-height: 64px;
+$navigation-bar-logo-width: 200px;
+$navigation-bar-logout-height: 48px;
+$navigation-bar-logout-width: 48px;
+$navigation-bar-logo-margin-left: $base-margin-8;
+$navigation-bar-logo-margin-top: $base-margin-2;
+$navigation-bar-lang-margin: $base-margin-8;
+$navigation-bar-lang-button-margin: $base-margin;
+$navigation-bar-lang-button-height: 48px;
+$navigation-bar-lang-button-width: 48px;
+$navigation-bar-lang-button-font-size: 20px;
+
+// Card component
+$card-component-img-height: 96px;
+$card-component-img-radius: 20px;

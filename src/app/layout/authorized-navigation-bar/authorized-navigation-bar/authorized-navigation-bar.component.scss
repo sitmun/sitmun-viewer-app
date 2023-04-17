@@ -1,9 +1,12 @@
+@use 'src/styles/colors';
+@use 'src/styles/dimensions';
+
 .auth-nav-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: white;
-  background: orange;
+  color: colors.$navigation-bar-font;
+  background: colors.$common-color-background-navbar;
 
   .public-nav-bar {
     width: 80%;
@@ -18,20 +21,22 @@
     padding: 0 1em;
 
     button {
-      color: black;
-      background: white;
-      font-weight: bold;
-      margin: 0 0.5em;
-      padding: 0 1em;
-      height: 2.5em;
-      width: fit-content;
-      border: none;
-      border-radius: 10px;
-    }
+      margin-left: dimensions.$navigation-bar-logo-margin-left;
+      margin-top: dimensions.$navigation-bar-logo-margin-top;
+      margin-bottom: dimensions.$navigation-bar-logo-margin-top;
+      height: dimensions.$navigation-bar-logout-height;
+      width: dimensions.$navigation-bar-logout-width;
+      background: colors.$navigation-bar-button-logout-background;
+      padding: 0;
+      border: 0;
 
+      img {
+        width: auto;
+        height: 100%;
+      }
+    }
     button:hover {
-      color: white;
-      background: #ff9300;
+      transform: scale(1.25);
     }
   }
 }

@@ -1,12 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { DashboardTypes } from '@sections/user/dashboard/dashboard.component';
+import { DashboardItem, DashboardTypes } from '@api/services/common.service';
 
-interface Item {
-  img: string;
-  id: number;
-  name: string;
-}
 @Component({
   selector: 'app-dashboard-items',
   templateUrl: './dashboard-items.component.html',
@@ -14,7 +9,7 @@ interface Item {
 })
 export class DashboardItemsComponent {
   @Input() type: DashboardTypes | undefined;
-  @Input() items: Array<Item> | undefined;
+  @Input() items: Array<DashboardItem> | undefined;
 
   constructor(private router: Router) {}
 

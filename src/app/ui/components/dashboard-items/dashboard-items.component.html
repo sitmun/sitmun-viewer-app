@@ -1,14 +1,12 @@
-<div class="container">
-  <div class="cards-container">
-    <div class="card" *ngFor="let item of items" (click)="onCardClicked(item.id)">
-      <div class="card-img">
-        <img src="assets/logos/logo_sitmun.svg">
-      </div>
-      <div class="card-titles">
+<div class="cards-container">
+  <div class="card" *ngFor="let item of items" (click)="onCardClicked(item.id)">
+    <div class="card-img">
+      <img src="assets/img/card-no-image.svg">
+    </div>
+    <div class="card-titles">
 <!--    <h4>{{'dashboardPage.img' | translate}}: {{item.img}}</h2>-->
-        <label>{{'dashboardPage.name' | translate}}: {{item.name}}</label>
-        <label>{{'dashboardPage.id' | translate}}: {{item.id}}</label>
-      </div>
+      <label>{{'dashboardPage.name' | translate}}: {{item.name}}</label>
+      <label>{{'dashboardPage.id' | translate}}: {{item.id}}</label>
     </div>
   </div>
 </div>

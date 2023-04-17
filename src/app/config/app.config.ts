@@ -8,8 +8,7 @@ export const NavigationPath = {
     Login: '/auth/login',
     ForgotPassword: '/auth/forgot-password',
     Register: '/auth/register',
-    ChangePassword: '/auth/confirm-recover-password',
-    Public: '/auth/public'
+    ChangePassword: '/auth/confirm-recover-password'
   },
   Section: {
     User: {
@@ -17,7 +16,8 @@ export const NavigationPath = {
       Help: '/user/help'
     },
     Public: {
-      Help: '/public/help'
+      Base: '/public',
+      Dashboard: '/public/dashboard'
     }
   }
 };
@@ -43,7 +43,11 @@ export const CustomAuthConfig: AuthConfig<CustomDetails> = {
     loginPath: NavigationPath.Auth.Login,
     loginQueryParam: QueryParam.Login.RedirectAfterLogin,
     isPublicPath: (path: string): boolean => {
-      return path != null && path.startsWith(NavigationPath.Auth.Base);
+      return (
+        path != null &&
+        (path.startsWith(NavigationPath.Auth.Base) ||
+          path.startsWith(NavigationPath.Section.Public.Base))
+      );
     },
     defaultPath: (): string => {
       return NavigationPath.Section.User.Dashboard;

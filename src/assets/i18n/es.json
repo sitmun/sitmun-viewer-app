@@ -1,6 +1,6 @@
 {
-  "loginPage.title": "Página de Login",
-  "loginPage.publicDashboardButton": "Ver aplicaciones públicas",
+  "loginPage.title": "Login",
+  "loginPage.publicDashboardButton": "Acceso público",
   "loginPage.usernamePlaceholder": "Nombre de usuario",
   "loginPage.passwordPlaceholder": "Contraseña",
   "loginPage.submit": "Acceder",

@@ -1,8 +1,0 @@
-<div class="back-to-login">
-  <button type="button" (click)="backToLogin()"><- {{'publicDashboardPage.backToLoginButton' | translate}}</button>
-</div>
-<div class="dashboard-buttons">
-  <button type="button" (click)="onApplicationsClick()">{{'dashboardPage.applicationsTitle' | translate}}</button>
-  <button type="button" (click)="onTerritoriesClick()">{{'dashboardPage.territoriesTitle' | translate}}</button>
-</div>
-<app-dashboard-items [items]="items" [type]="type"/>

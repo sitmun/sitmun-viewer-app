@@ -1,0 +1,44 @@
+// Base
+$base-color-black: #1A0E00;
+$base-color-orange:  #FF9300;
+$base-color-orange-dark: darkorange;
+$base-color-white: white;
+$base-color-light-blue: #758BFD;
+$base-color-blue: #27187e;
+$base-color-gray: gray;
+
+
+// Common
+$common-color-background: $base-color-white;
+$common-color-background-with-opacity: rgba($base-color-white, .6);
+$common-color-background-navbar: $base-color-orange;
+$common-color-background-navbar-with-opacity: rgba($base-color-orange, .6);
+
+$common-color-font-button: $base-color-white;
+$common-color-font-primary: $base-color-light-blue;
+$common-color-font-secondary: $base-color-blue;
+$common-color-border-input: $base-color-gray;
+
+// component specific
+
+// Navigation bar
+$navigation-bar-font: $base-color-white;
+$navigation-bar-lang-button-background: $base-color-orange;
+$navigation-bar-button-logout-background: $base-color-orange;
+$navigation-bar-button-logout-hover: $base-color-orange-dark;
+
+// Login page
+$login-page-button-font: $base-color-white;
+$login-page-button-login-background: $base-color-orange;
+$login-page-button-login-hover: $base-color-orange-dark;
+$login-page-button-public-background: $base-color-light-blue;
+$login-page-button-public-hover: $base-color-blue;
+$login-page-input-font: $base-color-gray;
+$login-page-input-focus: $base-color-blue;
+
+// Card component
+$card-component-font: $base-color-black;
+$card-component-background: $base-color-white;
+$card-component-border: $base-color-blue;
+$card-component-border-hover: $base-color-light-blue;
+$card-component-img-hover: $base-color-light-blue;

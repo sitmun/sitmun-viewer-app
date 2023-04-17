@@ -55,6 +55,6 @@ export class LoginComponent implements OnInit {
   }
 
   publicDashboard() {
-    this.router.navigateByUrl(NavigationPath.Auth.Public);
+    this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
   }
 }

@@ -1,6 +1,6 @@
 {
-  "loginPage.title": "Login Page",
-  "loginPage.publicDashboardButton": "View public apps",
+  "loginPage.title": "Login",
+  "loginPage.publicDashboardButton": "Public access",
   "loginPage.usernamePlaceholder": "Username",
   "loginPage.passwordPlaceholder": "Password",
   "loginPage.submit": "Access",

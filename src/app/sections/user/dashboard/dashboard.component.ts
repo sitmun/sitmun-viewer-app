@@ -1,26 +1,17 @@
 import { Component } from '@angular/core';
-
-interface Item {
-  img: string;
-  id: number;
-  name: string;
-}
-
-export enum DashboardTypes {
-  APPLICATIONS,
-  TERRITORIES
-}
+import { DashboardItem, DashboardTypes } from '@api/services/common.service';
+import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard.component';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent {
+export class DashboardComponent extends AbstractDashboardComponent {
   type: DashboardTypes;
-  items: Item[];
+  items: DashboardItem[];
 
-  applicationsList: Item[] = [
+  applicationsList: DashboardItem[] = [
     {
       img: '',
       id: 1,
@@ -123,7 +114,7 @@ export class DashboardComponent {
     }
   ];
 
-  territoriesList: Item[] = [
+  territoriesList: DashboardItem[] = [
     {
       img: '',
       id: 1,
@@ -177,6 +168,7 @@ export class DashboardComponent {
   ];
 
   constructor() {
+    super();
     this.type = DashboardTypes.APPLICATIONS;
     this.items = [...this.applicationsList];
   }
