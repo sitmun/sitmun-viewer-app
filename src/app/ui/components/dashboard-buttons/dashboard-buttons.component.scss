@@ -1,3 +1,6 @@
+@use 'src/styles/dimensions';
+@use 'src/styles/colors';
+
 .dashboard-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -8,21 +11,21 @@
 
   button {
     font-weight: bold;
-    font-size: 30px;
-    color: #758BFD;
-    background: white;
+    font-size: dimensions.$base-font-size-xxl;
+    color: colors.$dashboard-component-button;
+    background: colors.$dashboard-component-button-background;
     border: none;
-    border-bottom: 3px solid #758BFD;
+    border-bottom: dimensions.$base-border-3 solid colors.$dashboard-component-button-border;
     padding-bottom: 5px;
   }
 
   button:hover {
-    color: #27187E;
-    border-color: #27187E;
+    color: colors.$dashboard-component-button-hover;
+    border-color: colors.$dashboard-component-button-border-focus;
   }
 
   button:focus {
-    color: #27187E;
-    border-color: #27187E;
+    color: colors.$dashboard-component-button-focus;
+    border-color: colors.$dashboard-component-button-border-focus;
   }
 }
