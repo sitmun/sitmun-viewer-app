@@ -1,6 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
-import { DashboardItem, DashboardTypes } from '@api/services/common.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { DashboardItem } from '@api/services/common.service';
 
 @Component({
   selector: 'app-dashboard-items',
@@ -8,16 +7,12 @@ import { DashboardItem, DashboardTypes } from '@api/services/common.service';
   styleUrls: ['./dashboard-items.component.scss']
 })
 export class DashboardItemsComponent {
-  @Input() type: DashboardTypes | undefined;
   @Input() items: Array<DashboardItem> | undefined;
+  @Output() id = new EventEmitter<number>();
 
-  constructor(private router: Router) {}
+  constructor() {}
 
   onCardClicked(id: number) {
-    this.router.navigateByUrl('/user/map', {
-      state: { type: this.type, id: id }
-    });
+    this.id.emit(id);
   }
-
-  protected readonly DashboardTypes = DashboardTypes;
 }

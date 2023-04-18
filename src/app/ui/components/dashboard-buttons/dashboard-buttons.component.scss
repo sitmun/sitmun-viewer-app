@@ -1,0 +1,28 @@
+.dashboard-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin: 80px 20px 0 20px;
+
+  button {
+    font-weight: bold;
+    font-size: 30px;
+    color: #758BFD;
+    background: white;
+    border: none;
+    border-bottom: 3px solid #758BFD;
+    padding-bottom: 5px;
+  }
+
+  button:hover {
+    color: #27187E;
+    border-color: #27187E;
+  }
+
+  button:focus {
+    color: #27187E;
+    border-color: #27187E;
+  }
+}

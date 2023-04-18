@@ -1,33 +1,26 @@
-.dashboard-buttons {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 80px 80px 0 80px;
+@use 'src/styles/colors';
+@use 'src/styles/dimensions';
 
-  button {
-    font-weight: bold;
-    font-size: 30px;
-    color: #758BFD;
-    background: white;
-    border: none;
-    border-bottom: 3px solid #758BFD;
-    padding-bottom: 5px;
-  }
+.dashboard-container {
+  max-width: 1630px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  button:hover {
-    color: #27187E;
-    border-color: #27187E;
-  }
-
-  button:focus {
-    color: #27187E;
-    border-color: #27187E;
+@media all and (max-width: 1623px) and (min-width: 1234px) {
+  .dashboard-container {
+    max-width: 1220px;
   }
 }
 
-.items-container {
-  max-width: 1800px;
-  margin-left: auto;
-  margin-right: auto;
+@media all and (max-width: 1233px) and (min-width: 828px) {
+  .dashboard-container {
+    max-width: 812px;
+  }
+}
+
+@media all and (max-width: 827px) {
+  .dashboard-container {
+    max-width: 420px;
+  }
 }

@@ -1,7 +1,4 @@
-<div class="dashboard-buttons">
-  <button type="button" (click)="onApplicationsClick()">{{'dashboardPage.applicationsTitle' | translate}}</button>
-  <button type="button" (click)="onTerritoriesClick()">{{'dashboardPage.territoriesTitle' | translate}}</button>
-</div>
-<div class="items-container">
-  <app-dashboard-items [items]="items" [type]="type"/>
+<div class="dashboard-container">
+  <app-dashboard-buttons (type)="onTypeChange($event)"/>
+  <app-dashboard-items [items]="items" (id)="onCardClicked($event)"/>
 </div>
