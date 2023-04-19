@@ -37,8 +37,8 @@
     border-radius: 10px;
 
     img {
-      width: auto;
-      height: dimensions.$card-component-img-height;
+      width: dimensions.$card-component-img-height;
+      height: dimensions.$card-component-img-width;
       border-radius: dimensions.$card-component-img-radius;
       opacity: 50%;
     }

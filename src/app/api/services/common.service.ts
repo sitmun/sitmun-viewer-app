@@ -6,7 +6,7 @@ export enum DashboardTypes {
 }
 
 export interface DashboardItem {
-  img: string;
+  img?: string;
   id: number;
   name: string;
 }
