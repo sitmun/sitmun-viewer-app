@@ -21,9 +21,7 @@
     padding: 0 1em;
 
     button {
-      margin-left: dimensions.$navigation-bar-logo-margin-left;
-      margin-top: dimensions.$navigation-bar-logo-margin-top;
-      margin-bottom: dimensions.$navigation-bar-logo-margin-top;
+      margin: dimensions.$navigation-bar-logo-margin-top dimensions.$navigation-bar-logo-margin-left;
       height: dimensions.$navigation-bar-logout-height;
       width: dimensions.$navigation-bar-logout-width;
       background: colors.$navigation-bar-button-logout-background;

@@ -1,16 +1,10 @@
-.map-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+@use 'src/styles/colors';
 
-   h1 {
-     margin: 1.5em 0;
-   }
-
-  .map-container {
-    height: 40em;
-    width: 80%;
-    margin: 0 20%;
-    border: 5px dashed orange;
-  }
+.map-container {
+  position: absolute;
+  height: calc(100% - 80px);;
+  width: 100%;
+  //border: 5px dashed orange;
 }
+
+
