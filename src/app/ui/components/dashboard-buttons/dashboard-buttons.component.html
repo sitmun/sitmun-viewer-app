@@ -1,4 +1,8 @@
 <div class="dashboard-buttons">
-  <button type="button" (click)="onApplicationsClick()">{{'dashboardPage.applicationsTitle' | translate}}</button>
-  <button type="button" (click)="onTerritoriesClick()">{{'dashboardPage.territoriesTitle' | translate}}</button>
+  <button [class.selected]="applicationSelected" type="button" (click)="onClick(DashboardTypes.APPLICATIONS)">
+    {{'dashboardPage.applicationsTitle' | translate}}
+  </button>
+  <button [class.selected]="territoriesSelected" type="button" (click)="onClick(DashboardTypes.TERRITORIES)">
+    {{'dashboardPage.territoriesTitle' | translate}}
+  </button>
 </div>

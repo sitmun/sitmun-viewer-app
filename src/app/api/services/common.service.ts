@@ -8,7 +8,12 @@ export enum DashboardTypes {
 export interface DashboardItem {
   img?: string;
   id: number;
-  name: string;
+  title: string;
+  type?: string;
+}
+
+export interface ApplicationsResponse {
+  content: Array<DashboardItem>;
 }
 
 @Injectable({

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { DashboardTypes } from '@api/services/common.service';
+
 @Component({
   selector: 'app-dashboard-buttons',
   templateUrl: './dashboard-buttons.component.html',
@@ -7,13 +8,26 @@ import { DashboardTypes } from '@api/services/common.service';
 })
 export class DashboardButtonsComponent {
   @Output() type = new EventEmitter<DashboardTypes>();
+  applicationSelected: boolean;
+  territoriesSelected: boolean;
   constructor() {
+    this.applicationSelected = true;
+    this.territoriesSelected = false;
     this.type.emit(DashboardTypes.APPLICATIONS);
   }
-  onApplicationsClick() {
-    this.type.emit(DashboardTypes.APPLICATIONS);
+  onClick(type: DashboardTypes) {
+    switch (type) {
+      case DashboardTypes.APPLICATIONS:
+        this.applicationSelected = true;
+        this.territoriesSelected = false;
+        break;
+      case DashboardTypes.TERRITORIES:
+        this.territoriesSelected = true;
+        this.applicationSelected = false;
+        break;
+    }
+    this.type.emit(type);
   }
-  onTerritoriesClick() {
-    this.type.emit(DashboardTypes.TERRITORIES);
-  }
+
+  protected readonly DashboardTypes = DashboardTypes;
 }
