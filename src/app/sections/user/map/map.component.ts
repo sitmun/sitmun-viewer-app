@@ -19,6 +19,19 @@ export class MapComponent implements OnInit {
           243214.346608211, 4606384.0094297, 574809.60903833, 4650833.9854267
         ];
         // SITNA.Cfg.maxExtent = [];
+        SITNA.Cfg.controls.attribution = true;
+        SITNA.Cfg.baseLayers = [];
+        SITNA.Cfg.workLayers = [];
+        SITNA.Cfg.workLayers.push({
+          id: 'MUN',
+          url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
+          layerNames: 'DTE50_MUN'
+        });
+        SITNA.Cfg.workLayers.push({
+          id: 'PROV',
+          url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
+          layerNames: 'DTE50_PROV'
+        });
         SITNA.Cfg.layout = {
           config: '/assets/js/sitna/TC/layout/responsive/config.json',
           markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
