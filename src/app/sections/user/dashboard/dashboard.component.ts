@@ -1,110 +1,12 @@
-import { Component } from '@angular/core';
-import { DashboardItem, DashboardTypes } from '@api/services/common.service';
+import { Component, OnInit } from '@angular/core';
+import {
+  ApplicationsResponse,
+  CommonService,
+  DashboardItem,
+  DashboardTypes
+} from '@api/services/common.service';
 import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard.component';
 import { Router } from '@angular/router';
-
-const applicationsList: DashboardItem[] = [
-  {
-    img: '',
-    id: 1,
-    title: 'App 1'
-  },
-  {
-    img: '',
-    id: 2,
-    title: 'App 2'
-  },
-  {
-    img: '',
-    id: 3,
-    title: 'App 3'
-  },
-  {
-    img: '',
-    id: 4,
-    title: 'App 4'
-  },
-  {
-    img: '',
-    id: 5,
-    title: 'App 5'
-  },
-  {
-    img: '',
-    id: 6,
-    title: 'App 6'
-  },
-  {
-    img: '',
-    id: 7,
-    title: 'App 7'
-  },
-  {
-    img: '',
-    id: 8,
-    title: 'App 8'
-  },
-  {
-    img: '',
-    id: 9,
-    title: 'App 9'
-  },
-  {
-    img: '',
-    id: 10,
-    title: 'App 10'
-  },
-  {
-    img: '',
-    id: 11,
-    title: 'App 11'
-  },
-  {
-    img: '',
-    id: 12,
-    title: 'App 12'
-  },
-  {
-    img: '',
-    id: 13,
-    title: 'App 13'
-  },
-  {
-    img: '',
-    id: 14,
-    title: 'App 14'
-  },
-  {
-    img: '',
-    id: 15,
-    title: 'App 15'
-  },
-  {
-    img: '',
-    id: 16,
-    title: 'App 16'
-  },
-  {
-    img: '',
-    id: 17,
-    title: 'App 17'
-  },
-  {
-    img: '',
-    id: 18,
-    title: 'App 18'
-  },
-  {
-    img: '',
-    id: 19,
-    title: 'App 19'
-  },
-  {
-    img: '',
-    id: 20,
-    title: 'App 20'
-  }
-];
 
 const territoriesList: DashboardItem[] = [
   {
@@ -129,29 +31,63 @@ const territoriesList: DashboardItem[] = [
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent extends AbstractDashboardComponent {
+export class DashboardComponent
+  extends AbstractDashboardComponent
+  implements OnInit
+{
   type: DashboardTypes;
   items: DashboardItem[];
   id: number | undefined; // id of card clicked, necessary to individual resource request
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private commonService: CommonService) {
     super();
     this.type = DashboardTypes.APPLICATIONS;
-    this.items = [...applicationsList];
+    this.items = [];
   }
+
+  ngOnInit() {
+    this.searchDashboardItems(DashboardTypes.APPLICATIONS);
+  }
+
+  searchDashboardItems(type: DashboardTypes, keywords?: string) {
+    this.commonService
+      .fetchResources(type, keywords)
+      .subscribe((res: ApplicationsResponse) => {
+        this.items = res.content;
+      });
+  }
+
+  /* temporally while territory's path is not implemented */
+  fetchTerritories() {
+    this.items = [...territoriesList];
+  }
+  /**/
 
   onTypeChange(type: DashboardTypes) {
     if (type === DashboardTypes.APPLICATIONS) {
       this.type = DashboardTypes.APPLICATIONS;
-      this.items = [...applicationsList];
     } else {
       this.type = DashboardTypes.TERRITORIES;
-      this.items = [...territoriesList];
+      /* temporally while territory's path is not implemented */
+      this.fetchTerritories();
+      return;
+      /**/
     }
+    this.searchDashboardItems(this.type);
   }
 
   onCardClicked(id: number) {
     this.id = id;
-    this.router.navigateByUrl('/user/map');
+    this.router.navigateByUrl('/public/map');
+  }
+
+  onKeywordsSearch(keywords: string) {
+    /* temporally while territory's path is not implemented */
+    if (this.type === DashboardTypes.TERRITORIES) {
+      this.fetchTerritories();
+      return;
+    }
+    /**/
+    this.searchDashboardItems(this.type, keywords);
   }
 }

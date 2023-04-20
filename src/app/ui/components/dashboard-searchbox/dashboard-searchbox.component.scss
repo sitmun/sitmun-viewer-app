@@ -1,0 +1,48 @@
+@use 'src/styles/dimensions';
+@use 'src/styles/colors';
+
+.dashboard-searchbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 30px 0 30px 0;
+  width: dimensions.$dashboard-page-input-width;
+  height: dimensions.$dashboard-page-input-height;
+  padding: 0 5px 0 15px;
+  border: 3px solid #27187e;
+  border-radius: 50px;
+
+  input {
+    border: none;
+  }
+
+  .text-input {
+    width: 370px;
+    border-radius: 50px;
+    font-size: 20px;
+  }
+
+  .text-input:active {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .text-input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .text-input:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .text-input:active {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+.dashboard-searchbox:hover {
+  border-color: #758BFD;
+}

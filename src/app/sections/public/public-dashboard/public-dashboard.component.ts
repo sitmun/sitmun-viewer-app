@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {
   ApplicationsResponse,
+  CommonService,
   DashboardItem,
   DashboardTypes
 } from '@api/services/common.service';
 import { Router } from '@angular/router';
-import { environment } from '../../../../environments/environment';
-import { URL_API_PUBLIC_APPLICATIONS } from '@api/api-config';
-import { HttpClient } from '@angular/common/http';
 
 const territoriesList: DashboardItem[] = [
   {
@@ -37,39 +35,54 @@ export class PublicDashboardComponent implements OnInit {
   items: DashboardItem[];
   id: number | undefined; // id of card clicked, necessary to individual resource request
 
-  constructor(private router: Router, private http: HttpClient) {
+  constructor(private router: Router, private commonService: CommonService) {
     this.type = DashboardTypes.APPLICATIONS;
     this.items = [];
   }
 
   ngOnInit() {
-    this.fetchApplications();
+    this.searchDashboardItems(DashboardTypes.APPLICATIONS);
   }
 
-  fetchApplications() {
-    this.http
-      .get<any>(environment.apiUrl + URL_API_PUBLIC_APPLICATIONS)
+  searchDashboardItems(type: DashboardTypes, keywords?: string) {
+    this.commonService
+      .fetchResources(type, keywords)
       .subscribe((res: ApplicationsResponse) => {
         this.items = res.content;
       });
   }
 
+  /* temporally while territory's path is not implemented */
   fetchTerritories() {
     this.items = [...territoriesList];
   }
+  /**/
 
   onTypeChange(type: DashboardTypes) {
     if (type === DashboardTypes.APPLICATIONS) {
       this.type = DashboardTypes.APPLICATIONS;
-      this.fetchApplications();
     } else {
       this.type = DashboardTypes.TERRITORIES;
+      /* temporally while territory's path is not implemented */
       this.fetchTerritories();
+      return;
+      /**/
     }
+    this.searchDashboardItems(this.type);
   }
 
   onCardClicked(id: number) {
     this.id = id;
-    this.router.navigateByUrl('/user/map');
+    this.router.navigateByUrl('/public/map');
+  }
+
+  onKeywordsSearch(keywords: string) {
+    /* temporally while territory's path is not implemented */
+    if (this.type === DashboardTypes.TERRITORIES) {
+      this.fetchTerritories();
+      return;
+    }
+    /**/
+    this.searchDashboardItems(this.type, keywords);
   }
 }
