@@ -21,6 +21,18 @@ export class MapComponent implements OnInit {
         // SITNA.Cfg.maxExtent = [];
         SITNA.Cfg.controls.attribution = true;
         SITNA.Cfg.baseLayers = [];
+        SITNA.Cfg.baseLayers.push({
+          id: 'PNOA',
+          url: 'https://www.ign.es/wms-inspire/pnoa-ma',
+          layerNames: 'OI.OrthoimageCoverage',
+          isBase: true,
+          overviewMapLayer: {
+            id: 'pnoa_ov',
+            type: SITNA.Consts.layerType.WMS,
+            url: 'https://www.ign.es/wms-inspire/pnoa-ma',
+            layerNames: 'OI.OrthoimageCoverage'
+          }
+        });
         SITNA.Cfg.workLayers = [];
         SITNA.Cfg.workLayers.push({
           id: 'MUN',
