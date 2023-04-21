@@ -2,10 +2,12 @@
 @use 'src/styles/dimensions';
 
 .login-page {
+  position: absolute;
   background: linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
     colors.$common-color-background-navbar-with-opacity 30%,
     colors.$common-color-background-with-opacity 80%), url('/assets/img/login-back.png') no-repeat;
-  height: dimensions.$login-page-height;
+  height: calc(100% - 80px);
+  width: 100%;
   background-size: cover;
   display: flex;
   justify-content: center;

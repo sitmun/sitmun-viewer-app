@@ -4,7 +4,7 @@ import {
   URL_API_PUBLIC_APPLICATIONS,
   URL_API_PUBLIC_TERRITORIES
 } from '@api/api-config';
-import { environment } from '../../../environments/environment';
+import { environment } from 'src/environments/environment';
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',

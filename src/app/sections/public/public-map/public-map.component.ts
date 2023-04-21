@@ -3,11 +3,11 @@ import { ScriptService } from '@api/services/script.service';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
 
 @Component({
-  selector: 'app-map',
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss']
+  selector: 'app-public-map',
+  templateUrl: './public-map.component.html',
+  styleUrls: ['./public-map.component.scss']
 })
-export class MapComponent extends AbstractMapComponent {
+export class PublicMapComponent extends AbstractMapComponent {
   constructor(scriptService: ScriptService) {
     super(scriptService);
   }

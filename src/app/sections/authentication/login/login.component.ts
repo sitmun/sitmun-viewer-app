@@ -35,11 +35,11 @@ export class LoginComponent implements OnInit {
       this.authenticationRequest?.username &&
       this.authenticationRequest?.password
     ) {
-      this.authenticationService.login(this.authenticationRequest).subscribe(
-        () => {
+      this.authenticationService.login(this.authenticationRequest).subscribe({
+        next: () => {
           this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
         },
-        (error) => {
+        error: (error) => {
           if (error.status && error.status === 401) {
             this.authenticationRequest.username = '';
             this.authenticationRequest.password = '';
@@ -47,10 +47,10 @@ export class LoginComponent implements OnInit {
             this.translate.get('loginPage.incorrectLogin').subscribe((trad) => {
               traduction = trad;
             });
-            alert(traduction);
+            // alert(traduction);
           }
         }
-      );
+      });
     }
   }
 

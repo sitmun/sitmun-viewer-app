@@ -5,9 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { PublicDashboardComponent } from '@sections/public/public-dashboard/public-dashboard.component';
 import { PublicRoutingModule } from '@sections/public/public-section.routing.module';
 import { UiModule } from '@ui/ui.module';
+import { PublicMapComponent } from '@sections/public/public-map/public-map.component';
 
 @NgModule({
-  declarations: [PublicDashboardComponent],
+  declarations: [PublicDashboardComponent, PublicMapComponent],
   imports: [
     CommonModule,
     PublicRoutingModule,
