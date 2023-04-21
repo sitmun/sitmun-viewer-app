@@ -37,6 +37,7 @@ export abstract class AbstractMapComponent implements OnInit {
           url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
           layerNames: ['DTE50_MUN', 'DTE50_PROV']
         });
+
         SITNA.Cfg.layout = {
           config: '/assets/js/sitna/TC/layout/responsive/config.json',
           markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
@@ -44,6 +45,57 @@ export abstract class AbstractMapComponent implements OnInit {
           script: '/assets/js/sitna/TC/layout/responsive/script.js',
           i18n: '/assets/js/sitna/TC/layout/responsive/resources'
         };
+
+        SITNA.Cfg.controls.layerCatalog = {
+          div: 'catalog',
+          enableSearch: true,
+          layers: [
+            {
+              id: 'dte50',
+              title: 'Delimitacions Barcelona',
+              hideTitle: false,
+              type: SITNA.Consts.layerType.WMS,
+              url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WMSServer',
+              hideTree: false,
+              format: ''
+            }
+          ]
+        };
+
+        SITNA.Cfg.baseLayers = [
+          {
+            id: 'icgc_orto',
+            url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
+            layerNames: 'orto',
+            type: 'WMTS',
+            title: 'WMTS Bases - ICGC - Orto',
+            format: 'image/png',
+            matrixSet: 'UTM25831',
+            thumbnail:
+              'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/orto/UTM25831/1/0/1.png',
+            isBase: true
+          },
+          {
+            id: 'icgc_topo',
+            url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
+            layerNames: 'topo',
+            type: 'WMTS',
+            title: 'WMTS Bases - ICGC- Topo',
+            format: 'image/jpeg',
+            matrixSet: 'UTM25831',
+            thumbnail:
+              'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/topo/UTM25831/1/0/1.jpeg',
+            isBase: true
+          }
+        ];
+
+        // SITNA.Cfg.layout = {
+        //   config: '/assets/IDEMenorca/config.json',
+        //   markup: '/assets/IDEMenorca/markup.html',
+        //   style: '/assets/IDEMenorca/style.css',
+        //   script: '/assets/IDEMenorca//script.js',
+        //   i18n: '/assets/IDEMenorca//resources'
+        // };
 
         new SITNA.Map('mapa');
       })

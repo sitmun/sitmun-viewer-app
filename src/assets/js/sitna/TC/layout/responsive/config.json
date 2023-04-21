@@ -27,7 +27,7 @@
     "basemapSelector": {
       "div": "bms"
     },
-    "TOC": {
+    "workLayerManager": {
       "div": "toc"
     },
     "legend": {

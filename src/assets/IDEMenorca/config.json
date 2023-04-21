@@ -1,0 +1,139 @@
+{
+  "i18n": true,
+  "stateful": true,
+  "googleMapsKey": "AIzaSyAGhsd6DYwDBY8SyJ8T-2jdtD2joxlxIHA",
+  "elevation": {
+    "resolution": 20,
+    "sampleNumber": 200,
+    "hillDeltaThreshold": 20,
+    "services": [
+      "elevationServiceIGNEs",
+      {
+        "name": "elevationServiceGoogle",
+        "allowedGeometryTypes": [
+          "polyline",
+          "polygon"
+        ]
+      }
+    ]
+  },
+  "controls": {
+    "navBar": {
+      "div": "nav"
+    },
+    "legend": {
+      "div": "legend"
+    },
+    "FullScreen": {
+      "div": "FuScreen"
+    },
+    "basemapSelector": {
+      "div": "bms"
+    },
+    "geolocation": {
+      "div": "geolocation"
+    },
+    "WFSQuery": true,
+    "workLayerManager": {
+      "div": "toc"
+    },
+    "coordinates": {
+      "div": "coordinates"
+    },
+    "controlContainer": {
+      "div": "ccontainer",
+      "controls": [
+        {
+          "position": "right",
+          "threeD": true
+        }
+      ]
+    },
+    "search": {
+      "div": "search"
+    },
+    "tabContainer": {
+      "div": "xdata",
+      "defaultSelection": 0,
+      "title": "addMaps",
+      "controls": [
+        {
+          "name": "externalWMS",
+          "title": "addWMS",
+          "options": {
+            "suggestions": [
+              {
+                "group": "WMS",
+                "items": [
+                  {
+                    "name": "Ortofoto 1989 IDEIB",
+                    "url": "https://ideib.caib.es/geoserveis/services/imatges/GOIB_Ortofoto_1989_IB/MapServer/WMSServer/"
+                  },
+                  {
+                    "name": "SIGPAC",
+                    "url": "http://wms.magrama.es/wms/wms.aspx"
+                  }
+                ]
+              }
+            ],
+            "enableDragAndDrop": false
+          }
+        },
+        {
+          "name": "fileImport",
+          "title": null,
+          "options": {
+            "suggestions": null,
+            "enableDragAndDrop": true
+          }
+        }
+      ]
+    },
+    "popup": true,
+    "attribution": true,
+    "scale": true,
+    "scaleBar": true
+  },
+  "views": {
+    "threeD": {
+      "div": "threedMap",
+      "crs": "EPSG:25831",
+      "terrain": {
+        "url": "//idena.navarra.es/cesiumTerrain/2017/epsg4326/5m/",
+        "noDataValue": 0,
+        "attributions": {
+          "name": "�lvaro Huarte",
+          "site": "https://github.com/ahuarte47"
+        }
+      },
+      "terrainFallback": {
+        "url": "https://image.discomap.eea.europa.eu/arcgis/services/Elevation/EUElev_DEM_V11/MapServer/WCSServer",
+        "coverageName": "1",
+        "format": "GeoTIFF",
+        "noDataValue": -32767
+      },
+      "controls": [
+        "coordinates",
+        "controlContainer",
+        "navBar",
+        "navBarHome",
+        "threeD",
+        "legend",
+        "attribution",
+        "search",
+        "basemapSelector",
+        "workLayerManager",
+        "layerCatalog",
+        "dataLoader",
+        "externalWMS",
+        "fileImport",
+        "share",
+        "geolocation",
+        "overviewMap",
+        "featureInfo",
+        "loadingIndicator",
+        "resultsPanel"
+      ]
+    }
+  }
+}
