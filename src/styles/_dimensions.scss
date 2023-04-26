@@ -24,6 +24,11 @@ $base-margin-8: $base-margin * 8;
 
 $base-touchable-item-size: 48px;
 
+// Transparency
+$modal-transparency: 0.8;
+// Shadow
+$medium-shadow: 0 1px 5px 0 rgba(0, 0, 0, .3);
+
 
 // Common
 $common-application-bar-height: 56px;
@@ -63,3 +68,31 @@ $card-component-img-radius: 20px;
 // Dashboard component
 $dashboard-page-input-width: 432px;
 $dashboard-page-input-height: 48px;
+
+
+// Modals
+$modal-background-z-index: 10000;
+$modal-content-z-index: $modal-background-z-index + 1;
+$modal-border-radius: 20px;
+$modal-margin-top: $base-touchable-item-size;
+$modal-margin-top-sm: calc($base-touchable-item-size / 3);
+$modal-extra-small-width: 90vw;
+$modal-small-width: 420px;
+$modal-regular-width: 500px;
+$modal-large-width: 560px;
+$modal-extra-large-width: 860px;
+$modal-extra-extra-large-width: 1000px;
+$modal-narrow-width: $modal-regular-width - 100px;
+$modal-header-height: $base-touchable-item-size;
+$modal-header-height-xl: 64px;
+$modal-title-font-size: $base-font-size + 2px;
+$modal-padding-h: 20px;
+$modal-title-padding-h: $modal-padding-h;
+$modal-button-font-size: $base-font-size - 1px;
+$modal-button-margin-h: round($modal-padding-h * 0.5);
+$modal-button-margin-v: $modal-padding-h;
+$modal-body-padding-xs: round($modal-padding-h * 0.25);
+$modal-body-padding-sm: round($modal-padding-h * 1.25);
+$modal-body-padding: round($modal-padding-h * 2);
+$modal-body-max-height: calc(100vh - #{($modal-margin-top * 2) + $modal-header-height});
+

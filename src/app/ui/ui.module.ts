@@ -5,6 +5,7 @@ import { DashboardItemsComponent } from './components/dashboard-items/dashboard-
 import { FormsModule } from '@angular/forms';
 import { DashboardButtonsComponent } from './components/dashboard-buttons/dashboard-buttons.component';
 import { DashboardSearchboxComponent } from '@ui/components/dashboard-searchbox/dashboard-searchbox.component';
+import { ModalModule } from '@ui/modal/modal.module';
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule],
@@ -16,7 +17,8 @@ import { DashboardSearchboxComponent } from '@ui/components/dashboard-searchbox/
   exports: [
     DashboardItemsComponent,
     DashboardButtonsComponent,
-    DashboardSearchboxComponent
+    DashboardSearchboxComponent,
+    ModalModule
   ],
   providers: []
 })

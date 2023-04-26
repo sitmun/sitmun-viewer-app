@@ -19,6 +19,7 @@ import { CustomAuthConfig } from '@config/app.config';
 import { AuthorizedNavigationBarComponent } from './layout/authorized-navigation-bar/authorized-navigation-bar/authorized-navigation-bar.component';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TestModalComponent } from './sections/common/modals/test-modal/test-modal.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
     NavigationBarComponent,
     AuthorizedNavigationBarComponent,
     PublicLayoutComponent,
-    FooterComponent
+    FooterComponent,
+    TestModalComponent
   ],
   imports: [
     BrowserModule,

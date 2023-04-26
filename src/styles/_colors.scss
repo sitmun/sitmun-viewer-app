@@ -1,53 +1,60 @@
 // Base
-$base-color-black: #1A0E00;
-$base-color-orange:  #FF9300;
-$base-color-orange-dark: darkorange;
-$base-color-white: white;
-$base-color-light-blue: #758BFD;
-$base-color-blue: #27187e;
-$base-color-gray: gray;
+$black: #1A0E00;
+$orange:  #FF9300;
+$orange-dark: darkorange;
+$white: white;
+$light-blue: #758BFD;
+$blue: #27187e;
+$gray: gray;
+$light-gray: lightgray;
 
 
 // Common
-$common-color-background: $base-color-white;
-$common-color-background-with-opacity: rgba($base-color-white, .6);
-$common-color-background-navbar: $base-color-orange;
-$common-color-background-navbar-with-opacity: rgba($base-color-orange, .6);
+$common-color-background: $white;
+$common-color-background-with-opacity: rgba($white, .6);
+$common-color-background-navbar: $orange;
+$common-color-background-navbar-with-opacity: rgba($orange, .6);
 
-$common-color-font-button: $base-color-white;
-$common-color-font-primary: $base-color-light-blue;
-$common-color-font-secondary: $base-color-blue;
-$common-color-border-input: $base-color-gray;
+$common-color-font-button: $white;
+$common-color-font-primary: $light-blue;
+$common-color-font-secondary: $blue;
+$common-color-border-input: $gray;
 
 // component specific
 
 // Navigation bar
-$navigation-bar-font: $base-color-white;
-$navigation-bar-lang-button-background: $base-color-orange;
-$navigation-bar-button-logout-background: $base-color-orange;
-$navigation-bar-button-logout-hover: $base-color-orange-dark;
+$navigation-bar-font: $white;
+$navigation-bar-lang-button-background: $orange;
+$navigation-bar-button-logout-background: $orange;
+$navigation-bar-button-logout-hover: $orange-dark;
 
 // Login page
-$login-page-button-font: $base-color-white;
-$login-page-button-login-background: $base-color-orange;
-$login-page-button-login-hover: $base-color-orange-dark;
-$login-page-button-public-background: $base-color-light-blue;
-$login-page-button-public-hover: $base-color-blue;
-$login-page-input-font: $base-color-gray;
-$login-page-input-focus: $base-color-blue;
+$login-page-button-font: $white;
+$login-page-button-login-background: $orange;
+$login-page-button-login-hover: $orange-dark;
+$login-page-button-public-background: $light-blue;
+$login-page-button-public-hover: $blue;
+$login-page-input-font: $gray;
+$login-page-input-focus: $blue;
 
 // Card component
-$card-component-font: $base-color-black;
-$card-component-background: $base-color-white;
-$card-component-border: $base-color-blue;
-$card-component-border-hover: $base-color-light-blue;
-$card-component-img-hover: $base-color-light-blue;
+$card-component-font: $black;
+$card-component-background: $white;
+$card-component-border: $blue;
+$card-component-border-hover: $light-blue;
+$card-component-img-hover: $light-blue;
 
 // Dashboard component
-$dashboard-component-button: $base-color-light-blue;
-$dashboard-component-button-background: $base-color-white;
-$dashboard-component-button-hover: $base-color-blue;
-$dashboard-component-button-focus: $base-color-blue;
-$dashboard-component-button-border: $base-color-light-blue;
-$dashboard-component-button-border-hover: $base-color-blue;
-$dashboard-component-button-border-focus: $base-color-blue;
+$dashboard-component-button: $light-blue;
+$dashboard-component-button-background: $white;
+$dashboard-component-button-hover: $blue;
+$dashboard-component-button-focus: $blue;
+$dashboard-component-button-border: $light-blue;
+$dashboard-component-button-border-hover: $blue;
+$dashboard-component-button-border-focus: $blue;
+
+
+// Modals
+
+$modal-background-around-color: $orange;
+$modal-background-border-color: $blue;

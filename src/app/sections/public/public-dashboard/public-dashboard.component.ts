@@ -6,6 +6,9 @@ import {
   DashboardTypes
 } from '@api/services/common.service';
 import { Router } from '@angular/router';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { LoginComponent } from '@sections/authentication/login/login.component';
+import { TestModalComponent } from '@sections/common/modals/test-modal/test-modal.component';
 
 const territoriesList: DashboardItem[] = [
   {
@@ -35,7 +38,11 @@ export class PublicDashboardComponent implements OnInit {
   items: DashboardItem[];
   id: number | undefined; // id of card clicked, necessary to individual resource request
 
-  constructor(private router: Router, private commonService: CommonService) {
+  constructor(
+    private router: Router,
+    private commonService: CommonService,
+    protected modal: OpenModalService
+  ) {
     this.type = DashboardTypes.APPLICATIONS;
     this.items = [];
   }
@@ -78,11 +85,16 @@ export class PublicDashboardComponent implements OnInit {
 
   onKeywordsSearch(keywords: string) {
     /* temporally while territory's path is not implemented */
-    if (this.type === DashboardTypes.TERRITORIES) {
-      this.fetchTerritories();
-      return;
-    }
-    /**/
-    this.searchDashboardItems(this.type, keywords);
+    // if (this.type === DashboardTypes.TERRITORIES) {
+    //   this.fetchTerritories();
+    //   return;
+    // }
+    // /**/
+    // this.searchDashboardItems(this.type, keywords);
+
+    const ref = this.modal.open(TestModalComponent, { data: { model: {} } });
+    ref.afterClosed.subscribe((result) => {
+      console.log('closed');
+    });
   }
 }

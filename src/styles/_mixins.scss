@@ -1,0 +1,21 @@
+@use 'dimensions';
+
+@mixin centered-item($vertically: false) {
+  @if $vertically {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  @else {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@mixin horizontal-padding($padding) {
+  padding-right: $padding;
+  padding-left: $padding;
+}
+
+@mixin modal-content-shadow() {
+  box-shadow: dimensions.$medium-shadow;
+}

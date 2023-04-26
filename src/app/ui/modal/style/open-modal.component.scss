@@ -1,0 +1,98 @@
+@use 'dimensions';
+@use 'colors';
+@use 'mixins';
+
+.modal-view {
+  display: block;
+
+  &>div {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    &.background {
+      bottom: 0;
+      z-index: dimensions.$modal-background-z-index;
+      background-color: colors.$modal-background-around-color;
+      opacity: dimensions.$modal-transparency;
+    }
+    &.content {
+      @include mixins.centered-item();
+      z-index: dimensions.$modal-content-z-index;
+      @include mixins.modal-content-shadow();
+      margin-top: dimensions.$modal-margin-top;
+      width: dimensions.$modal-regular-width;
+      background-color: colors.$white;
+      border-radius: dimensions.$modal-border-radius;
+      border: dimensions.$base-border-2 solid colors.$modal-background-border-color;
+      //@media (max-width: $breakpoint-xs) {
+      //  margin: 0;
+      //  width: 100% !important;
+      //  height: 100%;
+      //}
+      .modal-view-body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: dimensions.$modal-body-max-height;
+        @include mixins.horizontal-padding(dimensions.$modal-body-padding);
+        padding-top: round(dimensions.$modal-body-padding * 0.5);
+        //@media (max-width: $breakpoint-xs) {
+        //  max-height: calc(100% - #{dimensions.$modal-header-height});
+        //  @include horizontal-padding(dimensions.$modal-body-padding - round(dimensions.$modal-body-padding * 0.25));
+        //  padding-top: round(dimensions.$modal-body-padding * 0.5 - round((dimensions.$modal-body-padding * 0.5) * 0.25));
+        //}
+        &.no-padding {
+          padding: 0;
+        }
+        &.half-padding {
+          padding: round(dimensions.$modal-body-padding * 0.5);
+        }
+        &.padding-bottom {
+          padding-bottom: dimensions.$modal-body-padding;
+          //@media (max-width: $breakpoint-xs) {
+          //  padding-bottom: round(dimensions.$modal-body-padding * 0.75);
+          //}
+        }
+        &.info {
+          padding: dimensions.$modal-body-padding;
+
+          //@media (max-width: $breakpoint-xs) {
+          //  padding: round(dimensions.$modal-body-padding * 3*0.25);
+          //}
+        }
+        .advanced-settings {
+          display: flex;
+          flex-direction: column;
+        }
+        .inner-body {
+          &.padding {
+            @include mixins.horizontal-padding(dimensions.$modal-body-padding);
+            padding-top: round(dimensions.$modal-body-padding * 0.5);
+            &.include-bottom {
+              padding-bottom: dimensions.$modal-body-padding;
+            }
+          }
+        }
+      }
+
+      .modal-view-header {
+        button {
+          margin-right: dimensions.$modal-border-radius;
+          font-size: dimensions.$base-font-size-xxl;
+          font-weight: bold;
+          color: colors.$orange;
+          background-color: colors.$white;
+          float: right;
+          border: none;
+
+          div:hover {
+            transform: scale(1.25);
+          }
+        }
+      }
+      &.narrow {
+        width: dimensions.$modal-narrow-width;
+      }
+    }
+  }
+}
