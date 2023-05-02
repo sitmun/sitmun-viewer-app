@@ -15,5 +15,6 @@
   "dashboardPage.img": "Image",
   "dashboardPage.id": "Identifier",
   "dashboardPage.name": "Name",
-  "mapPage.title": "Sample map"
+  "mapPage.title": "Sample map",
+  "dashboardDialog.inputPlaceholder": "Search"
 }

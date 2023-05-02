@@ -1,0 +1,29 @@
+<div class="modal-view">
+  <div class="background"></div>
+  <div class="content">
+
+    <div class="modal-view-header">
+      <button (click)='onClose()'><div>&times;</div></button>
+    </div>
+    <!--    <bars-modal-bar [title]="'Export control certification'" [actions]="barActions" (actionEmitter)="onAction($event)"></bars-modal-bar>-->
+
+    <div class="modal-view-body" >
+      <div class="dialog-page">
+        <div class="dialog">
+          <app-dashboard-searchbox (keywords)="onKeywordsSearch($event)"/>
+          <div class="dialog-items">
+            <h2>{{'dashboardPage.territoriesTitle' | translate}}</h2>
+            <div class="items">
+              <ul>
+                <li *ngFor="let item of items | DialogFilter: keywords"
+                    (click)="onItemClicked(item.id)">
+                  <label>{{item.name}}</label>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

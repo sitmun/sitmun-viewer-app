@@ -1,14 +1,16 @@
 @use 'dimensions';
 @use 'colors';
 
-.dashboard-searchbox {
+form {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin: 30px 0 30px 0;
-  width: dimensions.$dashboard-page-input-width;
+  align-items: center;
+  background: white;
+  margin: 30px 0;
+  max-width: 400px;
   height: dimensions.$dashboard-page-input-height;
-  padding: 0 5px 0 15px;
+  padding: 0 15px;
   border: 3px solid #27187e;
   border-radius: 50px;
 
@@ -17,7 +19,6 @@
   }
 
   .text-input {
-    width: 370px;
     border-radius: 50px;
     font-size: 20px;
   }
@@ -41,8 +42,17 @@
     outline: none;
     box-shadow: none;
   }
+
+  button {
+    width: 50px;
+    height: 44px;
+    padding: 0;
+    background: white;
+    border: none;
+    cursor: pointer;
+  }
 }
 
-.dashboard-searchbox:hover {
+form:hover {
   border-color: #758BFD;
 }

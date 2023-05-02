@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ScriptService } from '@api/services/script.service';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-map',
@@ -8,8 +9,8 @@ import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstra
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent extends AbstractMapComponent {
-  constructor(scriptService: ScriptService) {
-    super(scriptService);
+  constructor(router: Router, scriptService: ScriptService) {
+    super(router, scriptService);
   }
 
   // ngOnInit(): void {

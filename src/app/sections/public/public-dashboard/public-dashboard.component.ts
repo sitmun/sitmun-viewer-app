@@ -1,100 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  ApplicationsResponse,
-  CommonService,
-  DashboardItem,
-  DashboardTypes
-} from '@api/services/common.service';
+import { CommonService } from '@api/services/common.service';
 import { Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { LoginComponent } from '@sections/authentication/login/login.component';
-import { TestModalComponent } from '@sections/common/modals/test-modal/test-modal.component';
-
-const territoriesList: DashboardItem[] = [
-  {
-    img: '',
-    id: 1,
-    title: 'Public Territory 1'
-  },
-  {
-    img: '',
-    id: 2,
-    title: 'Public Territory 2'
-  },
-  {
-    img: '',
-    id: 3,
-    title: 'Public Territory 3'
-  }
-];
+import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard/abstract-dashboard.component';
 
 @Component({
   selector: 'app-public-dashboard',
   templateUrl: './public-dashboard.component.html',
   styleUrls: ['./public-dashboard.component.scss']
 })
-export class PublicDashboardComponent implements OnInit {
-  type: DashboardTypes;
-  items: DashboardItem[];
-  id: number | undefined; // id of card clicked, necessary to individual resource request
-
+export class PublicDashboardComponent
+  extends AbstractDashboardComponent
+  implements OnInit
+{
   constructor(
-    private router: Router,
-    private commonService: CommonService,
-    protected modal: OpenModalService
+    router: Router,
+    commonService: CommonService,
+    modal: OpenModalService
   ) {
-    this.type = DashboardTypes.APPLICATIONS;
-    this.items = [];
+    super(router, commonService, modal);
   }
 
-  ngOnInit() {
-    this.searchDashboardItems(DashboardTypes.APPLICATIONS);
-  }
-
-  searchDashboardItems(type: DashboardTypes, keywords?: string) {
-    this.commonService
-      .fetchResources(type, keywords)
-      .subscribe((res: ApplicationsResponse) => {
-        this.items = res.content;
-      });
-  }
-
-  /* temporally while territory's path is not implemented */
-  fetchTerritories() {
-    this.items = [...territoriesList];
-  }
-  /**/
-
-  onTypeChange(type: DashboardTypes) {
-    if (type === DashboardTypes.APPLICATIONS) {
-      this.type = DashboardTypes.APPLICATIONS;
-    } else {
-      this.type = DashboardTypes.TERRITORIES;
-      /* temporally while territory's path is not implemented */
-      this.fetchTerritories();
-      return;
-      /**/
-    }
-    this.searchDashboardItems(this.type);
-  }
-
-  onCardClicked(id: number) {
-    this.id = id;
-    this.router.navigateByUrl('/public/map');
-  }
-
-  onKeywordsSearch(keywords: string) {
-    /* temporally while territory's path is not implemented */
-    // if (this.type === DashboardTypes.TERRITORIES) {
-    //   this.fetchTerritories();
-    //   return;
-    // }
-    // /**/
-    // this.searchDashboardItems(this.type, keywords);
-
-    const ref = this.modal.open(TestModalComponent, { data: { model: {} } });
-    ref.afterClosed.subscribe((result) => {
-      console.log('closed');
+  override navigateToMap(applicationId?: number, territoryId?: number) {
+    this.router.navigateByUrl('/public/map', {
+      state: { applicationId: applicationId, territoryId: territoryId }
     });
   }
 }

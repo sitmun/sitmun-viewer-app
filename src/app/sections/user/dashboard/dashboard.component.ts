@@ -1,30 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  ApplicationsResponse,
-  CommonService,
-  DashboardItem,
-  DashboardTypes
-} from '@api/services/common.service';
-import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard.component';
+import { CommonService } from '@api/services/common.service';
+import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard/abstract-dashboard.component';
 import { Router } from '@angular/router';
-
-const territoriesList: DashboardItem[] = [
-  {
-    img: '',
-    id: 1,
-    title: 'Territory 1'
-  },
-  {
-    img: '',
-    id: 2,
-    title: 'Territory 2'
-  },
-  {
-    img: '',
-    id: 3,
-    title: 'Territory 3'
-  }
-];
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -35,59 +13,17 @@ export class DashboardComponent
   extends AbstractDashboardComponent
   implements OnInit
 {
-  type: DashboardTypes;
-  items: DashboardItem[];
-  id: number | undefined; // id of card clicked, necessary to individual resource request
-
-  constructor(private router: Router, private commonService: CommonService) {
-    super();
-    this.type = DashboardTypes.APPLICATIONS;
-    this.items = [];
+  constructor(
+    router: Router,
+    commonService: CommonService,
+    modal: OpenModalService
+  ) {
+    super(router, commonService, modal);
   }
 
-  ngOnInit() {
-    this.searchDashboardItems(DashboardTypes.APPLICATIONS);
-  }
-
-  searchDashboardItems(type: DashboardTypes, keywords?: string) {
-    this.commonService
-      .fetchResources(type, keywords)
-      .subscribe((res: ApplicationsResponse) => {
-        this.items = res.content;
-      });
-  }
-
-  /* temporally while territory's path is not implemented */
-  fetchTerritories() {
-    this.items = [...territoriesList];
-  }
-  /**/
-
-  onTypeChange(type: DashboardTypes) {
-    if (type === DashboardTypes.APPLICATIONS) {
-      this.type = DashboardTypes.APPLICATIONS;
-    } else {
-      this.type = DashboardTypes.TERRITORIES;
-      /* temporally while territory's path is not implemented */
-      this.fetchTerritories();
-      return;
-      /**/
-    }
-    this.searchDashboardItems(this.type);
-  }
-
-  onCardClicked(id: number) {
-    this.id = id;
-    this.router.navigateByUrl('/public/map');
-  }
-
-  onKeywordsSearch(keywords: string) {
-    /* temporally while territory's path is not implemented */
-    if (this.type === DashboardTypes.TERRITORIES) {
-      this.fetchTerritories();
-      return;
-    }
-    /**/
-    this.searchDashboardItems(this.type, keywords);
+  override navigateToMap(applicationId?: number, territoryId?: number) {
+    this.router.navigateByUrl('/user/map', {
+      state: { applicationId: applicationId, territoryId: territoryId }
+    });
   }
 }

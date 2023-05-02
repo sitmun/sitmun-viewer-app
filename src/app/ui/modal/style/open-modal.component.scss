@@ -32,7 +32,7 @@
       //}
       .modal-view-body {
         overflow-x: hidden;
-        overflow-y: auto;
+        overflow-y: hidden;
         max-height: dimensions.$modal-body-max-height;
         @include mixins.horizontal-padding(dimensions.$modal-body-padding);
         padding-top: round(dimensions.$modal-body-padding * 0.5);

@@ -1,10 +1,25 @@
 import { Directive, OnInit } from '@angular/core';
 import { ScriptService } from '@api/services/script.service';
+import { Router } from '@angular/router';
 
 declare const SITNA: any;
 @Directive()
 export abstract class AbstractMapComponent implements OnInit {
-  constructor(protected scriptService: ScriptService) {}
+  applicationId: number | undefined;
+  territoryId: number | undefined;
+
+  protected constructor(
+    protected router: Router,
+    protected scriptService: ScriptService
+  ) {
+    const params = this.router.getCurrentNavigation()?.extras.state;
+    if (params) {
+      this.applicationId = params['applicationId'];
+      this.territoryId = params['territoryId'];
+      console.log('App ' + this.applicationId);
+      console.log('Territory ' + this.territoryId);
+    }
+  }
 
   ngOnInit(): void {
     this.scriptService

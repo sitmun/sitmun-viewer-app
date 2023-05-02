@@ -13,7 +13,11 @@ export class DashboardSearchboxComponent {
     this.input = '';
   }
 
-  onSearch() {
+  onKeywordsChange(keywords: string) {
+    this.input = keywords;
+  }
+
+  handleSubmit() {
     this.keywords.emit(this.input);
   }
 }

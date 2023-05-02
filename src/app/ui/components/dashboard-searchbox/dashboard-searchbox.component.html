@@ -1,4 +1,7 @@
-<div class="dashboard-searchbox">
-  <input class="text-input" type="text" placeholder="Búsqueda" [(ngModel)]="input"/>
-  <input class="img-input" type="image" src="assets/img/search.svg" (click)="onSearch()"/>
-</div>
+<form (submit)="handleSubmit()">
+  <input class="text-input" type="text" placeholder="{{'dashboardDialog.inputPlaceholder' | translate}}"
+         #keywords (keyup)="onKeywordsChange(keywords.value)"/>
+  <button type="submit">
+    <img src="assets/img/search.svg" alt="Search"/>
+  </button>
+</form>
