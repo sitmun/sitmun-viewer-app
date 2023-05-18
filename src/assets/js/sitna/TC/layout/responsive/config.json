@@ -1,52 +1,32 @@
 {
   "i18n": true,
   "controls": {
-    "controlContainer": {
-      "div": "ccontainer",
-      "controls": [
+    "multiFeatureInfo": {
+      "multiFeatureInfo": true,
+      "active": true
+    },
+    "layerCatalog": {
+      "layerCatalog": true,
+      "enableSearch": true,
+      "div": "layercatalog",
+      "layers": [
         {
-          "position": "left",
-          "navBar": {
-            "home": false
-          }
+          "id": "idena",
+          "title": "IDENA",
+          "hideTitle": true,
+          "type": "SITNA.Consts.layerType.WMS",
+          "url": "//idena.navarra.es/ogc/wms",
+          "hideTree": false
         },
         {
-          "position": "left",
-          "navBarHome": true
-        },
-        {
-          "position": "left",
-          "streetView": true
-        },
-        {
-          "position": "right",
-          "scaleBar": true
+          "id": "sismica",
+          "title": "Información sísmica y volcánica",
+          "type": "SITNA.Consts.layerType.WMS",
+          "url": "//www.ign.es/wms-inspire/geofisica",
+          "layerNames": ["Ultimos10dias", "Ultimos30dias", "Ultimos365dias"],
+          "hideTree": false
         }
       ]
-    },
-    "basemapSelector": {
-      "div": "bms"
-    },
-    "workLayerManager": {
-      "div": "toc"
-    },
-    "legend": {
-      "div": "legend"
-    },
-    "coordinates": {
-      "div": "coordinates"
-    },
-    "search": {
-      "div": "search"
-    },
-    "measure": {
-      "div": "measure"
-    },
-    "overviewMap": {
-      "div": "ovmap",
-      "layer": "mapabase"
-    },
-    "popup": true,
-    "attribution": true
+    }
   }
 }
