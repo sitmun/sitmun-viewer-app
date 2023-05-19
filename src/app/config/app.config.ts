@@ -12,12 +12,17 @@ export const NavigationPath = {
   },
   Section: {
     User: {
+      Base: '/user',
       Dashboard: '/user/dashboard',
+      Map: (applicationId: number, territoryId: number) =>
+        `/user/map/${applicationId}/${territoryId}`,
       Help: '/user/help'
     },
     Public: {
       Base: '/public',
-      Dashboard: '/public/dashboard'
+      Dashboard: '/public/dashboard',
+      Map: (applicationId: number, territoryId: number) =>
+        `/public/map/${applicationId}/${territoryId}`
     }
   }
 };

@@ -1,9 +1,29 @@
 @use 'colors';
 
-.map-container {
-  position: absolute;
-  height: calc(100% - 80px);
-  width: 100%;
+.public-map {
+  display: flex;
+  flex-direction: column;
+
+  .public-map-options {
+    display: flex;
+    justify-content: right;
+    position: relative;
+    bottom: 58px;
+    margin-right: 185px;
+
+    button {
+      height: 35px;
+      width: 80px;
+      margin: 0 10px;
+      background: white;
+    }
+  }
+
+  .map-container {
+    position: absolute;
+    height: calc(100% - 80px);
+    width: 100%;
+  }
 }
 
 

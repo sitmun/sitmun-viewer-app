@@ -1,0 +1,81 @@
+@use 'colors';
+@use 'dimensions';
+
+.container {
+
+  margin: dimensions.$base-margin-8 0 dimensions.$base-margin-5 0;
+
+  .title {
+    color: colors.$common-color-font-secondary;
+    display: flex;
+    flex-direction: row;
+    h1 {
+      width: 50%;
+    }
+    div {
+      width: 50%;
+      align-self: center;
+      text-align: right;
+
+      button {
+        width: dimensions.$login-page-button-width;
+        height: dimensions.$login-page-button-height;
+        color: colors.$common-color-font-button;
+        background: colors.$login-page-button-public-background;
+        border-radius: dimensions.$login-page-button-radius;
+        font-weight: bold;
+        border: none;
+      }
+      button:hover {
+        background: colors.$login-page-button-public-hover;
+      }
+
+    }
+  }
+
+  .form {
+
+    form {
+
+      display: flex;
+      flex-flow: column;
+
+      input {
+        margin: dimensions.$base-margin-1-5 0;
+        height: dimensions.$login-page-input-height;
+        padding: 0 dimensions.$base-margin-6;
+        border-radius: dimensions.$login-page-input-radius;
+        outline: 0;
+        border: dimensions.$base-border solid colors.$common-color-border-input;
+      }
+
+      input,
+      input::placeholder {
+        font: dimensions.$login-page-input-font-size sans-serif;
+        color: colors.$login-page-input-font;
+      }
+
+      input:focus-visible {
+        border: dimensions.$base-border-2 solid colors.$login-page-input-focus;
+      }
+
+      button {
+        align-self: center;
+        font-size: dimensions.$login-page-button-font;
+        color: colors.$login-page-button-font;
+        background: colors.$login-page-button-login-background;
+        font-weight: bold;
+        margin: dimensions.$base-margin-2 0;
+        width: dimensions.$login-page-button-width;
+        height: dimensions.$login-page-input-height;
+        border-radius: dimensions.$login-page-button-radius;
+        border: none;
+      }
+
+      button:hover {
+        background: colors.$login-page-button-login-hover;
+      }
+    }
+  }
+
+}

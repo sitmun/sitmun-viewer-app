@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
-import { ScriptService } from '@api/services/script.service';
+import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonService } from '@api/services/common.service';
+import { NavigationPath } from '@config/app.config';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'app-map',
@@ -9,8 +12,22 @@ import { Router } from '@angular/router';
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent extends AbstractMapComponent {
-  constructor(router: Router, scriptService: ScriptService) {
-    super(router, scriptService);
+  constructor(
+    route: ActivatedRoute,
+    router: Router,
+    commonService: CommonService,
+    modal: OpenModalService,
+    renderer: Renderer2,
+    el: ElementRef,
+    @Inject(DOCUMENT) document: Document
+  ) {
+    super(route, router, commonService, modal, renderer, el, document);
+  }
+
+  override navigateToMap(applicationId: number, territoryId: number) {
+    this.router.navigateByUrl(
+      NavigationPath.Section.User.Map(applicationId, territoryId)
+    );
   }
 
   // ngOnInit(): void {

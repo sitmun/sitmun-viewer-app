@@ -3,6 +3,7 @@ import { CommonService } from '@api/services/common.service';
 import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard/abstract-dashboard.component';
 import { Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { NavigationPath } from '@config/app.config';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,9 +22,9 @@ export class DashboardComponent
     super(router, commonService, modal);
   }
 
-  override navigateToMap(applicationId?: number, territoryId?: number) {
-    this.router.navigateByUrl('/user/map', {
-      state: { applicationId: applicationId, territoryId: territoryId }
-    });
+  override navigateToMap(applicationId: number, territoryId: number) {
+    this.router.navigateByUrl(
+      NavigationPath.Section.User.Map(applicationId, territoryId)
+    );
   }
 }

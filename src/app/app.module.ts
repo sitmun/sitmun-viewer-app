@@ -21,6 +21,8 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TestModalComponent } from '@sections/common/modals/test-modal/test-modal.component';
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
+import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,8 @@ import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal
     PublicLayoutComponent,
     FooterComponent,
     TestModalComponent,
-    DashboardModalComponent
+    DashboardModalComponent,
+    LoginModalComponent
   ],
   imports: [
     BrowserModule,
@@ -45,7 +48,8 @@ import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal
         useFactory: HttpLoaderFactory,
         deps: [HttpClient]
       }
-    })
+    }),
+    FormsModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

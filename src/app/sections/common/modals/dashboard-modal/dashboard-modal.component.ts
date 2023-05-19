@@ -46,19 +46,16 @@ export class DashboardModalComponent extends BaseModal {
   onKeywordsSearch(keywords: string) {
     this.keywords = keywords;
     let response;
-    switch (this.type) {
-      case DashboardTypes.APPLICATIONS:
-        response = this.commonService.fetchTerritoriesByApplication(
-          this.id,
-          keywords
-        );
-        break;
-      case DashboardTypes.TERRITORIES:
-        response = this.commonService.fetchApplicationsByTerritory(
-          this.id,
-          keywords
-        );
-        break;
+    if (this.type === DashboardTypes.APPLICATIONS) {
+      response = this.commonService.fetchTerritoriesByApplication(
+        this.id,
+        keywords
+      );
+    } else if (this.type === DashboardTypes.TERRITORIES) {
+      response = this.commonService.fetchApplicationsByTerritory(
+        this.id,
+        keywords
+      );
     }
     response?.subscribe(
       (items: Array<ApplicationDto> | Array<TerritoryDto>) => {
@@ -70,19 +67,18 @@ export class DashboardModalComponent extends BaseModal {
   onItemClicked(id: number) {
     let applicationId;
     let territoryId;
-    switch (this.type) {
-      case DashboardTypes.APPLICATIONS:
-        applicationId = this.id;
-        territoryId = id;
-        break;
-      case DashboardTypes.TERRITORIES:
-        applicationId = id;
-        territoryId = this.id;
-        break;
+    if (this.type === DashboardTypes.APPLICATIONS) {
+      applicationId = this.id;
+      territoryId = id;
+    } else if (this.type === DashboardTypes.TERRITORIES) {
+      applicationId = id;
+      territoryId = this.id;
     }
     this.modalRef.close({
       applicationId: applicationId,
       territoryId: territoryId
     });
   }
+
+  protected readonly DashboardTypes = DashboardTypes;
 }

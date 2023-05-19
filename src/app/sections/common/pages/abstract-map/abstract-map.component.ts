@@ -1,8 +1,20 @@
-import { Directive, OnInit } from '@angular/core';
-import { ScriptService } from '@api/services/script.service';
-import { Router } from '@angular/router';
+import {
+  Directive,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  Renderer2
+} from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ApplicationDto,
+  CommonService,
+  DashboardTypes,
+  TerritoryDto
+} from '@api/services/common.service';
+import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg } from '@api/model/app-cfg';
-import { SitnaControlsHelper } from '@ui/util/sitna-helpers';
 
 declare const SITNA: any;
 
@@ -194,62 +206,282 @@ const apiConfigSitmun: AppCfg = {
 };
 
 @Directive()
-export abstract class AbstractMapComponent implements OnInit {
-  applicationId: number | undefined;
-  territoryId: number | undefined;
+export abstract class AbstractMapComponent implements OnInit, OnDestroy {
+  applicationId!: number;
+  territoryId!: number;
 
   protected constructor(
+    protected route: ActivatedRoute,
     protected router: Router,
-    protected scriptService: ScriptService
+    protected commonService: CommonService,
+    protected modal: OpenModalService,
+    private renderer: Renderer2,
+    private el: ElementRef,
+    private document: Document
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe((params) => {
+      console.log('data', params);
+      this.applicationId = Number(params['applicationId']);
+      this.territoryId = Number(params['territoryId']);
+
+      this.loadMap();
+    });
+  }
+
+  ngOnDestroy() {
+    this.clearMap();
+  }
+
+  abstract navigateToMap(applicationId: number, territoryId: number): any;
+
+  openModal(
+    id: number,
+    type: DashboardTypes,
+    items: Array<ApplicationDto> | Array<TerritoryDto>
   ) {
-    const params = this.router.getCurrentNavigation()?.extras.state;
-    if (params) {
-      this.applicationId = params['applicationId'];
-      this.territoryId = params['territoryId'];
-      console.log('App ' + this.applicationId);
-      console.log('Territory ' + this.territoryId);
+    const ref = this.modal.open(DashboardModalComponent, {
+      data: { id: id, type: type, items: items }
+    });
+    ref.afterClosed.subscribe(({ applicationId, territoryId }) => {
+      this.clearMap();
+      this.navigateToMap(applicationId, territoryId);
+    });
+  }
+
+  changeApplication() {
+    const response = this.commonService.fetchApplicationsByTerritory(
+      this.territoryId
+    );
+    response?.subscribe((applications: Array<ApplicationDto>) => {
+      if (applications.length) {
+        if (applications.length === 1) {
+          this.applicationId = applications[0].id;
+          this.navigateToMap(this.applicationId, this.territoryId);
+        } else {
+          this.openModal(
+            this.territoryId,
+            DashboardTypes.TERRITORIES,
+            applications
+          );
+        }
+      }
+    });
+  }
+
+  changeTerritory() {
+    const response = this.commonService.fetchTerritoriesByApplication(
+      this.applicationId
+    );
+    response?.subscribe((territories: Array<TerritoryDto>) => {
+      if (territories.length) {
+        if (territories.length === 1) {
+          this.territoryId = territories[0].id;
+          this.navigateToMap(this.applicationId, this.territoryId);
+        } else {
+          this.openModal(
+            this.applicationId,
+            DashboardTypes.APPLICATIONS,
+            territories
+          );
+        }
+      }
+    });
+  }
+
+  removeSitnaDiv(className: string) {
+    console.log(`.${className}`);
+    const body = this.document.body;
+    const div = body.querySelector(`.${className}`);
+    if (div) {
+      const father = div.parentNode;
+      if (father) {
+        this.renderer.removeChild(body, father);
+      }
     }
   }
 
-  ngOnInit(): void {
-    this.scriptService
-      .load('sitna')
-      .then(() => {
-        SITNA.Cfg.crs = SitnaControlsHelper.toCrs(apiConfigSitmun).crs;
-        SITNA.Cfg.initialExtent =
-          SitnaControlsHelper.toInitialExtent(apiConfigSitmun).initialExtent;
-        SITNA.Cfg.proxy = 'proxy/proxy.ashx?';
-        SITNA.Cfg.mouseWheelZoom = false;
-        SITNA.Cfg.baseLayers =
-          SitnaControlsHelper.toBaseLayers(apiConfigSitmun).baseLayers;
-        SITNA.Cfg.workLayers =
-          SitnaControlsHelper.toWorkLayers(apiConfigSitmun);
-        SITNA.Cfg.controls = SitnaControlsHelper.toControls(apiConfigSitmun);
-        SITNA.Cfg.views = {
-          threeD: {
-            div: 'vista3d' // Indicamos el identificador del DIV en el marcado en el cual cargar la vista 3D.
-          }
-        };
-        // Añadimos el control 3D.
-        SITNA.Cfg.controls.threeD = true;
-        SITNA.Cfg.layout = {
-          config: '/assets/js/sitna/TC/layout/responsive/config.json',
-          markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
-          style: '/assets/sitna.css',
-          script: '/assets/js/sitna/TC/layout/responsive/script.js',
-          i18n: '/assets/js/sitna/TC/layout/responsive/resources'
-        };
+  clearMap() {
+    // Map container
+    const mapFather = this.el.nativeElement.querySelector('.map-container');
+    const map = this.el.nativeElement.querySelector('#mapa');
+    const overview = this.el.nativeElement.querySelector(
+      '.tc-ctl-sv-view.tc-hidden'
+    );
+    if (map) {
+      this.renderer.removeChild(mapFather, map);
+    }
+    if (overview) {
+      this.renderer.removeChild(mapFather, overview);
+    }
 
-        // SITNA.Cfg.layout = {
-        //   config: '/assets/IDEMenorca/config.json',
-        //   markup: '/assets/IDEMenorca/markup.html',
-        //   style: '/assets/IDEMenorca/style.css',
-        //   script: '/assets/IDEMenorca//script.js',
-        //   i18n: '/assets/IDEMenorca//resources'
-        // };
+    const div = this.renderer.createElement('div');
+    this.renderer.setAttribute(div, 'id', 'mapa');
+    this.renderer.appendChild(mapFather, div);
 
-        new SITNA.Map('mapa');
-      })
-      .catch((error) => console.error(error));
+    // Body
+    this.removeSitnaDiv('tc-ctl-finfo-dialog');
+    this.removeSitnaDiv('tc-ctl-finfo-dialog');
+    this.removeSitnaDiv('tc-ctl-bms-more-dialog');
+    this.removeSitnaDiv('tc-ctl-lcat-crs-dialog');
+    this.removeSitnaDiv('tc-ctl-coords-crs-dialog');
+    this.removeSitnaDiv('tc-ctl-search-dialog');
+    this.removeSitnaDiv('tc-ctl-finfo-dialog');
+    this.removeSitnaDiv('tc-ctl-ftools-dialog');
+    this.removeSitnaDiv('tc-ctl-share-qr-dialog');
+    this.removeSitnaDiv('tc-ctl-search-dialog');
+  }
+
+  loadMap() {
+    let initialExtent: number[];
+    if (this.territoryId === 10) {
+      // Galicia
+      initialExtent = [-610681, 4681188, -160633, 4908516];
+    } else {
+      // Cataluña
+      initialExtent = [
+        243214.346608211, 4606384.0094297, 574809.60903833, 4650833.9854267
+      ];
+    }
+
+    // const father = this.el.nativeElement.querySelector('.map-container');
+    // const mapa = this.el.nativeElement.querySelector('#mapa');
+    // const overview = this.el.nativeElement.querySelector(
+    //   '.tc-ctl-sv-view tc-hidden'
+    // );
+    // if (mapa) {
+    //   this.renderer.removeChild(father, mapa);
+    // }
+    // if (overview) {
+    //   this.renderer.removeChild(father, overview);
+    // }
+    //
+    // const div = this.renderer.createElement('div');
+    // this.renderer.setAttribute(div, 'id', 'mapa');
+    // this.renderer.appendChild(father, div);
+
+    // SITNA.Cfg.crs = 'EPSG:25831';
+    // SITNA.Cfg.initialExtent = initialExtent;
+    // // SITNA.Cfg.maxExtent = [];
+    // SITNA.Cfg.controls.attribution = true;
+    // // SITNA.Cfg.baseLayers = [];
+    // // SITNA.Cfg.baseLayers.push({
+    // //   id: 'PNOA',
+    // //   url: 'https://www.ign.es/wms-inspire/pnoa-ma',
+    // //   layerNames: 'OI.OrthoimageCoverage',
+    // //   isBase: true,
+    // //   thumbnail: '/assets/js/sitna/TC/css/img/thumb-orthophoto_pnoa.jpg',
+    // //   overviewMapLayer: {
+    // //     id: 'pnoa_ov',
+    // //     type: SITNA.Consts.layerType.WMS,
+    // //     url: 'https://www.ign.es/wms-inspire/pnoa-ma',
+    // //     layerNames: 'OI.OrthoimageCoverage'
+    // //   }
+    // // });
+    // SITNA.Cfg.workLayers = [];
+    // SITNA.Cfg.workLayers.push({
+    //   id: 'MUN',
+    //   title: 'Límites administrativos',
+    //   url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
+    //   layerNames: ['DTE50_MUN', 'DTE50_PROV']
+    // });
+    //
+    // SITNA.Cfg.layout = {
+    //   config: '/assets/js/sitna/TC/layout/responsive/config.json',
+    //   markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
+    //   style: '/assets/sitna.css',
+    //   script: '/assets/js/sitna/TC/layout/responsive/script.js',
+    //   i18n: '/assets/js/sitna/TC/layout/responsive/resources'
+    // };
+    //
+    // SITNA.Cfg.controls.layerCatalog = {
+    //   div: 'catalog',
+    //   enableSearch: true,
+    //   layers: [
+    //     {
+    //       id: 'dte50',
+    //       title: 'Delimitacions Barcelona',
+    //       hideTitle: false,
+    //       type: SITNA.Consts.layerType.WMS,
+    //       url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WMSServer',
+    //       hideTree: false,
+    //       format: ''
+    //     }
+    //   ]
+    // };
+
+    // SITNA.Cfg.baseLayers = [
+    //   {
+    //     id: 'icgc_orto',
+    //     url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
+    //     layerNames: 'orto',
+    //     type: 'WMTS',
+    //     title: 'WMTS Bases - ICGC - Orto',
+    //     format: 'image/png',
+    //     matrixSet: 'UTM25831',
+    //     thumbnail:
+    //       'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/orto/UTM25831/1/0/1.png',
+    //     isBase: true
+    //   },
+    //   {
+    //     id: 'icgc_topo',
+    //     url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
+    //     layerNames: 'topo',
+    //     type: 'WMTS',
+    //     title: 'WMTS Bases - ICGC- Topo',
+    //     format: 'image/jpeg',
+    //     matrixSet: 'UTM25831',
+    //     thumbnail:
+    //       'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/topo/UTM25831/1/0/1.jpeg',
+    //     isBase: true
+    //   }
+    // ];
+
+    // SITNA.Cfg.layout = {
+    //   config: '/assets/IDEMenorca/config.json',
+    //   markup: '/assets/IDEMenorca/markup.html',
+    //   style: '/assets/IDEMenorca/style.css',
+    //   script: '/assets/IDEMenorca//script.js',
+    //   i18n: '/assets/IDEMenorca//resources'
+    // };
+
+    new SITNA.Map('mapa', {
+      crs: 'EPSG:25831',
+      initialExtent: initialExtent,
+      layout: {
+        config: '/assets/js/sitna/TC/layout/responsive/config.json',
+        markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
+        style: '/assets/sitna.css',
+        script: '/assets/js/sitna/TC/layout/responsive/script.js',
+        i18n: '/assets/js/sitna/TC/layout/responsive/resources'
+      },
+      workLayers: [
+        {
+          id: 'MUN',
+          title: 'Límites administrativos',
+          url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
+          layerNames: ['DTE50_MUN', 'DTE50_PROV']
+        }
+      ],
+      controls: {
+        attribution: true,
+        layerCatalog: {
+          div: 'catalog',
+          enableSearch: true,
+          layers: [
+            {
+              id: 'dte50',
+              title: 'Delimitacions Barcelona',
+              hideTitle: false,
+              type: SITNA.Consts.layerType.WMS,
+              url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WMSServer',
+              hideTree: false,
+              format: ''
+            }
+          ]
+        }
+      }
+    });
   }
 }

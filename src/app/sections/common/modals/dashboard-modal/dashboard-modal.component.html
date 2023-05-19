@@ -12,7 +12,12 @@
         <div class="dialog">
           <app-dashboard-searchbox (keywords)="onKeywordsSearch($event)"/>
           <div class="dialog-items">
-            <h2>{{'dashboardPage.territoriesTitle' | translate}}</h2>
+            <ng-container *ngIf="type === DashboardTypes.APPLICATIONS else applicationsTitle">
+              <h2>{{'dashboardPage.territoriesTitle' | translate}}</h2>
+            </ng-container>
+            <ng-template #applicationsTitle>
+              <h2>{{'dashboardPage.applicationsTitle' | translate}}</h2>
+            </ng-template>
             <div class="items">
               <ul>
                 <li *ngFor="let item of items | DialogFilter: keywords"

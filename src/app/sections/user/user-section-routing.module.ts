@@ -7,7 +7,7 @@ import { MapComponent } from '@sections/user/map/map.component';
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
-  { path: 'map', component: MapComponent }
+  { path: 'map/:applicationId/:territoryId', component: MapComponent }
 ];
 
 @NgModule({

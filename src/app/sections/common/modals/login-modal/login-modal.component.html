@@ -1,0 +1,33 @@
+<div class="modal-view">
+  <div class="background"></div>
+  <div class="content">
+
+    <div class="modal-view-header">
+      <button (click)='onClose()'><div>&times;</div></button>
+    </div>
+    <!--    <bars-modal-bar [title]="'Export control certification'" [actions]="barActions" (actionEmitter)="onAction($event)"></bars-modal-bar>-->
+
+    <div class="modal-view-body" >
+      <div class="container">
+        <div class="title">
+          <h1>{{'loginPage.title' | translate | uppercase}}</h1>
+        </div>
+        <div class="form">
+          <form (submit)="login()">
+            <input
+              type="text"
+              placeholder="{{'loginPage.usernamePlaceholder' | translate}}"
+              name="username"
+              [(ngModel)]="authenticationRequest.username" />
+            <input
+              type="password"
+              placeholder="{{'loginPage.passwordPlaceholder' | translate}}"
+              name="password"
+              [(ngModel)]="authenticationRequest.password" />
+            <button>{{'loginPage.submit' | translate | uppercase}}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -16,15 +16,12 @@ export class DashboardButtonsComponent {
     this.type.emit(DashboardTypes.APPLICATIONS);
   }
   onClick(type: DashboardTypes) {
-    switch (type) {
-      case DashboardTypes.APPLICATIONS:
-        this.applicationSelected = true;
-        this.territoriesSelected = false;
-        break;
-      case DashboardTypes.TERRITORIES:
-        this.territoriesSelected = true;
-        this.applicationSelected = false;
-        break;
+    if (type === DashboardTypes.APPLICATIONS) {
+      this.applicationSelected = true;
+      this.territoriesSelected = false;
+    } else if (type === DashboardTypes.TERRITORIES) {
+      this.territoriesSelected = true;
+      this.applicationSelected = false;
     }
     this.type.emit(type);
   }
