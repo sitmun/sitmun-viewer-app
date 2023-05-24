@@ -40,7 +40,7 @@ export interface SitnaWorkLayer {
   id?: string;
   title?: string;
   url?: string;
-  layerNames?: [string];
+  layerNames?: string[];
   matrixSet?: string;
   format?: string;
 }
@@ -54,7 +54,6 @@ export interface SitnaControls {
   dataLoader?: SitnaControlsDataLoader;
   download?: SitnaControlsDownload;
   drawMeasureModify?: SitnaControlsdrawMeasureModify;
-  featureInfo?: boolean;
   geolocation?: SitnaControlsGeolocation;
   legend: SitnaControlsLegend;
   loadingIndicator?: boolean;
@@ -68,6 +67,12 @@ export interface SitnaControls {
   search?: SitnaControlsSearch;
   share?: SitnaControlsShare;
   controlContainer?: SitnaControlsContainer;
+  layerCatalog?: SitnaControlsLayerCatalog;
+  multiFeatureInfo?: SitnaControlsMultiFeatureInfo;
+  threeD?: boolean;
+  featureInfo: SitnaControlsFeatureInfo;
+  WFSEdit?: SitnaControlsWFSEdit;
+  WFSQuery?: boolean;
 }
 
 export interface SitnaBaseMapSelector {
@@ -148,6 +153,31 @@ export interface SitnaWorkLayerManager {
 export interface SitnaControlsContainer {
   div: string;
   controls: [SitnaElementsContainer?];
+}
+
+export interface SitnaControlsLayerCatalog {
+  div: string;
+  enableSearch: boolean;
+  layers: SitnaWorkLayer[];
+}
+
+export interface SitnaControlsMultiFeatureInfo {
+  active: true;
+}
+
+export interface SitnaControlsFeatureInfo {
+  persistentHighlights: boolean;
+}
+
+export interface SitnaViews {
+  threeD?: SitnaThreeDView;
+}
+export interface SitnaThreeDView {
+  div: string;
+}
+
+export interface SitnaControlsWFSEdit {
+  div: string;
 }
 
 export interface SitnaElementsContainer {

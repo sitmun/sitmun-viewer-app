@@ -15,6 +15,7 @@ import {
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg } from '@api/model/app-cfg';
+import { SitnaControlsHelper } from '@ui/util/sitna-helpers';
 
 declare const SITNA: any;
 
@@ -131,12 +132,20 @@ const apiConfigSitmun: AppCfg = {
       'ui-control': 'drawMeasureModify'
     },
     {
+      id: 'task/8',
+      'ui-control': 'featureInfo'
+    },
+    {
       id: 'task/9',
       'ui-control': 'fullScreen'
     },
     {
       id: 'task/10',
       'ui-control': 'geolocation'
+    },
+    {
+      id: 'task/11',
+      'ui-control': 'layerCatalog'
     },
     {
       id: 'task/12',
@@ -149,6 +158,10 @@ const apiConfigSitmun: AppCfg = {
     {
       id: 'task/14',
       'ui-control': 'measure'
+    },
+    {
+      id: 'task/15',
+      'ui-control': 'multiFeatureInfo'
     },
     {
       id: 'task/16',
@@ -195,8 +208,20 @@ const apiConfigSitmun: AppCfg = {
       'ui-control': 'streetView'
     },
     {
+      id: 'task/27',
+      'ui-control': 'threed'
+    },
+    {
       id: 'task/28',
       'ui-control': 'TOC'
+    },
+    {
+      id: 'task/29',
+      'ui-control': 'WFSEdit'
+    },
+    {
+      id: 'task/30',
+      'ui-control': 'WFSQuery'
     },
     {
       id: 'task/31',
@@ -344,111 +369,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         243214.346608211, 4606384.0094297, 574809.60903833, 4650833.9854267
       ];
     }
-
-    // const father = this.el.nativeElement.querySelector('.map-container');
-    // const mapa = this.el.nativeElement.querySelector('#mapa');
-    // const overview = this.el.nativeElement.querySelector(
-    //   '.tc-ctl-sv-view tc-hidden'
-    // );
-    // if (mapa) {
-    //   this.renderer.removeChild(father, mapa);
-    // }
-    // if (overview) {
-    //   this.renderer.removeChild(father, overview);
-    // }
-    //
-    // const div = this.renderer.createElement('div');
-    // this.renderer.setAttribute(div, 'id', 'mapa');
-    // this.renderer.appendChild(father, div);
-
-    // SITNA.Cfg.crs = 'EPSG:25831';
-    // SITNA.Cfg.initialExtent = initialExtent;
-    // // SITNA.Cfg.maxExtent = [];
-    // SITNA.Cfg.controls.attribution = true;
-    // // SITNA.Cfg.baseLayers = [];
-    // // SITNA.Cfg.baseLayers.push({
-    // //   id: 'PNOA',
-    // //   url: 'https://www.ign.es/wms-inspire/pnoa-ma',
-    // //   layerNames: 'OI.OrthoimageCoverage',
-    // //   isBase: true,
-    // //   thumbnail: '/assets/js/sitna/TC/css/img/thumb-orthophoto_pnoa.jpg',
-    // //   overviewMapLayer: {
-    // //     id: 'pnoa_ov',
-    // //     type: SITNA.Consts.layerType.WMS,
-    // //     url: 'https://www.ign.es/wms-inspire/pnoa-ma',
-    // //     layerNames: 'OI.OrthoimageCoverage'
-    // //   }
-    // // });
-    // SITNA.Cfg.workLayers = [];
-    // SITNA.Cfg.workLayers.push({
-    //   id: 'MUN',
-    //   title: 'Límites administrativos',
-    //   url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
-    //   layerNames: ['DTE50_MUN', 'DTE50_PROV']
-    // });
-    //
-    // SITNA.Cfg.layout = {
-    //   config: '/assets/js/sitna/TC/layout/responsive/config.json',
-    //   markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
-    //   style: '/assets/sitna.css',
-    //   script: '/assets/js/sitna/TC/layout/responsive/script.js',
-    //   i18n: '/assets/js/sitna/TC/layout/responsive/resources'
-    // };
-    //
-    // SITNA.Cfg.controls.layerCatalog = {
-    //   div: 'catalog',
-    //   enableSearch: true,
-    //   layers: [
-    //     {
-    //       id: 'dte50',
-    //       title: 'Delimitacions Barcelona',
-    //       hideTitle: false,
-    //       type: SITNA.Consts.layerType.WMS,
-    //       url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WMSServer',
-    //       hideTree: false,
-    //       format: ''
-    //     }
-    //   ]
-    // };
-
-    // SITNA.Cfg.baseLayers = [
-    //   {
-    //     id: 'icgc_orto',
-    //     url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
-    //     layerNames: 'orto',
-    //     type: 'WMTS',
-    //     title: 'WMTS Bases - ICGC - Orto',
-    //     format: 'image/png',
-    //     matrixSet: 'UTM25831',
-    //     thumbnail:
-    //       'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/orto/UTM25831/1/0/1.png',
-    //     isBase: true
-    //   },
-    //   {
-    //     id: 'icgc_topo',
-    //     url: 'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/service ',
-    //     layerNames: 'topo',
-    //     type: 'WMTS',
-    //     title: 'WMTS Bases - ICGC- Topo',
-    //     format: 'image/jpeg',
-    //     matrixSet: 'UTM25831',
-    //     thumbnail:
-    //       'https://geoserveis.icgc.cat/icc_mapesmultibase/utm/wmts/topo/UTM25831/1/0/1.jpeg',
-    //     isBase: true
-    //   }
-    // ];
-
-    // SITNA.Cfg.layout = {
-    //   config: '/assets/IDEMenorca/config.json',
-    //   markup: '/assets/IDEMenorca/markup.html',
-    //   style: '/assets/IDEMenorca/style.css',
-    //   script: '/assets/IDEMenorca//script.js',
-    //   i18n: '/assets/IDEMenorca//resources'
-    // };
-
     new SITNA.Map('mapa', {
-      crs: 'EPSG:25831',
-      initialExtent: initialExtent,
+      crs: SitnaControlsHelper.toCrs(apiConfigSitmun).crs,
+      initialExtent:
+        this.territoryId === 10
+          ? initialExtent
+          : SitnaControlsHelper.toInitialExtent(apiConfigSitmun).initialExtent,
       layout: {
         config: '/assets/js/sitna/TC/layout/responsive/config.json',
         markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
@@ -456,32 +382,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         script: '/assets/js/sitna/TC/layout/responsive/script.js',
         i18n: '/assets/js/sitna/TC/layout/responsive/resources'
       },
-      workLayers: [
-        {
-          id: 'MUN',
-          title: 'Límites administrativos',
-          url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WmsServer',
-          layerNames: ['DTE50_MUN', 'DTE50_PROV']
-        }
-      ],
-      controls: {
-        attribution: true,
-        layerCatalog: {
-          div: 'catalog',
-          enableSearch: true,
-          layers: [
-            {
-              id: 'dte50',
-              title: 'Delimitacions Barcelona',
-              hideTitle: false,
-              type: SITNA.Consts.layerType.WMS,
-              url: 'https://sitmun.diba.cat/arcgis/services/PUBLIC/DTE50/MapServer/WMSServer',
-              hideTree: false,
-              format: ''
-            }
-          ]
-        }
-      }
+      baseLayers: SitnaControlsHelper.toBaseLayers(apiConfigSitmun).baseLayers,
+      //workLayers: SitnaControlsHelper.toWorkLayers(apiConfigSitmun),
+      controls: SitnaControlsHelper.toControls(apiConfigSitmun),
+      views: SitnaControlsHelper.toViews(apiConfigSitmun)
     });
   }
 }

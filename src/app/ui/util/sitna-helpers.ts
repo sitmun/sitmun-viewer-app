@@ -1,8 +1,11 @@
 import {
   SitnaBaseLayer,
   SitnaBaseLayers,
+  SitnaWorkLayers,
   SitnaControls,
-  SitnaInitialExtent
+  SitnaInitialExtent,
+  SitnaWorkLayer,
+  SitnaViews
 } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
 import { SitnaCrs } from '@api/model/sitna-cfg';
@@ -64,6 +67,22 @@ export class SitnaControlsHelper {
     return sitnaBaseLayers;
   }
   static toWorkLayers(apiConfig: AppCfg) {
+    const sitnaWorkLayers = { workLayers: [] } as SitnaWorkLayers;
+    for (let layer of apiConfig.layers) {
+      let a: SitnaWorkLayer = {
+        id: layer.id,
+        title: layer.title,
+        url: layer.service.url,
+        layerNames: layer.layers,
+        matrixSet: layer.service.parameters.matrixSet,
+        format: layer.service.parameters.format
+      };
+      sitnaWorkLayers.workLayers.push(a);
+    }
+    return sitnaWorkLayers;
+  }
+  /*
+  static toWorkLayers(apiConfig: AppCfg) {
     let sitnaWorkLayers;
     if (apiConfig.layers) {
       let variable = apiConfig.layers.map((layer) => {
@@ -80,6 +99,7 @@ export class SitnaControlsHelper {
     }
     return sitnaWorkLayers;
   }
+  */
   static toControls(apiConfig: AppCfg) {
     const sitnaControls = {} as SitnaControls;
     sitnaControls.controlContainer = {
@@ -252,6 +272,44 @@ export class SitnaControlsHelper {
         div: 'wlm'
       };
     }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'layerCatalog')) {
+      sitnaControls.layerCatalog = {
+        div: 'layercatalog',
+        enableSearch: true,
+        layers: SitnaControlsHelper.toWorkLayers(apiConfig).workLayers
+      };
+    }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'multiFeatureInfo')) {
+      sitnaControls.multiFeatureInfo = {
+        active: true
+      };
+    }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'threed')) {
+      sitnaControls.threeD = true;
+    }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'featureInfo')) {
+      sitnaControls.featureInfo = {
+        persistentHighlights: true
+      };
+    }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'WFSEdit')) {
+      sitnaControls.WFSEdit = {
+        div: 'wfsedit'
+      };
+    }
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'WFSQuery')) {
+      sitnaControls.WFSQuery = true;
+    }
     return sitnaControls;
+  }
+
+  static toViews(apiConfig: AppCfg) {
+    const sitnaViews = {} as SitnaViews;
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'threed')) {
+      sitnaViews.threeD = {
+        div: 'vista3d'
+      };
+    }
+    return sitnaViews;
   }
 }

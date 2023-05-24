@@ -1,32 +1,3 @@
 {
-  "i18n": true,
-  "controls": {
-    "multiFeatureInfo": {
-      "multiFeatureInfo": true,
-      "active": true
-    },
-    "layerCatalog": {
-      "layerCatalog": true,
-      "enableSearch": true,
-      "div": "layercatalog",
-      "layers": [
-        {
-          "id": "idena",
-          "title": "IDENA",
-          "hideTitle": true,
-          "type": "SITNA.Consts.layerType.WMS",
-          "url": "//idena.navarra.es/ogc/wms",
-          "hideTree": false
-        },
-        {
-          "id": "sismica",
-          "title": "Información sísmica y volcánica",
-          "type": "SITNA.Consts.layerType.WMS",
-          "url": "//www.ign.es/wms-inspire/geofisica",
-          "layerNames": ["Ultimos10dias", "Ultimos30dias", "Ultimos365dias"],
-          "hideTree": false
-        }
-      ]
-    }
-  }
+  "i18n": true
 }
