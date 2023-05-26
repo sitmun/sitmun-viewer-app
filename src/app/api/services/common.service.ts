@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { URL_API_APPLICATIONS, URL_API_TERRITORIES } from '@api/api-config';
 import { environment } from 'src/environments/environment';
 import { of } from 'rxjs';
+import {AppCfg} from "@api/model/app-cfg";
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',
@@ -153,6 +154,13 @@ export class CommonService {
     }
 
     return this.http.get<DashboardItemsResponse>(environment.apiUrl + path);
+  }
+
+  fetchMap(applicationId: number, territoryId: number) {
+    let path;
+    path = '/api/config/client/profile/' + applicationId + '/' + territoryId;
+
+    return this.http.get<AppCfg>(environment.apiUrl + path);
   }
 
   fetchTerritoriesByApplication(id: number, keywords?: string) {
