@@ -10,7 +10,7 @@ import {
 import { AuthenticationService } from './authentication.service';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { JwtHelperService } from '@auth0/angular-jwt';
+import jwt_decode from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -26,8 +26,8 @@ export class AuthenticationInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     if (this.authenticationService.isLoggedIn()) {
-      const helper = new JwtHelperService();
-      const isExpired = helper.isTokenExpired(
+      console.log(new Date().getTime() / 1000);
+      const decoded: any = jwt_decode(
         this.authenticationService.getLoggedToken()
       );
       req = req.clone({
@@ -36,7 +36,8 @@ export class AuthenticationInterceptor implements HttpInterceptor {
           `Bearer ${this.authenticationService.getLoggedToken()}`
         )
       });
-      if (isExpired) {
+      if (new Date().getTime() / 1000 > decoded.exp) {
+        console.log('ha inspirado');
         this.authenticationService.logout();
       }
     }
@@ -48,11 +49,10 @@ export class AuthenticationInterceptor implements HttpInterceptor {
             // const currentPath = this.router.url;
             // TODO mensaxe en paxina de login? Caducou a sua sesión volva a logearse?
             // TOOD redirect á url previa?
-            const helper = new JwtHelperService();
-            const isExpired = helper.isTokenExpired(
+            const decoded: any = jwt_decode(
               this.authenticationService.getLoggedToken()
             );
-            if (isExpired) {
+            if (new Date().getTime() / 1000 > decoded.exp) {
               this.authenticationService.logout();
             } else {
               this.router.navigateByUrl('/').then();

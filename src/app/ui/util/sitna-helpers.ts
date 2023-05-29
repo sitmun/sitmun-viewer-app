@@ -10,6 +10,39 @@ import {
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
 import { SitnaCrs } from '@api/model/sitna-cfg';
 
+enum SitnaControlsEnum {
+  Attribution = 'sitna.attribution',
+  BasemapSelector = 'sitna.basemapSelector',
+  Click = 'sitna.click',
+  Coordinates = 'sitna.coordinates',
+  DataLoader = 'sitna.dataLoader',
+  Download = 'sitna.download',
+  DrawMeasureModify = 'sitna.drawMeasureModify',
+  FullScreen = 'sitna.fullScreen',
+  Geolocation = 'sitna.geolocation',
+  Legend = 'sitna.legend',
+  LoadingIndicator = 'sitna.loadingIndicator',
+  Measure = 'sitna.measure',
+  NavBar = 'sitna.navBar',
+  OfflineMapMaker = 'sitna.offlineMapMaker',
+  OverviewMap = 'sitna.overviewMap',
+  PopUp = 'sitna.popup',
+  PrintMap = 'sitna.printMap',
+  Scale = 'sitna.scale',
+  ScaleBar = 'sitna.scaleBar',
+  ScaleSelector = 'sitna.scaleSelector',
+  Search = 'sitna.search',
+  Share = 'sitna.share',
+  StreetView = 'sitna.streetView',
+  TOC = 'sitna.TOC',
+  WorkLayerManager = 'sitna.workLayerManager',
+  LayerCatalog = 'sitna.layerCatalog',
+  MultiFeatureInfo = 'sitna.multiFeatureInfo',
+  ThreeD = 'sitna.threed',
+  FeatureInfo = 'sitna.featureInfo',
+  WFSEdit = 'sitna.WFSEdit',
+  WFSQuery = 'sitna.WFSQuery'
+}
 export class SitnaControlsHelper {
   static toCrs(apiConfig: AppCfg): SitnaCrs {
     const sitnaCrs = {} as SitnaCrs;
@@ -102,86 +135,154 @@ export class SitnaControlsHelper {
   */
   static toControls(apiConfig: AppCfg) {
     const sitnaControls = {} as SitnaControls;
+    const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
+      x['ui-control'].startsWith('sitna.')
+    );
     sitnaControls.controlContainer = {
       div: 'ccontainer',
       controls: []
     };
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'attribution')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Attribution
+      )
+    ) {
       sitnaControls.attribution = true;
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'basemapSelector')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.BasemapSelector
+      )
+    ) {
       sitnaControls.basemapSelector = {
         basemapSelector: true,
         div: 'bms'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'click')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Click
+      )
+    ) {
       sitnaControls.click = true;
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'coordinates')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Coordinates
+      )
+    ) {
       sitnaControls.coordinates = {
         coordinates: true,
         div: 'coordinates'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'dataLoader')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.DataLoader
+      )
+    ) {
       sitnaControls.dataLoader = {
         dataLoader: true,
         div: 'dataloader'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'dataLoader')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Download
+      )
+    ) {
       sitnaControls.download = {
         download: true,
         div: 'download'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'drawMeasureModify')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.DrawMeasureModify
+      )
+    ) {
       sitnaControls.drawMeasureModify = {
         drawMeasureModify: true,
         div: 'drawmeasuremodify'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'fullScreen')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.FullScreen
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'left',
         fullScreen: true
       });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'geolocation')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Geolocation
+      )
+    ) {
       sitnaControls.geolocation = {
         geolocation: true,
         div: 'share'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'legend')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Legend
+      )
+    ) {
       sitnaControls.legend = {
         legend: true,
         div: 'legend'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'loadingIndicator')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.LoadingIndicator
+      )
+    ) {
       sitnaControls.loadingIndicator = true;
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'measure')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Measure
+      )
+    ) {
       sitnaControls.measure = {
         measure: true,
         div: 'measure'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'navBar')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.NavBar
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'left',
         navBar: true
       });
+      sitnaControls.controlContainer.controls.push({
+        position: 'left',
+        navBarHome: true
+      });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'offlineMapMaker')) {
-      sitnaControls.offlineMapMaker = {
-        offlineMapMaker: true,
-        div: 'offlinemapmaker'
-      };
-    }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'overviewMap')) {
+    //TODO
+    // if (
+    //   sitnaControlsFilter.some(
+    //     (x) => x['ui-control'] === SitnaControlsEnum.OfflineMapMaker
+    //   )
+    // ) {
+    //   sitnaControls.offlineMapMaker = {
+    //     offlineMapMaker: true,
+    //     div: 'offlinemapmaker'
+    //   };
+    // }
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.OverviewMap
+      )
+    ) {
       if (apiConfig.application['situation-map']) {
         const group = apiConfig.groups.find(
           (elem) => elem.id === apiConfig.application['situation-map']
@@ -215,89 +316,152 @@ export class SitnaControlsHelper {
         };
       }
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'popup')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.PopUp
+      )
+    ) {
       sitnaControls.popup = true;
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'printMap')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.PrintMap
+      )
+    ) {
       sitnaControls.printMap = {
         printMap: true,
         div: 'print'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'scale')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Scale
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'right',
         scale: true
       });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'scaleBar')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.ScaleBar
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'right',
         scaleBar: true
       });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'scaleSelector')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.ScaleSelector
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'right',
         scaleSelector: true
       });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'search')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Search
+      )
+    ) {
       sitnaControls.search = {
         search: true,
         div: 'search'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'share')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Share
+      )
+    ) {
       sitnaControls.share = {
         share: true,
-        div: 'share'
+        div: 'shared'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'streetView')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.StreetView
+      )
+    ) {
       sitnaControls.controlContainer.controls.push({
         position: 'left',
         streetView: true
       });
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'TOC')) {
+    if (
+      sitnaControlsFilter.some((x) => x['ui-control'] === SitnaControlsEnum.TOC)
+    ) {
       sitnaControls.TOC = {
         TOC: true,
         div: 'toc'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'workLayerManager')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.WorkLayerManager
+      )
+    ) {
       sitnaControls.workLayerManager = {
         workLayerManager: true,
         div: 'wlm'
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'layerCatalog')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.LayerCatalog
+      )
+    ) {
       sitnaControls.layerCatalog = {
         div: 'layercatalog',
         enableSearch: true,
         layers: SitnaControlsHelper.toWorkLayers(apiConfig).workLayers
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'multiFeatureInfo')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.MultiFeatureInfo
+      )
+    ) {
       sitnaControls.multiFeatureInfo = {
         active: true
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'threed')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.ThreeD
+      )
+    ) {
       sitnaControls.threeD = true;
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'featureInfo')) {
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.FeatureInfo
+      )
+    ) {
       sitnaControls.featureInfo = {
         persistentHighlights: true
       };
     }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'WFSEdit')) {
-      sitnaControls.WFSEdit = {
-        div: 'wfsedit'
-      };
-    }
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'WFSQuery')) {
+    //TODO
+    // if (
+    //   sitnaControlsFilter.some(
+    //     (x) => x['ui-control'] === SitnaControlsEnum.WFSEdit
+    //   )
+    // ) {
+    //   sitnaControls.WFSEdit = {
+    //     div: 'wfsedit'
+    //   };
+    // }
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.WFSQuery
+      )
+    ) {
       sitnaControls.WFSQuery = true;
     }
     return sitnaControls;
@@ -305,7 +469,9 @@ export class SitnaControlsHelper {
 
   static toViews(apiConfig: AppCfg) {
     const sitnaViews = {} as SitnaViews;
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'threed')) {
+    if (
+      apiConfig.tasks.some((x) => x['ui-control'] === SitnaControlsEnum.ThreeD)
+    ) {
       sitnaViews.threeD = {
         div: 'vista3d'
       };
