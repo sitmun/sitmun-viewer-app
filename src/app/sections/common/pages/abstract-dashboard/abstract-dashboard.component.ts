@@ -15,109 +15,17 @@ const territoriesList: DashboardItem[] = [
   {
     img: '',
     id: 1,
-    title: 'Public Territory 1'
+    title: 'Territory 1'
   },
   {
     img: '',
     id: 2,
-    title: 'Public Territory 2'
+    title: 'Territory 2'
   },
   {
     img: '',
     id: 3,
-    title:
-      'Public Territory 3 Public Territory 3 Public Territory 3 Public Territory 3 Public Territory 3 Public Territory 3'
-  },
-  {
-    img: '',
-    id: 4,
-    title: 'Public Territory 4'
-  },
-  {
-    img: '',
-    id: 5,
-    title: 'Public Territory 5'
-  },
-  {
-    img: '',
-    id: 6,
-    title:
-      'Public Territory 6 Public Territory 6 Public Territory 6 Public Territory 6'
-  },
-  {
-    img: '',
-    id: 7,
-    title: 'Public Territory 7'
-  },
-  {
-    img: '',
-    id: 8,
-    title: 'Public Territory 8'
-  },
-  {
-    img: '',
-    id: 9,
-    title: 'Public Territory 9'
-  },
-  {
-    img: '',
-    id: 10,
-    title: 'Public Territory 10'
-  },
-  {
-    img: '',
-    id: 11,
-    title: 'Public Territory 11'
-  },
-  {
-    img: '',
-    id: 12,
-    title: 'Public Territory 12'
-  },
-  {
-    img: '',
-    id: 13,
-    title: 'Public Territory 13'
-  },
-  {
-    img: '',
-    id: 14,
-    title: 'Public Territory 14'
-  },
-  {
-    img: '',
-    id: 15,
-    title: 'Public Territory 15'
-  },
-  {
-    img: '',
-    id: 16,
-    title: 'Public Territory 16'
-  },
-  {
-    img: '',
-    id: 17,
-    title: 'Public Territory 17'
-  },
-  {
-    img: '',
-    id: 18,
-    title: 'Public Territory 18'
-  },
-  {
-    img: '',
-    id: 19,
-    title: 'Public Territory 19'
-  },
-  {
-    img: '',
-    id: 20,
-    title: 'Public Territory 20'
-  },
-  {
-    img: '',
-    id: 21,
-    title: 'Public Territory 21'
+    title: 'Territory 3'
   }
 ];
 

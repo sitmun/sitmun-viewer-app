@@ -1,14 +1,9 @@
 import {
   SitnaBaseLayer,
-  SitnaBaseLayers,
-  SitnaWorkLayers,
   SitnaControls,
-  SitnaInitialExtent,
-  SitnaWorkLayer,
   SitnaViews
 } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
-import { SitnaCrs } from '@api/model/sitna-cfg';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -43,28 +38,32 @@ enum SitnaControlsEnum {
   WFSEdit = 'sitna.WFSEdit',
   WFSQuery = 'sitna.WFSQuery'
 }
-export class SitnaControlsHelper {
-  static toCrs(apiConfig: AppCfg): SitnaCrs {
-    const sitnaCrs = {} as SitnaCrs;
+
+export class SitnaHelper {
+  static toCrs(apiConfig: AppCfg): string | undefined {
+    let crs;
     if (apiConfig.application?.srs) {
-      sitnaCrs.crs = apiConfig.application.srs;
+      crs = apiConfig.application.srs;
     }
-    return sitnaCrs;
-  }
-  static toInitialExtent(apiConfig: AppCfg): SitnaInitialExtent {
-    const sitnaInitialExtent = {} as SitnaInitialExtent;
-    if (apiConfig.territory.initialExtent) {
-      sitnaInitialExtent.initialExtent = apiConfig.territory.initialExtent;
-    }
-    return sitnaInitialExtent;
+    return crs;
   }
 
-  static toBaseLayers(apiConfig: AppCfg) {
-    const sitnaBaseLayers = { baseLayers: [] } as SitnaBaseLayers;
+  static toInitialExtent(
+    apiConfig: AppCfg
+  ): [number, number, number, number] | undefined {
+    let initialExtent;
+    if (apiConfig.territory.initialExtent) {
+      initialExtent = apiConfig.territory.initialExtent;
+    }
+    return initialExtent;
+  }
+
+  static toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
+    let baseLayers: SitnaBaseLayer[] = [];
     if (apiConfig.backgrounds) {
-      let backgrounds: Array<string> = new Array();
-      let groups: Array<AppGroup> = new Array();
-      let layers: Array<string> = new Array();
+      let backgrounds: string[] = [];
+      let groups: AppGroup[] = [];
+      let layers: string[] = [];
       for (let background of apiConfig.backgrounds) {
         backgrounds.push(background.id);
       }
@@ -93,32 +92,16 @@ export class SitnaControlsHelper {
             format: layer.service.parameters.format,
             isBase: true
           };
-          sitnaBaseLayers.baseLayers.push(a);
+          baseLayers.push(a);
         }
       }
     }
-    return sitnaBaseLayers;
+    return baseLayers;
   }
-  static toWorkLayers(apiConfig: AppCfg) {
-    const sitnaWorkLayers = { workLayers: [] } as SitnaWorkLayers;
-    for (let layer of apiConfig.layers) {
-      let a: SitnaWorkLayer = {
-        id: layer.id,
-        title: layer.title,
-        url: layer.service.url,
-        layerNames: layer.layers,
-        matrixSet: layer.service.parameters.matrixSet,
-        format: layer.service.parameters.format
-      };
-      sitnaWorkLayers.workLayers.push(a);
-    }
-    return sitnaWorkLayers;
-  }
-  /*
-  static toWorkLayers(apiConfig: AppCfg) {
-    let sitnaWorkLayers;
+  static toWorkLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
+    let sitnaWorkLayers: SitnaBaseLayer[] = [];
     if (apiConfig.layers) {
-      let variable = apiConfig.layers.map((layer) => {
+      sitnaWorkLayers = apiConfig.layers.map((layer): SitnaBaseLayer => {
         return {
           id: layer.id,
           title: layer.title,
@@ -128,11 +111,9 @@ export class SitnaControlsHelper {
           format: layer.service.parameters.format
         };
       });
-      sitnaWorkLayers = variable;
     }
     return sitnaWorkLayers;
   }
-  */
   static toControls(apiConfig: AppCfg) {
     const sitnaControls = {} as SitnaControls;
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
@@ -155,7 +136,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.basemapSelector = {
-        basemapSelector: true,
         div: 'bms'
       };
     }
@@ -172,7 +152,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.coordinates = {
-        coordinates: true,
         div: 'coordinates'
       };
     }
@@ -182,7 +161,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.dataLoader = {
-        dataLoader: true,
         div: 'dataloader'
       };
     }
@@ -192,7 +170,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.download = {
-        download: true,
         div: 'download'
       };
     }
@@ -202,7 +179,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.drawMeasureModify = {
-        drawMeasureModify: true,
         div: 'drawmeasuremodify'
       };
     }
@@ -211,10 +187,9 @@ export class SitnaControlsHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.FullScreen
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'left',
-        fullScreen: true
-      });
+      sitnaControls.fullScreen = {
+        div: 'FuScreen'
+      };
     }
     if (
       sitnaControlsFilter.some(
@@ -222,7 +197,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.geolocation = {
-        geolocation: true,
         div: 'share'
       };
     }
@@ -232,7 +206,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.legend = {
-        legend: true,
         div: 'legend'
       };
     }
@@ -249,7 +222,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.measure = {
-        measure: true,
         div: 'measure'
       };
     }
@@ -258,26 +230,25 @@ export class SitnaControlsHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.NavBar
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'left',
-        navBar: true
-      });
-      sitnaControls.controlContainer.controls.push({
-        position: 'left',
-        navBarHome: true
-      });
+      sitnaControls.navBar = {
+        div: 'nav'
+      };
+      // sitnaControls.controlContainer.controls.push({
+      //   position: 'left',
+      //   navBarHome: true
+      // });
     }
-    //TODO
-    // if (
-    //   sitnaControlsFilter.some(
-    //     (x) => x['ui-control'] === SitnaControlsEnum.OfflineMapMaker
-    //   )
-    // ) {
-    //   sitnaControls.offlineMapMaker = {
-    //     offlineMapMaker: true,
-    //     div: 'offlinemapmaker'
-    //   };
-    // }
+
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.OfflineMapMaker
+      )
+    ) {
+      //TODO
+      // sitnaControls.offlineMapMaker = {
+      //   div: 'offlinemapmaker'
+      // };
+    }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.OverviewMap
@@ -298,7 +269,6 @@ export class SitnaControlsHelper {
           );
           if (layerObject != undefined) {
             sitnaControls.overviewMap = {
-              overviewMap: true,
               div: 'ovmap',
               layer: {
                 id: layerObject.title,
@@ -310,7 +280,6 @@ export class SitnaControlsHelper {
         }
       } else {
         sitnaControls.overviewMap = {
-          overviewMap: true,
           div: 'ovmap',
           layer: 'mapabase'
         };
@@ -329,7 +298,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.printMap = {
-        printMap: true,
         div: 'print'
       };
     }
@@ -338,40 +306,32 @@ export class SitnaControlsHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.Scale
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'right',
-        scale: true
-      });
+      sitnaControls.scale = true;
     }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.ScaleBar
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'right',
-        scaleBar: true
-      });
+      sitnaControls.scaleBar = true;
     }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.ScaleSelector
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'right',
-        scaleSelector: true
-      });
+      //TODO
+      // sitnaControls.scaleSelector = true;
     }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Search
       )
     ) {
-      sitnaControls.search = {
-        search: true,
-        div: 'search'
-      };
+      //TODO
+      // sitnaControls.search = {
+      //   div: 'search'
+      // };
     }
     if (
       sitnaControlsFilter.some(
@@ -379,7 +339,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.share = {
-        share: true,
         div: 'shared'
       };
     }
@@ -388,10 +347,9 @@ export class SitnaControlsHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.StreetView
       )
     ) {
-      sitnaControls.controlContainer.controls.push({
-        position: 'left',
-        streetView: true
-      });
+      sitnaControls.streetView = {
+        div: 'StreetView'
+      };
     }
     if (
       sitnaControlsFilter.some((x) => x['ui-control'] === SitnaControlsEnum.TOC)
@@ -407,7 +365,6 @@ export class SitnaControlsHelper {
       )
     ) {
       sitnaControls.workLayerManager = {
-        workLayerManager: true,
         div: 'wlm'
       };
     }
@@ -419,7 +376,7 @@ export class SitnaControlsHelper {
       sitnaControls.layerCatalog = {
         div: 'layercatalog',
         enableSearch: true,
-        layers: SitnaControlsHelper.toWorkLayers(apiConfig).workLayers
+        layers: SitnaHelper.toWorkLayers(apiConfig)
       };
     }
     if (
@@ -447,16 +404,17 @@ export class SitnaControlsHelper {
         persistentHighlights: true
       };
     }
-    //TODO
-    // if (
-    //   sitnaControlsFilter.some(
-    //     (x) => x['ui-control'] === SitnaControlsEnum.WFSEdit
-    //   )
-    // ) {
-    //   sitnaControls.WFSEdit = {
-    //     div: 'wfsedit'
-    //   };
-    // }
+
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.WFSEdit
+      )
+    ) {
+      //TODO
+      // sitnaControls.WFSEdit = {
+      //   div: 'wfsedit'
+      // };
+    }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.WFSQuery
@@ -473,9 +431,24 @@ export class SitnaControlsHelper {
       apiConfig.tasks.some((x) => x['ui-control'] === SitnaControlsEnum.ThreeD)
     ) {
       sitnaViews.threeD = {
-        div: 'vista3d'
+        div: 'threedMap'
       };
     }
     return sitnaViews;
+  }
+
+  static toLayout(appCfg: AppCfg) {
+    let theme = 'sitmun-base';
+    if (appCfg.application?.theme) {
+      theme = appCfg.application.theme;
+    }
+
+    return {
+      config: '/assets/map-styles/' + theme + '/config.json',
+      markup: '/assets/map-styles/' + theme + '/markup.html',
+      style: '/assets/map-styles/' + theme + '/style.css',
+      script: '/assets/map-styles/' + theme + '/script.js',
+      i18n: '/assets/map-styles/' + theme + '/resources'
+    };
   }
 }

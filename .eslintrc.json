@@ -1,6 +1,8 @@
 {
   "root": true,
-  "ignorePatterns": ["src/assets/js/*"],
+  "ignorePatterns": [
+    "src/assets/js/*"
+  ],
   "overrides": [
     {
       "files": [

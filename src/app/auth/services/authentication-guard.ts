@@ -1,10 +1,4 @@
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  Router,
-  RouterStateSnapshot,
-  UrlTree
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { Injectable } from '@angular/core';
 import { NavigationPath } from '@config/app.config';
@@ -12,7 +6,7 @@ import { NavigationPath } from '@config/app.config';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticationGuard implements CanActivate {
+export class AuthenticationGuard  {
   constructor(
     private authenticationService: AuthenticationService<unknown>,
     private router: Router

@@ -15,7 +15,7 @@ import {
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg } from '@api/model/app-cfg';
-import { SitnaControlsHelper } from '@ui/util/sitna-helpers';
+import { SitnaHelper } from '@ui/util/sitna-helpers';
 
 declare const SITNA: any;
 
@@ -31,18 +31,17 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     protected modal: OpenModalService,
     private renderer: Renderer2,
     private el: ElementRef,
-    private document: Document,
+    private document: Document
   ) {}
+
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
       this.applicationId = Number(params['applicationId']);
       this.territoryId = Number(params['territoryId']);
       this.commonService
-        .fetchMap(this.applicationId, this.territoryId)
-        .subscribe({
-          next: (appCfg: AppCfg) => {
-            this.loadMap(appCfg);
-          }
+        .fetchMapConfiguration(this.applicationId, this.territoryId)
+        .subscribe((appCfg) => {
+          this.loadMap(appCfg);
         });
     });
   }
@@ -108,7 +107,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   removeSitnaDiv(className: string) {
-    console.log(`.${className}`);
     const body = this.document.body;
     const div = body.querySelector(`.${className}`);
     if (div) {
@@ -117,6 +115,18 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         this.renderer.removeChild(body, father);
       }
     }
+  }
+
+  loadMap(appCfg: AppCfg) {
+    new SITNA.Map('mapa', {
+      crs: SitnaHelper.toCrs(appCfg),
+      initialExtent: SitnaHelper.toInitialExtent(appCfg),
+      layout: SitnaHelper.toLayout(appCfg),
+      baseLayers: SitnaHelper.toBaseLayers(appCfg),
+      workLayers: SitnaHelper.toWorkLayers(appCfg),
+      controls: SitnaHelper.toControls(appCfg),
+      views: SitnaHelper.toViews(appCfg)
+    });
   }
 
   clearMap() {
@@ -148,36 +158,5 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.removeSitnaDiv('tc-ctl-ftools-dialog');
     this.removeSitnaDiv('tc-ctl-share-qr-dialog');
     this.removeSitnaDiv('tc-ctl-search-dialog');
-  }
-
-  loadMap(appCfg: AppCfg) {
-    let initialExtent: number[];
-    if (this.territoryId === 10) {
-      // Galicia
-      initialExtent = [-610681, 4681188, -160633, 4908516];
-    } else {
-      // Cataluña
-      initialExtent = [
-        243214.346608211, 4606384.0094297, 574809.60903833, 4650833.9854267
-      ];
-    }
-    new SITNA.Map('mapa', {
-      crs: SitnaControlsHelper.toCrs(appCfg).crs,
-      initialExtent:
-        this.territoryId === 10
-          ? initialExtent
-          : SitnaControlsHelper.toInitialExtent(appCfg).initialExtent,
-      layout: {
-        config: '/assets/js/sitna/TC/layout/responsive/config.json',
-        markup: '/assets/js/sitna/TC/layout/responsive/markup.html',
-        style: '/assets/sitna.css',
-        script: '/assets/js/sitna/TC/layout/responsive/script.js',
-        i18n: '/assets/js/sitna/TC/layout/responsive/resources'
-      },
-      baseLayers: SitnaControlsHelper.toBaseLayers(appCfg).baseLayers,
-      //workLayers: SitnaControlsHelper.toWorkLayers(appCfg),
-      controls: SitnaControlsHelper.toControls(appCfg),
-      views: SitnaControlsHelper.toViews(appCfg)
-    });
   }
 }

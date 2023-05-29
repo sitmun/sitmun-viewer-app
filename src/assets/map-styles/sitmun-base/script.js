@@ -1,4 +1,7 @@
-﻿var ajustarPanell = function () {
+﻿// document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
+// document.getElementById("logoIns").src = "../assets/IDEMenorca/img/DIBA-logo-300x169.jpg";
+
+var ajustarPanell = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
@@ -65,11 +68,14 @@
     //        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
     //    'px';
 
-    document.querySelector('.tc-ctl-lcat-search').style.height =
-      window.innerHeight -
-      (heightControlsActiusMenysControlObert +
-        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-      'px';
+    const selector = document.querySelector('.tc-ctl-lcat-search');
+    if (selector) {
+      selector.style.height =
+        window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+        'px';
+    }
   } else if (controlObert != null) {
     //Sumem les altures dels controls excepte el que està actiu en aquest moment
     arrControlsActius.forEach((obj) => {
