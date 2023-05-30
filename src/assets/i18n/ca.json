@@ -8,13 +8,16 @@
   "publicDashboardPage.backToLoginButton": "Tornar a la pàgina de Login",
   "publicDashboardPage.applicationsTitle": "Aplicacions Públiques",
   "publicDashboardPage.territoriesTitle": "Territoris Públiques",
-  "authorizedLayout.hi": "Benvingut, ",
-  "authorizedLayout.logout": "Tancar sessió",
   "dashboardPage.applicationsTitle": "Aplicacions",
   "dashboardPage.territoriesTitle": "Territoris",
   "dashboardPage.img": "Imatge",
   "dashboardPage.id": "Identificador",
   "dashboardPage.name": "Nom",
   "mapPage.title": "Mapa d'exemple",
-  "dashboardDialog.inputPlaceholder": "Cerca"
+  "dashboardDialog.inputPlaceholder": "Cerca",
+  "menu.login": "Accedir",
+  "menu.hi": "Hola, ",
+  "menu.logout": "Tancar sessió",
+  "menu.changeApplication": "Canviar aplicació",
+  "menu.changeTerritory": "Canviar territori"
 }

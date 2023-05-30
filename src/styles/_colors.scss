@@ -2,6 +2,7 @@
 $black: #1A0E00;
 $orange:  #FF9300;
 $orange-dark: darkorange;
+$light-orange: #ffb146;
 $white: white;
 $light-blue: #758BFD;
 $blue: #27187e;
@@ -14,6 +15,7 @@ $common-color-background: $white;
 $common-color-background-with-opacity: rgba($white, .6);
 $common-color-background-navbar: $orange;
 $common-color-background-navbar-with-opacity: rgba($orange, .6);
+$common-color-background-navbar-light: $light-orange;
 
 $common-color-font-button: $white;
 $common-color-font-primary: $light-blue;
@@ -25,8 +27,14 @@ $common-color-border-input: $gray;
 // Navigation bar
 $navigation-bar-font: $white;
 $navigation-bar-lang-button-background: $orange;
+$navigation-bar-menu-button-background: $orange;
 $navigation-bar-button-logout-background: $orange;
 $navigation-bar-button-logout-hover: $orange-dark;
+$navigation-bar-menu-color: $light-orange;
+$navigation-bar-menu-border: $light-orange;
+$navigation-bar-menu-button-color: $light-orange;
+$navigation-bar-menu-button-border-color: $light-orange;
+$navigation-bar-menu-logout-button-background: $light-orange;
 
 // Login page
 $login-page-button-font: $white;

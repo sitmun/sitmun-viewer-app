@@ -34,7 +34,9 @@
         overflow-x: hidden;
         overflow-y: hidden;
         max-height: dimensions.$modal-body-max-height;
+        min-height: dimensions.$modal-body-min-height;
         @include mixins.horizontal-padding(dimensions.$modal-body-padding);
+        padding-right: 0;
         padding-top: round(dimensions.$modal-body-padding * 0.5);
         //@media (max-width: $breakpoint-xs) {
         //  max-height: calc(100% - #{dimensions.$modal-header-height});

@@ -59,6 +59,22 @@ $navigation-bar-lang-button-margin: $base-margin;
 $navigation-bar-lang-button-height: 48px;
 $navigation-bar-lang-button-width: 48px;
 $navigation-bar-lang-button-font-size: 20px;
+$navigation-bar-menu-width: 300px;
+$navigation-bar-menu-font-size: 18px;
+$navigation-bar-menu-padding: 20px;
+$navigation-bar-menu-border: 4px;
+$navigation-bar-menu-button-border: 3px;
+$navigation-bar-menu-button-margin: 10px;
+$navigation-bar-menu-button-padding: 5px;
+$navigation-bar-menu-button-border-radius: 5px;
+$navigation-bar-menu-hi-title-margin: 10px;
+$navigation-bar-menu-hi-title-font-size: 25px;
+$navigation-bar-menu-logged-options-margin-left: 10px;
+$navigation-bar-menu-logged-options-margin-bottom: 10px;
+$navigation-bar-menu-logout-title-margin-left: 10px;
+$navigation-bar-menu-logout-button-padding: 5px;
+$navigation-bar-menu-logout-button-border-radius: 10px;
+$navigation-bar-menu-logout-img-padding: 5px;
 
 // Card component
 $card-component-img-height: 96px;
@@ -95,4 +111,5 @@ $modal-body-padding-xs: round($modal-padding-h * 0.25);
 $modal-body-padding-sm: round($modal-padding-h * 1.25);
 $modal-body-padding: round($modal-padding-h * 2);
 $modal-body-max-height: calc(100vh - #{($modal-margin-top * 2) + $modal-header-height});
+$modal-body-min-height: 300px;
 

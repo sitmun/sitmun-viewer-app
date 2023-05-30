@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -8,13 +7,22 @@ import { Router } from '@angular/router';
   styleUrls: ['./navigation-bar.component.scss']
 })
 export class NavigationBarComponent {
-  constructor(private translate: TranslateService, private router: Router) {}
+  showMenu: boolean;
 
-  useLanguage(lang: string) {
-    this.translate.use(lang);
+  constructor(private router: Router) {
+    this.showMenu = false;
+    router.events.forEach((event) => {
+      if (event instanceof NavigationStart) {
+        this.showMenu = false;
+      }
+    });
   }
 
   logoClicked() {
     this.router.navigateByUrl('/');
+  }
+
+  onShowMenu() {
+    this.showMenu = !this.showMenu;
   }
 }

@@ -8,13 +8,16 @@
   "publicDashboardPage.backToLoginButton": "Volver a la página de Login",
   "publicDashboardPage.applicationsTitle": "Aplicaciones Públicas",
   "publicDashboardPage.territoriesTitle": "Territorios Públicos",
-  "authorizedLayout.hi": "Bienvenido, ",
-  "authorizedLayout.logout": "Cerrar Sesión",
   "dashboardPage.applicationsTitle": "Aplicaciones",
   "dashboardPage.territoriesTitle": "Territorios",
   "dashboardPage.img": "Imagen",
   "dashboardPage.id": "Identificador",
   "dashboardPage.name": "Nombre",
   "mapPage.title": "Mapa de ejemplo",
-  "dashboardDialog.inputPlaceholder": "Buscar"
+  "dashboardDialog.inputPlaceholder": "Buscar",
+  "menu.login": "Acceder",
+  "menu.hi": "Hola, ",
+  "menu.logout": "Cerrar Sesión",
+  "menu.changeApplication": "Cambiar aplicación",
+  "menu.changeTerritory": "Cambiar territorio"
 }

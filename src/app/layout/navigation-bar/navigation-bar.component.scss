@@ -23,25 +23,20 @@
     }
   }
 
-  .lang-buttons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-right: dimensions.$navigation-bar-lang-margin;
+  .menu {
+    margin: dimensions.$base-margin-3;
+    padding: 0;
+    background: colors.$navigation-bar-menu-button-background;
 
     button {
-      color: colors.$common-color-font-button;
-      background: colors.$navigation-bar-lang-button-background;
-      font-weight: bold;
-      height: dimensions.$navigation-bar-lang-button-height;
-      width: dimensions.$navigation-bar-lang-button-width;
-      border: none;
-      font-size: dimensions.$navigation-bar-lang-button-font-size;
       padding: 0;
-    }
+      border: none;
+      background: colors.$navigation-bar-menu-button-background;
+      cursor: pointer;
 
-    button:hover {
-      transform: scale(1.25);
+      img {
+        background: colors.$navigation-bar-menu-button-background;
+      }
     }
   }
 }

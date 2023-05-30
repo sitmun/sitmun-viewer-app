@@ -1,0 +1,146 @@
+import { Component } from '@angular/core';
+import { AuthenticationService } from '@auth/services/authentication.service';
+import { TranslateService } from '@ngx-translate/core';
+import { Location } from '@angular/common';
+import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
+import { NavigationPath } from '@config/app.config';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ApplicationDto,
+  CommonService,
+  DashboardTypes,
+  TerritoryDto
+} from '@api/services/common.service';
+import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
+
+@Component({
+  selector: 'app-menu',
+  templateUrl: './menu.component.html',
+  styleUrls: ['./menu.component.scss']
+})
+export class MenuComponent {
+  username: string = 'admin';
+  isLoggedIn: boolean;
+  isInLogin: boolean;
+  isInMap: boolean;
+  applicationId!: number;
+  territoryId!: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private translate: TranslateService,
+    private authenticationService: AuthenticationService<unknown>,
+    private commonService: CommonService,
+    private modal: OpenModalService,
+    private location: Location
+  ) {
+    this.isLoggedIn = this.authenticationService.isLoggedIn();
+    const path = this.location.path();
+    this.isInLogin = path.includes('login');
+    this.isInMap = path.includes('map');
+    if (this.isInMap) {
+      const words = path.split('/');
+      this.applicationId = Number(words[3]);
+      this.territoryId = Number(words[4]);
+    }
+  }
+
+  logout() {
+    this.authenticationService.logout();
+  }
+
+  useLanguage(lang: string) {
+    this.translate.use(lang);
+  }
+
+  openLoginModal() {
+    const ref = this.modal.open(LoginModalComponent);
+    ref.afterClosed.subscribe(({ loggedIn }) => {
+      if (loggedIn) {
+        this.router
+          .navigateByUrl(NavigationPath.Section.User.Dashboard)
+          .then(() => {
+            if (this.isInMap) {
+              this.router.navigateByUrl(
+                NavigationPath.Section.User.Map(
+                  this.applicationId,
+                  this.territoryId
+                )
+              );
+            }
+          });
+      }
+    });
+  }
+
+  navigateToMap() {
+    if (this.isLoggedIn) {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(this.applicationId, this.territoryId)
+      );
+    } else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(this.applicationId, this.territoryId)
+      );
+    }
+  }
+
+  openModal(
+    id: number,
+    type: DashboardTypes,
+    items: Array<ApplicationDto> | Array<TerritoryDto>
+  ) {
+    const ref = this.modal.open(DashboardModalComponent, {
+      data: { id: id, type: type, items: items }
+    });
+    ref.afterClosed.subscribe(({ applicationId, territoryId }) => {
+      if (applicationId && territoryId) {
+        this.applicationId = applicationId;
+        this.territoryId = territoryId;
+        this.navigateToMap();
+      }
+    });
+  }
+
+  changeApplication() {
+    const response = this.commonService.fetchApplicationsByTerritory(
+      this.territoryId
+    );
+    response?.subscribe((applications: Array<ApplicationDto>) => {
+      if (applications.length) {
+        if (applications.length === 1) {
+          this.applicationId = applications[0].id;
+          this.navigateToMap();
+        } else {
+          this.openModal(
+            this.territoryId,
+            DashboardTypes.TERRITORIES,
+            applications
+          );
+        }
+      }
+    });
+  }
+
+  changeTerritory() {
+    const response = this.commonService.fetchTerritoriesByApplication(
+      this.applicationId
+    );
+    response?.subscribe((territories: Array<TerritoryDto>) => {
+      if (territories.length) {
+        if (territories.length === 1) {
+          this.territoryId = territories[0].id;
+          this.navigateToMap();
+        } else {
+          this.openModal(
+            this.applicationId,
+            DashboardTypes.APPLICATIONS,
+            territories
+          );
+        }
+      }
+    });
+  }
+}

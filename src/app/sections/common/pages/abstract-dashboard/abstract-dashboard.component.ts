@@ -82,7 +82,9 @@ export abstract class AbstractDashboardComponent implements OnInit {
       data: { id: id, type: this.type, items: items }
     });
     ref.afterClosed.subscribe(({ applicationId, territoryId }) => {
-      this.navigateToMap(applicationId, territoryId);
+      if (applicationId && territoryId) {
+        this.navigateToMap(applicationId, territoryId);
+      }
     });
   }
 

@@ -7,6 +7,7 @@ import { DashboardButtonsComponent } from './components/dashboard-buttons/dashbo
 import { DashboardSearchboxComponent } from '@ui/components/dashboard-searchbox/dashboard-searchbox.component';
 import { ModalModule } from '@ui/modal/modal.module';
 import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog-filter.pipe';
+import { MenuComponent } from './components/menu/menu.component';
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule],
@@ -14,7 +15,8 @@ import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog
     DashboardItemsComponent,
     DashboardButtonsComponent,
     DashboardSearchboxComponent,
-    DialogFilterPipe
+    DialogFilterPipe,
+    MenuComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -22,7 +24,8 @@ import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog
     DashboardSearchboxComponent,
     DashboardSearchboxComponent,
     ModalModule,
-    DialogFilterPipe
+    DialogFilterPipe,
+    MenuComponent
   ],
   providers: []
 })

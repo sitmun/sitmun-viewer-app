@@ -32,7 +32,9 @@ export class LoginModalComponent extends BaseModal {
 
   protected override onClose() {
     super.onClose();
-    this.modalRef.close();
+    this.modalRef.close({
+      loggedIn: false
+    });
   }
 
   login() {
@@ -42,7 +44,9 @@ export class LoginModalComponent extends BaseModal {
     ) {
       this.authenticationService.login(this.authenticationRequest).subscribe({
         next: () => {
-          this.modalRef.close();
+          this.modalRef.close({
+            loggedIn: true
+          });
         },
         error: (error) => {
           if (error.status && error.status === 401) {

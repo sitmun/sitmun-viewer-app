@@ -1,0 +1,25 @@
+<div class="menu-show-div">
+  <div class="menu-show">
+    <div class="menu-options">
+      <div class="lang-buttons">
+        <button type="button" (click)="useLanguage('es')">ES</button>
+        <button type="button" (click)="useLanguage('en')">EN</button>
+        <button type="button" (click)="useLanguage('ca')">CA</button>
+      </div>
+      <div class="logged-in-options" *ngIf="isLoggedIn">
+        <h4>{{'menu.hi' | translate}}{{username}}!</h4>
+        <div class="logout">
+          <button class="logout" (click)="logout()">
+            <img src="assets/img/logout.svg" alt='Logout'>
+          </button>
+          <h5>{{'menu.logout' | translate}}</h5>
+        </div>
+      </div>
+      <button type="button" class="menu-button" *ngIf="!isLoggedIn && !isInLogin" (click)="openLoginModal()">{{'menu.login' | translate}}</button>
+      <div *ngIf="isInMap">
+        <button type="button" class="menu-button" (click)="changeApplication()">{{'menu.changeApplication' | translate}}</button>
+        <button type="button" class="menu-button" (click)="changeTerritory()">{{'menu.changeTerritory' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</div>

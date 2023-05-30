@@ -1,0 +1,105 @@
+@use 'colors';
+@use 'dimensions';
+
+.menu-show-div {
+  display: flex;
+  justify-content: right;
+  position: absolute;
+  right: 0;
+  z-index: 10090;
+  height: auto;
+  width: dimensions.$navigation-bar-menu-width;
+
+  .menu-show {
+    font-size: dimensions.$navigation-bar-menu-font-size;
+    width: 100%;
+    height: auto;
+    padding: dimensions.$navigation-bar-menu-padding;
+    color: colors.$navigation-bar-menu-color;
+    background: white;
+    border-right: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
+    border-left: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
+    border-bottom: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
+
+    .menu-options {
+
+      .lang-buttons, .map-options {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-right: dimensions.$navigation-bar-lang-margin;
+
+        button {
+          color: colors.$navigation-bar-menu-button-color;
+          background: colors.$common-color-font-button;
+          font-weight: bold;
+          height: dimensions.$navigation-bar-lang-button-height;
+          width: dimensions.$navigation-bar-lang-button-width;
+          border: none;
+          font-size: dimensions.$navigation-bar-lang-button-font-size;
+          padding: 0;
+        }
+
+        button:hover {
+          transform: scale(1.25);
+        }
+
+      }
+
+      .logged-in-options {
+        margin-left: dimensions.$navigation-bar-menu-logged-options-margin-left;
+        margin-bottom: dimensions.$navigation-bar-menu-logged-options-margin-bottom;
+
+        h4 {
+          font-size: dimensions.$navigation-bar-menu-hi-title-font-size;
+          margin: dimensions.$navigation-bar-menu-hi-title-margin 0;
+        }
+
+        .logout {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+
+          h5 {
+            margin-left: dimensions.$navigation-bar-menu-logout-title-margin-left;
+          }
+
+          button {
+            height: auto;
+            width: dimensions.$navigation-bar-logout-width;
+            background: colors.$navigation-bar-menu-logout-button-background;
+            padding: dimensions.$navigation-bar-menu-logout-button-padding;
+            border: 0;
+            border-radius: dimensions.$navigation-bar-menu-logout-button-border-radius;
+
+            img {
+              padding: dimensions.$navigation-bar-menu-logout-img-padding;
+              width: auto;
+              height: 100%;
+            }
+          }
+          button:hover {
+            transform: scale(1.25);
+          }
+        }
+      }
+
+      .menu-button {
+        font-size: dimensions.$navigation-bar-menu-font-size;
+        font-weight: bold;
+        width: auto;
+        height: auto;
+        margin: dimensions.$navigation-bar-menu-button-margin;
+        padding: dimensions.$navigation-bar-menu-button-padding;
+        color: colors.$navigation-bar-menu-button-color;
+        background: colors.$common-color-font-button;
+        border: dimensions.$navigation-bar-menu-button-border solid colors.$navigation-bar-menu-button-border-color;
+        border-radius: dimensions.$navigation-bar-menu-button-border-radius;
+      }
+
+      .menu-button:hover {
+        transform: scale(1.25);
+      }
+    }
+  }
+}

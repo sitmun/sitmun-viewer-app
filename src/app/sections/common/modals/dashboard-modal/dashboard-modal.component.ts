@@ -40,7 +40,10 @@ export class DashboardModalComponent extends BaseModal {
 
   protected override onClose() {
     super.onClose();
-    this.modalRef.close();
+    this.modalRef.close({
+      applicationId: null,
+      territoryId: null
+    });
   }
 
   onKeywordsSearch(keywords: string) {

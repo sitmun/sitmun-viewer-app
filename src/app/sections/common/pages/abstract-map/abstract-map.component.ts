@@ -6,16 +6,10 @@ import {
   Renderer2
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ApplicationDto,
-  CommonService,
-  DashboardTypes,
-  TerritoryDto
-} from '@api/services/common.service';
-import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg } from '@api/model/app-cfg';
 import { SitnaHelper } from '@ui/util/sitna-helpers';
+import { CommonService } from '@api/services/common.service';
 
 declare const SITNA: any;
 
@@ -38,6 +32,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.route.params.subscribe((params) => {
       this.applicationId = Number(params['applicationId']);
       this.territoryId = Number(params['territoryId']);
+      this.clearMap();
       this.commonService
         .fetchMapConfiguration(this.applicationId, this.territoryId)
         .subscribe((appCfg) => {
@@ -50,71 +45,28 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.clearMap();
   }
 
-  abstract navigateToMap(applicationId: number, territoryId: number): any;
-
-  openModal(
-    id: number,
-    type: DashboardTypes,
-    items: Array<ApplicationDto> | Array<TerritoryDto>
-  ) {
-    const ref = this.modal.open(DashboardModalComponent, {
-      data: { id: id, type: type, items: items }
-    });
-    ref.afterClosed.subscribe(({ applicationId, territoryId }) => {
-      this.clearMap();
-      this.navigateToMap(applicationId, territoryId);
-    });
-  }
-
-  changeApplication() {
-    const response = this.commonService.fetchApplicationsByTerritory(
-      this.territoryId
-    );
-    response?.subscribe((applications: Array<ApplicationDto>) => {
-      if (applications.length) {
-        if (applications.length === 1) {
-          this.applicationId = applications[0].id;
-          this.navigateToMap(this.applicationId, this.territoryId);
-        } else {
-          this.openModal(
-            this.territoryId,
-            DashboardTypes.TERRITORIES,
-            applications
-          );
-        }
+  removeSitnaDivs() {
+    const divs = this.document.querySelectorAll('.tc-modal');
+    divs.forEach((div) => {
+      const father = div.parentElement;
+      div.remove();
+      if (father && father.innerHTML.trim() === '') {
+        this.renderer.removeChild(this.document.body, father);
       }
     });
   }
 
-  changeTerritory() {
-    const response = this.commonService.fetchTerritoriesByApplication(
-      this.applicationId
-    );
-    response?.subscribe((territories: Array<TerritoryDto>) => {
-      if (territories.length) {
-        if (territories.length === 1) {
-          this.territoryId = territories[0].id;
-          this.navigateToMap(this.applicationId, this.territoryId);
-        } else {
-          this.openModal(
-            this.applicationId,
-            DashboardTypes.APPLICATIONS,
-            territories
-          );
-        }
+  removeEmptyDivs() {
+    const divElements = this.document.body.querySelectorAll('div');
+    divElements.forEach((div: HTMLElement) => {
+      if (
+        !div.classList.length &&
+        !div.getAttribute('id') &&
+        div.innerHTML.trim() === ''
+      ) {
+        this.renderer.removeChild(document.body, div);
       }
     });
-  }
-
-  removeSitnaDiv(className: string) {
-    const body = this.document.body;
-    const div = body.querySelector(`.${className}`);
-    if (div) {
-      const father = div.parentNode;
-      if (father) {
-        this.renderer.removeChild(body, father);
-      }
-    }
   }
 
   loadMap(appCfg: AppCfg) {
@@ -148,15 +100,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.renderer.appendChild(mapFather, div);
 
     // Body
-    this.removeSitnaDiv('tc-ctl-finfo-dialog');
-    this.removeSitnaDiv('tc-ctl-finfo-dialog');
-    this.removeSitnaDiv('tc-ctl-bms-more-dialog');
-    this.removeSitnaDiv('tc-ctl-lcat-crs-dialog');
-    this.removeSitnaDiv('tc-ctl-coords-crs-dialog');
-    this.removeSitnaDiv('tc-ctl-search-dialog');
-    this.removeSitnaDiv('tc-ctl-finfo-dialog');
-    this.removeSitnaDiv('tc-ctl-ftools-dialog');
-    this.removeSitnaDiv('tc-ctl-share-qr-dialog');
-    this.removeSitnaDiv('tc-ctl-search-dialog');
+    this.removeSitnaDivs();
+    this.removeEmptyDivs();
   }
 }

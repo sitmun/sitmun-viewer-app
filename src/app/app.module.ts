@@ -16,10 +16,8 @@ import {
 } from '@auth/authentication.options';
 import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
-import { AuthorizedNavigationBarComponent } from './layout/authorized-navigation-bar/authorized-navigation-bar/authorized-navigation-bar.component';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { TestModalComponent } from '@sections/common/modals/test-modal/test-modal.component';
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { FormsModule } from '@angular/forms';
@@ -29,10 +27,8 @@ import { FormsModule } from '@angular/forms';
     AppComponent,
     AuthorizedLayoutComponent,
     NavigationBarComponent,
-    AuthorizedNavigationBarComponent,
     PublicLayoutComponent,
     FooterComponent,
-    TestModalComponent,
     DashboardModalComponent,
     LoginModalComponent
   ],

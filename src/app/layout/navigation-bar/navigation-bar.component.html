@@ -2,9 +2,12 @@
   <div class="logo">
     <img src='../../../assets/logos/logo.png' (click)='logoClicked()'>
   </div>
-  <div class="lang-buttons">
-    <button type="button" (click)="useLanguage('es')">ES</button>
-    <button type="button" (click)="useLanguage('en')">EN</button>
-    <button type="button" (click)="useLanguage('ca')">CA</button>
+  <div class="menu">
+    <button type="button" (click)="onShowMenu()">
+      <img src="../../../assets/img/menu.svg" alt='Menu'>
+    </button>
   </div>
 </div>
+<ng-container *ngIf="showMenu">
+  <app-menu/>
+</ng-container>
