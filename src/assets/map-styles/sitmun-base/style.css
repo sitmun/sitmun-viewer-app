@@ -346,7 +346,7 @@ button.tc-ctl-fscreen-btn {
   max-height: inherit !important;
 }
 
-#legend, #measure, #shared, #download, #downloadSilme, #localitzar, #reports, #ovmapH2, #print, #geolocation, #offline, #dataloader, #drawmeasuremodify, #multifeatureinfo
+#legend, #measure, #shared, #download, #downloadSilme, #localitzar, #reports, #ovmapH2, #print, #geolocation, #offline, #dataloader, #drawmeasuremodify, #multifeatureinfo, #wfsedit
 {
   display: none;
 }
@@ -359,12 +359,12 @@ button.tc-ctl-fscreen-btn {
   display: block;
 }
 
-.left-collapsed-silme #measure, .left-collapsed-silme #shared, .left-collapsed-silme #download, .left-collapsed-silme #downloadSilme, .left-collapsed-silme #localitzar, .left-collapsed-silme #reports, .left-collapsed-silme #newovmap, .left-collapsed-silme #print, .left-collapsed-silme #geolocation, .left-collapsed-silme #offline,  .left-collapsed-silme #dataloader, .left-collapsed-silme #drawmeasuremodify, .left-collapsed-silme #multifeatureinfo {
+.left-collapsed-silme #measure, .left-collapsed-silme #shared, .left-collapsed-silme #download, .left-collapsed-silme #downloadSilme, .left-collapsed-silme #localitzar, .left-collapsed-silme #reports, .left-collapsed-silme #newovmap, .left-collapsed-silme #print, .left-collapsed-silme #geolocation, .left-collapsed-silme #offline,  .left-collapsed-silme #dataloader, .left-collapsed-silme #drawmeasuremodify, .left-collapsed-silme #wfsedit, .left-collapsed-silme #multifeatureinfo {
   display: block;
   background-color: hsl(0deg 0% 98%);
 }
 
-#measure.tc-collapsed > div, #shared.tc-collapsed > div, #download.tc-collapsed > div, #downloadSilme.tc-collapsed > div, #localitzar.tc-collapsed > div, #reports.tc-collapsed > div, #newovmap.tc-collapsed > div, #bms.tc-collapsed > div, #toc.tc-collapsed > div, #catalog.tc-collapsed > div, #wlm.tc-collapsed > div, #xdata.tc-collapsed > div, #print.tc-collapsed > div, #geolocation.tc-collapsed > div, #offline.tc-collapsed > div, #dataloader.tc-collapsed > div, #drawmeasuremodify.tc-collapsed > div, #multifeatureinfo.tc-collapsed > div {
+#measure.tc-collapsed > div, #shared.tc-collapsed > div, #download.tc-collapsed > div, #downloadSilme.tc-collapsed > div, #localitzar.tc-collapsed > div, #reports.tc-collapsed > div, #newovmap.tc-collapsed > div, #bms.tc-collapsed > div, #toc.tc-collapsed > div, #catalog.tc-collapsed > div, #wlm.tc-collapsed > div, #xdata.tc-collapsed > div, #print.tc-collapsed > div, #geolocation.tc-collapsed > div, #offline.tc-collapsed > div, #dataloader.tc-collapsed > div, #drawmeasuremodify.tc-collapsed > div, #wfsedit.tc-collapsed > div, #multifeatureinfo.tc-collapsed > div {
   display: none;
 }
 
@@ -551,7 +551,7 @@ button.tc-ctl-fscreen-btn {
   cursor: pointer;
 }
 
-#measure > h2, #shared > h2, #download > h2, #downloadSilme > h2, #localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2, #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #wlm > h2, #xdata > h2, #print > h2, #geolocation > h2, #offline > h2, #dataloader > h2, #drawmeasuremodify > h2, #multifeatureinfo > h2 {
+#measure > h2, #shared > h2, #download > h2, #downloadSilme > h2, #localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2, #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #wlm > h2, #xdata > h2, #print > h2, #geolocation > h2, #offline > h2, #dataloader > h2, #drawmeasuremodify > h2, #wfsedit > h2, #multifeatureinfo > h2 {
   background-position: calc(100% - 10px) 10px, 0 0;
   background-repeat: no-repeat, no-repeat;
   background-size: 20px 20px, 38px 38px;
@@ -689,19 +689,28 @@ button.tc-ctl-fscreen-btn {
 }
 
 #dataloader > h2 {
-  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaUpMapN.png);
 }
 
 #dataloader.tc-collapsed > h2 {
-  background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
+  background-image: url(./img/mapaMasG.png), url(./img/mapaUpMapG.png);
   background-color: rgba(0, 0, 0, 0.05);
 }
 
 #drawmeasuremodify > h2 {
-  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaPenN.png);
 }
 
 #drawmeasuremodify.tc-collapsed > h2 {
+  background-image: url(./img/mapaMasG.png), url(./img/mapaPenG.png);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+#wfsedit > h2 {
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+}
+
+#wfsedit.tc-collapsed > h2 {
   background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
   background-color: rgba(0, 0, 0, 0.05);
 }
@@ -756,7 +765,7 @@ button.tc-ctl-fscreen-btn {
   background-image: none, url(./img/mapaLeyendaN.png);
 }
 
-#measure.tc-collapsed > h2, #shared.tc-collapsed > h2, #download.tc-collapsed > h2, #downloadSilme.tc-collapsed > h2, #localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2, #newovmap.tc-collapsed > h2, #bms.tc-collapsed > h2, #toc.tc-collapsed > h2, #catalog.tc-collapsed > h2, #wlm.tc-collapsed > h2, #xdata.tc-collapsed > h2, #print.tc-collapsed > h2, #geolocation.tc-collapsed > h2, #offline.tc-collapsed > h2, #dataloader.tc-collapsed > h2, #drawmeasuremodify.tc-collapsed > h2, #multifeatureinfo.tc-collapsed > h2 {
+#measure.tc-collapsed > h2, #shared.tc-collapsed > h2, #download.tc-collapsed > h2, #downloadSilme.tc-collapsed > h2, #localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2, #newovmap.tc-collapsed > h2, #bms.tc-collapsed > h2, #toc.tc-collapsed > h2, #catalog.tc-collapsed > h2, #wlm.tc-collapsed > h2, #xdata.tc-collapsed > h2, #print.tc-collapsed > h2, #geolocation.tc-collapsed > h2, #offline.tc-collapsed > h2, #dataloader.tc-collapsed > h2, #drawmeasuremodify.tc-collapsed > h2, #wfsedit.tc-collapsed > h2, #multifeatureinfo.tc-collapsed > h2 {
   color: #666;
 }
 
@@ -764,10 +773,18 @@ button.tc-ctl-fscreen-btn {
   color: #000;
 }
 
-#measure > div, #shared > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #wlm > div, #xdata > div, #print > div, #geolocation > div, #offline > div, #dataloader > div, #drawmeasuremodify > div, #multifeatureinfo > div  {
+#measure > div, #shared > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #wlm > div, #xdata > div, #print > div, #geolocation > div, #offline > div, #dataloader > div, #drawmeasuremodify > div, #wfsedit > div, #multifeatureinfo > div  {
   padding: 10px;
   border-bottom: 1px solid #eee;
   max-height: 240px;
+  overflow: auto;
+  /*display: block;*/
+}
+
+#wlm > div  {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  max-height: 80%;
   overflow: auto;
   /*display: block;*/
 }
@@ -1001,6 +1018,15 @@ div.tc-ctl-legend-tree li.tc-ctl-legend-empty {
 
 #downloadSilme > div.tc-ctl-download-cnt.tc-group.tc-collapsed {
   display: none;
+}
+
+.tc-ctl-wfsquery-modal-window .tc-modal-body .tc-modal-form input[type=radio]:checked + label {
+  background-color: #FF9300;
+  border-color: #FF9300;
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-content ul {
+  max-height: 80%
 }
 
 li.tc-ctl-legend-node {

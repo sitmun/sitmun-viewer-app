@@ -156,6 +156,7 @@ var ajustarPanellSilme = function () {
     dataloader: document.getElementById('dataloader'),
     downloadSilme: document.getElementById('downloadSilme'),
     geolocation: document.getElementById('geolocation'),
+    wfsedit: document.getElementById('wfsedit'),
     drawmeasuremodify: document.getElementById('drawmeasuremodify')
   };
 

@@ -42,6 +42,8 @@ enum SitnaControlsEnum {
 }
 var showLegendButton = false;
 var showOverViewMapButton = false;
+var showToolsButton = false;
+
 @Injectable()
 export class SitnaHelper {
   constructor(@Inject(DOCUMENT) private document: Document) {}
@@ -172,6 +174,7 @@ export class SitnaHelper {
       sitnaControls.dataLoader = {
         div: 'dataloader'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -181,6 +184,7 @@ export class SitnaHelper {
       sitnaControls.download = {
         div: 'download'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -190,6 +194,7 @@ export class SitnaHelper {
       sitnaControls.drawMeasureModify = {
         div: 'drawmeasuremodify'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -208,6 +213,7 @@ export class SitnaHelper {
       sitnaControls.geolocation = {
         div: 'geolocation'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -236,6 +242,7 @@ export class SitnaHelper {
       sitnaControls.measure = {
         div: 'measure'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -313,6 +320,7 @@ export class SitnaHelper {
       sitnaControls.printMap = {
         div: 'print'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -354,6 +362,7 @@ export class SitnaHelper {
       sitnaControls.share = {
         div: 'shared'
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -401,6 +410,7 @@ export class SitnaHelper {
         div: 'multifeatureinfo',
         active: true
       };
+      showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -430,6 +440,7 @@ export class SitnaHelper {
       // sitnaControls.WFSEdit = {
       //   div: 'wfsedit'
       // };
+      // showToolsButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -505,6 +516,12 @@ export class SitnaHelper {
       const overViewMapElement = document.getElementById('ovmap-tab');
       if (overViewMapElement != null) {
         overViewMapElement.classList.add('tc-hidden');
+      }
+    }
+    if (!showToolsButton) {
+      const toolsElement = document.getElementById('silme-tab');
+      if (toolsElement != null) {
+        toolsElement.classList.add('tc-hidden');
       }
     }
   }
