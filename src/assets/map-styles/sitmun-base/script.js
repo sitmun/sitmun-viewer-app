@@ -33,6 +33,7 @@ var ajustarPanell = function () {
     toc: document.getElementById('toc'),
     links: document.getElementById('links'),
     bms: document.getElementById('bms'),
+    wlm: document.getElementById('wlm'),
     catalog: document.getElementById('catalog'),
     xdata: document.getElementById('xdata')
   };
@@ -47,7 +48,7 @@ var ajustarPanell = function () {
       controlObert = value;
     else value.style.height = null;
     //Agafem els controls que s'han carregat
-    if (value.querySelector('h2') != null || value == controls.links) {
+    if (value.querySelector('h2') != null || value == controls.links ) {
       arrControlsActius.push(value);
     }
   });
@@ -89,7 +90,7 @@ var ajustarPanell = function () {
     controlObert.style.height =
       window.innerHeight -
       (heightControlsActiusMenysControlObert +
-        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight  + 80 )) +
       'px';
 
     switch (true) {
@@ -143,26 +144,33 @@ var ajustarPanellSilme = function () {
   var controlObert = null;
   var mapaElm = document.getElementById('mapa');
   var toolsPanelElm = document.getElementById('silme-panel');
-
+  var navBar = document.getElementsByClassName('nav-bar')[0];
+  var multiFeatureInfo = document.getElementById('multifeatureinfo');
   var controls = {
     localitzar: document.getElementById('localitzar'),
     reports: document.getElementById('reports'),
     measure: document.getElementById('measure'),
     print: document.getElementById('print'),
-    share: document.getElementById('share'),
+    share: document.getElementById('shared'),
+    download: document.getElementById('download'),
+    dataloader: document.getElementById('dataloader'),
     downloadSilme: document.getElementById('downloadSilme'),
-    geolocation: document.getElementById('geolocation')
+    geolocation: document.getElementById('geolocation'),
+    drawmeasuremodify: document.getElementById('drawmeasuremodify')
   };
 
   Object.entries(controls).forEach(([key, value]) => {
-    value.style.height = null;
-    //Agafem els controls que s'han carregat
-    if (value.querySelector('h2') != null) {
-      arrControlsActius.push(value);
+    if(value != null){
+      value.style.height = null;
+
+      //Agafem els controls que s'han carregat
+      if (value.querySelector('h2') != null) {
+        arrControlsActius.push(value);
+      }
+      //Agafem el control actiu en aquest moment
+      if (!value.classList.contains(TC.Consts.classes.COLLAPSED))
+        controlObert = value;
     }
-    //Agafem el control actiu en aquest moment
-    if (!value.classList.contains(TC.Consts.classes.COLLAPSED))
-      controlObert = value;
   });
 
   //Sumem les altures dels controls excepte el que està actiu en aquest moment
@@ -178,7 +186,7 @@ var ajustarPanellSilme = function () {
       window.innerHeight -
       (heightControlsActiusMenysControlObert +
         (mapaElm.offsetHeight -
-          toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
+          toolsPanelElm.querySelector('.panel-content').offsetHeight + navBar.offsetHeight + multiFeatureInfo.offsetHeight)) +
       'px';
   }
 };
@@ -308,6 +316,12 @@ document
       document
         .querySelector('.tc-ctl-nav-home')
         .classList.add('tc-ctl-nav-home-coll');
+      document
+        .querySelector('.tc-ctl-3d')
+        .classList.remove('tc-ctl-3d-exp');
+      document
+        .querySelector('.tc-ctl-3d')
+        .classList.add('tc-ctl-3d-coll');
     }
 
     if (window.innerWidth < 760 || window.innerHeight < 550) {
@@ -335,6 +349,9 @@ document
         document
           .querySelector('.tc-ctl-nav-home')
           .classList.remove(TC.Consts.classes.HIDDEN);
+        document
+          .querySelector('.tc-ctl-3d')
+          .classList.remove(TC.Consts.classes.HIDDEN);
         //document.querySelector('.tc-ctl-sv-btn').classList.remove(TC.Consts.classes.HIDDEN);
         if (document.querySelector('.tc-ctl-sb'))
           document.querySelector('.tc-ctl-sb').style.visibility = 'visible';
@@ -344,6 +361,9 @@ document
         document.querySelector('#silme-panel').classList.add('left-opacity');
         document
           .querySelector('.tc-ctl-nav-home')
+          .classList.add(TC.Consts.classes.HIDDEN);
+        document
+          .querySelector('.tc-ctl-3d')
           .classList.add(TC.Consts.classes.HIDDEN);
         //if (window.innerWidth < 760)
         //document.querySelector('.tc-ctl-sv-btn').classList.add(TC.Consts.classes.HIDDEN);
@@ -364,6 +384,7 @@ h1ImLeftPanel.forEach((item) =>
 
     //var sv = document.querySelector('.tc-ctl-sv');
     var navHome = document.querySelector('.tc-ctl-nav-home');
+    var Component3d = document.querySelector('.tc-ctl-3d');
     var geolocationTrackCenter = document.querySelector(
       '.tc-ctl-geolocation-track-center'
     );
@@ -388,7 +409,10 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('#nav').style.visibility = 'collapse';
         document.querySelector('#BirdEye').style.visibility = 'collapse';
         document.querySelector('#FuScreen').style.visibility = 'collapse';
+        document.querySelector('#StreetView').style.visibility = 'collapse';
         document.querySelector('.tc-ctl-nav-home').style.visibility =
+          'collapse';
+        document.querySelector('.tc-ctl-3d').style.visibility =
           'collapse';
         //document.querySelector(".tc-ctl-sv").style.visibility = "collapse";
       }
@@ -446,6 +470,9 @@ h1ImLeftPanel.forEach((item) =>
       navHome.classList.add('tc-ctl-nav-home-exp');
       navHome.classList.remove('tc-ctl-nav-home-coll');
       navHome.style.left = getCssProperty('nav', 'left');
+      Component3d.classList.add('tc-ctl-3d-exp');
+      Component3d.classList.remove('tc-ctl-3d-coll');
+      Component3d.style.left = getCssProperty('nav', 'left');
 
       document
         .querySelector('#search')
@@ -459,7 +486,9 @@ h1ImLeftPanel.forEach((item) =>
         //document.querySelector("#nav").style.visibility = "unset";
         document.querySelector('#BirdEye').style.visibility = 'unset';
         document.querySelector('#FuScreen').style.visibility = 'unset';
+        document.querySelector('#StreetView').style.visibility = 'unset';
         document.querySelector('.tc-ctl-nav-home').style.visibility = 'unset';
+        document.querySelector('.tc-ctl-3d').style.visibility = 'unset';
         //document.querySelector(".tc-ctl-sv").style.visibility = "unset";
       }
 
@@ -558,6 +587,9 @@ h1ImLeftPanel.forEach((item) =>
         navHome.classList.remove('tc-ctl-nav-home-exp');
         navHome.classList.add('tc-ctl-nav-home-coll');
         navHome.style.left = '';
+        Component3d.classList.remove('tc-ctl-3d-exp');
+        Component3d.classList.add('tc-ctl-3d-coll');
+        Component3d.style.left = '';
         //sv.style.left = "";
         //
       }
@@ -598,6 +630,7 @@ document
     var tab = e.target;
     //var sv = document.querySelector('.tc-ctl-sv');//Silme mv
     var navHome = document.querySelector('.tc-ctl-nav-home'); //Silme mv
+    var Component3d = document.querySelector('.tc-ctl-3d'); //Silme mv
 
     //Silme
     if (window.innerWidth > 760) {
@@ -657,6 +690,8 @@ document
         //sv.classList.remove('tc-ctl-sv-exp');
         navHome.classList.add('tc-ctl-nav-home-coll');
         navHome.classList.remove('tc-ctl-nav-home-exp');
+        Component3d.classList.add('tc-ctl-3d-coll');
+        Component3d.classList.remove('tc-ctl-3d-exp');
         //
         document
           .querySelector('#search')
@@ -926,11 +961,11 @@ if (TC.browserFeatures.touch()) {
               layer,
               type,
               callback.hijacked ||
-                (callback.hijacked = function (event) {
-                  if (!event.propagationStopped) {
-                    callback(event);
-                  }
-                }),
+              (callback.hijacked = function (event) {
+                if (!event.propagationStopped) {
+                  callback(event);
+                }
+              }),
               capture
             );
           } else {
@@ -1136,7 +1171,7 @@ if (TC.browserFeatures.touch()) {
       }
       if (
         this.targetElement !==
-          this.getTargetElementFromEventTarget(event.target) ||
+        this.getTargetElementFromEventTarget(event.target) ||
         this.touchHasMoved(event)
       ) {
         this.trackingClick = false;

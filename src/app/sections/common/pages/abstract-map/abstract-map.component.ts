@@ -70,14 +70,19 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   loadMap(appCfg: AppCfg) {
-    new SITNA.Map('mapa', {
+    const map = new SITNA.Map('mapa', {
       crs: SitnaHelper.toCrs(appCfg),
       initialExtent: SitnaHelper.toInitialExtent(appCfg),
       layout: SitnaHelper.toLayout(appCfg),
       baseLayers: SitnaHelper.toBaseLayers(appCfg),
-      workLayers: SitnaHelper.toWorkLayers(appCfg),
+      // workLayers: SitnaHelper.toWorkLayers(appCfg),
       controls: SitnaHelper.toControls(appCfg),
       views: SitnaHelper.toViews(appCfg)
+    });
+    map.loaded(function () {
+      SitnaHelper.toWelcome(appCfg);
+      SitnaHelper.toHelp(appCfg);
+      SitnaHelper.toInterface();
     });
   }
 

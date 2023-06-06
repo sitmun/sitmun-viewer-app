@@ -82,7 +82,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl-sv .tc-ctl-3d {
-  position: absolute;
+  width: 40px !important;
 }
 
 .tc-ctl-fscreen {
@@ -98,18 +98,18 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
 }
 
 .tc-ctl-sv-btn {
-  /*position: relative;*/
-  /*left: 20px;*/
+  left: 20px;
+  top: 240px !important;
   margin-top: 0;
   background-color: rgba(0, 106, 54, 0.8);
 }
 
 .tc-ctl-3d-btn {
-   position: relative;
-   /*left: 20px;*/
-   margin-top: 0;
-   background-color: rgba(0, 106, 54, 0.8);
- }
+  position: relative;
+  /*left: 20px;*/
+  margin-top: 0;
+  background-color: rgba(0, 106, 54, 0.8);
+}
 
 .tc-ctl-nav .tc-ctl-nav-btn, .tc-ctl-nav-home-btn, .tc-ctl-sv-btn, .tc-ctl-3d-btn, .tc-ctl-be, button.tc-ctl-fscreen-btn, .tc-ctl-nav-home, .tc-ctl-sv, tc-ctl-3d {
   width: 40px !important;
@@ -196,7 +196,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 /* ESCALA ----------------------------------------------------*/
-.tc-ctl-sb, .tc-ctl-scl {
+.tc-ctl-sb, .tc-ctl-scl, .tc-ctl-ss {
   top: auto;
   left: auto;
   right: 0;
@@ -214,6 +214,10 @@ button.tc-ctl-fscreen-btn {
 
 .tc-ctl-sb {
   right: 125px;
+}
+
+.tc-ctl-ss {
+  right: 250px;
 }
 
 .tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
@@ -251,8 +255,12 @@ button.tc-ctl-fscreen-btn {
   transition: right 200ms;
 }
 
-.left-panel > h1, .left-panel .tc-ctl.tc-ctl-nav, .left-panel .tc-ctl-sv-btn, .left-panel .tc-ctl-be, .left-panel .tc-ctl-fscreen, .tc-ctl-sv-exp, .tc-ctl-nav-home-exp {
+.left-panel > h1, .left-panel .tc-ctl.tc-ctl-nav, .left-panel .tc-ctl-sv, .left-panel .tc-ctl-be, .left-panel .tc-ctl-fscreen, .tc-ctl-sv-exp, .tc-ctl-nav-home-exp {
   left: 340px;
+  transition: left 200ms;
+}
+.tc-ctl-3d-exp {
+  left: 360px;
   transition: left 200ms;
 }
 
@@ -287,6 +295,11 @@ button.tc-ctl-fscreen-btn {
 
 .left-collapsed > h1, .left-collapsed .tc-ctl.tc-ctl-nav, .left-collapsed .tc-ctl-sv, .left-collapsed .tc-ctl-be, .left-collapsed .tc-ctl-fscreen, .tc-ctl-sv-coll, .tc-ctl-nav-home-coll {
   left: 20px;
+  transition: left 200ms;
+}
+
+.tc-ctl-3d-coll {
+  left: 65px;
   transition: left 200ms;
 }
 
@@ -333,7 +346,8 @@ button.tc-ctl-fscreen-btn {
   max-height: inherit !important;
 }
 
-#legend, #measure, #share, #download, #downloadSilme, #localitzar, #reports, #ovmapH2, #print, #geolocation, #offline {
+#legend, #measure, #shared, #download, #downloadSilme, #localitzar, #reports, #ovmapH2, #print, #geolocation, #offline, #dataloader, #drawmeasuremodify, #multifeatureinfo
+{
   display: none;
 }
 
@@ -345,12 +359,12 @@ button.tc-ctl-fscreen-btn {
   display: block;
 }
 
-.left-collapsed-silme #measure, .left-collapsed-silme #share, .left-collapsed-silme #download, .left-collapsed-silme #downloadSilme, .left-collapsed-silme #localitzar, .left-collapsed-silme #reports, .left-collapsed-silme #newovmap, .left-collapsed-silme #print, .left-collapsed-silme #geolocation, .left-collapsed-silme #offline {
+.left-collapsed-silme #measure, .left-collapsed-silme #shared, .left-collapsed-silme #download, .left-collapsed-silme #downloadSilme, .left-collapsed-silme #localitzar, .left-collapsed-silme #reports, .left-collapsed-silme #newovmap, .left-collapsed-silme #print, .left-collapsed-silme #geolocation, .left-collapsed-silme #offline,  .left-collapsed-silme #dataloader, .left-collapsed-silme #drawmeasuremodify, .left-collapsed-silme #multifeatureinfo {
   display: block;
   background-color: hsl(0deg 0% 98%);
 }
 
-#measure.tc-collapsed > div, #share.tc-collapsed > div, #download.tc-collapsed > div, #downloadSilme.tc-collapsed > div, #localitzar.tc-collapsed > div, #reports.tc-collapsed > div, #newovmap.tc-collapsed > div, #bms.tc-collapsed > div, #toc.tc-collapsed > div, #catalog.tc-collapsed > div, #xdata.tc-collapsed > div, #print.tc-collapsed > div, #geolocation.tc-collapsed > div, #offline.tc-collapsed > div {
+#measure.tc-collapsed > div, #shared.tc-collapsed > div, #download.tc-collapsed > div, #downloadSilme.tc-collapsed > div, #localitzar.tc-collapsed > div, #reports.tc-collapsed > div, #newovmap.tc-collapsed > div, #bms.tc-collapsed > div, #toc.tc-collapsed > div, #catalog.tc-collapsed > div, #wlm.tc-collapsed > div, #xdata.tc-collapsed > div, #print.tc-collapsed > div, #geolocation.tc-collapsed > div, #offline.tc-collapsed > div, #dataloader.tc-collapsed > div, #drawmeasuremodify.tc-collapsed > div, #multifeatureinfo.tc-collapsed > div {
   display: none;
 }
 
@@ -424,10 +438,15 @@ button.tc-ctl-fscreen-btn {
   background-color: #a51818;
 }
 
-.tc-ctl-legend, .tc-ctl-meas, .tc-ctl-share, .tc-ctl-download, .tc-ctl-bms, .tc-ctl-wlm, .tc-ctl-lcat, .language-links, .tc-ctl-dmm, .tc-ctl-localitzar, .tc-ctl-tctr {
+.tc-ctl-legend, .tc-ctl-meas, .tc-ctl-shared, .tc-ctl-download, .tc-ctl-bms, .tc-ctl-wlm, .tc-ctl-lcat, .language-links, .tc-ctl-dmm, .tc-ctl-m-finfo, .tc-ctl-localitzar, .tc-ctl-tctr, .tc-ctl-dataloader, .tc-ctl-dmm, tc-ctl-m-finfo {
   padding: 0;
   background-color: hsl(0deg 0% 98%);
   /*overflow: auto;*/
+}
+
+.tc-ctl-m-finfo-select input[type=radio]:checked ~ span {
+  background-color: #FF9300;
+  border-color: #FF9300;
 }
 
 .tc-ctl-bms > div {
@@ -453,7 +472,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .tc-btn-localitza {
-  background-color: #7A8500;
+  background-color: #FF9300;
   color: #fff;
   border-radius: 4px;
   border: 0;
@@ -465,7 +484,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .tc-btn-reports {
-  background-color: #7A8500;
+  background-color: #FF9300;
   color: #fff;
   border-radius: 4px;
   border: 0;
@@ -532,7 +551,7 @@ button.tc-ctl-fscreen-btn {
   cursor: pointer;
 }
 
-#measure > h2, #share > h2, #download > h2, #downloadSilme > h2, #localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2, #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #xdata > h2, #print > h2, #geolocation > h2, #offline > h2 {
+#measure > h2, #shared > h2, #download > h2, #downloadSilme > h2, #localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2, #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #wlm > h2, #xdata > h2, #print > h2, #geolocation > h2, #offline > h2, #dataloader > h2, #drawmeasuremodify > h2, #multifeatureinfo > h2 {
   background-position: calc(100% - 10px) 10px, 0 0;
   background-repeat: no-repeat, no-repeat;
   background-size: 20px 20px, 38px 38px;
@@ -583,6 +602,17 @@ button.tc-ctl-fscreen-btn {
   background-position: calc(100% - 10px) 10px, 0 0;
 }
 
+#wlm > h2 {
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaListCapasN.png);
+  background-position: calc(100% - 10px) 10px, 0 0;
+}
+
+#wlm.tc-collapsed > h2 {
+  background-image: url(./img/mapaMasG.png), url(./img/mapaListCapasG.png);
+  background-color: rgba(0, 0, 0, 0.05);
+  background-position: calc(100% - 10px) 10px, 0 0;
+}
+
 #bms > h2 {
   background-image: url(./img/mapaMenosN.png), url(./img/mapaFonsN.png);
   background-position: calc(100% - 10px) 10px, 0 0;
@@ -613,11 +643,11 @@ button.tc-ctl-fscreen-btn {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-#share > h2 {
+#shared > h2 {
   background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
 }
 
-#share.tc-collapsed > h2 {
+#shared.tc-collapsed > h2 {
   background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
   background-color: rgba(0, 0, 0, 0.05);
 }
@@ -655,6 +685,33 @@ button.tc-ctl-fscreen-btn {
 
 #offline.tc-collapsed > h2 {
   background-image: url(./img/mapaMasG.png), url(./img/mapaDownloadG.png);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+#dataloader > h2 {
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+}
+
+#dataloader.tc-collapsed > h2 {
+  background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+#drawmeasuremodify > h2 {
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+}
+
+#drawmeasuremodify.tc-collapsed > h2 {
+  background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+#multifeatureinfo > h2 {
+  background-image: url(./img/mapaMenosN.png), url(./img/mapaShareN.png);
+}
+
+#multifeatureinfo.tc-collapsed > h2 {
+  background-image: url(./img/mapaMasG.png), url(./img/mapaShareG.png);
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -699,7 +756,7 @@ button.tc-ctl-fscreen-btn {
   background-image: none, url(./img/mapaLeyendaN.png);
 }
 
-#measure.tc-collapsed > h2, #share.tc-collapsed > h2, #download.tc-collapsed > h2, #downloadSilme.tc-collapsed > h2, #localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2, #newovmap.tc-collapsed > h2, #bms.tc-collapsed > h2, #toc.tc-collapsed > h2, #catalog.tc-collapsed > h2, #xdata.tc-collapsed > h2, #print.tc-collapsed > h2, #geolocation.tc-collapsed > h2, #offline.tc-collapsed > h2 {
+#measure.tc-collapsed > h2, #shared.tc-collapsed > h2, #download.tc-collapsed > h2, #downloadSilme.tc-collapsed > h2, #localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2, #newovmap.tc-collapsed > h2, #bms.tc-collapsed > h2, #toc.tc-collapsed > h2, #catalog.tc-collapsed > h2, #wlm.tc-collapsed > h2, #xdata.tc-collapsed > h2, #print.tc-collapsed > h2, #geolocation.tc-collapsed > h2, #offline.tc-collapsed > h2, #dataloader.tc-collapsed > h2, #drawmeasuremodify.tc-collapsed > h2, #multifeatureinfo.tc-collapsed > h2 {
   color: #666;
 }
 
@@ -707,7 +764,7 @@ button.tc-ctl-fscreen-btn {
   color: #000;
 }
 
-#measure > div, #share > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #xdata > div, #print > div, #geolocation > div, #offline > div {
+#measure > div, #shared > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #wlm > div, #xdata > div, #print > div, #geolocation > div, #offline > div, #dataloader > div, #drawmeasuremodify > div, #multifeatureinfo > div  {
   padding: 10px;
   border-bottom: 1px solid #eee;
   max-height: 240px;
@@ -715,7 +772,7 @@ button.tc-ctl-fscreen-btn {
   /*display: block;*/
 }
 
-#share > div {
+#shared > div {
   /*height: calc(100vh - 245px);
   overflow: auto;*/
 }
@@ -728,7 +785,7 @@ button.tc-ctl-fscreen-btn {
 
 span.tc-beta {
   color: rgba(201, 219, 3, 0.8);
-  color: #7A8500;
+  color: #FF9300;
   display: none;
   padding-left: 6px;
   font-style: normal;
@@ -789,8 +846,8 @@ span.tc-beta {
 }
 
 .tc-ctl-dmm .tc-ctl-mod > button.tc-active {
-  color: #7A8500;
-  border: 1px solid #7A8500;
+  color: #FF9300;
+  border: 1px solid #FF9300;
 }
 
 .tc-ctl-dmm .tc-ctl-mod-btn-delete {
@@ -825,8 +882,8 @@ span.tc-beta {
 
 .tc-ctl-draw-tools .tc-ctl-btn {
   background-color: #fff;
-  color: #7A8500 !important;
-  box-shadow: 0 0 0 1px #7A8500 inset;
+  color: #FF9300 !important;
+  box-shadow: 0 0 0 1px #FF9300 inset;
 }
 
 .tc-ctl-draw-tools .tc-ctl-btn[disabled] {
@@ -836,7 +893,7 @@ span.tc-beta {
 }
 
 .tc-ctl-draw-tools .tc-ctl-btn.tc-active {
-  background-color: #7A8500 !important;
+  background-color: #FF9300 !important;
   color: #fff !important;
 }
 
@@ -881,34 +938,34 @@ span.tc-beta {
   width: 20%;
 }
 
-.tc-ctl-share .tc-ctl-share-url-box .tc-textbox {
+.tc-ctl-shared .tc-ctl-shared-url-box .tc-textbox {
   background-color: #fff;
   color: #000;
 }
 
-.tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-share-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
+.tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-shared-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
   border: 1px solid #ccc;
   background-color: #f5f5f5;
 }
 
-.tc-ctl-meas-select input[type=radio]:checked ~ span, .tc-ctl-share-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
-  border-color: #7A8500;
-  color: #7A8500;
+.tc-ctl-meas-select input[type=radio]:checked ~ span, .tc-ctl-shared-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
+  border-color: #FF9300;
+  color: #FF9300;
   background-color: #fff;
 }
 
-.tc-ctl-meas-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-share-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:first-child input[type=radio]:checked ~ span {
+.tc-ctl-meas-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-shared-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:first-child input[type=radio]:checked ~ span {
   border-bottom-left-radius: 0.3em;
-  border-bottom-color: #7A8500;
+  border-bottom-color: #FF9300;
 }
 
-.tc-ctl-meas-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-share-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:last-child input[type=radio]:checked ~ span {
+.tc-ctl-meas-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-shared-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:last-child input[type=radio]:checked ~ span {
   border-bottom-right-radius: 0.3em;
-  border-bottom-color: #7A8500;
+  border-bottom-color: #FF9300;
 }
 
 .tc-ctl-btn.tc-ctl-draw-btn-new.tc-active {
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .tc-ctl-draw .tc-ctl-draw-tools > button {
@@ -933,13 +990,13 @@ div.tc-ctl-legend-tree li.tc-ctl-legend-empty {
 
 .tc-map .tc-button, .tc-ctl .tc-button, .tc-modal .tc-button,
 .tc-ctl-geolocation .tc-ctl-geolocation-track-mng input[type="file"] + label {
-  border: 1px solid #7A8500;
-  background-color: #7A8500;
+  border: 1px solid #FF9300;
+  background-color: #FF9300;
 }
 
 .tc-ctl-geolocation .tc-ctl-geolocation-select input[type=radio]:checked ~ span {
-  color: #7A8500;
-  border-color: #7A8500;
+  color: #FF9300;
+  border-color: #FF9300;
 }
 
 #downloadSilme > div.tc-ctl-download-cnt.tc-group.tc-collapsed {
@@ -1005,7 +1062,7 @@ li.tc-ctl-legend-node {
 }
 
 .tc-ctl-search-list a b {
-  color: #7A8500;
+  color: #FF9300;
 }
 
 .tc-ctl-search-content {
@@ -1035,7 +1092,7 @@ li.tc-ctl-legend-node {
   background-position: 2px 1px;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  background-color: #7a8500;
+  background-color: #FF9300;
   display: inline-block;
   vertical-align: top;
   cursor: pointer;
@@ -1066,23 +1123,23 @@ li.tc-ctl-legend-node {
 }
 
 .language-links > a:hover, .help-links > a:hover {
-  background-color: #7A8500;
+  background-color: #FF9300;
   color: #fff;
 }
 
 .tc-ctl-load-dots {
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .tc-group {
   margin: 0;
 }
 
-.tc-ctl-share div.ga-share-icons {
+.tc-ctl-shared div.ga-shared-icons {
   margin: 0 0 0 0;
 }
 
-.tc-ctl-share .ga-share-icon {
+.tc-ctl-shared .ga-shared-icon {
   display: inline-block;
   width: 30px;
   height: 30px;
@@ -1093,31 +1150,39 @@ li.tc-ctl-legend-node {
   background-size: 30px 30px;
 }
 
-.tc-ctl-share .ga-share-icon i::before {
+.tc-ctl-share .ga-share-icon {
+  color: #FF9300;
+}
+
+.tc-ctl-share-select input[type=radio]:checked ~ span {
+  border-color: #FF9300;
+  color: #FF9300;
+}
+
+.tc-ctl-shared .ga-shared-icon i::before {
   content: "";
 }
 
-.share-fb {
+.shared-fb {
   background-image: url(./img/icoFace.png);
   background-color: #38529A;
 }
 
-.share-email {
+.shared-email {
   background-image: url(./img/icoMail.png);
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .qr-generator {
   background-image: url(./img/icoQr.png);
-  background-color: #DC3FFF;
 }
 
-.share-twitter {
+.shared-twitter {
   background-image: url(./img/icoTwitter.png);
   background-color: #55ACEE;
 }
 
-.share-star {
+.shared-star {
   background-image: url(./img/icoStar.png);
   background-color: #FF8422;
 }
@@ -1184,7 +1249,7 @@ ul.tc-ctl-bms-branch > li {
 }
 
 .tc-ctl-bms-node input[type=radio]:checked ~ span {
-  border-color: rgba(201, 219, 3, 1);
+  border-color: #FF9300;
 }
 
 .tc-ctl-wlm ul {
@@ -1216,7 +1281,7 @@ ul.tc-ctl-bms-branch > li {
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-n {
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .tc-ctl-wlm h2 button, .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search::after {
@@ -1244,7 +1309,7 @@ ul.tc-ctl-bms-branch > li {
   position: inherit;
   font-size: 14px;
   cursor: pointer;
-  background-color: #7a8500;
+  background-color: #FF9300;
   width: 20px;
   height: 20px;
   border-radius: 10px;
@@ -1343,7 +1408,7 @@ ul.tc-ctl-bms-branch > li {
   background-size: auto 10px;
   vertical-align: middle;
   cursor: pointer;
-  background-color: #7a8500;
+  background-color: #FF9300;
   width: 20px;
   height: 20px;
   border-radius: 10px;
@@ -1455,7 +1520,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-lcat-search li h5:hover {
-  color: #7A8500;
+  color: #FF9300;
 }
 
 .tc-ctl-lcat-search .tc-group {
@@ -1471,21 +1536,21 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-finfo .tc-ctl-finfo-layer-n {
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .tc-ctl-finfo ul.tc-ctl-finfo-features li.tc-checked table:not(.complexAttr) {
   /*outline: unset;*/
-  outline: 0.2em #7A8500 solid;
-  /*border: 0.2em #7A8500 solid;*/
+  outline: 0.2em #FF9300 solid;
+  /*border: 0.2em #FF9300 solid;*/
 }
 
 .tc-ctl-finfo-tools button {
-  color: #7A8500;
+  color: #FF9300;
 }
 
 .tc-ctl-finfo-tools button:hover {
-  background-color: #7A8500;
+  background-color: #FF9300;
 }
 
 .tc-ctl.tc-ctl-tctr-elm {
@@ -1672,21 +1737,21 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 
 #arbol li.tc-ctl-lcat-node.tc-checked > span {
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #7A8500;
+  color: #FF9300;
   font-style: normal;
 }
 
 #arbol li.tc-ctl-lcat-leaf > span.tc-selectable:hover {
   background-color: inherit !important;
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #7A8500;
+  color: #FF9300;
   cursor: pointer;
 }
 
 #arbol li.tc-ctl-lcat-leaf:hover > span.tc-selectable {
   background-color: inherit !important;
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #7A8500;
+  color: #FF9300;
 }
 
 #arbol li.tc-ctl-lcat-leaf.tc-ctl-lcat-leaf:hover {
@@ -1757,7 +1822,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
   width: 30px;
   height: 30px;
   color: transparent;
-  background-color: #7a8500;
+  background-color: #FF9300;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 36px 36px;
@@ -1865,8 +1930,8 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-3d {
-   top: 346px !important;
- }
+  top: 346px !important;
+}
 
 .no-tools.tc-ctl-sv {
   top: 262px !important;
@@ -2023,7 +2088,7 @@ ul.tc-ctl-lcat-proj-childs {
 
 .tc-ctl-lcat-title {
   border-bottom-width: 2px;
-  border-bottom-color: #7a8500;
+  border-bottom-color: #FF9300;
   border-bottom-style: dotted;
   margin: 1em 0;
 }
@@ -3145,8 +3210,15 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
   }
 
   .left-collapsed .tc-ctl-sv {
-    left: 0;
+    left: 20px;
     right: auto;
+  }
+  .tc-ctl.tc-ctl-3d {
+    left: 20px;
+    z-index: 10001;
+  }
+  .tc-ctl-3d {
+    top: 260px !important;
   }
 
   .tc-ctl-search-txt {
@@ -3285,7 +3357,7 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
     width: calc((100vw - (2vw + 22px)));
   }
 
-  .left-collapsed-legend #legend-tab, .left-collapsed-silme #silme-tab, .left-collapsed-ovmap #ovmap-tab, .left-panel > .panel-content, .left-collapsed > h1, .left-collapsed .tc-ctl.tc-ctl-nav, .left-collapsed .tc-ctl-sv, .left-collapsed .tc-ctl-be, .left-collapsed .tc-ctl-fscreen, .tc-ctl-sv-coll, .tc-ctl-nav-home-coll {
+  .left-collapsed-legend #legend-tab, .left-collapsed-silme #silme-tab, .left-collapsed-ovmap #ovmap-tab, .left-panel > .panel-content, .left-collapsed > h1, .left-collapsed .tc-ctl.tc-ctl-nav, .left-collapsed .tc-ctl-sv, .left-collapsed .tc-ctl-be, .left-collapsed .tc-ctl-fscreen, .tc-ctl-sv-coll, .tc-ctl-nav-home-coll, .tc-ctl-3d-coll {
     transition: unset;
   }
 
@@ -3617,14 +3689,26 @@ height: 100%;
     left: -340px;
   }
 
-  .left-panel > h1, .left-panel .tc-ctl.tc-ctl-nav, .left-panel .tc-ctl-sv-btn, .left-panel .tc-ctl-be, .left-panel .tc-ctl-fscreen, .tc-ctl-sv-exp, .tc-ctl-nav-home-exp {
+  .left-panel > h1, .left-panel .tc-ctl.tc-ctl-nav, .left-panel .tc-ctl-sv, .left-panel .tc-ctl-be, .left-panel .tc-ctl-fscreen, .tc-ctl-sv-exp, .tc-ctl-nav-home-exp {
     left: 340px !important;
     right: auto;
     z-index: 10001;
   }
 
-  .left-collapsed > h1, .left-collapsed .tc-ctl.tc-ctl-nav, .left-collapsed .tc-ctl-sv-btn, .left-collapsed .tc-ctl-be, .left-collapsed .tc-ctl-fscreen, .tc-ctl-sv-coll, .tc-ctl-nav-home-coll {
+  .tc-ctl-3d-exp {
+    left: 384px !important;
+    right: auto;
+    z-index: 10001;
+  }
+
+  .left-collapsed > h1, .left-collapsed .tc-ctl.tc-ctl-nav, .left-collapsed .tc-ctl-sv, .left-collapsed .tc-ctl-be, .left-collapsed .tc-ctl-fscreen, .tc-ctl-sv-coll, .tc-ctl-nav-home-coll {
     left: 20px !important;
+    right: auto;
+    z-index: 10001;
+  }
+
+  .tc-ctl-3d-coll {
+    left: 64px !important;
     right: auto;
     z-index: 10001;
   }
@@ -3642,14 +3726,14 @@ height: 100%;
   }
 
   #canvi-projecte-silme:hover {
-    background-color: #7A8500;
+    background-color: #FF9300;
     color: #fff;
   }
 }
 
 @media (min-width: 930px) {
   .right-panel > .panel-content {
-    top: 0;
+    top: 40px;
     border-top-left-radius: 0;
   }
 
@@ -3679,7 +3763,7 @@ height: 100%;
     max-height: 150px;
   }
 
-  #measure > div, #share > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #xdata > div, #print > div, #geolocation > div, #offline > div {
+  #measure > div, #shared > div, #download > div, #downloadSilme > div, #localitzar > div, #reports > div, #newovmap > div, #bms > div, #toc > div, #xdata > div, #print > div, #geolocation > div, #offline > div {
     /*max-height: 184px;*/
   }
 }

@@ -4,6 +4,8 @@ import {
   SitnaViews
 } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
+import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable } from '@angular/core';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -38,8 +40,11 @@ enum SitnaControlsEnum {
   WFSEdit = 'sitna.WFSEdit',
   WFSQuery = 'sitna.WFSQuery'
 }
-
+var showLegendButton = false;
+var showOverViewMapButton = false;
+@Injectable()
 export class SitnaHelper {
+  constructor(@Inject(DOCUMENT) private document: Document) {}
   static toCrs(apiConfig: AppCfg): string | undefined {
     let crs;
     if (apiConfig.application?.srs) {
@@ -129,6 +134,8 @@ export class SitnaHelper {
       )
     ) {
       sitnaControls.attribution = true;
+    } else {
+      sitnaControls.attribution = false;
     }
     if (
       sitnaControlsFilter.some(
@@ -154,6 +161,8 @@ export class SitnaHelper {
       sitnaControls.coordinates = {
         div: 'coordinates'
       };
+    } else {
+      sitnaControls.coordinates = false;
     }
     if (
       sitnaControlsFilter.some(
@@ -197,7 +206,7 @@ export class SitnaHelper {
       )
     ) {
       sitnaControls.geolocation = {
-        div: 'share'
+        div: 'geolocation'
       };
     }
     if (
@@ -208,6 +217,7 @@ export class SitnaHelper {
       sitnaControls.legend = {
         div: 'legend'
       };
+      showLegendButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -215,6 +225,8 @@ export class SitnaHelper {
       )
     ) {
       sitnaControls.loadingIndicator = true;
+    } else {
+      sitnaControls.loadingIndicator = false;
     }
     if (
       sitnaControlsFilter.some(
@@ -246,7 +258,7 @@ export class SitnaHelper {
     ) {
       //TODO
       // sitnaControls.offlineMapMaker = {
-      //   div: 'offlinemapmaker'
+      //   div: 'offline'
       // };
     }
     if (
@@ -284,6 +296,7 @@ export class SitnaHelper {
           layer: 'mapabase'
         };
       }
+      showOverViewMapButton = true;
     }
     if (
       sitnaControlsFilter.some(
@@ -315,14 +328,14 @@ export class SitnaHelper {
     ) {
       sitnaControls.scaleBar = true;
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.ScaleSelector
-      )
-    ) {
-      //TODO
-      // sitnaControls.scaleSelector = true;
-    }
+    // if (
+    //   sitnaControlsFilter.some(
+    //     (x) => x['ui-control'] === SitnaControlsEnum.ScaleSelector
+    //   )
+    // ) {
+    //   //TODO
+    //   // sitnaControls.scaleSelector = true;
+    // }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Search
@@ -351,14 +364,14 @@ export class SitnaHelper {
         div: 'StreetView'
       };
     }
-    if (
-      sitnaControlsFilter.some((x) => x['ui-control'] === SitnaControlsEnum.TOC)
-    ) {
-      sitnaControls.TOC = {
-        TOC: true,
-        div: 'toc'
-      };
-    }
+    // if (
+    //   sitnaControlsFilter.some((x) => x['ui-control'] === SitnaControlsEnum.TOC)
+    // ) {
+    //   sitnaControls.TOC = {
+    //     TOC: true,
+    //     div: 'toc'
+    //   };
+    // }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.WorkLayerManager
@@ -374,7 +387,7 @@ export class SitnaHelper {
       )
     ) {
       sitnaControls.layerCatalog = {
-        div: 'layercatalog',
+        div: 'catalog',
         enableSearch: true,
         layers: SitnaHelper.toWorkLayers(apiConfig)
       };
@@ -385,6 +398,7 @@ export class SitnaHelper {
       )
     ) {
       sitnaControls.multiFeatureInfo = {
+        div: 'multifeatureinfo',
         active: true
       };
     }
@@ -403,6 +417,8 @@ export class SitnaHelper {
       sitnaControls.featureInfo = {
         persistentHighlights: true
       };
+    } else {
+      sitnaControls.featureInfo = false;
     }
 
     if (
@@ -450,5 +466,46 @@ export class SitnaHelper {
       script: '/assets/map-styles/' + theme + '/script.js',
       i18n: '/assets/map-styles/' + theme + '/resources'
     };
+  }
+  static toWelcome(apiConfig: AppCfg) {
+    if (
+      apiConfig.tasks.some((x) => x['ui-control'] === 'markup-welcome-panel')
+    ) {
+      // (
+      //   document.getElementsByClassName('welcome-panel')[0] as HTMLElement
+      // ).classList.add('tc-hidden');
+    } else {
+      (
+        document.getElementsByClassName('welcome-panel')[0] as HTMLElement
+      ).classList.add('tc-hidden');
+      (
+        document.getElementsByClassName('background-cover')[0] as HTMLElement
+      ).classList.add('tc-hidden');
+    }
+  }
+  static toHelp(apiConfig: AppCfg) {
+    if (apiConfig.tasks.some((x) => x['ui-control'] === 'markup-help-panel')) {
+      (
+        document.getElementsByClassName('help-links')[0] as HTMLElement
+      ).style.display = 'block';
+    } else {
+      (
+        document.getElementsByClassName('help-links')[0] as HTMLElement
+      ).style.display = 'none';
+    }
+  }
+  static toInterface() {
+    if (!showLegendButton) {
+      const legendElement = document.getElementById('legend-tab');
+      if (legendElement != null) {
+        legendElement.classList.add('tc-hidden');
+      }
+    }
+    if (!showOverViewMapButton) {
+      const overViewMapElement = document.getElementById('ovmap-tab');
+      if (overViewMapElement != null) {
+        overViewMapElement.classList.add('tc-hidden');
+      }
+    }
   }
 }
