@@ -21,6 +21,7 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { FormsModule } from '@angular/forms';
+import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { FormsModule } from '@angular/forms';
     PublicLayoutComponent,
     FooterComponent,
     DashboardModalComponent,
-    LoginModalComponent
+    LoginModalComponent,
+    EmbeddedMapComponent
   ],
   imports: [
     BrowserModule,

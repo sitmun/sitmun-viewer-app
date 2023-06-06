@@ -2,8 +2,10 @@ import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, Location } from '@angular/common';
 import { CommonService } from '@api/services/common.service';
+import { TranslateService } from '@ngx-translate/core';
+import { NavigationPath } from '@config/app.config';
 
 @Component({
   selector: 'app-public-map',
@@ -12,6 +14,8 @@ import { CommonService } from '@api/services/common.service';
 })
 export class PublicMapComponent extends AbstractMapComponent {
   constructor(
+    translate: TranslateService,
+    location: Location,
     route: ActivatedRoute,
     router: Router,
     commonService: CommonService,
@@ -20,6 +24,22 @@ export class PublicMapComponent extends AbstractMapComponent {
     el: ElementRef,
     @Inject(DOCUMENT) document: Document
   ) {
-    super(route, router, commonService, modal, renderer, el, document);
+    super(
+      translate,
+      location,
+      route,
+      router,
+      commonService,
+      modal,
+      renderer,
+      el,
+      document
+    );
+  }
+
+  override navigateToMap() {
+    this.router.navigateByUrl(
+      NavigationPath.Section.Public.Map(this.applicationId, this.territoryId)
+    );
   }
 }

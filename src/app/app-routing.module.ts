@@ -4,6 +4,7 @@ import { RoutingDefault } from '@config/app.config';
 import { AuthenticationGuard } from '@auth/services/authentication-guard';
 import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
 import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
+import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
@@ -40,6 +41,10 @@ const routes: Routes = [
         // data: { expectedRoles: Object.values(UserRoles)}
       }
     ]
+  },
+  {
+    path: 'embedded-map/:applicationId/:territoryId/:lang',
+    component: EmbeddedMapComponent
   },
   {
     path: '**',

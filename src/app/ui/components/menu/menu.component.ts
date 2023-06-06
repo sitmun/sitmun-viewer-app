@@ -20,7 +20,7 @@ import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent {
-  username: string = 'admin';
+  username: string = '';
   isLoggedIn: boolean;
   isInLogin: boolean;
   isInMap: boolean;
@@ -37,6 +37,9 @@ export class MenuComponent {
     private location: Location
   ) {
     this.isLoggedIn = this.authenticationService.isLoggedIn();
+    if (this.isLoggedIn) {
+      this.username = this.authenticationService.getLoggedUsername();
+    }
     const path = this.location.path();
     this.isInLogin = path.includes('login');
     this.isInMap = path.includes('map');
