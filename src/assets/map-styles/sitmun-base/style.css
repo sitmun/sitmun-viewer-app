@@ -31,8 +31,20 @@ input[type=range] {
 input[type=range]:focus {
   outline: none;
 }
-
-
+.tc-ctl-edit-mode input[type=radio]:checked ~ span {
+  border-color: #FF9300;
+  border-bottom-color: #FF9300;
+  color: #FF9300;
+}
+.tc-ctl-edit .tc-ctl-edit-mode label span {
+  text-align: left;
+  text-indent: -1000vw;
+}
+.tc-ctl-btn.tc-active {
+  color: white;
+  background-color: #FF9300;
+  border-color: #FF9300;
+}
 /* CORDENADAS-----------------------------------------------*/
 .tc-ctl-coords {
   height: unset;

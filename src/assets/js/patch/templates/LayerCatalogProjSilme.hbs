@@ -1,0 +1,21 @@
+<a class="tc-ctl-lcat-proj-window">
+</a><a class="tc-ctl-lcat-proj-close"></a>
+<h3>{{i18n "changeTopic"}}</h3>
+<div><h4 class="tc-ctl-lcat-title">{{title}}</h4></div>
+<div class="tc-ctl-lcat-proj-content">
+    <div class="tc-ctl-lcat-proj-subtitle">{{i18n "projSubtitle"}}</div>
+    <ul class="tc-ctl-lcat-proj-childs">
+        {{#each projs}}
+        <li class="tc-ctl-proj-branch">
+            <label id="{{id}}" class="tc-ctl-lcat-proj-topic" title="{{tooltip}}" {{#if thumbnail}} style="background-image:url({{thumbnail}})" {{/if}}>
+                {{#if tooltip}}<span class="tc-ctl-lcat-proj-topic-tooltip">{{tooltip}}</span>{{/if}}
+                <span class="tc-ctl-lcat-proj-topic-name">{{name}}</span>
+            </label>
+        </li>
+        {{/each}}
+    </ul>
+</div>
+<a class="tc-ctl-lcat-footer" href="https://ide.cime.es/sitmun" target="_blank">
+    <div class="tc-ctl-lcat-footer-img"></div>
+    <div class="tc-ctl-lcat-footer-text">{{i18n "restrictedAccess"}}</div>
+</a>

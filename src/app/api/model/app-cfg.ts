@@ -1,10 +1,11 @@
 export interface AppCfg {
   application: AppApplication;
-  territory: AppTerritory;
   backgrounds: AppBackground[];
   groups: AppGroup[];
   layers: AppLayer[];
+  services: AppService[];
   tasks: AppTaks[];
+  //trees: AppTree[];
 }
 export interface AppApplication {
   id: number;
@@ -13,9 +14,6 @@ export interface AppApplication {
   theme: string;
   srs: string;
   'situation-map'?: string;
-}
-
-export interface AppTerritory {
   initialExtent: [number, number, number, number];
 }
 
@@ -33,10 +31,11 @@ export interface AppLayer {
   id: string;
   title: string;
   layers: string[];
-  service: AppService;
+  service: string;
 }
 
 export interface AppService {
+  id: string;
   url: string;
   type: string;
   parameters: AppParameters;
@@ -80,5 +79,18 @@ export interface AppControls {
 
 export interface AppTaks {
   id: string;
+  parameters: any;
   'ui-control': string;
 }
+
+// export interface AppTree {
+//   id: string;
+//   title: string;
+//   image: string;
+//   rootNode: string;
+//   nodes: AppNode[];
+// }
+//
+// export interface AppNode {
+//   title: string;
+// }

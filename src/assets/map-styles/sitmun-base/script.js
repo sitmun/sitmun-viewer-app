@@ -1,6 +1,6 @@
 ﻿// document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
 // document.getElementById("logoIns").src = "../assets/IDEMenorca/img/DIBA-logo-300x169.jpg";
-
+function layerCatalogCarregat() {}
 var ajustarPanell = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;

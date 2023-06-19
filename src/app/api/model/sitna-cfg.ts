@@ -1,7 +1,7 @@
 export interface SitnaBaseLayer {
   id: string;
   url: string;
-  layerNames?: string[];
+  layerNames?: string[] | string;
   thumbnail?: string;
   matrixSet?: string;
   format?: string;
@@ -43,6 +43,7 @@ export interface SitnaLayerOptions {
 export interface SitnaControls {
   attribution?: boolean | SitnaControlOptions;
   basemapSelector?: boolean | SitnaControlOptions;
+  BirdEye?: SitnaControlOptions;
   click?: boolean;
   coordinates?: boolean | SitnaControlsCoordinates;
   dataLoader?: boolean | SitnaControlsDataLoader;
@@ -52,6 +53,7 @@ export interface SitnaControls {
   fullScreen?: boolean | SitnaControlOptions;
   geolocation?: boolean | SitnaControlsGeolocation;
   layerCatalog?: boolean | SitnaLayerCatalogOptions;
+  layerCatalogSilme?: any;
   legend: boolean | SitnaControlOptions;
   loadingIndicator?: boolean | SitnaControlOptions;
   measure?: boolean | SitnaControlOptions;
@@ -64,7 +66,7 @@ export interface SitnaControls {
   scale?: boolean | SitnaControlOptions;
   scaleBar?: boolean | SitnaControlOptions;
   scaleSelector?: boolean | SitnaControlOptions;
-  search?: boolean | SitnaControlsSearch;
+  search?: SitnaControlsSearch;
   share?: boolean | SitnaControlOptions;
   streetView?: boolean | SitnaStreetViewOptions;
   TOC?: SitnaControlsTOC;
@@ -195,6 +197,7 @@ export interface SitnaPrintMapLegendOptions {
 }
 
 export interface SitnaControlsSearch extends SitnaControlOptions {
+  div: string;
   cadastralParcel?: boolean | SitnaCadastralSearchOptions;
   coordinates?: boolean;
   instructions?: string; // sets the title of the searchbox

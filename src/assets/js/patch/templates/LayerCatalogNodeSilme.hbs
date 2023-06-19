@@ -1,0 +1,12 @@
+<li {{#if children}} class="tc-ctl-lcat-node tc-collapsed" {{else}} class="tc-ctl-lcat-node tc-ctl-lcat-leaf" {{/if}} data-layer-name="{{name}}" data-layer-uid="{{uid}}" id="{{id}}">
+    {{#if children}}<button aria-label="Collapse Button" class="tc-ctl-lcat-collapse-btn"></button>{{/if}}
+    <span title="{{#if name}}{{title}}{{/if}}">{{title}}</span>{{#if name}}<button title="{{i18n "infoFromThisLayer"}}" class="tc-ctl-lcat-btn-info"></button>{{/if}}
+    {{#if children}}<ul class="tc-ctl-lcat-branch tc-collapsed">
+        {{/if}}
+
+        {{#each children}}
+        {{> tc-ctl-lcat-node}}
+        {{/each}}
+
+        {{#if children}}</ul>{{/if}}
+</li>
