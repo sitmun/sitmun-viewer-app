@@ -8,15 +8,18 @@ import { DashboardSearchboxComponent } from '@ui/components/dashboard-searchbox/
 import { ModalModule } from '@ui/modal/modal.module';
 import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog-filter.pipe';
 import { MenuComponent } from './components/menu/menu.component';
+import { DashboardPaginationComponent } from './components/dashboard-pagination/dashboard-pagination.component';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 @NgModule({
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule],
   declarations: [
     DashboardItemsComponent,
     DashboardButtonsComponent,
     DashboardSearchboxComponent,
     DialogFilterPipe,
-    MenuComponent
+    MenuComponent,
+    DashboardPaginationComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -25,6 +28,7 @@ import { MenuComponent } from './components/menu/menu.component';
     DashboardSearchboxComponent,
     ModalModule,
     DialogFilterPipe,
+    DashboardPaginationComponent,
     MenuComponent
   ],
   providers: []

@@ -26,7 +26,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     if (this.authenticationService.isLoggedIn()) {
-      console.log(new Date().getTime() / 1000);
+      //console.log(new Date().getTime() / 1000);
       const decoded: any = jwt_decode(
         this.authenticationService.getLoggedToken()
       );

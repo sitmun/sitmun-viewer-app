@@ -33,7 +33,10 @@ const territoriesList: DashboardItem[] = [
 export abstract class AbstractDashboardComponent implements OnInit {
   type: DashboardTypes;
   items: DashboardItem[];
-
+  page: number = 1;
+  size: number = 2;
+  keywords: string = '';
+  totalElements: number = 0;
   protected constructor(
     protected router: Router,
     protected commonService: CommonService,
@@ -44,22 +47,24 @@ export abstract class AbstractDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.searchDashboardItems();
+    this.searchDashboardItems(this.page, 1);
   }
 
-  searchDashboardItems(keywords?: string) {
+  searchDashboardItems(page: number, size?: number, keywords?: string) {
     this.commonService
-      .fetchDashboardItems(this.type, keywords)
+      .fetchDashboardItems(this.type, page - 1, this.size, keywords)
       .subscribe((res: DashboardItemsResponse) => {
         this.items = res.content;
+        this.totalElements = res.totalElements;
       });
   }
-
-  /* temporally while territory's path is not implemented */
-  fetchTerritories() {
-    this.items = [...territoriesList];
-  }
-  /**/
+  // fetchTerritories(keywords?: string) {
+  //   this.commonService
+  //     .fetchDashboardItems(this.type, keywords)
+  //     .subscribe((res: DashboardItemsResponse) => {
+  //       this.items = res.content;
+  //     });
+  // }
 
   onTypeChange(type: DashboardTypes) {
     if (type === DashboardTypes.APPLICATIONS) {
@@ -67,12 +72,13 @@ export abstract class AbstractDashboardComponent implements OnInit {
     } else if (type === DashboardTypes.TERRITORIES) {
       this.type = DashboardTypes.TERRITORIES;
       /* temporally while territory's path is not implemented */
-      this.fetchTerritories();
-      return;
+      // this.fetchTerritories();
+      // return;
       /**/
     }
     this.items = [];
-    this.searchDashboardItems();
+    this.page = 1;
+    this.searchDashboardItems(this.page);
   }
 
   abstract navigateToMap(applicationId: number, territoryId: number): any;
@@ -123,11 +129,21 @@ export abstract class AbstractDashboardComponent implements OnInit {
 
   onKeywordsSearch(keywords: string) {
     /* temporally while territory's path is not implemented */
-    if (this.type === DashboardTypes.TERRITORIES) {
-      this.fetchTerritories();
-      return;
-    }
+    // if (this.type === DashboardTypes.TERRITORIES) {
+    //   this.fetchTerritories();
+    //   return;
+    // }
     /**/
-    this.searchDashboardItems(keywords);
+    this.page = 1;
+    this.searchDashboardItems(this.page, this.size, keywords);
+  }
+
+  onPageChange(page: number) {
+    this.page = page;
+    // if (this.type === DashboardTypes.TERRITORIES) {
+    //   this.fetchTerritories();
+    //   return;
+    // }
+    this.searchDashboardItems(page, this.size, this.keywords);
   }
 }

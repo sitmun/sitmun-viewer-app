@@ -103,7 +103,85 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   loadMap(appCfg: AppCfg) {
-    SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);
+    SITNA.Cfg.controls.layerCatalogSilme = {
+      div: 'catalog',
+      enableSearch: true,
+      layerTreeGroups: [{ id: 'node99', title: 'Altres serveis' }],
+      layers: [
+        {
+          id: 'ordenacio',
+          title: "Instruments d'ordenació territorial",
+          hideTitle: false,
+          type: 'WMS',
+          layerNames: ['ordenacio:OR007PTI_solrustic'],
+          url: 'https://ide.cime.es/geoserver/ordenacio/wms/',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'AGE_DPMT Costes',
+          title: 'DPMT Costas',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'http://wms.mapama.es/sig/Costas/DPMT/wms.aspx',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'EEA_Natura2000',
+          title: 'Xarxa Natura 2000',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'https://bio.discomap.eea.europa.eu/arcgis/services/ProtectedSites/Natura2000Sites/MapServer/WMSServer',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'GOIB_EspaisRellAmbiental_IB',
+          title: 'Espais de rellevancia ambiental',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'https://ideib.caib.es/geoserveis/services/public/GOIB_Espais_Rellevancia_Ambiental/MapServer/WMSServer',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'GOIB_OrdTerr_IB',
+          title: 'Figures Llei Espais Naturals',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'https://ideib.caib.es/geoserveis/services/public/GOIB_OrdTerr_IB/MapServer/WMSServer/',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'GOIB_RegEspaisNaturals_IB',
+          title: 'Regulació dels Espais Naturals',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'https://ideib.caib.es/geoserveis/services/public/GOIB_RegEspaisNaturals_IB/MapServer/WMSServer/',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        },
+        {
+          id: 'GOIB_Fotovo_Eol_IB',
+          title: 'Aptitud fotovoltaica i eòlica',
+          hideTitle: false,
+          type: 'WMS',
+          url: 'https://ideib.caib.es/geoserveis/services/public/GOIB_Fotovo_Eol_IB/MapServer/WMSServer/',
+          hideTree: false,
+          format: '',
+          parentGroupNode: 'node99'
+        }
+      ]
+    };
+    //SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);
     const map = new SITNA.Map('mapa', {
       locale: this.locale,
       crs: SitnaHelper.toCrs(appCfg),
@@ -111,7 +189,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       layout: SitnaHelper.toLayout(appCfg),
       baseLayers: SitnaHelper.toBaseLayers(appCfg),
       //workLayers: SitnaHelper.toWorkLayers(appCfg),
-      //controls: SitnaHelper.toControls(appCfg),
+      controls: SitnaHelper.toControls(appCfg),
       views: SitnaHelper.toViews(appCfg)
     });
     map.loaded(function () {

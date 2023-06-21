@@ -22,6 +22,10 @@ import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal
 import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { FormsModule } from '@angular/forms';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
+import { NgxPaginationModule } from 'ngx-pagination';
+import localeEs from '@angular/common/locales/es';
+import { registerLocaleData } from '@angular/common';
+registerLocaleData(localeEs);
 
 @NgModule({
   declarations: [
@@ -47,7 +51,8 @@ import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-m
         deps: [HttpClient]
       }
     }),
-    FormsModule
+    FormsModule,
+    NgxPaginationModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

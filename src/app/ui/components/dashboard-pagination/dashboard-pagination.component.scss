@@ -1,0 +1,12 @@
+::ng-deep{
+  .ngx-pagination{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .ngx-pagination li{
+  }
+  .ngx-pagination .current{
+    background: #FF9300 !important;
+  }
+}

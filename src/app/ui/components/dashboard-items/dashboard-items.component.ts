@@ -7,7 +7,10 @@ import { DashboardItem } from '@api/services/common.service';
   styleUrls: ['./dashboard-items.component.scss']
 })
 export class DashboardItemsComponent {
-  @Input() items: Array<DashboardItem> | undefined;
+  @Input() items: Array<DashboardItem> = [];
+  @Input() page: number = 0;
+  @Input() size: number = 0;
+  @Input() totalElements: number = 0;
   @Output() id = new EventEmitter<number>();
 
   constructor() {}

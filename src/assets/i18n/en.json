@@ -19,5 +19,7 @@
   "menu.hi": "Hi, ",
   "menu.logout": "Log Out",
   "menu.changeApplication": "Switch application",
-  "menu.changeTerritory": "Switch territory"
+  "menu.changeTerritory": "Switch territory",
+  "paginate.previous": "Previous",
+  "paginate.next": "Next"
 }

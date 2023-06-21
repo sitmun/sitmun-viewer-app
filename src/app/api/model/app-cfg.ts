@@ -5,7 +5,7 @@ export interface AppCfg {
   layers: AppLayer[];
   services: AppService[];
   tasks: AppTaks[];
-  //trees: AppTree[];
+  trees: AppTree[];
 }
 export interface AppApplication {
   id: number;
@@ -83,14 +83,22 @@ export interface AppTaks {
   'ui-control': string;
 }
 
-// export interface AppTree {
-//   id: string;
-//   title: string;
-//   image: string;
-//   rootNode: string;
-//   nodes: AppNode[];
-// }
-//
-// export interface AppNode {
-//   title: string;
-// }
+export interface AppTree {
+  id: string;
+  title: string;
+  image: string;
+  rootNode: string;
+  nodes: any;
+}
+
+export interface AppNode {
+  node: string;
+  infoNode: AppNodeInfo[];
+}
+
+export interface AppNodeInfo {
+  title: string;
+  resource: string;
+  isRadio: boolean;
+  children: string[];
+}

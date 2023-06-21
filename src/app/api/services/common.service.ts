@@ -18,11 +18,13 @@ export interface DashboardItem {
   img?: string;
   id: number;
   title: string;
+  name?: string;
   type?: string;
 }
 
 export interface DashboardItemsResponse {
   content: Array<DashboardItem>;
+  totalElements: number;
 }
 
 export interface ApplicationDto {
@@ -71,7 +73,12 @@ const applications: ApplicationDto[] = [
 export class CommonService {
   constructor(private http: HttpClient) {}
 
-  fetchDashboardItems(dashboardType: DashboardTypes, keywords?: string) {
+  fetchDashboardItems(
+    dashboardType: DashboardTypes,
+    page?: number,
+    size?: number,
+    keywords?: string
+  ) {
     let path;
     switch (dashboardType) {
       case DashboardTypes.APPLICATIONS:
@@ -80,6 +87,12 @@ export class CommonService {
       case DashboardTypes.TERRITORIES:
         path = URL_API_TERRITORIES;
         break;
+    }
+    if (page != undefined && page >= 0) {
+      path += '?page=' + page;
+    }
+    if (size) {
+      path += '&size=' + size;
     }
     if (keywords) {
       path += '?keywords=' + keywords;

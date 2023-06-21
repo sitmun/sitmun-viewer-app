@@ -19,5 +19,7 @@
   "menu.hi": "Hola, ",
   "menu.logout": "Tancar sessió",
   "menu.changeApplication": "Canviar aplicació",
-  "menu.changeTerritory": "Canviar territori"
+  "menu.changeTerritory": "Canviar territori",
+  "paginate.previous": "Anterior",
+  "paginate.next": "Següent"
 }

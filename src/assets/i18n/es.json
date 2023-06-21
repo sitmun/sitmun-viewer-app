@@ -19,5 +19,7 @@
   "menu.hi": "Hola, ",
   "menu.logout": "Cerrar Sesión",
   "menu.changeApplication": "Cambiar aplicación",
-  "menu.changeTerritory": "Cambiar territorio"
+  "menu.changeTerritory": "Cambiar territorio",
+  "paginate.previous": "Anterior",
+  "paginate.next": "Siguiente"
 }

@@ -1,5 +1,6 @@
 <div class="cards-container">
-  <div class="card" *ngFor="let item of items" (click)="onCardClicked(item.id)">
+  <div class="card" *ngFor="let item of items | paginate: { currentPage: page.toString(), itemsPerPage: size, totalItems: totalElements, id:'pagination_dashboard'
+  }" (click)="onCardClicked(item.id)">
     <ng-container *ngIf="item.img; else noimg">
       <div class="card-img">
         <img [src]="item.img">
@@ -11,7 +12,7 @@
       </div>
     </ng-template>
     <div class="card-titles">
-      <label>{{'dashboardPage.name' | translate}}: {{item.title}}</label>
+      <label>{{'dashboardPage.name' | translate}}: {{item.title}} {{item.name}}</label>
       <label>{{'dashboardPage.id' | translate}}: {{item.id}}</label>
     </div>
   </div>

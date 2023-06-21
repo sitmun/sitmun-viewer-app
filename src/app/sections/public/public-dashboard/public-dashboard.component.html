@@ -1,5 +1,6 @@
 <div class="dashboard-container">
   <app-dashboard-buttons (type)="onTypeChange($event)"/>
   <app-dashboard-searchbox (keywords)="onKeywordsSearch($event)"/>
-  <app-dashboard-items [items]="items" (id)="onCardClicked($event)"/>
+  <app-dashboard-items [items]="items" (id)="onCardClicked($event)" [page]="page" [size]="size" [totalElements]="totalElements"/>
+  <app-dashboard-pagination (page)="onPageChange($event)"/>
 </div>
