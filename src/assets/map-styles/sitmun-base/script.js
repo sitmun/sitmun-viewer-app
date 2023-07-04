@@ -12,6 +12,7 @@ var ajustarPanell = function () {
   var toolsPanelElmContent = toolsPanelElm.querySelector('.panel-content');
   var bmsElmTree = document.querySelector('.tc-ctl-bms-tree');
   var wlmElmContent = document.querySelector('.tc-ctl-wlm-content');
+  var navBar = document.getElementsByClassName('nav-bar')[0];
 
   tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
 
@@ -86,12 +87,22 @@ var ajustarPanell = function () {
         heightControlsActiusMenysControlObert +=
           obj.querySelector('h2').offsetHeight;
     });
+    if(navBar){
+      controlObert.style.height =
+        window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) - navBar.offsetHeight +
+        'px';
+    }
 
-    controlObert.style.height =
-      window.innerHeight -
-      (heightControlsActiusMenysControlObert +
-        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight  + 80 )) +
-      'px';
+    else {
+      controlObert.style.height =
+        window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+        'px';
+    }
+
 
     switch (true) {
       case controlObert == controls.bms:
@@ -125,6 +136,39 @@ var ajustarPanell = function () {
       40 +
       'px';
   }
+  // console.log("prueba", document.getElementById('bms').classList.value)
+  // if(document.getElementById('bms').classList.value == "tc-ctl tc-ctl-bms") {
+  //   // console.log(document.getElementById('bms').offsetHeight)
+  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight - document.getElementById('bms').offsetHeight + 'px';
+  //   // console.log(document.getElementById('catalog').style.height);
+  // }
+  //
+  // if(document.getElementById('wlm').classList.value == "tc-ctl tc-ctl-wlm") {
+  //   console.log(document.getElementById('wlm').offsetHeight)
+  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight - document.getElementById('wlm').offsetHeight + 'px';
+  //   console.log(document.getElementById('catalog').style.height);
+  // }
+  //
+  // if(document.getElementById('wlm').classList.value == "tc-ctl tc-ctl-wlm tc-collapsed") {
+  //   console.log(document.getElementById('wlm').offsetHeight)
+  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight + document.getElementById('wlm').offsetHeight + 'px';
+  //   console.log(document.getElementById('catalog').style.height);
+  // }
+
+  if(document.getElementById('wlm').classList.value =="tc-ctl tc-ctl-wlm") {
+    document.getElementById('catalog').classList.add(TC.Consts.classes.COLLAPSED);
+    document.getElementById('bms').classList.add(TC.Consts.classes.COLLAPSED);
+  }
+
+  if(document.getElementById('bms').classList.value =="tc-ctl tc-ctl-bms") {
+    document.getElementById('catalog').classList.add(TC.Consts.classes.COLLAPSED);
+    document.getElementById('wlm').classList.add(TC.Consts.classes.COLLAPSED);
+  }
+  // if(document.querySelector('tc-ctl tc-ctl-bms').contains('tc-collapsed') != null) {
+  //   document.querySelector('.tc-ctl tc-ctl-lcat').style.height =
+  //     document.querySelector('.tc-ctl tc-ctl-lcat').style.height -
+  //     document.querySelector('.tc-ctl tc-ctl-bms').style.height + 'px'
+  // }
 };
 
 function matches(el, selector) {
@@ -183,12 +227,24 @@ var ajustarPanellSilme = function () {
 
   if (controlObert) {
     //Assignem el height necessàri al control actiu perque ocupi tota l'alçada del panell tinguent en compte els headers dels altres controls
-    controlObert.style.height =
-      window.innerHeight -
-      (heightControlsActiusMenysControlObert +
-        (mapaElm.offsetHeight -
-          toolsPanelElm.querySelector('.panel-content').offsetHeight + navBar.offsetHeight + multiFeatureInfo.offsetHeight)) +
-      'px';
+    if(navBar){
+      controlObert.style.height =
+        window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight -
+            toolsPanelElm.querySelector('.panel-content').offsetHeight + navBar.offsetHeight + multiFeatureInfo.offsetHeight)) +
+        'px';
+    }
+
+    else {
+      controlObert.style.height =
+        window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight -
+            toolsPanelElm.querySelector('.panel-content').offsetHeight + multiFeatureInfo.offsetHeight)) +
+        'px';
+    }
+
   }
 };
 
@@ -468,13 +524,16 @@ h1ImLeftPanel.forEach((item) =>
       //    geolocationTrackCenter.classList.add('tc-ctl-sv-exp');
       //    geolocationTrackCenter.classList.remove('tc-ctl-sv-coll');
       //}
-      navHome.classList.add('tc-ctl-nav-home-exp');
-      navHome.classList.remove('tc-ctl-nav-home-coll');
-      navHome.style.left = getCssProperty('nav', 'left');
-      Component3d.classList.add('tc-ctl-3d-exp');
-      Component3d.classList.remove('tc-ctl-3d-coll');
-      Component3d.style.left = getCssProperty('nav', 'left');
-
+      if (navHome && navHome!=undefined){
+        navHome.classList.add('tc-ctl-nav-home-exp');
+        navHome.classList.remove('tc-ctl-nav-home-coll');
+        navHome.style.left = getCssProperty('nav', 'left');
+      }
+      if (Component3d && Component3d!=undefined){
+        Component3d.classList.add('tc-ctl-3d-exp');
+        Component3d.classList.remove('tc-ctl-3d-coll');
+        Component3d.style.left = getCssProperty('nav', 'left');
+      }
       document
         .querySelector('#search')
         .classList.toggle('search-left-collapsed');
@@ -585,12 +644,16 @@ h1ImLeftPanel.forEach((item) =>
         //    geolocationTrackCenter.classList.remove('tc-ctl-sv-exp');
         //    geolocationTrackCenter.classList.add('tc-ctl-sv-coll');
         //}
-        navHome.classList.remove('tc-ctl-nav-home-exp');
-        navHome.classList.add('tc-ctl-nav-home-coll');
-        navHome.style.left = '';
-        Component3d.classList.remove('tc-ctl-3d-exp');
-        Component3d.classList.add('tc-ctl-3d-coll');
-        Component3d.style.left = '';
+        if (navHome && navHome!=undefined) {
+          navHome.classList.remove('tc-ctl-nav-home-exp');
+          navHome.classList.add('tc-ctl-nav-home-coll');
+          navHome.style.left = '';
+        }
+        if (Component3d && Component3d!=undefined) {
+          Component3d.classList.remove('tc-ctl-3d-exp');
+          Component3d.classList.add('tc-ctl-3d-coll');
+          Component3d.style.left = '';
+        }
         //sv.style.left = "";
         //
       }

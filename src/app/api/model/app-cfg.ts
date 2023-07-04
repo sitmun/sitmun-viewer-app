@@ -4,7 +4,7 @@ export interface AppCfg {
   groups: AppGroup[];
   layers: AppLayer[];
   services: AppService[];
-  tasks: AppTaks[];
+  tasks: AppTasks[];
   trees: AppTree[];
 }
 export interface AppApplication {
@@ -44,6 +44,8 @@ export interface AppService {
 export interface AppParameters {
   matrixSet?: string;
   format?: string;
+  SRS?: string;
+  VERSION?: string;
 }
 
 export interface AppControls {
@@ -77,7 +79,7 @@ export interface AppControls {
   click?: boolean;
 }
 
-export interface AppTaks {
+export interface AppTasks {
   id: string;
   parameters: any;
   'ui-control': string;
@@ -86,7 +88,7 @@ export interface AppTaks {
 export interface AppTree {
   id: string;
   title: string;
-  image: string;
+  image: string | null;
   rootNode: string;
   nodes: any;
 }

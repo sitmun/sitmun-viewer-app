@@ -89,7 +89,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl.tc-ctl-nav {
-  top: 114px;
+  top: 130px;
   left: 20px;
 }
 
@@ -859,9 +859,7 @@ span.tc-beta {
 }
 
 .tc-ctl-dmm-cmd {
-  display: block;
-  padding-top: 5px;
-  width: 100%;
+  width: 40%;
   position: inherit;
 }
 
@@ -1063,7 +1061,7 @@ li.tc-ctl-legend-node {
 #search {
   position: fixed;
   top: 85px;
-  left: 180px;
+  left: 200px;
   width: 300px;
   background-color: rgba(255, 255, 255, 0.14);
   z-index: 9998;
@@ -1614,6 +1612,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
   padding: 0 !important;
   max-height: inherit;
   overflow: auto;
+  overflow-x: hidden;
 }
 
 #arbol > div > img {
@@ -3768,7 +3767,9 @@ height: 100%;
     color: #fff;
   }
 }
-
+.tc-ctl-wfsedit-btn-edit {
+  display: none;
+}
 @media (min-width: 930px) {
   .right-panel > .panel-content {
     top: 40px;
@@ -3788,7 +3789,7 @@ height: 100%;
   }
 
   #arbol, .tc-ctl-lcat-search {
-    height: calc(100vh - 229px);
+    height: calc(100vh - 229px - 140px);
   }
 
   #search.tc-ctl.tc-ctl-search.search-left-collapsed {

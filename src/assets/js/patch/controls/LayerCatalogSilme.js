@@ -911,17 +911,19 @@ if (!TC.control.LayerCatalog) {
     function agafaKeywords(node) {
         // Toastr
         var keywordList = node.KeywordList;
-        if (Array.isArray(keywordList.Keyword)) {
-            for (var i = 0; i < keywordList.Keyword.length; i++) {
+        if (keywordList!=undefined){
+            if (Array.isArray(keywordList.Keyword)) {
+              for (var i = 0; i < keywordList.Keyword.length; i++) {
                 if (keywordList.Keyword[i] != null && keywordList.Keyword[i].includes("* ")) {
-                    //alert("Desactualitzat");
-                    toastr.info(keywordList.Keyword[i].substr(keywordList.Keyword[i].indexOf("* ") + 2), "Atenció");
+                  //alert("Desactualitzat");
+                  toastr.info(keywordList.Keyword[i].substr(keywordList.Keyword[i].indexOf("* ") + 2), "Atenció");
                 }
-            }
-        } else {
-            if (keywordList != '' && keywordList.Keyword.includes("Aquesta cartografia no és vigent")) {
+              }
+            } else {
+              if (keywordList != '' && keywordList.Keyword.includes("Aquesta cartografia no és vigent")) {
                 // alert("Desactualitzat"); // *  --> mostra missatge a continuació
                 toastr.info(keywordList.Keyword.substr(keywordList.Keyword.indexOf("* ") + 2), "Atenció");
+             }
             }
         }
     }
