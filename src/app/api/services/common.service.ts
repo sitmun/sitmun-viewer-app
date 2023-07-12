@@ -102,21 +102,20 @@ export class CommonService {
   }
 
   fetchTerritoriesByApplication(id: number, keywords?: string) {
-    // let path = `${URL_API_APPLICATIONS}/${id}/territories`;
-    // if (keywords) {
-    //   path += '?keywords=' + keywords;
-    // }
-    // return this.http.get<Array<TerritoryDto>>(environment.apiUrl + path);
-    return of(territories);
+    let path = `${URL_API_APPLICATIONS}/${id}/territories`;
+    if (keywords) {
+      path += '?keywords=' + keywords;
+    }
+    return this.http.get<Array<TerritoryDto>>(environment.apiUrl + path);
   }
 
   fetchApplicationsByTerritory(id: number, keywords?: string) {
-    // let path = `${URL_API_TERRITORIES}/${id}/applications`;
-    // if (keywords) {
-    //   path += '?keywords=' + keywords;
-    // }
-    // return this.http.get<Array<ApplicationDto>>(environment.apiUrl + path);
-    return of(applications);
+    let path = `${URL_API_TERRITORIES}/${id}/applications`;
+    if (keywords) {
+      path += '?keywords=' + keywords;
+    }
+    return this.http.get<Array<ApplicationDto>>(environment.apiUrl + path);
+    // return of(applications);
   }
 
   fetchMapConfiguration(appId: number, territoryId: number) {

@@ -19,7 +19,10 @@ export class NavigationBarComponent {
   }
 
   logoClicked() {
-    this.router.navigateByUrl('/');
+    // fix
+    this.router.navigateByUrl('/').then(() => {
+      window.location.reload();
+    });
   }
 
   onShowMenu() {

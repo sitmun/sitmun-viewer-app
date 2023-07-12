@@ -49,7 +49,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       this.territoryId = Number(params['territoryId']);
       if (this.isInEmbedded) {
         this.locale = this.parseLang(params['lang']);
-        console.log(this.locale);
       }
       this.clearMap();
       this.commonService

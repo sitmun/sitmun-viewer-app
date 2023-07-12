@@ -9,7 +9,6 @@ export class DashboardPaginationComponent {
   @Output() page = new EventEmitter<number>();
   constructor() {}
   handlePageChange(page: number): void {
-    console.log(page);
     this.page.emit(page);
   }
 }

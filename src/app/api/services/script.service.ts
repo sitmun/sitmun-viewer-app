@@ -1,11 +1,21 @@
 import { Injectable } from '@angular/core';
-
 interface Scripts {
   name: string;
   src: string;
 }
 export const ScriptStore: Scripts[] = [
-  { name: 'sitna', src: '../../../assets/js/sitna/sitna.js' }
+  { name: 'sitna', src: '../../../assets/js/sitna/sitna.js' },
+  {
+    name: 'sitmunLayerCatalog',
+    src: '../../../assets/js/patch/LayerCatalogSilme.js'
+  },
+  { name: 'sitmunModal', src: '../../../assets/js/patch/SilmeModal.js' },
+  { name: 'sitmunSupport', src: '../../../assets/js/patch/SilmeSupport.js' },
+  { name: 'sitmunTree', src: '../../../assets/js/patch/SilmeTree.js' },
+  {
+    name: 'sitmunProxification',
+    src: '../../../assets/js/patch/SitmunProxification.js'
+  }
 ];
 
 declare var document: any;
@@ -28,6 +38,19 @@ export class ScriptService {
   load(...scripts: string[]) {
     var promises: any[] = [];
     scripts.forEach((script) => promises.push(this.loadScript(script)));
+    return Promise.all(promises);
+  }
+
+  loadAll() {
+    var promises: any[] = [];
+    [
+      'sitna',
+      'sitmunLayerCatalog',
+      'sitmunModal',
+      'sitmunSupport',
+      'sitmunTree',
+      'sitmunProxification'
+    ].forEach((script) => promises.push(this.loadScript(script)));
     return Promise.all(promises);
   }
 

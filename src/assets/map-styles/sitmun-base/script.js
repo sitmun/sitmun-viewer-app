@@ -8,167 +8,176 @@ var ajustarPanell = function () {
   var tocElm = document.getElementById('toc');
   //var arbolElm = document.getElementById('arbol');
   var mapaElm = document.getElementById('mapa');
-  var toolsPanelElm = document.getElementById('tools-panel');
-  var toolsPanelElmContent = toolsPanelElm.querySelector('.panel-content');
-  var bmsElmTree = document.querySelector('.tc-ctl-bms-tree');
-  var wlmElmContent = document.querySelector('.tc-ctl-wlm-content');
-  var navBar = document.getElementsByClassName('nav-bar')[0];
+  // Si no hay mapa, esto no tiene sentido.
+  if (mapaElm) {
+    var toolsPanelElm = document.getElementById('tools-panel');
+    var toolsPanelElmContent = toolsPanelElm
+      ? toolsPanelElm.querySelector('.panel-content')
+      : null;
+    var bmsElmTree = document.querySelector('.tc-ctl-bms-tree');
+    var wlmElmContent = document.querySelector('.tc-ctl-wlm-content');
+    var navBar = document.getElementsByClassName('nav-bar')[0];
 
-  tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
+    tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
 
-  bmsElmTree.style.height = null;
-  bmsElmTree.style.maxHeight = null;
-  bmsElmTree.querySelector('ul').style.maxHeight = null;
-  if (wlmElmContent != null) {
-    //TODO - DELETE
-    wlmElmContent.style.maxHeight = null;
-    wlmElmContent.querySelector('ul').style.maxHeight = null;
-  }
-
-  if (tocHeightBefore != tocElm.offsetHeight) {
-    //arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
-    tocHeightBefore = tocElm.offsetHeight;
-  }
-
-  var controls = {
-    toc: document.getElementById('toc'),
-    links: document.getElementById('links'),
-    bms: document.getElementById('bms'),
-    wlm: document.getElementById('wlm'),
-    catalog: document.getElementById('catalog'),
-    xdata: document.getElementById('xdata')
-  };
-
-  Object.entries(controls).forEach(([key, value]) => {
-    //Agafem el control actiu en aquest moment
-    if (
-      !value.classList.contains(TC.Consts.classes.COLLAPSED) &&
-      value != controls.catalog &&
-      value != controls.links
-    )
-      controlObert = value;
-    else value.style.height = null;
-    //Agafem els controls que s'han carregat
-    if (value.querySelector('h2') != null || value == controls.links ) {
-      arrControlsActius.push(value);
+    bmsElmTree.style.height = null;
+    bmsElmTree.style.maxHeight = null;
+    bmsElmTree.querySelector('ul').style.maxHeight = null;
+    if (wlmElmContent != null) {
+      //TODO - DELETE
+      wlmElmContent.style.maxHeight = null;
+      wlmElmContent.querySelector('ul').style.maxHeight = null;
     }
-  });
 
-  if (!controls.catalog.classList.contains(TC.Consts.classes.COLLAPSED)) {
-    //Sumem les altures dels controls excepte el que està actiu en aquest moment
-    arrControlsActius.forEach((obj) => {
-      if (obj == controls.links)
-        heightControlsActiusMenysControlObert += obj.offsetHeight;
-      else if (obj != controlObert)
-        heightControlsActiusMenysControlObert +=
-          obj.querySelector('h2').offsetHeight;
-      else heightControlsActiusMenysControlObert += obj.offsetHeight;
+    if (tocHeightBefore != tocElm.offsetHeight) {
+      //arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
+      tocHeightBefore = tocElm.offsetHeight;
+    }
+
+    var controls = {
+      toc: document.getElementById('toc'),
+      links: document.getElementById('links'),
+      bms: document.getElementById('bms'),
+      wlm: document.getElementById('wlm'),
+      catalog: document.getElementById('catalog'),
+      xdata: document.getElementById('xdata')
+    };
+
+    Object.entries(controls).forEach(([key, value]) => {
+      //Agafem el control actiu en aquest moment
+      if (
+        !value.classList.contains(TC.Consts.classes.COLLAPSED) &&
+        value != controls.catalog &&
+        value != controls.links
+      )
+        controlObert = value;
+      else value.style.height = null;
+      //Agafem els controls que s'han carregat
+      if (value.querySelector('h2') != null || value == controls.links) {
+        arrControlsActius.push(value);
+      }
     });
 
-    //arbolElm.style.height = window.innerHeight -
-    //    (heightControlsActiusMenysControlObert +
-    //        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-    //    'px';
+    if (!controls.catalog.classList.contains(TC.Consts.classes.COLLAPSED)) {
+      //Sumem les altures dels controls excepte el que està actiu en aquest moment
+      arrControlsActius.forEach((obj) => {
+        if (obj == controls.links)
+          heightControlsActiusMenysControlObert += obj.offsetHeight;
+        else if (obj != controlObert)
+          heightControlsActiusMenysControlObert +=
+            obj.querySelector('h2').offsetHeight;
+        else heightControlsActiusMenysControlObert += obj.offsetHeight;
+      });
 
-    const selector = document.querySelector('.tc-ctl-lcat-search');
-    if (selector) {
-      selector.style.height =
-        window.innerHeight -
-        (heightControlsActiusMenysControlObert +
-          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-        'px';
-    }
-  } else if (controlObert != null) {
-    //Sumem les altures dels controls excepte el que està actiu en aquest moment
-    arrControlsActius.forEach((obj) => {
-      if (obj == controls.links)
-        heightControlsActiusMenysControlObert += obj.offsetHeight;
-      else if (obj != controlObert)
-        heightControlsActiusMenysControlObert +=
-          obj.querySelector('h2').offsetHeight;
-    });
-    if(navBar){
-      controlObert.style.height =
-        window.innerHeight -
-        (heightControlsActiusMenysControlObert +
-          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) - navBar.offsetHeight +
-        'px';
-    }
+      //arbolElm.style.height = window.innerHeight -
+      //    (heightControlsActiusMenysControlObert +
+      //        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+      //    'px';
 
-    else {
-      controlObert.style.height =
-        window.innerHeight -
-        (heightControlsActiusMenysControlObert +
-          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-        'px';
-    }
-
-
-    switch (true) {
-      case controlObert == controls.bms:
-        bmsElmTree.style.height = 'unset';
-        //bmsElmTree.style.maxHeight = 'unset';
-        bmsElmTree.style.maxHeight =
-          toolsPanelElmContent.offsetHeight -
-          (controls.toc.offsetHeight +
-            controls.catalog.offsetHeight +
-            controls.xdata.offsetHeight +
-            controls.links.offsetHeight +
-            controls.bms.querySelector('h2').offsetHeight +
-            20) +
+      const selector = document.querySelector('.tc-ctl-lcat-search');
+      if (selector) {
+        selector.style.height =
+          window.innerHeight -
+          (heightControlsActiusMenysControlObert +
+            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
           'px';
+      }
+    } else if (controlObert != null) {
+      //Sumem les altures dels controls excepte el que està actiu en aquest moment
+      arrControlsActius.forEach((obj) => {
+        if (obj == controls.links)
+          heightControlsActiusMenysControlObert += obj.offsetHeight;
+        else if (obj != controlObert)
+          heightControlsActiusMenysControlObert +=
+            obj.querySelector('h2').offsetHeight;
+      });
+      if (navBar) {
+        controlObert.style.height =
+          window.innerHeight -
+          (heightControlsActiusMenysControlObert +
+            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) -
+          navBar.offsetHeight +
+          'px';
+      }
+      const selector = document.querySelector('.tc-ctl-lcat-search');
+      if (selector) {
+        selector.style.height =
+          window.innerHeight -
+          (heightControlsActiusMenysControlObert +
+            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+          'px';
+      }
+    } else if (controlObert != null) {
+      //Sumem les altures dels controls excepte el que està actiu en aquest moment
+      arrControlsActius.forEach((obj) => {
+        if (obj == controls.links)
+          heightControlsActiusMenysControlObert += obj.offsetHeight;
+        else if (obj != controlObert)
+          heightControlsActiusMenysControlObert +=
+            obj.querySelector('h2').offsetHeight;
+      });
 
-        bmsElmTree.querySelector('ul').style.maxHeight = 'unset';
-        return;
-      case controlObert == controls.toc:
-        wlmElmContent.style.maxHeight = 'unset';
-        wlmElmContent.querySelector('ul').style.maxHeight = 'unset';
-        return;
-      case controlObert == controls.xdata:
-        return;
+      if (navBar) {
+        controlObert.style.height =
+          window.innerHeight -
+          (heightControlsActiusMenysControlObert +
+            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) -
+          navBar.offsetHeight +
+          'px';
+      } else {
+        controlObert.style.height =
+          window.innerHeight -
+          (heightControlsActiusMenysControlObert +
+            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+          'px';
+      }
+
+      switch (true) {
+        case controlObert == controls.bms:
+          bmsElmTree.style.height = 'unset';
+          //bmsElmTree.style.maxHeight = 'unset';
+          bmsElmTree.style.maxHeight =
+            toolsPanelElmContent.offsetHeight -
+            (controls.toc.offsetHeight +
+              controls.catalog.offsetHeight +
+              controls.xdata.offsetHeight +
+              controls.links.offsetHeight +
+              controls.bms.querySelector('h2').offsetHeight +
+              20) +
+            'px';
+
+          bmsElmTree.querySelector('ul').style.maxHeight = 'unset';
+          return;
+        case controlObert == controls.toc:
+          wlmElmContent.style.maxHeight = 'unset';
+          wlmElmContent.querySelector('ul').style.maxHeight = 'unset';
+          return;
+        case controlObert == controls.xdata:
+          return;
+      }
+    }
+    //40 és el height en px del header h2, lo que passa que si el header està collapsed dóna 0 i per açò no ho fem per codi
+    if (document.querySelector('.tc-ctl-legend-tree') != null) {
+      document.querySelector('.tc-ctl-legend-tree').style.height =
+        document.querySelector('.tc-ctl-legend-tree').parentElement
+          .parentElement.offsetHeight -
+        40 +
+        'px';
     }
   }
-  //40 és el height en px del header h2, lo que passa que si el header està collapsed dóna 0 i per açò no ho fem per codi
-  if (document.querySelector('.tc-ctl-legend-tree') != null) {
-    document.querySelector('.tc-ctl-legend-tree').style.height =
-      document.querySelector('.tc-ctl-legend-tree').parentElement.parentElement
-        .offsetHeight -
-      40 +
-      'px';
-  }
-  // console.log("prueba", document.getElementById('bms').classList.value)
-  // if(document.getElementById('bms').classList.value == "tc-ctl tc-ctl-bms") {
-  //   // console.log(document.getElementById('bms').offsetHeight)
-  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight - document.getElementById('bms').offsetHeight + 'px';
-  //   // console.log(document.getElementById('catalog').style.height);
-  // }
-  //
-  // if(document.getElementById('wlm').classList.value == "tc-ctl tc-ctl-wlm") {
-  //   console.log(document.getElementById('wlm').offsetHeight)
-  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight - document.getElementById('wlm').offsetHeight + 'px';
-  //   console.log(document.getElementById('catalog').style.height);
-  // }
-  //
-  // if(document.getElementById('wlm').classList.value == "tc-ctl tc-ctl-wlm tc-collapsed") {
-  //   console.log(document.getElementById('wlm').offsetHeight)
-  //   document.getElementById('catalog').style.height = document.getElementById('catalog').offsetHeight + document.getElementById('wlm').offsetHeight + 'px';
-  //   console.log(document.getElementById('catalog').style.height);
-  // }
-
-  if(document.getElementById('wlm').classList.value =="tc-ctl tc-ctl-wlm") {
-    document.getElementById('catalog').classList.add(TC.Consts.classes.COLLAPSED);
+  if (document.getElementById('wlm').classList.value == 'tc-ctl tc-ctl-wlm') {
+    document
+      .getElementById('catalog')
+      .classList.add(TC.Consts.classes.COLLAPSED);
     document.getElementById('bms').classList.add(TC.Consts.classes.COLLAPSED);
   }
 
-  if(document.getElementById('bms').classList.value =="tc-ctl tc-ctl-bms") {
-    document.getElementById('catalog').classList.add(TC.Consts.classes.COLLAPSED);
+  if (document.getElementById('bms').classList.value == 'tc-ctl tc-ctl-bms') {
+    document
+      .getElementById('catalog')
+      .classList.add(TC.Consts.classes.COLLAPSED);
     document.getElementById('wlm').classList.add(TC.Consts.classes.COLLAPSED);
   }
-  // if(document.querySelector('tc-ctl tc-ctl-bms').contains('tc-collapsed') != null) {
-  //   document.querySelector('.tc-ctl tc-ctl-lcat').style.height =
-  //     document.querySelector('.tc-ctl tc-ctl-lcat').style.height -
-  //     document.querySelector('.tc-ctl tc-ctl-bms').style.height + 'px'
-  // }
 };
 
 function matches(el, selector) {
@@ -205,7 +214,7 @@ var ajustarPanellSilme = function () {
   };
 
   Object.entries(controls).forEach(([key, value]) => {
-    if(value != null){
+    if (value != null) {
       value.style.height = null;
 
       //Agafem els controls que s'han carregat
@@ -227,24 +236,24 @@ var ajustarPanellSilme = function () {
 
   if (controlObert) {
     //Assignem el height necessàri al control actiu perque ocupi tota l'alçada del panell tinguent en compte els headers dels altres controls
-    if(navBar){
+    if (navBar) {
       controlObert.style.height =
         window.innerHeight -
         (heightControlsActiusMenysControlObert +
           (mapaElm.offsetHeight -
-            toolsPanelElm.querySelector('.panel-content').offsetHeight + navBar.offsetHeight + multiFeatureInfo.offsetHeight)) +
+            toolsPanelElm.querySelector('.panel-content').offsetHeight +
+            navBar.offsetHeight +
+            multiFeatureInfo.offsetHeight)) +
         'px';
-    }
-
-    else {
+    } else {
       controlObert.style.height =
         window.innerHeight -
         (heightControlsActiusMenysControlObert +
           (mapaElm.offsetHeight -
-            toolsPanelElm.querySelector('.panel-content').offsetHeight + multiFeatureInfo.offsetHeight)) +
+            toolsPanelElm.querySelector('.panel-content').offsetHeight +
+            multiFeatureInfo.offsetHeight)) +
         'px';
     }
-
   }
 };
 
@@ -373,12 +382,8 @@ document
       document
         .querySelector('.tc-ctl-nav-home')
         .classList.add('tc-ctl-nav-home-coll');
-      document
-        .querySelector('.tc-ctl-3d')
-        .classList.remove('tc-ctl-3d-exp');
-      document
-        .querySelector('.tc-ctl-3d')
-        .classList.add('tc-ctl-3d-coll');
+      document.querySelector('.tc-ctl-3d').classList.remove('tc-ctl-3d-exp');
+      document.querySelector('.tc-ctl-3d').classList.add('tc-ctl-3d-coll');
     }
 
     if (window.innerWidth < 760 || window.innerHeight < 550) {
@@ -469,8 +474,7 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('#StreetView').style.visibility = 'collapse';
         document.querySelector('.tc-ctl-nav-home').style.visibility =
           'collapse';
-        document.querySelector('.tc-ctl-3d').style.visibility =
-          'collapse';
+        document.querySelector('.tc-ctl-3d').style.visibility = 'collapse';
         //document.querySelector(".tc-ctl-sv").style.visibility = "collapse";
       }
 
@@ -524,12 +528,12 @@ h1ImLeftPanel.forEach((item) =>
       //    geolocationTrackCenter.classList.add('tc-ctl-sv-exp');
       //    geolocationTrackCenter.classList.remove('tc-ctl-sv-coll');
       //}
-      if (navHome && navHome!=undefined){
+      if (navHome && navHome != undefined) {
         navHome.classList.add('tc-ctl-nav-home-exp');
         navHome.classList.remove('tc-ctl-nav-home-coll');
         navHome.style.left = getCssProperty('nav', 'left');
       }
-      if (Component3d && Component3d!=undefined){
+      if (Component3d && Component3d != undefined) {
         Component3d.classList.add('tc-ctl-3d-exp');
         Component3d.classList.remove('tc-ctl-3d-coll');
         Component3d.style.left = getCssProperty('nav', 'left');
@@ -644,12 +648,12 @@ h1ImLeftPanel.forEach((item) =>
         //    geolocationTrackCenter.classList.remove('tc-ctl-sv-exp');
         //    geolocationTrackCenter.classList.add('tc-ctl-sv-coll');
         //}
-        if (navHome && navHome!=undefined) {
+        if (navHome && navHome != undefined) {
           navHome.classList.remove('tc-ctl-nav-home-exp');
           navHome.classList.add('tc-ctl-nav-home-coll');
           navHome.style.left = '';
         }
-        if (Component3d && Component3d!=undefined) {
+        if (Component3d && Component3d != undefined) {
           Component3d.classList.remove('tc-ctl-3d-exp');
           Component3d.classList.add('tc-ctl-3d-coll');
           Component3d.style.left = '';
@@ -1025,11 +1029,11 @@ if (TC.browserFeatures.touch()) {
               layer,
               type,
               callback.hijacked ||
-              (callback.hijacked = function (event) {
-                if (!event.propagationStopped) {
-                  callback(event);
-                }
-              }),
+                (callback.hijacked = function (event) {
+                  if (!event.propagationStopped) {
+                    callback(event);
+                  }
+                }),
               capture
             );
           } else {
@@ -1235,7 +1239,7 @@ if (TC.browserFeatures.touch()) {
       }
       if (
         this.targetElement !==
-        this.getTargetElementFromEventTarget(event.target) ||
+          this.getTargetElementFromEventTarget(event.target) ||
         this.touchHasMoved(event)
       ) {
         this.trackingClick = false;

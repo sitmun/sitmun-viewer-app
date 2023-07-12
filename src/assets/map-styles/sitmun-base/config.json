@@ -1,7 +1,7 @@
 {
   "i18n": true,
   "stateful": true,
-  "googleMapsKey": "AIzaSyAGhsd6DYwDBY8SyJ8T-2jdtD2joxlxIHA",
+  "googleMapsKey": "",
   "elevation": {
     "resolution": 20,
     "sampleNumber": 200,

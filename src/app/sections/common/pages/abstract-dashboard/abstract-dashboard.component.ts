@@ -107,6 +107,11 @@ export abstract class AbstractDashboardComponent implements OnInit {
       }
       this.navigateToMap(applicationId, territoryId);
     } else {
+      if (this.type === DashboardTypes.TERRITORIES) {
+        items = items.map((i: any) => {
+          return { id: i.id, name: i.title };
+        });
+      }
       this.openModal(id, items);
     }
   }
@@ -118,13 +123,11 @@ export abstract class AbstractDashboardComponent implements OnInit {
     } else if (this.type === DashboardTypes.TERRITORIES) {
       response = this.commonService.fetchApplicationsByTerritory(id);
     }
-    response?.subscribe(
-      (items: Array<ApplicationDto> | Array<TerritoryDto>) => {
-        if (items.length) {
-          this.switchLength(items, id);
-        }
+    response?.subscribe((items: any) => {
+      if (items.content && items.content.length) {
+        this.switchLength(items.content, id);
       }
-    );
+    });
   }
 
   onKeywordsSearch(keywords: string) {
