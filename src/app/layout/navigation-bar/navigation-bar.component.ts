@@ -20,10 +20,6 @@ export class NavigationBarComponent {
 
   logoClicked() {
     this.router.navigate(['/']);
-    // fix
-    /*this.router.navigateByUrl('/').then(() => {
-      window.location.reload();
-    });*/
   }
 
   onShowMenu() {
