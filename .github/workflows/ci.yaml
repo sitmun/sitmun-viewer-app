@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - name: Cache node modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    - name: Before install
+      run: npm set //npm.pkg.github.com/:_authToken ${{secrets.TOKEN_FOR_WORKFLOWS}}
+    - name: Install dependencies
+      run: npm ci
+    # Uncomment this when the karma tests are in green
+    # - name: Unit tests
+    #  run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadless --code-coverage
+    - name: Build for deployment
+      run: npm run build -- --configuration=testdeployment
+    - name: Deploy to GitHub pages
+      env:
+        USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
+        GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
+      run: ./build-scripts/deploy.sh
+      shell: bash
