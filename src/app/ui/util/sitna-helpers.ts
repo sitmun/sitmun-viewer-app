@@ -727,11 +727,11 @@ export class SitnaHelper {
     }
 
     return {
-      config: '/assets/map-styles/' + theme + '/config.json',
-      markup: '/assets/map-styles/' + theme + '/markup.html',
-      style: '/assets/map-styles/' + theme + '/style.css',
-      script: '/assets/map-styles/' + theme + '/script.js',
-      i18n: '/assets/map-styles/' + theme + '/resources'
+      config: 'assets/map-styles/' + theme + '/config.json',
+      markup: 'assets/map-styles/' + theme + '/markup.html',
+      style: 'assets/map-styles/' + theme + '/style.css',
+      script: 'assets/map-styles/' + theme + '/script.js',
+      i18n: 'assets/map-styles/' + theme + '/resources'
     };
   }
   static toWelcome(apiConfig: AppCfg) {
