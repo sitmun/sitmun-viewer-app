@@ -64,5 +64,10 @@ registerLocaleData(localeEs);
 export class AppModule {}
 
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
-  return new TranslateHttpLoader(http);
+  return new TranslateHttpLoader(
+    http,
+    'assets/i18n/', // By default, this seems to be an absolute path, see:
+                          // <https://github.com/ngx-translate/core/blob/master/packages/http-loader/lib/http-loader.ts>
+    '.json'
+  );
 }
