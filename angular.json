@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "sitmun-viewer-app": {
+    "viewer-app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/sitmun-viewer-app",
+            "outputPath": "dist/viewer-app",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -100,10 +100,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "sitmun-viewer-app:build:production"
+              "browserTarget": "viewer-app:build:production"
             },
             "development": {
-              "browserTarget": "sitmun-viewer-app:build:development"
+              "browserTarget": "viewer-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -111,7 +111,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "sitmun-viewer-app:build"
+            "browserTarget": "viewer-app:build"
           }
         },
         "test": {

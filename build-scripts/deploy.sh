@@ -14,7 +14,7 @@ if [ -n "$GITHUB_API_KEY" ]; then
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
      fi
-     git add admin-app/*
+     git add viewer.app/*
      git commit -m "Deployment of the sitmun-viewer-app client"
 #    # Make sure to make the output quiet, or else the API token will leak!
 #    # This works because the API key can replace your password.
