@@ -104,6 +104,9 @@
             },
             "development": {
               "browserTarget": "viewer-app:build:development"
+            },
+            "testdeployment": {
+              "browserTarget": "viewer-app:build:testdeployment"
             }
           },
           "defaultConfiguration": "development"
