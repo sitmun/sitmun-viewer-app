@@ -53,10 +53,7 @@ const routes: Routes = [
   }
 ];
 
-let useHash = false;
-if (environment.hashLocationStrategy) {
-  useHash = true;
-}
+let useHash = environment.hashLocationStrategy;
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: useHash })],
