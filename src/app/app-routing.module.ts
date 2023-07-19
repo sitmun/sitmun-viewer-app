@@ -5,6 +5,7 @@ import { AuthenticationGuard } from '@auth/services/authentication-guard';
 import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
 import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
+import { environment } from '../environments/environment';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
@@ -52,8 +53,13 @@ const routes: Routes = [
   }
 ];
 
+let useHash = false;
+if (environment.hashLocationStrategy) {
+  useHash = true;
+}
+
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { useHash: useHash })],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
