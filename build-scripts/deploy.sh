@@ -9,6 +9,8 @@ if [ -n "$GITHUB_API_KEY" ]; then
      git clone https://github.com/sitmun/sitmun.github.io.git
      cd sitmun.github.io
      cp -r "$GITHUB_WORKSPACE"/dist/viewer-app ./docs
+     # See <https://docs.angular.lat/guide/deployment#deploy-to-github-pages> for this:
+     cp ./docs/viewer-app/index.html ./docs/viewer-app/404.html
      # In GitHub Actions, set user and email for git repo
      if [ -n "$CI" ]; then
         git config user.name "GitHub Actions Bot"
