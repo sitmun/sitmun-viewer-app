@@ -35,11 +35,3 @@ jobs:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       run: npm run deploy -- --name=${{secrets.USERNAME_FOR_WORKFLOWS}} --email="<>" --base-href=/sitmun-viewer-app/ --build-target=viewer-app:build:testdeployment
 
-    #- name: Build for deployment
-    #  run: npm run build -- --configuration=testdeployment
-    #- name: Deploy to GitHub pages
-    #  env:
-    #    USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
-    #    GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
-    #  run: ./build-scripts/deploy.sh
-    #  shell: bash
