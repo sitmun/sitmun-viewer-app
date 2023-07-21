@@ -1,0 +1,11 @@
+<li {?children}class="tc-ctl-lcat-node tc-collapsed"{:else}class="tc-ctl-lcat-node tc-ctl-lcat-leaf"{/children} data-layer-name="{name}" data-layer-uid="{uid}" id="{id}">
+    {?children}<button aria-label="Collapse Button" class="tc-ctl-lcat-collapse-btn"></button>{/children}
+    <span title="{?name}{title}{/name}">{title}</span>{?name}<button title="{@i18n $key=" infoFromThisLayer"/}" class="tc-ctl-lcat-btn-info"></button>{/name}
+    {?children}<ul class="tc-ctl-lcat-branch tc-collapsed">{/children}
+
+        {#children}
+        {>tc-ctl-lcat-node:./}
+        {/children}
+
+    {?children}</ul>{/children}
+</li>

@@ -1,0 +1,50 @@
+<h2>
+    {@i18n $key="availableLayers"/}
+    {?enableSearch}
+    {?layerTrees}
+    <button class="tc-ctl-lcat-btn-search" title="{@i18n $key="searchLayersByText"/}"></button>
+    <label id="canvi-projecte-silme" class="tc-ctl-lcat-btn-search-silme" title="{@i18n $key="changeTopicOrganization"/}">{@i18n $key="changeTopic"/}</label>
+    {/layerTrees}
+    {?layers}
+    <button class="tc-ctl-lcat-btn-search" title="{@i18n $key="searchLayersByText"/}"></button>
+    <label id="canvi-projecte-silme" class="tc-ctl-lcat-btn-search-silme" title="{@i18n $key="changeTopicOrganization"/}">{@i18n $key="changeTopic"/}</label>
+    {/layers}
+    {/enableSearch}
+</h2>
+
+
+<div class="tc-ctl-lcat-search tc-hidden tc-collapsed">
+    <div class="tc-group">
+        <input type="search" class="tc-ctl-lcat-input tc-textbox" placeholder="{@i18n $key="textToSearchInLayers"/}">
+    </div>
+    <ul></ul>
+
+</div>
+
+<div class="tc-ctl-lcat-tree" id="arbol">
+    {?layerTrees}
+    <ul class="tc-ctl-lcat-branch">
+        {#layerTrees}
+        {>tc-ctl-lcat-branch:./}
+        {/layerTrees}
+    </ul>
+    {:else}
+        {?layers}
+            <ul class="tc-ctl-lcat-branch">
+                {#layers}
+                    <li data-layer-id="{id}" title="{@i18n $key="loadingLayers"/}" class="tc-ctl-lcat-loading-node"> {title}</li>
+                {/layers}
+            </ul>
+        {:else}
+            <div class="tc-ctl tc-ctl-lcat-loading">
+                <span>{@i18n $key="loadingLayerTree"/}...</span>
+            </div>
+        {/layers}
+    {/layerTrees}
+</div>
+<div class="tc-ctl-lcat-info tc-hidden">
+    {>tc-ctl-lcat-info:./}
+</div>
+<div id="projects" class="tc-ctl-lcat-proj tc-hidden">
+    {>tc-ctl-lcat-proj:./}
+</div>

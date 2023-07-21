@@ -1,0 +1,90 @@
+<a class="tc-ctl-lcat-info-close"></a>
+<h2>{{i18n "layerInfo"}}</h2>
+<div><h3 class="tc-ctl-lcat-title test">{{title}}</h3></div>
+<div class="tc-ctl-lcat-info-content">
+    {{#if name}}
+    <div class="tc-ctl-lcat-name">
+        {{#if isGroup}}
+        <h4 id="lcat-info-title">{{i18n "groupLayerId"}}</h4>
+        {{else}}
+        <h4 id="lcat-info-title">{{i18n "layerId"}}</h4>
+        {{/if}}
+        <div id="lcat-info"><pre>{{{name}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if metadata}}
+    <div class="tc-ctl-lcat-metadata">
+        <!--<h4>{{i18n "metadata"}}</h4>-->
+        {{#each metadata}}
+        <a href="{{{url}}}" type="{{{format}}}" title="{{{formatDescription}}}" target="_blank">{{{formatDescription}}}</a>
+        {{/each}}
+    </div>
+    {{/if}}
+    {{#if dataUrl}}
+    <div class="tc-ctl-lcat-descarregadades">
+        <!--<h4>{{i18n "descarregadades"}}</h4>-->
+        {{#each dataUrl}}
+        <a href="{{{url}}}" type="{{{format}}}" title="{{{formatDescription}}}" target="_blank">{{{formatDescription}}}</a>
+        {{/each}}
+    </div>
+    {{/if}}
+    {{#if url}}
+    <div class="tc-ctl-lcat-url">
+        <h4>{{i18n "url"}}</h4>
+        <a href="{{{url}}}?service=wms&amp;request=getcapabilities" target="_blank">{{{url}}}</a>
+    </div>
+    {{/if}}
+    {{#if abstract}}
+    <div class="tc-ctl-lcat-abstract">
+        {{#if isGroup}}
+        <h4>{{i18n "groupAbstract"}}</h4>
+        {{else}}
+        <h4>{{i18n "abstract"}}</h4>
+        {{/if}}
+        <div><pre>{{{abstract}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if parentAbstract}}
+    <div class="tc-ctl-lcat-parentAbstract">
+        <h4>{{i18n "parentAbstract"}}</h4>
+        <div><pre>{{{parentAbstract}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if contactPerson}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactPerson"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactPerson}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if contactOrganization}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactOrganization"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{ontactOrganization}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if contactMail}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactMail"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactMail}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if contactTelephone}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactTelephone"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactTelephone}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if fees}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "fees"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{fees}}}</pre></div>
+    </div>
+    {{/if}}
+    {{#if accessConstraints}}
+    <div class="tc-ctl-lcat-info-data">
+        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "accessConstraints"}}</h4>
+        <div class="tc-ctl-lcat-info-data-content"><pre>{{{accessConstraints}}}</pre></div>
+    </div>
+    {{/if}}
+
+</div>

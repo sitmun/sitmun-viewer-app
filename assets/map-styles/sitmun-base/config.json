@@ -1,0 +1,20 @@
+{
+  "i18n": true,
+  "stateful": true,
+  "googleMapsKey": "",
+  "elevation": {
+    "resolution": 20,
+    "sampleNumber": 200,
+    "hillDeltaThreshold": 20,
+    "services": [
+      "elevationServiceIGNEs",
+      {
+        "name": "elevationServiceGoogle",
+        "allowedGeometryTypes": [
+          "polyline",
+          "polygon"
+        ]
+      }
+    ]
+  }
+}

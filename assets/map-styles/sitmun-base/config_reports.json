@@ -1,0 +1,97 @@
+{
+  "i18n": true,
+  "stateful": true,
+  "googleMapsKey": "AIzaSyAGhsd6DYwDBY8SyJ8T-2jdtD2joxlxIHA",
+  "elevation": {
+    "resolution": 20,
+    "sampleNumber": 200,
+    "hillDeltaThreshold": 20,
+    "services": [
+      "elevationServiceIGNEs",
+      {
+        "name": "elevationServiceGoogle",
+        "allowedGeometryTypes": [
+          "polyline",
+          "polygon"
+        ]
+      }
+    ]
+  },
+  "controls": {
+    "navBar": {
+      "div": "nav"
+    },
+    "legend": {
+      "div": "legend"
+    },
+    "BirdEye": {
+      "div": "BirdEye"
+    },
+    "FullScreen": {
+      "div": "FuScreen"
+    },
+    "basemapSelectorSilme": {
+      "div": "bms"
+    },
+    "geolocation": {
+      "div": "geolocation"
+    },
+    "WFSQuery": true,
+    "workLayerManagerSilme": {
+      "div": "toc"
+    },
+    "coordinates": {
+      "div": "coordinates"
+    },
+    "controlContainer": {
+      "div": "ccontainer"
+    },
+    "search": {
+      "div": "search"
+    },
+    "reports": {
+      "div": "reports"
+    },
+    "tabContainer": {
+      "div": "xdata",
+      "defaultSelection": 0,
+      "title": "addMaps",
+      "controls": [
+        {
+          "name": "externalWMSSilme",
+          "title": "addWMS",
+          "options": {
+            "suggestions": [
+              {
+                "group": "WMS",
+                "items": [
+                  {
+                    "name": "Ortofoto 1989 IDEIB",
+                    "url": "https://ideib.caib.es/geoserveis/services/imatges/GOIB_Ortofoto_1989_IB/MapServer/WMSServer/"
+                  },
+                  {
+                    "name": "SIGPAC",
+                    "url": "http://wms.magrama.es/wms/wms.aspx"
+                  }
+                ]
+              }
+            ],
+            "enableDragAndDrop": false
+          }
+        },
+        {
+          "name": "fileImport",
+          "title": null,
+          "options": {
+            "suggestions": null,
+            "enableDragAndDrop": true
+          }
+        }
+      ]
+    },
+    "popup": true,
+    "attribution": true,
+    "scale": true,
+    "scaleBar": true
+  }
+}
