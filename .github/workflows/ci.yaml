@@ -30,11 +30,16 @@ jobs:
     # Uncomment this when the karma tests are in green
     # - name: Unit tests
     #  run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadless --code-coverage
-    - name: Build for deployment
-      run: npm run build -- --configuration=testdeployment
-    - name: Deploy to GitHub pages
+    - name: Build and deploy to GitHub pages
       env:
-        USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
-        GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
-      run: ./build-scripts/deploy.sh
-      shell: bash
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      run: npm run deploy -- --name=${{secrets.USERNAME_FOR_WORKFLOWS}} --email="<>" --base-href=/sitmun-viewer-app/ --build-target=viewer-app:build:testdeployment
+
+    #- name: Build for deployment
+    #  run: npm run build -- --configuration=testdeployment
+    #- name: Deploy to GitHub pages
+    #  env:
+    #    USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
+    #    GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
+    #  run: ./build-scripts/deploy.sh
+    #  shell: bash

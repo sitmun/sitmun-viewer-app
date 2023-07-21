@@ -66,7 +66,7 @@
               ]
             },
             "testdeployment": {
-              "baseHref": "https://sitmun.github.io/viewer-app/",
+              "baseHref": "https://sitmun.github.io/sitmun-viewer-app/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -94,7 +94,7 @@
               ]
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -146,6 +146,9 @@
               "src/**/*.html"
             ]
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy"
         }
       }
     }

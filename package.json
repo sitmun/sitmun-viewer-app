@@ -7,7 +7,8 @@
     "build": "export NODE_OPTIONS=--openssl-legacy-provider && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "npx eslint --quiet --fix src && npx prettier --write src"
+    "lint": "npx eslint --quiet --fix src && npx prettier --write src",
+    "deploy": "ng deploy"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +23,7 @@
     "@angular/router": "^16.0.0",
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
+    "angular-cli-ghpages": "^1.0.6",
     "jwt-decode": "^3.1.2",
     "ngx-pagination": "^6.0.3",
     "rxjs": "~7.5.0",
@@ -46,8 +48,8 @@
     "jasmine-core": "~4.3.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
-    "karma-coverage-istanbul-reporter": "~3.0.2",
     "karma-coverage": "~2.2.0",
+    "karma-coverage-istanbul-reporter": "~3.0.2",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "2.8.6",
