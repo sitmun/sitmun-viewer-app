@@ -2,6 +2,43 @@
   "i18n": true,
   "stateful": true,
   "googleMapsKey": "",
+  "tabContainer": {
+      "div": "xdata",
+      "defaultSelection": 0,
+      "title": "addMaps",
+      "controls": [
+        {
+          "name": "externalWMS",
+          "title": "addWMS",
+          "options": {
+            "suggestions": [
+              {
+                "group": "WMS",
+                "items": [
+                  {
+                    "name": "Catastro",
+                    "url": "https://ovc.catastro.meh.es/Cartografia/WMS/ServidorWMS.aspx"
+                  },
+                  {
+                    "name": "SIGPAC",
+                    "url": "http://wms.magrama.es/wms/wms.aspx"
+                  }
+                ]
+              }
+            ],
+            "enableDragAndDrop": false
+          }
+        },
+        {
+          "name": "fileImport",
+          "title": null,
+          "options": {
+            "suggestions": null,
+            "enableDragAndDrop": true
+          }
+        }
+      ]
+    },
   "elevation": {
     "resolution": 20,
     "sampleNumber": 200,
