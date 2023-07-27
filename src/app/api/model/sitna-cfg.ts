@@ -54,6 +54,7 @@ export interface SitnaControls {
   geolocation?: boolean | SitnaControlsGeolocation;
   layerCatalog?: boolean | SitnaLayerCatalogOptions;
   layerCatalogSilme?: any;
+  externalWMSSilme?: any;
   legend: boolean | SitnaControlOptions;
   loadingIndicator?: boolean | SitnaControlOptions;
   measure?: boolean | SitnaControlOptions;
