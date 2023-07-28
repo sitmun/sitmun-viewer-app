@@ -869,7 +869,7 @@ if (!TC.control.LayerCatalog) {
         }).then(function () {
             //mv 20210527 açò ho hem afegit per que carregui la capa corresponent després d'afegir un nou servei
             //a l'arbre de capes des del control localitzar (trams i fites de camí de cavalls, però podrien ser altres)
-            if (pendingLayer) {
+            if (typeof pendingLayer !== 'undefined') {
                 silmeAddLayer(pendingLayer)
                 pendingLayer = null;
             }
