@@ -198,7 +198,7 @@ export class SitnaHelper {
     } else {
       sitnaControls.coordinates = false;
     }
-    if (
+    /*if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.DataLoader
       )
@@ -209,14 +209,15 @@ export class SitnaHelper {
       if (dataLoader) {
         if (dataLoader.parameters == null) {
           sitnaControls.dataLoader = {
-            div: 'dataloader'
+            div: 'dataloader',
+            wmsSuggestions: []
           };
         } else {
           sitnaControls.printMap = dataLoader.parameters;
         }
       }
       showToolsButton = true;
-    }
+    }*/
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Download
@@ -696,6 +697,7 @@ export class SitnaHelper {
             }
           }
         }
+        ltg.push({id: "node99", title: "Altres serveis"}); // SILME - MV 20230727
         layerCatalogSilme = {
           div: 'catalog',
           enableSearch: true,
