@@ -192,7 +192,7 @@ export class SitnaHelper {
             div: 'coordinates'
           };
         } else {
-          sitnaControls.printMap = coordinates.parameters;
+          sitnaControls.coordinates = coordinates.parameters;
         }
       }
     } else {
@@ -567,7 +567,7 @@ export class SitnaHelper {
             persistentHighlights: true
           };
         } else {
-          sitnaControls.printMap = featureInfo.parameters;
+          sitnaControls.featureInfo = featureInfo.parameters;
         }
       }
     } else {
@@ -716,7 +716,16 @@ export class SitnaHelper {
       apiConfig.tasks.some((x) => x['ui-control'] === SitnaControlsEnum.ThreeD)
     ) {
       sitnaViews.threeD = {
-        div: 'threedMap'
+        div: 'threedMap',
+        controls: [
+          'threeD',
+          'navBar',
+          'navBarHome',
+          'basemapSelector',
+          'layerCatalogSilme',
+          'workLayerManager',
+          'legend'
+        ]
       };
     }
     return sitnaViews;

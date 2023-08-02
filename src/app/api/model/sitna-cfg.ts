@@ -329,6 +329,8 @@ export interface SitnaViews {
 }
 export interface SitnaThreeDView {
   div: string;
+  controls?: string[];
+
 }
 
 export interface SitnaControlsWFSEdit {
