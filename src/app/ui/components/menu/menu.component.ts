@@ -5,12 +5,12 @@ import { Location } from '@angular/common';
 import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { NavigationPath } from '@config/app.config';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
-  ApplicationDto,
   CommonService,
   DashboardTypes,
-  TerritoryDto
+  ItemDto,
+  ResponseDto
 } from '@api/services/common.service';
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 
@@ -28,7 +28,6 @@ export class MenuComponent {
   territoryId!: number;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private translate: TranslateService,
     private authenticationService: AuthenticationService<unknown>,
@@ -90,11 +89,7 @@ export class MenuComponent {
     }
   }
 
-  openModal(
-    id: number,
-    type: DashboardTypes,
-    items: Array<ApplicationDto> | Array<TerritoryDto>
-  ) {
+  openModal(id: number, type: DashboardTypes, items: Array<ItemDto>) {
     const ref = this.modal.open(DashboardModalComponent, {
       data: { id: id, type: type, items: items }
     });
@@ -111,16 +106,18 @@ export class MenuComponent {
     const response = this.commonService.fetchApplicationsByTerritory(
       this.territoryId
     );
-    response?.subscribe((applications: Array<ApplicationDto>) => {
-      if (applications.length) {
-        if (applications.length === 1) {
-          this.applicationId = applications[0].id;
+    response?.subscribe((response: ResponseDto) => {
+      if (response.numberOfElements) {
+        if (response.numberOfElements === 1) {
+          this.applicationId = response.content[0].id;
           this.navigateToMap();
         } else {
           this.openModal(
             this.territoryId,
             DashboardTypes.TERRITORIES,
-            applications
+            response.content.map((i: any) => {
+              return { id: i.id, name: i.title };
+            })
           );
         }
       }
@@ -131,16 +128,16 @@ export class MenuComponent {
     const response = this.commonService.fetchTerritoriesByApplication(
       this.applicationId
     );
-    response?.subscribe((territories: Array<TerritoryDto>) => {
-      if (territories.length) {
-        if (territories.length === 1) {
-          this.territoryId = territories[0].id;
+    response?.subscribe((response: ResponseDto) => {
+      if (response.numberOfElements) {
+        if (response.numberOfElements === 1) {
+          this.territoryId = response.content[0].id;
           this.navigateToMap();
         } else {
           this.openModal(
             this.applicationId,
             DashboardTypes.APPLICATIONS,
-            territories
+            response.content
           );
         }
       }
