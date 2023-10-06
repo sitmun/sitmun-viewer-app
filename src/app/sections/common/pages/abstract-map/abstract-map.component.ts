@@ -102,27 +102,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   loadMap(appCfg: AppCfg) {
-    SITNA.Cfg.controls.externalWMSSilme = {
-      div: 'dataloader',
-      title: 'externalWMSSilme',
-      suggestions: [
-        {
-          group: 'WMS',
-          items: [
-            {
-              name: 'Ortofoto 1989 IDEIB',
-              url: 'https://ideib.caib.es/geoserveis/services/imatges/GOIB_Ortofoto_1989_IB/MapServer/WMSServer/'
-            },
-            {
-              name: 'SIGPAC',
-              url: 'http://wms.magrama.es/wms/wms.aspx'
-            }
-          ]
-        }
-      ],
-      enableDragAndDrop: false
-    };
-
     SITNA.Cfg.controls.layerCatalogSilme =
       SitnaHelper.toLayerCatalogSilme(appCfg);
     //SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);

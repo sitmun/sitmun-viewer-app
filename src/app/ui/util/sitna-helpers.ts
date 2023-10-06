@@ -198,7 +198,7 @@ export class SitnaHelper {
     } else {
       sitnaControls.coordinates = false;
     }
-    /*if (
+    if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.DataLoader
       )
@@ -209,15 +209,24 @@ export class SitnaHelper {
       if (dataLoader) {
         if (dataLoader.parameters == null) {
           sitnaControls.dataLoader = {
-            div: 'dataloader',
-            wmsSuggestions: []
+            div: 'dataloader'
           };
         } else {
-          sitnaControls.printMap = dataLoader.parameters;
+          sitnaControls.dataLoader = {
+            div: 'dataloader'
+          };
+          if (dataLoader.parameters.wmsSuggestions) {
+            sitnaControls.dataLoader.wmsSuggestions =
+              dataLoader.parameters.wmsSuggestions;
+          }
+          if (dataLoader.parameters.enableDragAndDrop) {
+            sitnaControls.dataLoader.enableDragAndDrop =
+              dataLoader.parameters.enableDragAndDrop;
+          }
         }
       }
       showToolsButton = true;
-    }*/
+    }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Download
@@ -605,6 +614,7 @@ export class SitnaHelper {
     // };
     return sitnaControls;
   }
+
   static toLayerCatalogSilme(apiConfig: AppCfg) {
     let layerCatalogSilme = null;
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
@@ -697,7 +707,7 @@ export class SitnaHelper {
             }
           }
         }
-        ltg.push({id: "node99", title: "Altres serveis"}); // SILME - MV 20230727
+        ltg.push({ id: 'node99', title: 'Altres serveis' }); // SILME - MV 20230727
         layerCatalogSilme = {
           div: 'catalog',
           enableSearch: true,
