@@ -42,4 +42,8 @@ export class PublicMapComponent extends AbstractMapComponent {
       NavigationPath.Section.Public.Map(this.applicationId, this.territoryId)
     );
   }
+
+  override navigateToDashboard() {
+    this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
+  }
 }

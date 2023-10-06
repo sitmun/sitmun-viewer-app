@@ -1,0 +1,18 @@
+<div class="modal-view">
+  <div class="background"></div>
+  <div class="content">
+
+    <div class="modal-view-header">
+      <button (click)='onClose()'><div>&times;</div></button>
+    </div>
+    <!--    <bars-modal-bar [title]="'Export control certification'" [actions]="barActions" (actionEmitter)="onAction($event)"></bars-modal-bar>-->
+
+    <div class="modal-view-body" >
+      <h1>{{ 'map.error.title' | translate }}</h1>
+      <div class="error-description">
+        <label><b>{{ 'map.error.description' | translate }}:</b></label>
+        <p>{{ message | translate }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+@use 'colors';
+
+.modal-view-body {
+
+  color: colors.$modal-blue-color;
+
+  .error-description {
+
+    border: 2px solid colors.$modal-blue-color;
+    border-radius: 10px;
+    background-color: #eeeeee;
+    padding: 1rem 1rem 0 1rem;
+
+  }
+}
+

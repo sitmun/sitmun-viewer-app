@@ -1,3 +1,10 @@
+import { SitnaHelper } from '@ui/util/sitna-helpers';
+import {
+  SitnaBaseLayer,
+  SitnaControls,
+  SitnaViews
+} from '@api/model/sitna-cfg';
+
 export interface AppCfg {
   application: AppApplication;
   backgrounds: AppBackground[];
@@ -7,6 +14,23 @@ export interface AppCfg {
   tasks: AppTasks[];
   trees: AppTree[];
 }
+
+export interface GeneralCfg {
+  locale?: string;
+  crs?: string;
+  initialExtent?: [number, number, number, number];
+  layout: {
+    config: string;
+    markup: string;
+    style: string;
+    script: string;
+    i18n: string;
+  };
+  baseLayers: SitnaBaseLayer[];
+  controls: SitnaControls;
+  views: SitnaViews;
+}
+
 export interface AppApplication {
   id: number;
   title: string;
