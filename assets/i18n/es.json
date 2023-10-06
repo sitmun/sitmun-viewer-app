@@ -21,5 +21,12 @@
   "menu.changeApplication": "Cambiar aplicación",
   "menu.changeTerritory": "Cambiar territorio",
   "paginate.previous": "Anterior",
-  "paginate.next": "Siguiente"
+  "paginate.next": "Siguiente",
+  "map.error.title": "Ha ocurrido un error...",
+  "map.error.description": "Descripción",
+  "map.error.locale": "La configuración de 'locale' es incorrecta.",
+  "map.error.crs": "La configuración de 'crs' es incorrecta.",
+  "map.error.initialExtent": "La configuración de 'initialExtent' es incorrecta.",
+  "map.error.baseLayers": "La configuración de 'baseLayers' es incorrecta.",
+  "map.error.layerCatalog": "La configuración de 'layerCatalog' es incorrecta."
 }

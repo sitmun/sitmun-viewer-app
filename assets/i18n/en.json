@@ -21,5 +21,12 @@
   "menu.changeApplication": "Switch application",
   "menu.changeTerritory": "Switch territory",
   "paginate.previous": "Previous",
-  "paginate.next": "Next"
+  "paginate.next": "Next",
+  "map.error.title": "An error has ocurred...",
+  "map.error.description": "Description",
+  "map.error.locale": "The 'locale' setting is incorrect.",
+  "map.error.crs": "The 'crs' setting is incorrect.",
+  "map.error.initialExtent": "The 'initialExtent' setting is incorrect.",
+  "map.error.baseLayers": "The 'baseLayers' setting is incorrect.",
+  "map.error.layerCatalog": "The 'layerCatalog' setting is incorrect."
 }
