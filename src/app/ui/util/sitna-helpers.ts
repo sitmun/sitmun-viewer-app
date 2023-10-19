@@ -1,20 +1,10 @@
 import {
   SitnaBaseLayer,
-  SitnaCadastralSearchOptions,
   SitnaControls,
-  SitnaMunicipalitySearchOptions,
-  SitnaPlaceNameMunicipalitySearchOptions,
-  SitnaPlaceNameSearchOptions,
-  SitnaPostalAddressSearchOptions,
-  SitnaRoadMilestoneSearchOptions,
-  SitnaRoadSearchOptions,
-  SitnaStreetSearchOptions,
-  SitnaUrbanAreaSearchOptions,
   SitnaViews
 } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup, AppNodeInfo } from '@api/model/app-cfg';
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -55,7 +45,8 @@ var showToolsButton = false;
 
 @Injectable()
 export class SitnaHelper {
-  constructor(@Inject(DOCUMENT) private document: Document) {}
+  constructor() {}
+
   static toCrs(apiConfig: AppCfg): string | undefined {
     let crs;
     if (apiConfig.application?.srs) {
@@ -76,7 +67,7 @@ export class SitnaHelper {
 
   static toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
     let baseLayers: SitnaBaseLayer[] = [];
-    if (apiConfig.backgrounds) {
+    if (apiConfig.backgrounds.length) {
       let backgrounds: string[] = [];
       let groups: AppGroup[] = [];
       let layers: string[] = [];
@@ -153,15 +144,9 @@ export class SitnaHelper {
       div: 'ccontainer',
       controls: []
     };
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Attribution
-      )
-    ) {
-      sitnaControls.attribution = true;
-    } else {
-      sitnaControls.attribution = false;
-    }
+    sitnaControls.attribution = sitnaControlsFilter.some(
+      (x) => x['ui-control'] === SitnaControlsEnum.Attribution
+    );
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.BasemapSelector
@@ -192,13 +177,13 @@ export class SitnaHelper {
             div: 'coordinates'
           };
         } else {
-          sitnaControls.printMap = coordinates.parameters;
+          sitnaControls.coordinates = coordinates.parameters;
         }
       }
     } else {
       sitnaControls.coordinates = false;
     }
-    /*if (
+    if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.DataLoader
       )
@@ -209,15 +194,24 @@ export class SitnaHelper {
       if (dataLoader) {
         if (dataLoader.parameters == null) {
           sitnaControls.dataLoader = {
-            div: 'dataloader',
-            wmsSuggestions: []
+            div: 'dataloader'
           };
         } else {
-          sitnaControls.printMap = dataLoader.parameters;
+          sitnaControls.dataLoader = {
+            div: 'dataloader'
+          };
+          if (dataLoader.parameters.wmsSuggestions) {
+            sitnaControls.dataLoader.wmsSuggestions =
+              dataLoader.parameters.wmsSuggestions;
+          }
+          if (dataLoader.parameters.enableDragAndDrop) {
+            sitnaControls.dataLoader.enableDragAndDrop =
+              dataLoader.parameters.enableDragAndDrop;
+          }
         }
       }
       showToolsButton = true;
-    }*/
+    }
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Download
@@ -294,15 +288,9 @@ export class SitnaHelper {
       };
       showLegendButton = true;
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.LoadingIndicator
-      )
-    ) {
-      sitnaControls.loadingIndicator = true;
-    } else {
-      sitnaControls.loadingIndicator = false;
-    }
+    sitnaControls.loadingIndicator = sitnaControlsFilter.some(
+      (x) => x['ui-control'] === SitnaControlsEnum.LoadingIndicator
+    );
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Measure
@@ -567,7 +555,7 @@ export class SitnaHelper {
             persistentHighlights: true
           };
         } else {
-          sitnaControls.printMap = featureInfo.parameters;
+          sitnaControls.featureInfo = featureInfo.parameters;
         }
       }
     } else {
@@ -605,6 +593,7 @@ export class SitnaHelper {
     // };
     return sitnaControls;
   }
+
   static toLayerCatalogSilme(apiConfig: AppCfg) {
     let layerCatalogSilme = null;
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
@@ -623,6 +612,11 @@ export class SitnaHelper {
         var lays = new Array();
         const layers = apiConfig.layers;
         const services = apiConfig.services;
+
+        if (!layers.length || !services.length || !apiConfig.trees.length) {
+          return null;
+        }
+
         const nodes: Map<string, AppNodeInfo> = new Map(
           Object.entries(apiConfig.trees[0].nodes)
         );
@@ -697,15 +691,13 @@ export class SitnaHelper {
             }
           }
         }
-        ltg.push({id: "node99", title: "Altres serveis"}); // SILME - MV 20230727
+        ltg.push({ id: 'node99', title: 'Altres serveis' }); // SILME - MV 20230727
         layerCatalogSilme = {
           div: 'catalog',
           enableSearch: true,
           layerTreeGroups: ltg,
           layers: lays
         };
-        // console.log(ltg);
-        // console.log(lays);
       }
     }
     return layerCatalogSilme;
@@ -716,7 +708,16 @@ export class SitnaHelper {
       apiConfig.tasks.some((x) => x['ui-control'] === SitnaControlsEnum.ThreeD)
     ) {
       sitnaViews.threeD = {
-        div: 'threedMap'
+        div: 'threedMap',
+        controls: [
+          'threeD',
+          'navBar',
+          'navBarHome',
+          'basemapSelector',
+          'layerCatalogSilme',
+          'workLayerManager',
+          'legend'
+        ]
       };
     }
     return sitnaViews;

@@ -37,4 +37,6 @@ export class EmbeddedMapComponent extends AbstractMapComponent {
   }
 
   override navigateToMap() {}
+
+  override navigateToDashboard() {}
 }

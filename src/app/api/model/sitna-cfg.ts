@@ -97,7 +97,17 @@ export interface SitnaControlsCoordinates extends SitnaControlOptions {
 
 export interface SitnaControlsDataLoader extends SitnaControlOptions {
   enableDragAndDrop?: boolean;
-  wmsSuggestions?: Array<any>;
+  wmsSuggestions?: Array<SitnaWmsGroupOptions>;
+}
+
+export interface SitnaWmsGroupOptions {
+  group?: string;
+  items: Array<SitnaWmsOptions>;
+}
+
+export interface SitnaWmsOptions {
+  name: string;
+  url: string;
 }
 
 export interface SitnaControlsDownload extends SitnaControlOptions {
@@ -329,6 +339,7 @@ export interface SitnaViews {
 }
 export interface SitnaThreeDView {
   div: string;
+  controls?: string[];
 }
 
 export interface SitnaControlsWFSEdit {

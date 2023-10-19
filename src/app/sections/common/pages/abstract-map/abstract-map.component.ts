@@ -7,13 +7,16 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { AppCfg } from '@api/model/app-cfg';
+import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
 import { SitnaHelper } from '@ui/util/sitna-helpers';
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
+import { NavigationPath } from '@config/app.config';
+import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
+import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 
 declare const SITNA: any;
 
@@ -54,7 +57,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       this.commonService
         .fetchMapConfiguration(this.applicationId, this.territoryId)
         .subscribe((appCfg) => {
-          this.loadMap(appCfg);
+          if (appCfg) {
+            this.loadMap(appCfg);
+          }
         });
     });
 
@@ -102,31 +107,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   loadMap(appCfg: AppCfg) {
-    SITNA.Cfg.controls.externalWMSSilme = {
-      div: 'dataloader',
-      title: 'externalWMSSilme',
-      suggestions: [
-        {
-          group: 'WMS',
-          items: [
-            {
-              name: 'Ortofoto 1989 IDEIB',
-              url: 'https://ideib.caib.es/geoserveis/services/imatges/GOIB_Ortofoto_1989_IB/MapServer/WMSServer/'
-            },
-            {
-              name: 'SIGPAC',
-              url: 'http://wms.magrama.es/wms/wms.aspx'
-            }
-          ]
-        }
-      ],
-      enableDragAndDrop: false
-    };
-
-    SITNA.Cfg.controls.layerCatalogSilme =
-      SitnaHelper.toLayerCatalogSilme(appCfg);
-    //SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);
-    const map = new SITNA.Map('mapa', {
+    const config = {
       locale: this.locale,
       crs: SitnaHelper.toCrs(appCfg),
       initialExtent: SitnaHelper.toInitialExtent(appCfg),
@@ -135,7 +116,32 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       //workLayers: SitnaHelper.toWorkLayers(appCfg),
       controls: SitnaHelper.toControls(appCfg),
       views: SitnaHelper.toViews(appCfg)
-    });
+    };
+
+    let cfgCheck = this.checkConfiguration(config);
+
+    const layerCatalogSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
+    if (cfgCheck.ok && !layerCatalogSilme) {
+      cfgCheck = {
+        ok: false,
+        message: 'map.error.layerCatalog'
+      };
+    }
+
+    if (!cfgCheck.ok) {
+      const ref = this.modal.open(ErrorModalComponent, {
+        data: { message: cfgCheck.message }
+      });
+      ref.afterClosed.subscribe(() => {
+        this.navigateToDashboard();
+      });
+      return;
+    }
+
+    SITNA.Cfg.controls.layerCatalogSilme = layerCatalogSilme;
+    //SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);
+    const map = new SITNA.Map('mapa', config);
+
     map.loaded(function () {
       SitnaHelper.toWelcome(appCfg);
       SitnaHelper.toHelp(appCfg);
@@ -178,4 +184,33 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         return 'es-ES';
     }
   }
+
+  checkConfiguration(cfg: GeneralCfg) {
+    if (!cfg.locale) {
+      return {
+        ok: false,
+        message: 'map.error.locale'
+      };
+    } else if (!cfg.crs) {
+      return {
+        ok: false,
+        message: 'map.error.crs'
+      };
+    } else if (!cfg.initialExtent) {
+      return {
+        ok: false,
+        message: 'map.error.initialExtent'
+      };
+    } else if (!cfg.baseLayers.length) {
+      return {
+        ok: false,
+        message: 'map.error.baseLayers'
+      };
+    }
+    return {
+      ok: true
+    };
+  }
+
+  abstract navigateToDashboard(): any;
 }

@@ -21,5 +21,12 @@
   "menu.changeApplication": "Canviar aplicació",
   "menu.changeTerritory": "Canviar territori",
   "paginate.previous": "Anterior",
-  "paginate.next": "Següent"
+  "paginate.next": "Següent",
+  "map.error.title": "Ha passat un error...",
+  "map.error.description": "Descripció",
+  "map.error.locale": "La configuració de 'locale' és incorrecta.",
+  "map.error.crs": "La configuració de 'crs' és incorrecta.",
+  "map.error.initialExtent": "La configuració de 'initialExtent' és incorrecta.",
+  "map.error.baseLayers": "La configuració de 'baseLayers' és incorrecta.",
+  "map.error.layerCatalog": "La configuració de 'layerCatalog' és incorrecta."
 }

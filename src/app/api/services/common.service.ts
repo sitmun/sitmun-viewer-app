@@ -6,7 +6,6 @@ import {
   URL_API_TERRITORIES
 } from '@api/api-config';
 import { environment } from 'src/environments/environment';
-import { of } from 'rxjs';
 import { AppCfg } from '@api/model/app-cfg';
 
 export enum DashboardTypes {
@@ -27,45 +26,39 @@ export interface DashboardItemsResponse {
   totalElements: number;
 }
 
-export interface ApplicationDto {
+export interface ResponseDto {
+  content: Array<ItemDto>;
+  pageable: {
+    sort: {
+      unsorted: boolean;
+      sorted: boolean;
+      empty: boolean;
+    };
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  number: number;
+  sort: {
+    unsorted: boolean;
+    sorted: boolean;
+    empty: boolean;
+  };
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
+}
+
+export interface ItemDto {
   id: number;
   name: string;
 }
-
-export interface TerritoryDto {
-  id: number;
-  name: string;
-}
-
-const territories: TerritoryDto[] = [
-  {
-    id: 1,
-    name: 'Territory 1'
-  },
-  {
-    id: 2,
-    name: 'Territory 2'
-  },
-  {
-    id: 3,
-    name: 'Territory 3'
-  }
-];
-
-const applications: ApplicationDto[] = [
-  {
-    id: 1,
-    name: 'App 1'
-  },
-  {
-    id: 2,
-    name: 'App 2'
-  },
-  {
-    id: 3,
-    name: 'App 3'
-  }
-];
 
 @Injectable({
   providedIn: 'root'
@@ -106,7 +99,7 @@ export class CommonService {
     if (keywords) {
       path += '?keywords=' + keywords;
     }
-    return this.http.get<Array<TerritoryDto>>(environment.apiUrl + path);
+    return this.http.get<ResponseDto>(environment.apiUrl + path);
   }
 
   fetchApplicationsByTerritory(id: number, keywords?: string) {
@@ -114,8 +107,7 @@ export class CommonService {
     if (keywords) {
       path += '?keywords=' + keywords;
     }
-    return this.http.get<Array<ApplicationDto>>(environment.apiUrl + path);
-    // return of(applications);
+    return this.http.get<ResponseDto>(environment.apiUrl + path);
   }
 
   fetchMapConfiguration(appId: number, territoryId: number) {

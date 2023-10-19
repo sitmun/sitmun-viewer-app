@@ -1,33 +1,15 @@
 import { Directive, OnInit } from '@angular/core';
 import {
-  ApplicationDto,
   CommonService,
   DashboardItem,
   DashboardItemsResponse,
   DashboardTypes,
-  TerritoryDto
+  ItemDto,
+  ResponseDto
 } from '@api/services/common.service';
 import { Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
-
-const territoriesList: DashboardItem[] = [
-  {
-    img: '',
-    id: 1,
-    title: 'Territory 1'
-  },
-  {
-    img: '',
-    id: 2,
-    title: 'Territory 2'
-  },
-  {
-    img: '',
-    id: 3,
-    title: 'Territory 3'
-  }
-];
 
 @Directive()
 export abstract class AbstractDashboardComponent implements OnInit {
@@ -58,23 +40,12 @@ export abstract class AbstractDashboardComponent implements OnInit {
         this.totalElements = res.totalElements;
       });
   }
-  // fetchTerritories(keywords?: string) {
-  //   this.commonService
-  //     .fetchDashboardItems(this.type, keywords)
-  //     .subscribe((res: DashboardItemsResponse) => {
-  //       this.items = res.content;
-  //     });
-  // }
 
   onTypeChange(type: DashboardTypes) {
     if (type === DashboardTypes.APPLICATIONS) {
       this.type = DashboardTypes.APPLICATIONS;
     } else if (type === DashboardTypes.TERRITORIES) {
       this.type = DashboardTypes.TERRITORIES;
-      /* temporally while territory's path is not implemented */
-      // this.fetchTerritories();
-      // return;
-      /**/
     }
     this.items = [];
     this.page = 1;
@@ -83,7 +54,7 @@ export abstract class AbstractDashboardComponent implements OnInit {
 
   abstract navigateToMap(applicationId: number, territoryId: number): any;
 
-  openModal(id: number, items: Array<ApplicationDto> | Array<TerritoryDto>) {
+  openModal(id: number, items: Array<ItemDto>) {
     const ref = this.modal.open(DashboardModalComponent, {
       data: { id: id, type: this.type, items: items }
     });
@@ -94,7 +65,7 @@ export abstract class AbstractDashboardComponent implements OnInit {
     });
   }
 
-  switchLength(items: Array<ApplicationDto> | Array<TerritoryDto>, id: number) {
+  switchLength(items: Array<ItemDto>, id: number) {
     if (items.length === 1) {
       let applicationId!: number;
       let territoryId!: number;
@@ -107,11 +78,6 @@ export abstract class AbstractDashboardComponent implements OnInit {
       }
       this.navigateToMap(applicationId, territoryId);
     } else {
-      if (this.type === DashboardTypes.TERRITORIES) {
-        items = items.map((i: any) => {
-          return { id: i.id, name: i.title };
-        });
-      }
       this.openModal(id, items);
     }
   }
@@ -123,30 +89,26 @@ export abstract class AbstractDashboardComponent implements OnInit {
     } else if (this.type === DashboardTypes.TERRITORIES) {
       response = this.commonService.fetchApplicationsByTerritory(id);
     }
-    response?.subscribe((items: any) => {
-      if (items.content && items.content.length) {
-        this.switchLength(items.content, id);
+    response?.subscribe((response: ResponseDto) => {
+      if (response.numberOfElements && response.content) {
+        let items = response.content;
+        if (this.type === DashboardTypes.TERRITORIES) {
+          items = items.map((i: any) => {
+            return { id: i.id, name: i.title };
+          });
+        }
+        this.switchLength(items, id);
       }
     });
   }
 
   onKeywordsSearch(keywords: string) {
-    /* temporally while territory's path is not implemented */
-    // if (this.type === DashboardTypes.TERRITORIES) {
-    //   this.fetchTerritories();
-    //   return;
-    // }
-    /**/
     this.page = 1;
     this.searchDashboardItems(this.page, this.size, keywords);
   }
 
   onPageChange(page: number) {
     this.page = page;
-    // if (this.type === DashboardTypes.TERRITORIES) {
-    //   this.fetchTerritories();
-    //   return;
-    // }
     this.searchDashboardItems(page, this.size, this.keywords);
   }
 }

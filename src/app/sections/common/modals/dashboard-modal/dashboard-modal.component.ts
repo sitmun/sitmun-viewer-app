@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import {
-  ApplicationDto,
   CommonService,
   DashboardTypes,
-  TerritoryDto
+  ItemDto,
+  ResponseDto
 } from '@api/services/common.service';
 import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
@@ -22,12 +21,11 @@ export class DashboardModalComponent extends BaseModal {
   type: DashboardTypes | undefined;
   id: number;
   keywords: string;
-  items: Array<ApplicationDto> | Array<TerritoryDto> | undefined;
+  items: Array<ItemDto> | undefined;
 
   constructor(
     private modalRef: OpenModalRef,
     private modalCfg: OpenModalConfig,
-    private router: Router,
     private commonService: CommonService
   ) {
     super();
@@ -60,11 +58,15 @@ export class DashboardModalComponent extends BaseModal {
         keywords
       );
     }
-    response?.subscribe(
-      (items: Array<ApplicationDto> | Array<TerritoryDto>) => {
-        this.items = items;
+    response?.subscribe((response: ResponseDto) => {
+      if (this.type === DashboardTypes.TERRITORIES) {
+        this.items = response.content.map((i: any) => {
+          return { id: i.id, name: i.title };
+        });
+      } else {
+        this.items = response.content;
       }
-    );
+    });
   }
 
   onItemClicked(id: number) {

@@ -25,6 +25,7 @@ import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-m
 import { NgxPaginationModule } from 'ngx-pagination';
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
+import { ErrorModalComponent } from './sections/common/modals/error-modal/error-modal.component';
 registerLocaleData(localeEs);
 
 @NgModule({
@@ -36,7 +37,8 @@ registerLocaleData(localeEs);
     FooterComponent,
     DashboardModalComponent,
     LoginModalComponent,
-    EmbeddedMapComponent
+    EmbeddedMapComponent,
+    ErrorModalComponent
   ],
   imports: [
     BrowserModule,
