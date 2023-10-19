@@ -89,7 +89,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl.tc-ctl-nav {
-  top: 130px;
+  top: 84px;
   left: 20px;
 }
 
@@ -147,7 +147,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
 
 .tc-ctl-fscreen {
   left: 20px;
-  top: 240px !important;
+  top: 210px !important;
   margin-top: 0;
   width: auto;
 }
@@ -160,11 +160,11 @@ button.tc-ctl-fscreen-btn {
 }
 
 #legend-tab {
-  top: 442px;
+  top: 380px;
 }
 
 #ovmap-tab {
-  top: 484px;
+  top: 422px;
 }
 
 .tc-ctl-fscreen button:after {
@@ -277,7 +277,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .silme-panel > h1 {
-  top: 304px;
+  top: 274px;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 40px 40px;
@@ -1871,6 +1871,10 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
   background-color: #000;
 }
 
+.ol-control button.tc-float-btn {
+  border-radius: unset;
+}
+
 .tc-ctl-wlm-descarregadades a, .tc-ctl-lcat-descarregadades a {
   background-image: url(./img/mapaDownload.png);
   text-indent: -1000vw;
@@ -1940,7 +1944,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl.tc-ctl-nav-home {
-  top: 198px !important;
+  top: 168px !important;
   left: 20px;
   background-color: rgba(0, 0, 0, 0) !important;
   z-index: 10001;
@@ -1963,11 +1967,11 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-sv {
-  top: 346px !important;
+  top: 338px !important;
 }
 
 .tc-ctl-3d {
-  top: 346px !important;
+  top: 84px !important;
 }
 
 .no-tools.tc-ctl-sv {
