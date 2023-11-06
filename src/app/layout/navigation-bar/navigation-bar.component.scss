@@ -1,6 +1,12 @@
 @use 'colors';
 @use 'dimensions';
 
+:host
+{
+  display: flex;
+}
+
+
 .nav-bar {
   display: flex;
   flex-direction: row;
@@ -8,7 +14,10 @@
   justify-content: space-between;
   height: dimensions.$navigation-bar-height;
   color: colors.$common-color-font-primary;
-  background: colors.$common-color-background-navbar;
+  background: colors.$common-color-background-navbar-with-opacity;
+  position: absolute;
+  z-index: 99999;
+  width: 100%;
 
   .logo {
     margin-left: dimensions.$navigation-bar-logo-margin-left;
@@ -26,16 +35,17 @@
   .menu {
     margin: dimensions.$base-margin-3;
     padding: 0;
-    background: colors.$navigation-bar-menu-button-background;
+    height: 40px;
 
     button {
       padding: 0;
       border: none;
       background: colors.$navigation-bar-menu-button-background;
       cursor: pointer;
+      height: 40px;
 
       img {
-        background: colors.$navigation-bar-menu-button-background;
+        height: 40px;
       }
     }
   }

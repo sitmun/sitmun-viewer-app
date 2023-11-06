@@ -691,7 +691,7 @@ export class SitnaHelper {
             }
           }
         }
-        ltg.push({ id: 'node99', title: 'Altres serveis' }); // SILME - MV 20230727
+        ltg.push({ id: 'node99', title: 'Altres serveis' });
         layerCatalogSilme = {
           div: 'catalog',
           enableSearch: true,
@@ -757,7 +757,7 @@ export class SitnaHelper {
     if (apiConfig.tasks.some((x) => x['ui-control'] === 'markup-help-panel')) {
       (
         document.getElementsByClassName('help-links')[0] as HTMLElement
-      ).style.display = 'block';
+      ).style.display = 'inline-flex';
     } else {
       (
         document.getElementsByClassName('help-links')[0] as HTMLElement

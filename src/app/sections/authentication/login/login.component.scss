@@ -5,7 +5,7 @@
   position: absolute;
   background: linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
     colors.$common-color-background-navbar-with-opacity 30%,
-    colors.$common-color-background-with-opacity 80%), url('~src/assets/img/login-back.png') no-repeat;
+    colors.$common-color-background-with-opacity 80%), url('~../../../../assets/img/login-back.png') no-repeat;
   height: calc(100% - 80px);
   width: 100%;
   background-size: cover;
@@ -15,8 +15,7 @@
 }
 
 .container {
-
-  margin-top: dimensions.$base-margin-8;
+  margin-top: dimensions.$base-margin-8+80px;
 
   .title {
     color: colors.$common-color-font-secondary;

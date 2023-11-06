@@ -1,6 +1,9 @@
 // Base
+$transparent: #00000000;
 $black: #1A0E00;
 $orange:  #FF9300;
+$orange-transp-60percent: #ff930099;
+$orange-transp-20percent: #ff930033;
 $orange-dark: darkorange;
 $light-orange: #ffb146;
 $white: white;
@@ -27,7 +30,7 @@ $common-color-border-input: $gray;
 // Navigation bar
 $navigation-bar-font: $white;
 $navigation-bar-lang-button-background: $orange;
-$navigation-bar-menu-button-background: $orange;
+$navigation-bar-menu-button-background: $transparent;
 $navigation-bar-button-logout-background: $orange;
 $navigation-bar-button-logout-hover: $orange-dark;
 $navigation-bar-menu-color: $light-orange;

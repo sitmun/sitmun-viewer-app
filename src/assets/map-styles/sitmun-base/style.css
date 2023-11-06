@@ -89,7 +89,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl.tc-ctl-nav {
-  top: 84px;
+  top: 54px;
   left: 20px;
 }
 
@@ -147,7 +147,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
 
 .tc-ctl-fscreen {
   left: 20px;
-  top: 210px !important;
+  top: 180px !important;
   margin-top: 0;
   width: auto;
 }
@@ -160,11 +160,11 @@ button.tc-ctl-fscreen-btn {
 }
 
 #legend-tab {
-  top: 380px;
+  top: 350px;
 }
 
 #ovmap-tab {
-  top: 422px;
+  top: 392px;
 }
 
 .tc-ctl-fscreen button:after {
@@ -277,7 +277,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .silme-panel > h1 {
-  top: 274px;
+  top: 244px;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 40px 40px;
@@ -1060,8 +1060,8 @@ li.tc-ctl-legend-node {
 
 #search {
   position: fixed;
-  top: 85px;
-  left: 200px;
+  top: 54px;
+  left: 150px;
   width: 300px;
   background-color: rgba(255, 255, 255, 0.14);
   z-index: 9998;
@@ -1142,7 +1142,8 @@ li.tc-ctl-legend-node {
   border-bottom: 1px solid #ddd;
   text-align: right;
   display: flow-root;
-  background-color: #FF9300;
+  /*background-color: #FF9300;*/
+  background-color: #ededed;
 }
 
 .language-links > a {
@@ -1288,6 +1289,10 @@ ul.tc-ctl-bms-branch > li {
   border-color: #FF9300;
 }
 
+.tc-ctl-bms h2 button.tc-icon-btn.tc-details:before {
+  content: "";
+}
+
 .tc-ctl-wlm ul {
   margin-top: 5px;
   margin-bottom: 5px;
@@ -1339,9 +1344,9 @@ ul.tc-ctl-bms-branch > li {
   content: "";
 }
 
-.tc-ctl-lcat h2 button {
+.tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search {
   float: inherit;
-  top: 0;
+  top: 0px;
   position: inherit;
   font-size: 14px;
   cursor: pointer;
@@ -1425,7 +1430,7 @@ ul.tc-ctl-bms-branch > li {
   vertical-align: middle;
 }
 
-.tc-ctl-wlm h2 button.tc-ctl-lcat-btn-del-all:after, .tc-ctl-wlm .tc-ctl-wlm-del-all:after {
+.tc-ctl-wlm h2 button.tc-ctl-lcat-btn-del-all:before, .tc-ctl-wlm .tc-ctl-wlm-del-all:before {
   content: '\2716';
 }
 
@@ -1438,7 +1443,9 @@ ul.tc-ctl-bms-branch > li {
 }
 
 .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-tree {
-  background-image: url(./img/tree-list.svg);
+  top: 0px;
+  position: inherit;
+  background-image: url(img/tree-list.svg);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: auto 10px;
@@ -1944,7 +1951,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl.tc-ctl-nav-home {
-  top: 168px !important;
+  top: 138px;
   left: 20px;
   background-color: rgba(0, 0, 0, 0) !important;
   z-index: 10001;
@@ -1967,11 +1974,11 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-sv {
-  top: 338px !important;
+  top: 308px !important;
 }
 
-.tc-ctl-3d {
-  top: 84px !important;
+.tc-ctl.tc-ctl-3d {
+  top: 54px;
 }
 
 .no-tools.tc-ctl-sv {
@@ -2728,6 +2735,7 @@ button.tc-ctl-loc-btn-clr {
   cursor: pointer;
   font-weight: bold;
   margin-right: 10px;
+  color: #666666;
 }
 
 .help-link:hover {
@@ -2791,7 +2799,7 @@ button.tc-ctl-loc-btn-clr {
   background-repeat: no-repeat;
   background-size: auto 70px;
   position: relative;
-  top: 5px;
+  top: 20px;
   left: 0;
   width: 100%;
   height: 70px;
@@ -2880,7 +2888,7 @@ button.tc-ctl-loc-btn-clr {
 /* MV REVISIÓ CSS */
 
 /*End Style panell nou visor*/
-.welcome-btn {
+button.welcome-btn {
   height: 30px;
   width: 90px;
   float: right;
@@ -2888,7 +2896,7 @@ button.tc-ctl-loc-btn-clr {
   margin-bottom: 25px;
 }
 
-.welcome-chk {
+input.welcome-chk {
   margin-left: 30px;
 }
 
@@ -3793,11 +3801,11 @@ height: 100%;
   }
 
   #arbol, .tc-ctl-lcat-search {
-    height: calc(100vh - 229px - 140px);
+    height: calc(100vh - 249px);
   }
 
   #search.tc-ctl.tc-ctl-search.search-left-collapsed {
-    left: 340px;
+    left: 450px;
   }
 }
 
@@ -3878,4 +3886,8 @@ height: 100%;
   .modal-content {
     width: 100%;
   }
+}
+
+.tc-ctl-bms-node label {
+  background-image: url("https://ide.cime.es/test/thumbnails/dummy_map_thumbnail.jpg")
 }
