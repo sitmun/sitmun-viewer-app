@@ -277,7 +277,7 @@ if (window.innerWidth < 760) {
 
 try {
   document.querySelectorAll("app-navigation-bar")[0].querySelector(".nav-bar").style.background = "#ff000099";
-  document.querySelectorAll("app-navigation-bar")[0].querySelector(".nav-bar").querySelector("img").src = '/assets/logos/logo_idena.png';
+  document.querySelectorAll("app-navigation-bar")[0].querySelector(".nav-bar").querySelector("img").src = 'http://localhost:4200/assets/logos/logo_idena.png'
 } catch {
 
 }
