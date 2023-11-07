@@ -624,8 +624,10 @@ export class SitnaHelper {
         for (let actualNode of arrayNodes) {
           let parentNode = null;
           arrayNodes.forEach((node) => {
+            // Para cada nodo, si el nodo tiene hijos
             if (node[1].children) {
               node[1].children.find((element) => {
+                // Si el nodo actual es un hijo del nodo enel que estamos buscando, establecemos el nodo en el que estamos buscando como padre
                 if (element === actualNode[0]) {
                   //console.log('Nodo padre:', node[0]);
                   parentNode = node[0];
@@ -636,9 +638,22 @@ export class SitnaHelper {
             }
             return;
           });
+          //Si el nodo actual es el nodo raíz lo establecemos como padre
           if (actualNode[0] == apiConfig.trees[0].rootNode) {
             parentNode = actualNode[0];
             // console.log('nodo raiz: ', parentNode);
+          }
+
+          if (!parentNode) {
+            var nodeFound;
+            for (const property in apiConfig.trees[0].nodes) {
+              if (property === actualNode[0]) {
+                nodeFound = true;
+                break;
+              }
+              nodeFound = false;
+            }
+            if (nodeFound) parentNode = actualNode[0];
           }
           if (
             actualNode[1].children == null &&

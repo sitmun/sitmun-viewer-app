@@ -1322,7 +1322,7 @@ ul.tc-ctl-bms-branch > li {
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-n {
-  background-color: #FF9300;
+  background-color: #080d4f;
 }
 
 .tc-ctl-wlm h2 button, .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search::after {
@@ -1350,7 +1350,7 @@ ul.tc-ctl-bms-branch > li {
   position: inherit;
   font-size: 14px;
   cursor: pointer;
-  background-color: #FF9300;
+  background-color: #080d4f;
   width: 20px;
   height: 20px;
   border-radius: 10px;
@@ -1451,7 +1451,7 @@ ul.tc-ctl-bms-branch > li {
   background-size: auto 10px;
   vertical-align: middle;
   cursor: pointer;
-  background-color: #FF9300;
+  background-color: #080d4f;
   width: 20px;
   height: 20px;
   border-radius: 10px;
@@ -1533,6 +1533,14 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
   top: 9px;
 }
 
+li.tc-ctl-lcat-search-group > button.tc-ctl-lcat-search-btn-info, .tc-ctl-lcat-search ul button.tc-ctl-lcat-search-btn-info {
+  border-radius: 100%;
+  top: 0.5em;
+  background-color: #666;
+  width: 1em;
+  height: 1em;
+}
+
 li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info.tc-checked::after, li.tc-ctl-lcat-search-group button.tc-ctl-lcat-search-btn-info.tc-checked::after {
   color: rgb(175, 0, 0);
 }
@@ -1574,7 +1582,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
   padding: 10px;
 }
 
-.tc-ctl-lcat-search > ul {
+.tc-ctl-lcat .tc-ctl-lcat-search ul {
   max-height: inherit;
 }
 
@@ -3567,140 +3575,6 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
   }
 
 }
-
-/* END @media (max-width: 760px) */
-
-/*@media (max-height: 550px) {
-    .tc-ctl-nav-home {
-        top: 83px !important;
-    }
-
-    #measure > h2, #share > h2, #download > h2, #downloadSilme > h2, #localitzar > h2, #reports > h2, #legend > h2, #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #xdata > h2, #print > h2, #newovmap > h2, #geolocation > h2, #offline > h2 {
-        padding: 6px;
-        padding-left: 35px;
-    }*/
-
-/*Primer posarem el codi que NO sigui '.right-collapsed'*/
-/*#tools-tab {
-    top: 84px;
-    right: calc(85% + 10px);
-}
-
-.right-panel > .panel-content {
-    width: 85%;
-    top: 84px;
-}*/
-
-/*Després el codi que SI sigui '.right-collapsed'*/
-/*.right-collapsed > .panel-content {
-    left: auto;
-    right: -200px;
-    width: 200px;
-}
-
-.right-collapsed > .tc-ctl-sb, .right-collapsed > .tc-ctl-scl {
-    visibility: hidden;
-}
-
-.right-collapsed > h1 {
-    right: 20px;
-    left: auto;
-}
-
-.right-collapsed > #tools-tab {
-    top: 84px;
-    right: 20px;
-}
-
-.info-carto-img, .info-cookies-img {
-    width: 115px
-}*/
-
-/*TODO DELETE
-.silme-control-flotant {
-    margin: 1vw;
-    width: calc((100vw - (2vw + 22px)))
-}*/
-
-/*#ovmap-tab, #FuScreen, #nav, .tc-ctl-nav-home {
-    display: none;
-}
-
-.silme-panel > h1 {
-    top: 84px;
-}
-
-.tc-ctl-sv-btn {
-    top: 134px;
-}
-
-.tc-ctl-be {
-    top: 184px;
-}
-
-#legend-tab {
-    top: 234px;
-}
-
-.no-tools .tc-ctl-sv-btn {
-    top: 84px;
-}
-
-.no-tools .tc-ctl-be {
-    top: 134px;
-}
-
-.no-tools #legend-tab {
-    top: 184px;
-}
-
-#search {
-    width: auto;
-}
-
-.tools-panel > h1 {
-    top: 19px;
-}
-
-.panel-content {
-    top: 0;
-}
-
-.left-panel > .panel-content {
-    top: 84px;*/
-/*bottom: 48px;*/
-/*}
-
-.right-panel > .panel-content {*/
-/*left: 80px;*/
-/*right: 0;
-}
-
-.panel-content {
-bottom: 0;
-}
-
-#projects {
-height: 100%;
-width: 100%;
-max-height: 100%;
-top: 0;
-left: 0;
-bottom: 0;
-right: 0;
-overflow: auto;
-}
-
-.tc-help-panel, .welcome-panel {
-left: unset;
-right: unset;
-top: unset;
-bottom: unset;
-max-height: unset;
-width: 100%;
-height: 100%;
-}
-}*/
 
 @media (min-width: 760px) {
   #search {
