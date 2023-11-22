@@ -59,6 +59,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         .subscribe((appCfg) => {
           if (appCfg) {
             this.loadMap(appCfg);
+            // There might be a new theme in the recently fetched appCfg
+            // We will share it with the rest of the app via
+            // the commonService.updateMessage()
+            this.commonService.updateMessage(appCfg.application.theme);
           }
         });
     });
