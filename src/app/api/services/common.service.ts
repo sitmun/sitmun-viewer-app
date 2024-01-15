@@ -7,6 +7,7 @@ import {
 } from '@api/api-config';
 import { environment } from 'src/environments/environment';
 import { AppCfg } from '@api/model/app-cfg';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',
@@ -64,6 +65,12 @@ export interface ItemDto {
   providedIn: 'root'
 })
 export class CommonService {
+  // Common service is used to share some data between components
+  private messageSubject: BehaviorSubject<{ theme: string }>
+    = new BehaviorSubject({ theme: "sitmun-base" });
+  public message$: Observable<{ theme: string  }> =
+    this.messageSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
   fetchDashboardItems(
@@ -114,5 +121,11 @@ export class CommonService {
     return this.http.get<AppCfg>(
       environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId)
     );
+  }
+
+  // Components that need to share a newTheme with others will call
+  // updateMessage
+  updateMessage(newTheme: string) {
+    this.messageSubject.next({ theme: newTheme});
   }
 }

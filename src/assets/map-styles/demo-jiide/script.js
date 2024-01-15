@@ -275,12 +275,6 @@ if (window.innerWidth < 760) {
   document.querySelector('#tools-panel').classList.add('right-collapsed');
 }
 
-try {
-  document.querySelectorAll("app-navigation-bar")[0].querySelector(".nav-bar").style.background = "#ff000099";
-  document.querySelectorAll("app-navigation-bar")[0].querySelector(".nav-bar").querySelector("img").src = '/assets/logos/logo_idena.png';
-} catch {
-
-}
 document.querySelectorAll('.tc-map').forEach(function (elm) {
   const map = TC.Map.get(elm);
 
