@@ -594,11 +594,23 @@ export class SitnaHelper {
     return sitnaControls;
   }
 
+  /**
+   * TODO - Comment method description
+   * apiConfig contains viewer configuration received from server
+   * - application
+   * - backgrounds
+   * - groups
+   * - layers
+   * - services
+   * - tasks
+   * - trees
+   */
   static toLayerCatalogSilme(apiConfig: AppCfg) {
     let layerCatalogSilme = null;
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
       x['ui-control'].startsWith('sitna.')
     );
+    // if control LayerCatalog is included in config
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.LayerCatalog
@@ -607,9 +619,10 @@ export class SitnaHelper {
       const layerCatalog = sitnaControlsFilter.find((obj) => {
         return obj['ui-control'] === SitnaControlsEnum.LayerCatalog;
       });
+      // if control LayerCatalog found
       if (layerCatalog) {
-        var ltg = new Array();
-        var lays = new Array();
+        var ltg = [];
+        var lays = [];
         const layers = apiConfig.layers;
         const services = apiConfig.services;
 
@@ -617,50 +630,69 @@ export class SitnaHelper {
           return null;
         }
 
+        // get nodes from fisrt tree
+        // TODO - if we want to manage different trees we'll have to make changes here
         const nodes: Map<string, AppNodeInfo> = new Map(
           Object.entries(apiConfig.trees[0].nodes)
         );
         const arrayNodes = Array.from(nodes);
-        for (let actualNode of arrayNodes) {
+        for (let currentNode of arrayNodes) {
           let parentNode = null;
-          arrayNodes.forEach((node) => {
+          for (let i = 0; i < arrayNodes.length; i++) {
+            let node = arrayNodes[i];
             // Para cada nodo, si el nodo tiene hijos
             if (node[1].children) {
-              node[1].children.find((element) => {
-                // Si el nodo actual es un hijo del nodo enel que estamos buscando, establecemos el nodo en el que estamos buscando como padre
-                if (element === actualNode[0]) {
-                  //console.log('Nodo padre:', node[0]);
-                  parentNode = node[0];
-                  return node[0];
+              for (let j = 0; j < node[1].children.length; j++) {
+                let element = node[1].children[j];
+                // Si el currentNode es un hijo del nodo en el que estamos buscando
+                if (element === currentNode[0]) {
+                  // si el nodo padre es el rootNode, establecemos el nodo padre como el mismo currentNode,
+                  // es decir, el parentNode del currentNode es el propio currentNode, ya que el rootNode no debe estar presente
+                  if (node[0] === apiConfig.trees[0].rootNode)
+                    parentNode = currentNode[0];
+                  // establecemos el nodo en el que estamos buscando como padre
+                  else parentNode = node[0]; // node[0]: nombre del nodo
+                  break;
                 }
-                return;
-              });
+              }
             }
-            return;
-          });
-          //Si el nodo actual es el nodo raíz lo establecemos como padre
-          if (actualNode[0] == apiConfig.trees[0].rootNode) {
-            parentNode = actualNode[0];
-            // console.log('nodo raiz: ', parentNode);
+            if (parentNode) break; // si hemos encontrado padre, salimos del bucle
           }
 
+          // Si el currentNode no es hijo de ningún nodo (no hemos encontrado padre)
           if (!parentNode) {
-            var nodeFound;
-            for (const property in apiConfig.trees[0].nodes) {
-              if (property === actualNode[0]) {
-                nodeFound = true;
-                break;
-              }
-              nodeFound = false;
+            // TODO - ✏️Edit. Admin is bugged, it should return a root node with
+            //  all sub-root nodes as children, then we should discard the root node
+            //  and create all sub-roots nodes as LayerTreeGroups
+            //  All this must be done on the code above ⬆️
+
+            // TODO - ❌Delete when admin repaired
+            //Si el currentNode es el nodo raíz lo establecemos como padre
+            if (currentNode[0] == apiConfig.trees[0].rootNode) {
+              parentNode = currentNode[0];
             }
-            if (nodeFound) parentNode = actualNode[0];
+
+            // Todo - ❌Delete when admin repaired
+            if (!parentNode) {
+              let isNodeFound;
+              for (const property in apiConfig.trees[0].nodes) {
+                if (property === currentNode[0]) {
+                  isNodeFound = true;
+                  break;
+                }
+                isNodeFound = false;
+              }
+              if (isNodeFound) parentNode = currentNode[0];
+            }
           }
+          // si no tiene hijos y tiene resource (una layer),
+          // se trata de una capa
           if (
-            actualNode[1].children == null &&
-            actualNode[1].resource != null
+            currentNode[1].children == null &&
+            currentNode[1].resource != null
           ) {
             const layer = layers.find(
-              (layer) => layer.id == actualNode[1].resource
+              (layer) => layer.id == currentNode[1].resource
             );
             if (layer) {
               const service = services.find(
@@ -668,7 +700,6 @@ export class SitnaHelper {
               );
               if (service) {
                 if (parentNode) {
-                  // console.log('layers', layer.layers);
                   if (layer.layers.length > 0) {
                     lays.push({
                       id: layer.id,
@@ -694,13 +725,17 @@ export class SitnaHelper {
                     });
                   }
                 }
+              } else {
+                // error, no se ha encontrado service
               }
+            } else {
+              // error, no se ha encontrado layer
             }
           } else {
             if (parentNode) {
               ltg.push({
-                id: actualNode[0].replace('/', ''),
-                title: actualNode[1].title,
+                id: currentNode[0].replace('/', ''),
+                title: currentNode[1].title,
                 parentNode: parentNode.replace('/', '')
               });
             }

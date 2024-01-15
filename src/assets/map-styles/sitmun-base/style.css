@@ -10,6 +10,10 @@
   font-style: normal;
 }
 
+:root {
+  --main-color: #FF9300;
+}
+
 .tc-map {
   font-family: Arial, helvetica, sans-serif;
   top: 0;
@@ -32,9 +36,9 @@ input[type=range]:focus {
   outline: none;
 }
 .tc-ctl-edit-mode input[type=radio]:checked ~ span {
-  border-color: #FF9300;
-  border-bottom-color: #FF9300;
-  color: #FF9300;
+  border-color: var(--main-color);
+  border-bottom-color: var(--main-color);
+  color: var(--main-color);
 }
 .tc-ctl-edit .tc-ctl-edit-mode label span {
   text-align: left;
@@ -42,8 +46,8 @@ input[type=range]:focus {
 }
 .tc-ctl-btn.tc-active {
   color: white;
-  background-color: #FF9300;
-  border-color: #FF9300;
+  background-color: var(--main-color);
+  border-color: var(--main-color);
 }
 /* CORDENADAS-----------------------------------------------*/
 .tc-ctl-coords {
@@ -457,8 +461,8 @@ button.tc-ctl-fscreen-btn {
 }
 
 .tc-ctl-m-finfo-select input[type=radio]:checked ~ span {
-  background-color: #FF9300;
-  border-color: #FF9300;
+  background-color: var(--main-color);
+  border-color: var(--main-color);
 }
 
 .tc-ctl-bms > div {
@@ -484,7 +488,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .tc-btn-localitza {
-  background-color: #FF9300;
+  background-color: var(--main-color);
   color: #fff;
   border-radius: 4px;
   border: 0;
@@ -496,7 +500,7 @@ button.tc-ctl-fscreen-btn {
 }
 
 .tc-btn-reports {
-  background-color: #FF9300;
+  background-color: var(--main-color);
   color: #fff;
   border-radius: 4px;
   border: 0;
@@ -568,7 +572,7 @@ button.tc-ctl-fscreen-btn {
   background-repeat: no-repeat, no-repeat;
   background-size: 20px 20px, 38px 38px;
   /*background-color: rgba(0,0,0,0.1);*/
-  background-color: #FF9300;
+  background-color: var(--main-color);
   padding: 10px 10px 10px 35px;
   border-bottom: 1px solid #ccc;
   /*color: #000;*/
@@ -814,7 +818,7 @@ button.tc-ctl-fscreen-btn {
 
 span.tc-beta {
   color: rgba(201, 219, 3, 0.8);
-  color: #FF9300;
+  color: var(--main-color);
   display: none;
   padding-left: 6px;
   font-style: normal;
@@ -873,8 +877,8 @@ span.tc-beta {
 }
 
 .tc-ctl-dmm .tc-ctl-mod > button.tc-active {
-  color: #FF9300;
-  border: 1px solid #FF9300;
+  color: var(--main-color);
+  border: 1px solid var(--main-color);
 }
 
 .tc-ctl-dmm .tc-ctl-mod-btn-delete {
@@ -909,8 +913,8 @@ span.tc-beta {
 
 .tc-ctl-draw-tools .tc-ctl-btn {
   background-color: #fff;
-  color: #FF9300 !important;
-  box-shadow: 0 0 0 1px #FF9300 inset;
+  color: var(--main-color) !important;
+  box-shadow: 0 0 0 1px var(--main-color) inset;
 }
 
 .tc-ctl-draw-tools .tc-ctl-btn[disabled] {
@@ -920,7 +924,7 @@ span.tc-beta {
 }
 
 .tc-ctl-draw-tools .tc-ctl-btn.tc-active {
-  background-color: #FF9300 !important;
+  background-color: var(--main-color) !important;
   color: #fff !important;
 }
 
@@ -976,23 +980,23 @@ span.tc-beta {
 }
 
 .tc-ctl-meas-select input[type=radio]:checked ~ span, .tc-ctl-shared-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
-  border-color: #FF9300;
-  color: #FF9300;
+  border-color: var(--main-color);
+  color: var(--main-color);
   background-color: #fff;
 }
 
 .tc-ctl-meas-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-shared-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:first-child input[type=radio]:checked ~ span {
   border-bottom-left-radius: 0.3em;
-  border-bottom-color: #FF9300;
+  border-bottom-color: var(--main-color);
 }
 
 .tc-ctl-meas-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-shared-select label:last-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:last-child input[type=radio]:checked ~ span {
   border-bottom-right-radius: 0.3em;
-  border-bottom-color: #FF9300;
+  border-bottom-color: var(--main-color);
 }
 
 .tc-ctl-btn.tc-ctl-draw-btn-new.tc-active {
-  background-color: #FF9300;
+  background-color: var(--main-color);
 }
 
 .tc-ctl-draw .tc-ctl-draw-tools > button {
@@ -1017,13 +1021,13 @@ div.tc-ctl-legend-tree li.tc-ctl-legend-empty {
 
 .tc-map .tc-button, .tc-ctl .tc-button, .tc-modal .tc-button,
 .tc-ctl-geolocation .tc-ctl-geolocation-track-mng input[type="file"] + label {
-  border: 1px solid #FF9300;
-  background-color: #FF9300;
+  border: 1px solid var(--main-color);
+  background-color: var(--main-color);
 }
 
 .tc-ctl-geolocation .tc-ctl-geolocation-select input[type=radio]:checked ~ span {
-  color: #FF9300;
-  border-color: #FF9300;
+  color: var(--main-color);
+  border-color: var(--main-color);
 }
 
 #downloadSilme > div.tc-ctl-download-cnt.tc-group.tc-collapsed {
@@ -1031,8 +1035,8 @@ div.tc-ctl-legend-tree li.tc-ctl-legend-empty {
 }
 
 .tc-ctl-wfsquery-modal-window .tc-modal-body .tc-modal-form input[type=radio]:checked + label {
-  background-color: #FF9300;
-  border-color: #FF9300;
+  background-color: var(--main-color);
+  border-color: var(--main-color);
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-content ul {
@@ -1098,7 +1102,7 @@ li.tc-ctl-legend-node {
 }
 
 .tc-ctl-search-list a b {
-  color: #FF9300;
+  color: var(--main-color);
 }
 
 .tc-ctl-search-content {
@@ -1128,7 +1132,7 @@ li.tc-ctl-legend-node {
   background-position: 2px 1px;
   background-repeat: no-repeat;
   background-size: 30px 30px;
-  background-color: #FF9300;
+  background-color: var(--main-color);
   display: inline-block;
   vertical-align: top;
   cursor: pointer;
@@ -1160,12 +1164,12 @@ li.tc-ctl-legend-node {
 }
 
 .language-links > a:hover, .help-links > a:hover {
-  background-color: #FF9300;
+  background-color: var(--main-color);
   color: #fff;
 }
 
 .tc-ctl-load-dots {
-  background-color: #FF9300;
+  background-color: var(--main-color);
 }
 
 .tc-group {
@@ -1188,12 +1192,12 @@ li.tc-ctl-legend-node {
 }
 
 .tc-ctl-share .ga-share-icon {
-  color: #FF9300;
+  color: var(--main-color);
 }
 
 .tc-ctl-share-select input[type=radio]:checked ~ span {
-  border-color: #FF9300;
-  color: #FF9300;
+  border-color: var(--main-color);
+  color: var(--main-color);
 }
 
 .tc-ctl-shared .ga-shared-icon i::before {
@@ -1207,7 +1211,7 @@ li.tc-ctl-legend-node {
 
 .shared-email {
   background-image: url(./img/icoMail.png);
-  background-color: #FF9300;
+  background-color: var(--main-color);
 }
 
 .qr-generator {
@@ -1286,7 +1290,7 @@ ul.tc-ctl-bms-branch > li {
 }
 
 .tc-ctl-bms-node input[type=radio]:checked ~ span {
-  border-color: #FF9300;
+  border-color: var(--main-color);
 }
 
 .tc-ctl-bms h2 button.tc-icon-btn.tc-details:before {
@@ -1571,7 +1575,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-lcat-search li h5:hover {
-  color: #FF9300;
+  color: var(--main-color);
 }
 
 .tc-ctl-lcat-search .tc-group {
@@ -1587,21 +1591,21 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-finfo .tc-ctl-finfo-layer-n {
-  background-color: #FF9300;
+  background-color: var(--main-color);
 }
 
 .tc-ctl-finfo ul.tc-ctl-finfo-features li.tc-checked table:not(.complexAttr) {
   /*outline: unset;*/
-  outline: 0.2em #FF9300 solid;
+  outline: 0.2em var(--main-color) solid;
   /*border: 0.2em #FF9300 solid;*/
 }
 
 .tc-ctl-finfo-tools button {
-  color: #FF9300;
+  color: var(--main-color);
 }
 
 .tc-ctl-finfo-tools button:hover {
-  background-color: #FF9300;
+  background-color: var(--main-color);
 }
 
 .tc-ctl.tc-ctl-tctr-elm {
@@ -1789,21 +1793,21 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 
 #arbol li.tc-ctl-lcat-node.tc-checked > span {
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #FF9300;
+  color: var(--main-color);
   font-style: normal;
 }
 
 #arbol li.tc-ctl-lcat-leaf > span.tc-selectable:hover {
   background-color: inherit !important;
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #FF9300;
+  color: var(--main-color);
   cursor: pointer;
 }
 
 #arbol li.tc-ctl-lcat-leaf:hover > span.tc-selectable {
   background-color: inherit !important;
   /*text-shadow: 0 0 1px #EDFF25;*/
-  color: #FF9300;
+  color: var(--main-color);
 }
 
 #arbol li.tc-ctl-lcat-leaf.tc-ctl-lcat-leaf:hover {
@@ -1874,7 +1878,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
   width: 30px;
   height: 30px;
   color: transparent;
-  background-color: #FF9300;
+  background-color: var(--main-color);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 36px 36px;
@@ -2144,7 +2148,7 @@ ul.tc-ctl-lcat-proj-childs {
 
 .tc-ctl-lcat-title {
   border-bottom-width: 2px;
-  border-bottom-color: #FF9300;
+  border-bottom-color: var(--main-color);
   border-bottom-style: dotted;
   margin: 1em 0;
 }
@@ -2767,7 +2771,7 @@ button.tc-ctl-loc-btn-clr {
   left: calc(50% - 335px);
   top: calc(50% - 170px);
   z-index: 99999;
-  background-color: #FF9300;
+  background-color: var(--main-color);
   width: 670px;
   height: 340px;
   border: 0;
@@ -3649,7 +3653,7 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
   }
 
   #canvi-projecte-silme:hover {
-    background-color: #FF9300;
+    background-color: var(--main-color);
     color: #fff;
   }
 }
