@@ -14,7 +14,28 @@
   align-items: flex-start;
 }
 
+@keyframes fadeIn {
+  from {
+    background-position: 0% 100%;
+  }
+  to {
+    background-position: 50% 100%;
+  }
+}
+
+.login-page {
+  animation: fadeIn 3.5s;
+  animation-timing-function: ease;
+  /*background-image: url('~../../../../assets/logos/logo_b_l.png'); /* BROWN */
+  /*background-image: url('~../../../../assets/logos/logo_p_l.png'); /* PINK */
+  background-image: url('~../../../../assets/logos/logo_o_l.png'); /* ORANGE */
+  background-position: bottom;
+  background-size: 70%;
+  background-repeat: no-repeat;
+}
+
 .container {
+  animation: none;
   margin-top: dimensions.$base-margin-8+80px;
 
   .title {

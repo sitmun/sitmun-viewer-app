@@ -36,7 +36,7 @@ enum SitnaControlsEnum {
   MultiFeatureInfo = 'sitna.multiFeatureInfo',
   ThreeD = 'sitna.threed',
   FeatureInfo = 'sitna.featureInfo',
-  WFSEdit = 'sitna.WFSEdit',
+  //WFSEdit = 'sitna.WFSEdit',
   WFSQuery = 'sitna.WFSQuery'
 }
 var showLegendButton = false;
@@ -147,11 +147,13 @@ export class SitnaHelper {
     sitnaControls.attribution = sitnaControlsFilter.some(
       (x) => x['ui-control'] === SitnaControlsEnum.Attribution
     );
+
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.BasemapSelector
       )
     ) {
+      //sitnaControls.basemapSelectorSilme = {
       sitnaControls.basemapSelector = {
         div: 'bms'
       };
@@ -194,11 +196,11 @@ export class SitnaHelper {
       if (dataLoader) {
         if (dataLoader.parameters == null) {
           sitnaControls.dataLoader = {
-            div: 'dataloader'
+            div: 'xdata'
           };
         } else {
           sitnaControls.dataLoader = {
-            div: 'dataloader'
+            div: 'xdata'
           };
           if (dataLoader.parameters.wmsSuggestions) {
             sitnaControls.dataLoader.wmsSuggestions =
@@ -231,6 +233,7 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+    /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.DrawMeasureModify
@@ -250,6 +253,7 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+    */
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.FullScreen
@@ -291,6 +295,7 @@ export class SitnaHelper {
     sitnaControls.loadingIndicator = sitnaControlsFilter.some(
       (x) => x['ui-control'] === SitnaControlsEnum.LoadingIndicator
     );
+    /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Measure
@@ -301,6 +306,7 @@ export class SitnaHelper {
       };
       showToolsButton = true;
     }
+    */
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.NavBar
@@ -404,7 +410,11 @@ export class SitnaHelper {
       if (print) {
         if (print.parameters == null) {
           sitnaControls.printMap = {
-            div: 'print'
+            div: 'print',
+            logo: "assets/logos/logo_black.png",
+            legend: {
+              visible: true
+            }
           };
         } else {
           sitnaControls.printMap = print.parameters;
@@ -434,6 +444,7 @@ export class SitnaHelper {
     //   //TODO
     //   // sitnaControls.scaleSelector = true;
     // }
+    /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Search
@@ -449,13 +460,14 @@ export class SitnaHelper {
         }
       }
     }
+     */
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.Share
       )
     ) {
       sitnaControls.share = {
-        div: 'shared'
+        div: 'share'
       };
       showToolsButton = true;
     }
@@ -469,11 +481,11 @@ export class SitnaHelper {
       });
       if (streetView) {
         if (streetView.parameters == null) {
-          sitnaControls.streetView = {
+          sitnaControls.streetViewSilme = {
             div: 'StreetView'
           };
         } else {
-          sitnaControls.streetView = streetView.parameters;
+          sitnaControls.streetViewSilme = streetView.parameters;
         }
       }
     }
@@ -490,8 +502,29 @@ export class SitnaHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.WorkLayerManager
       )
     ) {
-      sitnaControls.workLayerManager = {
-        div: 'wlm'
+      sitnaControls.workLayerManagerSilme = {
+        div: 'toc'
+      };
+    }
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.DrawMeasureModify
+      )
+    ) {
+      sitnaControls.drawMeasureModifySilme = {
+        div: 'measure',
+        displayElevation: {
+          displayOn: "controlContainer"
+        }
+      };
+    }
+    if (
+      sitnaControlsFilter.some(
+        (x) => x['ui-control'] === SitnaControlsEnum.Search
+      )
+    ) {
+      sitnaControls.searchSilme = {
+        div: 'search'
       };
     }
     // if (
@@ -514,6 +547,7 @@ export class SitnaHelper {
     //     }
     //   }
     // }
+
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.MultiFeatureInfo
@@ -526,7 +560,20 @@ export class SitnaHelper {
         if (multiFeatureInfo.parameters == null) {
           sitnaControls.multiFeatureInfo = {
             div: 'multifeatureinfo',
-            active: true
+            active: true,
+            persistentHighlights: true,
+            share: true,
+            modes: {
+              point: {
+                active: true
+              },
+              polyline: {
+                active: true
+              },
+              polygon: {
+                active: true
+              }
+            }
           };
         } else {
           sitnaControls.multiFeatureInfo = multiFeatureInfo.parameters;
@@ -534,6 +581,8 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+
+    /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.ThreeD
@@ -541,6 +590,7 @@ export class SitnaHelper {
     ) {
       sitnaControls.threeD = true;
     }
+    */
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.FeatureInfo
@@ -562,6 +612,7 @@ export class SitnaHelper {
       sitnaControls.featureInfo = false;
     }
 
+    /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.WFSEdit
@@ -581,6 +632,8 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+     */
+
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.WFSQuery
@@ -765,7 +818,8 @@ export class SitnaHelper {
           'navBarHome',
           'basemapSelector',
           'layerCatalogSilme',
-          'workLayerManager',
+          'workLayerManagerSilme',
+          'drawMeasureModifySilme',
           'legend'
         ]
       };

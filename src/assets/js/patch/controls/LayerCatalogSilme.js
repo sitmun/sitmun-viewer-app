@@ -12,6 +12,7 @@ if (!TC.control.LayerCatalog) {
   const cacheCapabilities = {};
 
   const realTree = new Object();
+  var SEARCH_MIN_LENGTH = 3;
 
   TC.control.LayerCatalogSilme = function () {
     var _ctl = this;
@@ -28,12 +29,12 @@ if (!TC.control.LayerCatalog) {
   TC.control.LayerCatalogSilme.prototype.register = function (map) {
     var _ctl = this;
 
-    _ctl.template[_ctl.CLASS] = TC.isDebug ? "templates/LayerCatalogSilme.hbs" : { "1": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "layerTrees") : depth0), { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 4 }, "end": { "line": 7, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "layers") : depth0), { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 4 }, "end": { "line": 11, "column": 11 } } })) != null ? stack1 : ""); }, "2": function (container, depth0, helpers, partials, data) { var alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <button class=\"tc-ctl-lcat-btn-search\" title=\"" + alias2(lookupProperty(helpers, "i18n").call(alias1, "searchLayersByText", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 5, "column": 50 }, "end": { "line": 5, "column": 79 } } })) + "\"></button>    <label id=\"canvi-projecte-silme\" class=\"tc-ctl-lcat-btn-search-silme\" title=\"" + alias2(lookupProperty(helpers, "i18n").call(alias1, "changeTopicOrganization", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 81 }, "end": { "line": 6, "column": 115 } } })) + "\">" + alias2(lookupProperty(helpers, "i18n").call(alias1, "changeTopic", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 117 }, "end": { "line": 6, "column": 139 } } })) + "</label>"; }, "4": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <ul class=\"tc-ctl-lcat-branch\">" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "layerTrees") : depth0), { "name": "each", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 27, "column": 8 }, "end": { "line": 29, "column": 17 } } })) != null ? stack1 : "") + "    </ul>"; }, "5": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = container.invokePartial(lookupProperty(partials, "tc-ctl-lcat-branch"), depth0, { "name": "tc-ctl-lcat-branch", "data": data, "indent": "        ", "helpers": helpers, "partials": partials, "decorators": container.decorators })) != null ? stack1 : ""); }, "7": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = lookupProperty(helpers, "if").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "layers") : depth0), { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.program(11, data, 0), "data": data, "loc": { "start": { "line": 32, "column": 4 }, "end": { "line": 42, "column": 11 } } })) != null ? stack1 : ""); }, "8": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <ul class=\"tc-ctl-lcat-branch\">" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "layers") : depth0), { "name": "each", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 34, "column": 8 }, "end": { "line": 36, "column": 17 } } })) != null ? stack1 : "") + "    </ul>"; }, "9": function (container, depth0, helpers, partials, data) { var alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <li data-layer-id=\"" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "id") : depth0), depth0)) + "\" title=\"" + alias2(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "loadingLayers", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 35, "column": 42 }, "end": { "line": 35, "column": 66 } } })) + "\" class=\"tc-ctl-lcat-loading-node\"> " + alias2(alias1((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)) + "</li>"; }, "11": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl tc-ctl-lcat-loading\">        <span>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "loadingLayerTree", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 40, "column": 14 }, "end": { "line": 40, "column": 41 } } })) + "...</span>    </div>"; }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<h2>    " + alias2(lookupProperty(helpers, "i18n").call(alias1, "availableLayers", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 2, "column": 4 }, "end": { "line": 2, "column": 31 } } })) + "" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "enableSearch") : depth0), { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 3, "column": 4 }, "end": { "line": 12, "column": 11 } } })) != null ? stack1 : "") + "</h2><div class=\"tc-ctl-lcat-search tc-hidden tc-collapsed\">    <div class=\"tc-group\">        <input type=\"search\" class=\"tc-ctl-lcat-input tc-textbox\" placeholder=\"" + alias2(lookupProperty(helpers, "i18n").call(alias1, "textToSearchInLayers", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 18, "column": 79 }, "end": { "line": 18, "column": 110 } } })) + "\">    </div>    <ul></ul></div><div class=\"tc-ctl-lcat-tree\" id=\"arbol\">" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "layerTrees") : depth0), { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.program(7, data, 0), "data": data, "loc": { "start": { "line": 25, "column": 4 }, "end": { "line": 43, "column": 11 } } })) != null ? stack1 : "") + "</div><div class=\"tc-ctl-lcat-info tc-hidden\">" + ((stack1 = container.invokePartial(lookupProperty(partials, "tc-ctl-lcat-info"), depth0, { "name": "tc-ctl-lcat-info", "data": data, "indent": "    ", "helpers": helpers, "partials": partials, "decorators": container.decorators })) != null ? stack1 : "") + "</div><div id=\"projects\" class=\"tc-ctl-lcat-proj tc-hidden\">" + ((stack1 = container.invokePartial(lookupProperty(partials, "tc-ctl-lcat-proj"), depth0, { "name": "tc-ctl-lcat-proj", "data": data, "indent": "    ", "helpers": helpers, "partials": partials, "decorators": container.decorators })) != null ? stack1 : "") + "</div>"; }, "usePartial": true, "useData": true };
-    _ctl.template[_ctl.CLASS + "-node"] = TC.isDebug ? "templates/LayerCatalogNodeSilme.hbs" : { "1": function (container, depth0, helpers, partials, data) { return " class=\"tc-ctl-lcat-node tc-collapsed\" "; }, "3": function (container, depth0, helpers, partials, data) { return " class=\"tc-ctl-lcat-node tc-ctl-lcat-leaf\" "; }, "5": function (container, depth0, helpers, partials, data) { return "<button aria-label=\"Collapse Button\" class=\"tc-ctl-lcat-collapse-btn\"></button>"; }, "7": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return container.escapeExpression(container.lambda((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)); }, "9": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<button title=\"" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "infoFromThisLayer", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 3, "column": 90 }, "end": { "line": 3, "column": 118 } } })) + "\" class=\"tc-ctl-lcat-btn-info\"></button>"; }, "11": function (container, depth0, helpers, partials, data) { return "<ul class=\"tc-ctl-lcat-branch tc-collapsed\">"; }, "13": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = container.invokePartial(lookupProperty(partials, "tc-ctl-lcat-node"), depth0, { "name": "tc-ctl-lcat-node", "data": data, "indent": "        ", "helpers": helpers, "partials": partials, "decorators": container.decorators })) != null ? stack1 : ""); }, "15": function (container, depth0, helpers, partials, data) { return "</ul>"; }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.lambda, alias3 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<li " + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.program(3, data, 0), "data": data, "loc": { "start": { "line": 1, "column": 4 }, "end": { "line": 1, "column": 117 } } })) != null ? stack1 : "") + " data-layer-name=\"" + alias3(alias2((depth0 != null ? lookupProperty(depth0, "name") : depth0), depth0)) + "\" data-layer-uid=\"" + alias3(alias2((depth0 != null ? lookupProperty(depth0, "uid") : depth0), depth0)) + "\" id=\"" + alias3(alias2((depth0 != null ? lookupProperty(depth0, "id") : depth0), depth0)) + "\">    " + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "if", "hash": {}, "fn": container.program(5, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 2, "column": 4 }, "end": { "line": 2, "column": 106 } } })) != null ? stack1 : "") + "    <span title=\"" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "name") : depth0), { "name": "if", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 3, "column": 17 }, "end": { "line": 3, "column": 45 } } })) != null ? stack1 : "") + "\">" + alias3(alias2((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)) + "</span>" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "name") : depth0), { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 3, "column": 63 }, "end": { "line": 3, "column": 165 } } })) != null ? stack1 : "") + "    " + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 4, "column": 4 }, "end": { "line": 5, "column": 15 } } })) != null ? stack1 : "") + "" + ((stack1 = lookupProperty(helpers, "each").call(alias1, (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "each", "hash": {}, "fn": container.program(13, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 7, "column": 8 }, "end": { "line": 9, "column": 17 } } })) != null ? stack1 : "") + "        " + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "if", "hash": {}, "fn": container.program(15, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 11, "column": 8 }, "end": { "line": 11, "column": 36 } } })) != null ? stack1 : "") + "</li>"; }, "usePartial": true, "useData": true };
-    _ctl.template[_ctl.CLASS + "-branch"] = TC.isDebug ? "templates/LayerCatalogBranchSilme.hbs" : { "1": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = container.invokePartial(lookupProperty(partials, "tc-ctl-lcat-node"), depth0, { "name": "tc-ctl-lcat-node", "data": data, "indent": "            ", "helpers": helpers, "partials": partials, "decorators": container.decorators })) != null ? stack1 : ""); }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<ul class=\"tc-ctl-lcat-node\" id=\"" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "id") : depth0), depth0)) + "\">    <span>" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)) + "</span>    <ul class=\"tc-ctl-lcat-branch tc-collapsed\">" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "children") : depth0), { "name": "each", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 5, "column": 8 }, "end": { "line": 7, "column": 17 } } })) != null ? stack1 : "") + "    </ul></ul>"; }, "usePartial": true, "useData": true };
-    _ctl.template[_ctl.CLASS + '-info'] = TC.isDebug ? "templates/LayerCatalogInfoSilme.hbs" : { "1": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-name\">" + ((stack1 = lookupProperty(helpers, "if").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "isGroup") : depth0), { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.program(4, data, 0), "data": data, "loc": { "start": { "line": 7, "column": 8 }, "end": { "line": 11, "column": 15 } } })) != null ? stack1 : "") + "        <div id=\"lcat-info\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "name") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "2": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <h4 id=\"lcat-info-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "groupLayerId", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 8, "column": 33 }, "end": { "line": 8, "column": 56 } } })) + "</h4>"; }, "4": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <h4 id=\"lcat-info-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "layerId", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 10, "column": 33 }, "end": { "line": 10, "column": 51 } } })) + "</h4>"; }, "6": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-metadata\">        <!--<h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(alias1, "metadata", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 16 }, "end": { "line": 17, "column": 35 } } })) + "</h4>-->" + ((stack1 = lookupProperty(helpers, "each").call(alias1, (depth0 != null ? lookupProperty(depth0, "metadata") : depth0), { "name": "each", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 18, "column": 8 }, "end": { "line": 20, "column": 17 } } })) != null ? stack1 : "") + "    </div>"; }, "7": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <a href=\"" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "url") : depth0), depth0)) != null ? stack1 : "") + "\" type=\"" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "format") : depth0), depth0)) != null ? stack1 : "") + "\" title=\"" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "formatDescription") : depth0), depth0)) != null ? stack1 : "") + "\" target=\"_blank\">" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "formatDescription") : depth0), depth0)) != null ? stack1 : "") + "</a>"; }, "9": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-descarregadades\">        <!--<h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(alias1, "descarregadades", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 25, "column": 16 }, "end": { "line": 25, "column": 42 } } })) + "</h4>-->" + ((stack1 = lookupProperty(helpers, "each").call(alias1, (depth0 != null ? lookupProperty(depth0, "dataUrl") : depth0), { "name": "each", "hash": {}, "fn": container.program(7, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 26, "column": 8 }, "end": { "line": 28, "column": 17 } } })) != null ? stack1 : "") + "    </div>"; }, "11": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-url\">        <h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "url", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 33, "column": 12 }, "end": { "line": 33, "column": 26 } } })) + "</h4>        <a href=\"" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "url") : depth0), depth0)) != null ? stack1 : "") + "?service=wms&amp;request=getcapabilities\" target=\"_blank\">" + ((stack1 = alias1((depth0 != null ? lookupProperty(depth0, "url") : depth0), depth0)) != null ? stack1 : "") + "</a>    </div>"; }, "13": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-abstract\">" + ((stack1 = lookupProperty(helpers, "if").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "isGroup") : depth0), { "name": "if", "hash": {}, "fn": container.program(14, data, 0), "inverse": container.program(16, data, 0), "data": data, "loc": { "start": { "line": 39, "column": 8 }, "end": { "line": 43, "column": 15 } } })) != null ? stack1 : "") + "        <div><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "abstract") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "14": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "groupAbstract", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 40, "column": 12 }, "end": { "line": 40, "column": 36 } } })) + "</h4>"; }, "16": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "abstract", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 42, "column": 12 }, "end": { "line": 42, "column": 31 } } })) + "</h4>"; }, "18": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-parentAbstract\">        <h4>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "parentAbstract", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 49, "column": 12 }, "end": { "line": 49, "column": 37 } } })) + "</h4>        <div><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "parentAbstract") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "20": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "contactPerson", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 55, "column": 48 }, "end": { "line": 55, "column": 72 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "contactPerson") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "22": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "contactOrganization", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 61, "column": 48 }, "end": { "line": 61, "column": 78 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "ontactOrganization") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "24": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "contactMail", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 67, "column": 48 }, "end": { "line": 67, "column": 70 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "contactMail") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "26": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "contactTelephone", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 73, "column": 48 }, "end": { "line": 73, "column": 75 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "contactTelephone") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "28": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "fees", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 79, "column": 48 }, "end": { "line": 79, "column": 63 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "fees") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "30": function (container, depth0, helpers, partials, data) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "    <div class=\"tc-ctl-lcat-info-data\">        <h4 class=\"tc-ctl-lcat-info-data-title\">" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "accessConstraints", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 85, "column": 48 }, "end": { "line": 85, "column": 76 } } })) + "</h4>        <div class=\"tc-ctl-lcat-info-data-content\"><pre>" + ((stack1 = container.lambda((depth0 != null ? lookupProperty(depth0, "accessConstraints") : depth0), depth0)) != null ? stack1 : "") + "</pre></div>    </div>"; }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<a class=\"tc-ctl-lcat-info-close\"></a><h2>" + alias2(lookupProperty(helpers, "i18n").call(alias1, "layerInfo", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 2, "column": 4 }, "end": { "line": 2, "column": 24 } } })) + "</h2><div><h3 class=\"tc-ctl-lcat-title test\">" + alias2(container.lambda((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)) + "</h3></div><div class=\"tc-ctl-lcat-info-content\">" + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "name") : depth0), { "name": "if", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 5, "column": 4 }, "end": { "line": 14, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "metadata") : depth0), { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 15, "column": 4 }, "end": { "line": 22, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "dataUrl") : depth0), { "name": "if", "hash": {}, "fn": container.program(9, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 23, "column": 4 }, "end": { "line": 30, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "url") : depth0), { "name": "if", "hash": {}, "fn": container.program(11, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 31, "column": 4 }, "end": { "line": 36, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "abstract") : depth0), { "name": "if", "hash": {}, "fn": container.program(13, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 37, "column": 4 }, "end": { "line": 46, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "parentAbstract") : depth0), { "name": "if", "hash": {}, "fn": container.program(18, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 47, "column": 4 }, "end": { "line": 52, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "contactPerson") : depth0), { "name": "if", "hash": {}, "fn": container.program(20, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 53, "column": 4 }, "end": { "line": 58, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "contactOrganization") : depth0), { "name": "if", "hash": {}, "fn": container.program(22, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 59, "column": 4 }, "end": { "line": 64, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "contactMail") : depth0), { "name": "if", "hash": {}, "fn": container.program(24, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 65, "column": 4 }, "end": { "line": 70, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "contactTelephone") : depth0), { "name": "if", "hash": {}, "fn": container.program(26, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 71, "column": 4 }, "end": { "line": 76, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "fees") : depth0), { "name": "if", "hash": {}, "fn": container.program(28, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 77, "column": 4 }, "end": { "line": 82, "column": 11 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, (depth0 != null ? lookupProperty(depth0, "accessConstraints") : depth0), { "name": "if", "hash": {}, "fn": container.program(30, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 83, "column": 4 }, "end": { "line": 88, "column": 11 } } })) != null ? stack1 : "") + "</div>"; }, "useData": true };
-    _ctl.template[_ctl.CLASS + '-results'] = TC.isDebug ? "templates/LayerCatalogResultsSilme.hbs" : { "1": function (container, depth0, helpers, partials, data, blockParams, depths) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return ((stack1 = lookupProperty(helpers, "if").call(alias1, lookupProperty(helpers, "gt").call(alias1, (depths[1] != null ? lookupProperty(depths[1], "servicesLooked") : depths[1]), 1, { "name": "gt", "hash": {}, "data": data, "loc": { "start": { "line": 2, "column": 6 }, "end": { "line": 2, "column": 30 } } }), { "name": "if", "hash": {}, "fn": container.program(2, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 2, "column": 0 }, "end": { "line": 5, "column": 15 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "each").call(alias1, (depth0 != null ? lookupProperty(depth0, "founds") : depth0), { "name": "each", "hash": {}, "fn": container.program(5, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 6, "column": 8 }, "end": { "line": 11, "column": 17 } } })) != null ? stack1 : "") + ((stack1 = lookupProperty(helpers, "if").call(alias1, lookupProperty(helpers, "gt").call(alias1, (depths[1] != null ? lookupProperty(depths[1], "servicesLooked") : depths[1]), 1, { "name": "gt", "hash": {}, "data": data, "loc": { "start": { "line": 12, "column": 14 }, "end": { "line": 12, "column": 38 } } }), { "name": "if", "hash": {}, "fn": container.program(12, data, 0, blockParams, depths), "inverse": container.noop, "data": data, "loc": { "start": { "line": 12, "column": 8 }, "end": { "line": 15, "column": 7 } } })) != null ? stack1 : ""); }, "2": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<li class=\"tc-ctl-lcat-search-group " + ((stack1 = lookupProperty(helpers, "if").call(depth0 != null ? depth0 : (container.nullContext || {}), ((stack1 = (depth0 != null ? lookupProperty(depth0, "service") : depth0)) != null ? lookupProperty(stack1, "isCollapsed") : stack1), { "name": "if", "hash": {}, "fn": container.program(3, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 3, "column": 36 }, "end": { "line": 3, "column": 82 } } })) != null ? stack1 : "") + "\" data-service-id=\"" + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0, "service") : depth0)) != null ? lookupProperty(stack1, "id") : stack1), depth0)) + "\">    <h5>" + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0, "service") : depth0)) != null ? lookupProperty(stack1, "title") : stack1), depth0)) + "</h5><ul>"; }, "3": function (container, depth0, helpers, partials, data) { return "tc-collapsed"; }, "5": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <li data-layer-name=\"" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "Name") : depth0), depth0)) + "\" " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (depth0 != null ? lookupProperty(depth0, "alreadyAdded") : depth0), { "name": "if", "hash": {}, "fn": container.program(6, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 7, "column": 39 }, "end": { "line": 7, "column": 86 } } })) != null ? stack1 : "") + " " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (depth0 != null ? lookupProperty(depth0, "layer") : depth0), { "name": "if", "hash": {}, "fn": container.program(8, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 7, "column": 87 }, "end": { "line": 7, "column": 135 } } })) != null ? stack1 : "") + ">            <h5 class=\"tc-selectable\" " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (depth0 != null ? lookupProperty(depth0, "alreadyAdded") : depth0), { "name": "if", "hash": {}, "fn": container.program(10, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 38 }, "end": { "line": 8, "column": 140 } } })) != null ? stack1 : "") + ">" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "Title") : depth0), depth0)) + "</h5>            <button class=\"tc-ctl-lcat-search-btn-info\" title=\"" + alias2(lookupProperty(helpers, "i18n").call(alias3, "infoFromThisLayer", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 9, "column": 63 }, "end": { "line": 9, "column": 92 } } })) + "\"></button>        </li>"; }, "6": function (container, depth0, helpers, partials, data) { return " class=\"tc-checked\" "; }, "8": function (container, depth0, helpers, partials, data) { return " style=\"background:#e4e6d0\" "; }, "10": function (container, depth0, helpers, partials, data) { var alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return " data-tooltip=\"" + alias2(lookupProperty(helpers, "i18n").call(alias1, "layerAlreadyAdded", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 8, "column": 73 }, "end": { "line": 8, "column": 102 } } })) + "\" " + alias2(lookupProperty(helpers, "i18n").call(alias1, "clickToAddToMap", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 8, "column": 104 }, "end": { "line": 8, "column": 131 } } })) + "\" "; }, "12": function (container, depth0, helpers, partials, data) { return "    </ul></li>"; }, "14": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<li class=\"tc-ctl-lcat-no-results\"><h5>" + container.escapeExpression(lookupProperty(helpers, "i18n").call(depth0 != null ? depth0 : (container.nullContext || {}), "noMatches", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 17, "column": 39 }, "end": { "line": 17, "column": 60 } } })) + "</h5></li>"; }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data, blockParams, depths) { var stack1, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "" + ((stack1 = lookupProperty(helpers, "each").call(depth0 != null ? depth0 : (container.nullContext || {}), (depth0 != null ? lookupProperty(depth0, "servicesFound") : depth0), { "name": "each", "hash": {}, "fn": container.program(1, data, 0, blockParams, depths), "inverse": container.program(14, data, 0, blockParams, depths), "data": data, "loc": { "start": { "line": 1, "column": 1 }, "end": { "line": 18, "column": 9 } } })) != null ? stack1 : ""); }, "useData": true, "useDepths": true };
-    _ctl.template[_ctl.CLASS + '-proj'] = TC.isDebug ? "templates/LayerCatalogProjSilme.hbs" : { "1": function (container, depth0, helpers, partials, data) { var stack1, alias1 = container.lambda, alias2 = container.escapeExpression, alias3 = depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "        <li class=\"tc-ctl-proj-branch\">            <label id=\"" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "id") : depth0), depth0)) + "\" class=\"tc-ctl-lcat-proj-topic\" title=\"" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "tooltip") : depth0), depth0)) + "\" " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (depth0 != null ? lookupProperty(depth0, "thumbnail") : depth0), { "name": "if", "hash": {}, "fn": container.program(2, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 10, "column": 82 }, "end": { "line": 10, "column": 151 } } })) != null ? stack1 : "") + ">                " + ((stack1 = lookupProperty(helpers, "if").call(alias3, (depth0 != null ? lookupProperty(depth0, "tooltip") : depth0), { "name": "if", "hash": {}, "fn": container.program(4, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 11, "column": 16 }, "end": { "line": 11, "column": 101 } } })) != null ? stack1 : "") + "                <span class=\"tc-ctl-lcat-proj-topic-name\">" + alias2(alias1((depth0 != null ? lookupProperty(depth0, "name") : depth0), depth0)) + "</span>            </label>        </li>"; }, "2": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return " style=\"background-image:url(" + container.escapeExpression(container.lambda((depth0 != null ? lookupProperty(depth0, "thumbnail") : depth0), depth0)) + ")\" "; }, "4": function (container, depth0, helpers, partials, data) { var lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<span class=\"tc-ctl-lcat-proj-topic-tooltip\">" + container.escapeExpression(container.lambda((depth0 != null ? lookupProperty(depth0, "tooltip") : depth0), depth0)) + "</span>"; }, "compiler": [8, ">= 4.3.0"], "main": function (container, depth0, helpers, partials, data) { var stack1, alias1 = depth0 != null ? depth0 : (container.nullContext || {}), alias2 = container.escapeExpression, lookupProperty = container.lookupProperty || function (parent, propertyName) { if (Object.prototype.hasOwnProperty.call(parent, propertyName)) { return parent[propertyName]; } return undefined }; return "<a class=\"tc-ctl-lcat-proj-window\"></a><a class=\"tc-ctl-lcat-proj-close\"></a><h3>" + alias2(lookupProperty(helpers, "i18n").call(alias1, "changeTopic", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 3, "column": 4 }, "end": { "line": 3, "column": 26 } } })) + "</h3><div><h4 class=\"tc-ctl-lcat-title\">" + alias2(container.lambda((depth0 != null ? lookupProperty(depth0, "title") : depth0), depth0)) + "</h4></div><div class=\"tc-ctl-lcat-proj-content\">    <div class=\"tc-ctl-lcat-proj-subtitle\">" + alias2(lookupProperty(helpers, "i18n").call(alias1, "projSubtitle", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 6, "column": 43 }, "end": { "line": 6, "column": 66 } } })) + "</div>    <ul class=\"tc-ctl-lcat-proj-childs\">" + ((stack1 = lookupProperty(helpers, "each").call(alias1, (depth0 != null ? lookupProperty(depth0, "projs") : depth0), { "name": "each", "hash": {}, "fn": container.program(1, data, 0), "inverse": container.noop, "data": data, "loc": { "start": { "line": 8, "column": 8 }, "end": { "line": 15, "column": 17 } } })) != null ? stack1 : "") + "    </ul></div><a class=\"tc-ctl-lcat-footer\" href=\"https://ide.cime.es/sitmun\" target=\"_blank\">    <div class=\"tc-ctl-lcat-footer-img\"></div>    <div class=\"tc-ctl-lcat-footer-text\">" + alias2(lookupProperty(helpers, "i18n").call(alias1, "restrictedAccess", { "name": "i18n", "hash": {}, "data": data, "loc": { "start": { "line": 20, "column": 41 }, "end": { "line": 20, "column": 68 } } })) + "</div></a>"; }, "useData": true };
+    _ctl.template[_ctl.CLASS] = "assets/js/patch/templates/LayerCatalogSilme.hbs";
+    _ctl.template[_ctl.CLASS + "-node"] = "assets/js/patch/templates/LayerCatalogNodeSilme.hbs";
+    _ctl.template[_ctl.CLASS + "-branch"] = "assets/js/patch/templates/LayerCatalogBranchSilme.hbs";
+    _ctl.template[_ctl.CLASS + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
+    _ctl.template[_ctl.CLASS + '-results'] = "assets/js/patch/templates/LayerCatalogResultsSilme.hbs";
+    _ctl.template[_ctl.CLASS + '-proj'] = "assets/js/patch/templates/LayerCatalogProjSilme.hbs";
 
     const result = TC.control.LayerCatalog.prototype.register.call(_ctl, map);
 
@@ -218,6 +219,221 @@ if (!TC.control.LayerCatalog) {
       }
     }
     return null;
+  };
+
+  const createSearchAutocomplete = function () {
+    const self = this;
+
+    self.textInput = self.div.querySelector("." + self.CLASS + "-input");
+    self.list = self.div.querySelector("." + self.CLASS + "-search ul");
+    // Clear results list when x button is pressed in the search input
+    self.textInput.addEventListener('mouseup', function (_e) {
+      var oldValue = self.textInput.value;
+
+      if (oldValue === '') {
+        return;
+      }
+
+      // When this event is fired after clicking on the clear button
+      // the value is not cleared yet. We have to wait for it.
+      setTimeout(function () {
+        var newValue = self.textInput.value;
+
+        if (newValue === '') {
+          self.list.innerHTML = '';
+        }
+      }, 1);
+    });
+
+    var layerCheckedList = [];
+    //Definir el autocomplete del buscador de capas por texto
+    TC._search = TC._search || {};
+    TC._search.retryTimeout = null;
+
+    TC.UI.autocomplete.call(self.textInput, {
+      link: '#',
+      target: self.list,
+      minLength: 0,
+      source: function (text, callback) {
+        //lista de capas marcadas
+        layerCheckedList = [];
+        self._roots.forEach(function (root) {
+          root.querySelectorAll("li." + TC.Consts.classes.CHECKED).forEach(function (item) {
+            layerCheckedList.push(item.dataset.layerName);
+          });
+        });
+
+        //con texto vacío, limpiar  y ocultar la lista de resultados
+        text = text.trim();
+        if (text.length < SEARCH_MIN_LENGTH) {
+          self.list.innerHTML = '';
+        }
+        else if (text.length >= SEARCH_MIN_LENGTH) {
+          if (TC._search.retryTimeout)
+            clearTimeout(TC._search.retryTimeout);
+          TC._search.retryTimeout = setTimeout(function () {
+            var results = [];
+            for (var i = 0, ii = self.sourceLayers.length; i < ii; i++) {
+              const sourceLayer = self.sourceLayers[i];
+              var _founds = sourceLayer.searchSubLayers(text);
+              if (_founds.length) {
+                results.push({
+                  service: {
+                    id: sourceLayer.id,
+                    title: sourceLayer.title || sourceLayer.id
+                  },
+                  founds: _founds
+                });
+              }
+            }
+            callback({ servicesFound: results, servicesLooked: self.sourceLayers.length });
+          }, TC._search.interval);
+        }
+      },
+      callback: function (e) {
+        self.textInput.value = e.target.text || e.target.innerText;
+        TC._search.lastPattern = self.textInput.value;
+        self.goToResult(unescape(e.target.hash).substring(1));
+        TC.UI.autocomplete.call(self.textInput, 'clear');
+      },
+      buildHTML: function (data) {
+        var container = this.target;
+        //si hay resultados, mostramos la lista
+        if (data.results && data.results.servicesFound.length > 0) {
+          var workLayers = self.map.getLayerTree().workLayers;
+          for (var k = 0; k < data.results.servicesFound.length; k++) {
+            var founds = data.results.servicesFound[k].founds;
+            for (var j = 0; j < founds.length; j++) {
+              delete founds[j].alreadyAdded;
+              for (var i = 0; i < workLayers.length; i++) {
+                //if (workLayers[i].title == data.results[j].Title ) {
+                if (layerCheckedList.indexOf(founds[j].Name) >= 0) {
+                  founds[j].alreadyAdded = true;
+                  break;
+                }
+              }
+              //Si la capa no tiene Name, no se puede añadir al TOC
+              if (!founds[j].Name) {
+                founds.splice(j, 1);
+                j--;
+              }
+            }
+            if (!data.results.servicesFound[k].founds.length) {
+              data.results.servicesFound.splice(k, 1);
+              continue;
+            }
+            //si estaba collapsado mantenemos el estado
+            if (self.div.querySelectorAll(".tc-ctl-lcat-search-group")[k]) {
+              data.results.servicesFound[k].service.isCollapsed = self.div.querySelectorAll(".tc-ctl-lcat-search-group")[k].classList.contains(TC.Consts.classes.COLLAPSED);
+            }
+          }
+        }
+        var ret = '';
+        self.getRenderedHtml(self.CLASS + '-results', data.results).then(function (out) {
+          container.innerHTML = ret = out;
+          // Marcamos el botón "i" correspondiente si el panel de info está abierto
+          const visibleInfoPane = self.div.querySelector(`.${self.CLASS}-info`);
+          if (visibleInfoPane) {
+            const serviceId = visibleInfoPane.dataset.serviceId;
+            const layerName = visibleInfoPane.dataset.layerName;
+            let selector = `li[data-layer-name="${layerName}"] input[type="checkbox"].${self.CLASS}-search-btn-info`;
+            if (self.sourceLayers.length > 1) {
+              selector = `li[data-service-id="${serviceId}"] ${selector}`;
+            }
+            const infoCheckbox = container.querySelector(selector);
+            if (infoCheckbox) {
+              infoCheckbox.checked = true;
+            }
+          }
+        });
+        return ret;
+      }
+    });
+
+
+    if (!self.searchInit) {
+      //botón de la lupa para alternar entre búsqueda y árbol
+      self.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
+        e.target.blur();
+        self.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
+
+        const searchPane = self.div.querySelector('.' + self.CLASS + '-search');
+        const treePane = self.div.querySelector('.' + self.CLASS + '-tree');
+        const infoPane = self.div.querySelector('.' + self.CLASS + '-info');
+
+        const searchPaneMustShow = searchPane.classList.contains(TC.Consts.classes.HIDDEN);
+        searchPane.classList.toggle(TC.Consts.classes.HIDDEN, !searchPaneMustShow);
+        treePane.classList.toggle(TC.Consts.classes.HIDDEN, searchPaneMustShow);
+        e.target.classList.toggle(self.CLASS + '-btn-tree', searchPaneMustShow);
+        e.target.classList.toggle(self.CLASS + '-btn-search', !searchPaneMustShow);
+        if (searchPaneMustShow) {
+          self.hideLayerInfo()
+          self.textInput.focus();
+          e.target.setAttribute('title', self.getLocaleString('viewAvailableLayersTree'));
+        }
+        else {
+          self.hideSearchLayerInfo()
+          e.target.setAttribute('title', self.getLocaleString('searchLayersByText'));
+
+          //Si hay resaltados en el árbol, mostramos el panel de info
+          const selectedCount = self.div.querySelectorAll('.tc-ctl-lcat-tree li input[type=checkbox]:checked').length;
+          if (selectedCount > 0) {
+            infoPane.classList.remove(TC.Consts.classes.HIDDEN);
+          }
+        }
+      }, { passive: true });
+
+
+      //evento de expandir nodo de info
+      //self._$div.off("click", ".tc-ctl-lcat-search button");
+      self.div.addEventListener("change", TC.EventTarget.listenerBySelector("." + self.CLASS + "-search input[type=checkbox]." + self.CLASS + "-search-btn-info", function (evt) {
+        evt.stopPropagation();
+        const target = evt.target;
+        if (target.checked) {
+          const li = target.parentElement;
+          var parent = li;
+          do {
+            parent = parent.parentElement;
+          }
+          while (parent && parent.tagName !== 'LI');
+          //self.showLayerInfo(self.layers.length > 1 ? self.layers.filter(l => l.id === parent.dataset.serviceId)[0] : self.layers[0], li.dataset.layerName);
+          showSearchLayerInfo.call(self, self.layers.length > 1 ? self.layers.filter(l => l.id === parent.dataset.serviceId)[0] : self.layers[0], li.dataset.layerName);
+
+        } else {
+          self.hideLayerInfo();
+        }
+      }));
+
+      self.div.addEventListener("click", TC.EventTarget.listenerBySelector("." + self.CLASS + "-search input[type=checkbox]." + self.CLASS + "-search-btn-info", function (evt) {
+        evt.stopPropagation();
+      }));
+
+      //click en un resultado - añadir capa
+      const searchListElementSelector = '.' + self.CLASS + '-search li';
+      self.div.addEventListener('click', TC.EventTarget.listenerBySelector(searchListElementSelector, function (evt) {
+        evt.stopPropagation();
+        var li = evt.target;
+        while (li && !li.matches(searchListElementSelector)) {
+          li = li.parentElement;
+        }
+        if (li.classList.contains(self.CLASS + '-no-results')) {
+          return; //si clicko en el li de "no hay resultados" rompo el ciclo de ejecución
+        }
+        if (li.classList.contains(self.CLASS + '-search-group')) {
+          li.classList.toggle(TC.Consts.classes.COLLAPSED);
+          return;
+        }
+        onSpanClick(evt, self, function () {
+          if (this.layers.length === 1) {
+            return this.layers[0];
+          }
+          return this.getLayer(li.closest(".tc-ctl-lcat-search-group") && li.closest(".tc-ctl-lcat-search-group").dataset.serviceId);
+        });
+
+      }));
+
+      self.searchInit = true;
+    }
   };
 
   const getLayerTree = function (layer) {
@@ -431,6 +647,105 @@ if (!TC.control.LayerCatalog) {
             const infoBtn = li.querySelector('.' + self.CLASS + '-btn-info');
             infoBtn.classList.toggle(TC.Consts.classes.CHECKED, toggleInfo(n, infoSilme));
             result = infoSilme;
+            break;
+          }
+        }
+        break;
+      }
+    }
+
+    return result;
+  };
+
+  const showSearchLayerInfo = function (layer, name, uid, li) {
+    const self = this;
+    var result = null;
+
+    var info = self.div.querySelector('.' + self.CLASS + '-info');
+
+    const toggleInfo = function (layerName, infoObj) {
+      var result = false;
+      //if (lName !== undefined && lName.toString() === layerName) {
+      //    info.dataset.layerName = '';
+      //    $info.removeClass(TC.Consts.classes.HIDDEN);
+      //}
+      //else {
+      if (infoObj) {
+        result = true;
+        info.dataset.serviceId = layer.id;
+        info.dataset.layerName = layerName;
+        info.classList.remove(TC.Consts.classes.HIDDEN);
+        self.getRenderedHtml(self.CLASS + '-info', infoObj)
+          .then(function (out) {
+            info.innerHTML = out;
+            info.querySelector('.' + self.CLASS + '-info-close').addEventListener(TC.Consts.event.CLICK, function () {
+              self.hideSearchLayerInfo();
+            }, { passive: true });
+          })
+          .catch(function (err) {
+            TC.error(err);
+          });
+      }
+      //}
+      return result;
+    };
+
+    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function (btn) {
+      btn.checked = false;
+    });
+
+    const getInfoByTitle = function (layer, title) {
+      if (layer.Title === title) {
+        return {
+          title: title,
+          abstract: layer.Abstract,
+          metadata: !layer.MetadataURL ? null : layer.MetadataURL.reduce(function (vi, va) {
+            vi.push({
+              format: va.Format,
+              formatDescription: TC.Util.getLocaleString(self.map.options.locale, TC.Util.getSimpleMimeType(va.Format)) ||
+                TC.Util.getLocaleString(self.map.options.locale, 'viewMetadata'),
+              type: va.type,
+              url: va.OnlineResource
+            });
+            return vi;
+          }, [])
+        };
+      }
+      if (layer.Layer) {
+        for (var i = 0; i < layer.Layer.length; i++) {
+          const res = getInfoByTitle(layer.Layer[i], title);
+          if (res) {
+            return res;
+          }
+        }
+      }
+    };
+
+    for (var i = 0, ii = self._roots.length; i < ii; i++) {
+      const root = self._roots[i];
+      if (root.dataset.layerId === layer.id) {
+        const infoToggles = root.querySelectorAll('.' + self.CLASS + '-btn-info');
+        for (var j = 0, jj = infoToggles.length; j < jj; j++) {
+          const infoToggle = infoToggles[j];
+          var n = infoToggle.parentElement.dataset.layerName;
+          if (name && n === name) {
+            const info = getInfo.call(self, name, layer.wrap);
+            const infoBtn = self.div.querySelector('li[data-layer-name="' + n + '"] > input[type="checkbox"].' + self.CLASS + '-btn-info');
+            infoBtn.checked = toggleInfo(n, info);
+            const infoSearchBtn = self.div.querySelector('li[data-layer-name="' + n + '"] > input[type="checkbox"].' + self.CLASS + '-search-btn-info');
+            if (infoSearchBtn) {
+              infoSearchBtn.checked = infoBtn.checked;
+            }
+            result = info;
+            break;
+          }
+          const t = infoToggle.parentElement.querySelector('span').innerText;
+          if (!name && title && t === title){
+            //buscar en el capapabilities por nombre de capa;
+            const info = getInfoByTitle(layer.capabilities.Capability.Layer, title);
+            //const infoBtn = self.div.querySelector('li [data-layer-name="' + n + '"] > button.' + self.CLASS + '-btn-info');
+            infoToggle.checked = toggleInfo(t, info);
+            result = info;
             break;
           }
         }
@@ -775,7 +1090,8 @@ if (!TC.control.LayerCatalog) {
 
         realTree.children = new Array();
 
-        TC.control.LayerCatalog.prototype.render.call(self, function () {
+        //TC.control.LayerCatalog.prototype.render.call(self, function () {
+        renderParent.call(self, function() {
 
           const getLayerTree = function (layer) {
             if (layer.tree == null) {
@@ -1076,17 +1392,19 @@ if (!TC.control.LayerCatalog) {
 
 
         //2 Capes de fons
-        if (treeLayers.length > 0) {
-          if (typeof secondBaseLayer != 'undefined') {
-            if (secondBaseLayer == false) {
-              addSecondBaseLayer();
-              setSpan1();
-              setSpan2();
-              selectB1();
-              document.querySelector('#rangeTransparency').addEventListener('input', function () {
-                silmeMap.map.getLayers().array_[1].setOpacity(this.value / 100);
-                silmeMap.map.render();
-              });
+        if (true) { // SILME - posam fals perque no volem dos mapes de fons
+          if (treeLayers.length > 0) {
+            if (typeof secondBaseLayer != 'undefined') {
+              if (secondBaseLayer == false) {
+                addSecondBaseLayer();
+                setSpan1();
+                setSpan2();
+                selectB1();
+                document.querySelector('#rangeTransparency').addEventListener('input', function () {
+                  silmeMap.map.getLayers().array_[1].setOpacity(this.value / 100);
+                  silmeMap.map.render();
+                });
+              }
             }
           }
         }
@@ -1101,6 +1419,33 @@ if (!TC.control.LayerCatalog) {
 
 
       treeLayers = self.layers;
+    }));
+  };
+
+  const renderParent = function (callback) {
+    const self = this;
+    self.sourceLayers = [];
+
+    return self._set1stRenderPromise(new Promise(function (resolve, _reject) {
+      if (self.layers.length === 0) {
+        self.renderData({ layerTrees: [], enableSearch: false }, function () {
+
+          if (TC.Util.isFunction(callback)) {
+            callback();
+          }
+
+          resolve();
+        });
+      } else {
+        self.renderData({ layers: self.layers, enableSearch: true }, function () {
+
+          createSearchAutocomplete.call(self);
+
+          self.layers.forEach(function (layer) {
+            self.renderBranch(layer, callback, resolve);
+          });
+        });
+      }
     }));
   };
 
@@ -1194,6 +1539,17 @@ if (!TC.control.LayerCatalog) {
     infoPanel.classList.add(TC.Consts.classes.HIDDEN);
   };
 
+  TC.control.LayerCatalogSilme.prototype.hideSearchLayerInfo = function () {
+    var self = this;
+    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function (btn) {
+      btn.checked = false;
+    });
+    const infoPanel = self.div.querySelector('.' + self.CLASS + '-info');
+    delete infoPanel.dataset.serviceId;
+    delete infoPanel.dataset.layerName;
+    infoPanel.classList.add(TC.Consts.classes.HIDDEN);
+  };
+
   TC.control.LayerCatalogSilme.prototype.getLayerNodes = function (layer) {
     const self = this;
     const result = [];
@@ -1224,7 +1580,7 @@ if (!TC.control.LayerCatalog) {
           var node = li.querySelectorAll('li[data-layer-name]');
           var capa;
           for (var i = 0; i < node.length; i++) {
-            if (li.querySelectorAll('li[data-layer-name]')[i].dataset.layerName == layer.availableNames[0]) {
+            if (layer.availableNames && li.querySelectorAll('li[data-layer-name]')[i].dataset.layerName == layer.availableNames[0]) {
               result = li;
             }
           }

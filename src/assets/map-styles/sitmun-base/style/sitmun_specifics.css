@@ -1,0 +1,101 @@
+:root {
+  /*--ide-main-color: #bc986a; /* -- BROWN */
+  /*--ide-main-color: #c38d9e; /* -- PINK */
+  --ide-main-color: #d79922; /* -- ORANGE */
+}
+
+.login-page {
+  background-image: url(assets/logos/logo_b_l.png);
+  background-position: bottom;
+  background-size: 70%;
+  background-repeat: no-repeat;
+}
+
+.right-panel > h1 {
+  top: 50px;
+}
+
+.right-panel > .panel-content, .silme-panel > .panel-content {
+  top: 40px;
+}
+
+.tc-ctl.tc-ctl-nav {
+  top: 54px;
+}
+
+.tc-ctl.tc-ctl-nav-home {
+  top: 138px;
+}
+
+.tc-ctl-fscreen {
+  top: 180px !important;
+}
+
+.silme-panel > h1 {
+  top: 244px;
+}
+
+.tc-ctl-sv {
+  top: 308px !important;
+}
+
+#legend-tab {
+  top: 350px;
+}
+
+#ovmap-tab {
+  top: 392px;
+}
+
+#search {
+  top: 54px;
+  left: 95px;
+  padding-left: 0.4em;
+}
+
+#search > a {
+  display: none;
+}
+
+#search.tc-ctl.tc-ctl-search.search-left-collapsed {
+  left: 410px;
+}
+
+.tc-ctl-sv-btn {
+  background-color: #000000cc;
+}
+
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
+  right: 0;
+  background: none;
+  color: var(--sec-btn-color);
+  cursor: pointer;
+  z-index: 10000;
+  font-size: 100%;
+  border: 0;
+  padding: 0 0.4em
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info-close:after {
+  content: '\2716';
+  font-size: unset;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info h3:before {
+  font-family: mapskin;
+  content: '\e024';
+  font-size: unset;
+}
+
+.tc-ctl-lcat-info h4 {
+  margin: 0.5em 0 0.2em 0;
+  text-transform: unset;
+}
+
+@media screen and (min-height: 40em) and (pointer: fine), screen and (min--moz-device-pixel-ratio:0) and (min-height:40em) {
+
+  .tc-ctl-lcat .tc-ctl-lcat-info-close {
+    font-size: 1.3em;
+  }
+
+}

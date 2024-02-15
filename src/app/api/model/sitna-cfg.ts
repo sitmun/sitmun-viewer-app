@@ -55,9 +55,14 @@ export interface SitnaControls {
   layerCatalog?: boolean | SitnaLayerCatalogOptions;
   layerCatalogSilme?: any;
   externalWMSSilme?: any;
+  workLayerManagerSilme?: any;
+  drawMeasureModifySilme?: any;
+  searchSilme?: any;
+  //basemapSelectorSilme?: any;
+  streetViewSilme?: any;
   legend: boolean | SitnaControlOptions;
   loadingIndicator?: boolean | SitnaControlOptions;
-  measure?: boolean | SitnaControlOptions;
+  //measure?: boolean | SitnaControlOptions;
   multiFeatureInfo?: boolean | SitnaMultiFeatureInfoOptions;
   navBar?: boolean | SitnaControlOptions;
   offlineMapMaker?: boolean | SitnaControlsOfflineMapMaker;
@@ -71,8 +76,8 @@ export interface SitnaControls {
   share?: boolean | SitnaControlOptions;
   streetView?: boolean | SitnaStreetViewOptions;
   TOC?: SitnaControlsTOC;
-  threeD?: boolean;
-  WFSEdit?: SitnaControlsWFSEdit;
+  //threeD?: boolean;
+  //WFSEdit?: SitnaControlsWFSEdit;
   WFSQuery?: boolean;
   workLayerManager?: boolean | SitnaControlOptions;
   controlContainer?: boolean | SitnaControlContainerOptions;
@@ -182,6 +187,7 @@ export interface SitnaMultiFeatureInfoOptions extends SitnaControlOptions {
   active?: boolean;
   modes?: SitnaMultiFeatureInfoModeOptions;
   persistentHighlights?: boolean;
+  share?: boolean;
 }
 export interface SitnaMultiFeatureInfoModeOptions {
   point?: SitnaFeatureInfoOptions;

@@ -1,184 +1,138 @@
-﻿// document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
+﻿document.querySelectorAll('.tc-map').forEach(function (elm) {
+  const map = TC.Map.get(elm);
+  map.loaded(function () {
+
+    //mover el Multifeature info dentro del TOC
+    const toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
+    const mfi = map.getControlsByClass('TC.control.MultiFeatureInfo')[0];
+    if (toc && mfi) {
+      Promise.all([toc.renderPromise(), mfi.renderPromise()]).then(() => {
+        toc.div.querySelector('.' + toc.CLASS + '-content').insertAdjacentElement('afterend', mfi.div);
+        mfi.containerControl = toc;
+      });
+    }
+  });
+});
+
+
+// document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
 // document.getElementById("logoIns").src = "../assets/IDEMenorca/img/DIBA-logo-300x169.jpg";
-function layerCatalogCarregat() {}
+function layerCatalogCarregat() {
+  try {
+    ajustarPanell();
+    // A vegades, en dispositius mòvils o mides de pantalla petites no s'ajusta bé el LC
+  } catch {}
+}
 var ajustarPanell = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
   var tocElm = document.getElementById('toc');
-  //var arbolElm = document.getElementById('arbol');
+  var arbolElm = document.getElementById('arbol');
   var mapaElm = document.getElementById('mapa');
-  // Si no hay mapa, esto no tiene sentido.
-  if (mapaElm) {
-    var toolsPanelElm = document.getElementById('tools-panel');
-    var toolsPanelElmContent = toolsPanelElm
-      ? toolsPanelElm.querySelector('.panel-content')
-      : null;
-    var bmsElmTree = document.querySelector('.tc-ctl-bms-tree');
-    var wlmElmContent = document.querySelector('.tc-ctl-wlm-content');
-    var navBar = document.getElementsByClassName('nav-bar')[0];
+  var toolsPanelElm = document.getElementById('tools-panel');
+  var toolsPanelElmContent = toolsPanelElm
+    ? toolsPanelElm.querySelector('.panel-content')
+    : null;
+  var bmsElmTree = document.querySelector('.tc-ctl-bms-tree');
+  var wlmElmContent = document.querySelector('.tc-ctl-wlm-content');
 
-    tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
+  tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
 
-    bmsElmTree.style.height = null;
-    bmsElmTree.style.maxHeight = null;
-    bmsElmTree.querySelector('ul').style.maxHeight = null;
-    if (wlmElmContent != null) {
-      //TODO - DELETE
-      wlmElmContent.style.maxHeight = null;
-      wlmElmContent.querySelector('ul').style.maxHeight = null;
+  bmsElmTree.style.height = null;
+  bmsElmTree.style.maxHeight = null;
+  bmsElmTree.querySelector('ul').style.maxHeight = null;
+  if (wlmElmContent != null) {//TODO - DELETE
+    wlmElmContent.style.maxHeight = null;
+    wlmElmContent.querySelector('ul').style.maxHeight = null;
+  }
+
+  if (tocHeightBefore != tocElm.offsetHeight && arbolElm != null) {
+    arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
+    tocHeightBefore = tocElm.offsetHeight;
+  }
+
+  var controls = {
+    toc: document.getElementById('toc'),
+    links: document.getElementById('links'),
+    bms: document.getElementById('bms'),
+    catalog: document.getElementById('catalog'),
+    xdata: document.getElementById('xdata')
+  }
+
+  Object.entries(controls).forEach(([key, value]) => {
+    //Agafem el control actiu en aquest moment
+    if (!value.classList.contains(TC.Consts.classes.COLLAPSED) &&
+      value != controls.catalog &&
+      value != controls.links
+    )
+      controlObert = value;
+    else value.style.height = null;
+    //Agafem els controls que s'han carregat
+    if (value.querySelector('h2') != null || value == controls.links) {
+      arrControlsActius.push(value);
     }
+  });
 
-    if (tocHeightBefore != tocElm.offsetHeight) {
-      //arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
-      tocHeightBefore = tocElm.offsetHeight;
-    }
-
-    var controls = {
-      toc: document.getElementById('toc'),
-      links: document.getElementById('links'),
-      bms: document.getElementById('bms'),
-      wlm: document.getElementById('wlm'),
-      catalog: document.getElementById('catalog'),
-      xdata: document.getElementById('xdata')
-    };
-
-    Object.entries(controls).forEach(([key, value]) => {
-      //Agafem el control actiu en aquest moment
-      if (
-        !value.classList.contains(TC.Consts.classes.COLLAPSED) &&
-        value != controls.catalog &&
-        value != controls.links
-      )
-        controlObert = value;
-      else value.style.height = null;
-      //Agafem els controls que s'han carregat
-      if (value.querySelector('h2') != null || value == controls.links) {
-        arrControlsActius.push(value);
-      }
+  if (!controls.catalog.classList.contains(TC.Consts.classes.COLLAPSED)) {
+    //Sumem les altures dels controls excepte el que està actiu en aquest moment
+    arrControlsActius.forEach(obj => {
+      if (obj == controls.links) heightControlsActiusMenysControlObert += obj.offsetHeight;
+      else if (obj != controlObert) heightControlsActiusMenysControlObert += obj.querySelector('h2').offsetHeight;
+      else heightControlsActiusMenysControlObert += obj.offsetHeight;
     });
 
-    if (!controls.catalog.classList.contains(TC.Consts.classes.COLLAPSED)) {
-      //Sumem les altures dels controls excepte el que està actiu en aquest moment
-      arrControlsActius.forEach((obj) => {
-        if (obj == controls.links)
-          heightControlsActiusMenysControlObert += obj.offsetHeight;
-        else if (obj != controlObert)
-          heightControlsActiusMenysControlObert +=
-            obj.querySelector('h2').offsetHeight;
-        else heightControlsActiusMenysControlObert += obj.offsetHeight;
-      });
-
-      //arbolElm.style.height = window.innerHeight -
-      //    (heightControlsActiusMenysControlObert +
-      //        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-      //    'px';
-
-      const selector = document.querySelector('.tc-ctl-lcat-search');
-      if (selector) {
-        selector.style.height =
-          window.innerHeight -
-          (heightControlsActiusMenysControlObert +
-            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-          'px';
-      }
-    } else if (controlObert != null) {
-      //Sumem les altures dels controls excepte el que està actiu en aquest moment
-      arrControlsActius.forEach((obj) => {
-        if (obj == controls.links)
-          heightControlsActiusMenysControlObert += obj.offsetHeight;
-        else if (obj != controlObert)
-          heightControlsActiusMenysControlObert +=
-            obj.querySelector('h2').offsetHeight;
-      });
-      if (navBar) {
-        controlObert.style.height =
-          window.innerHeight -
-          (heightControlsActiusMenysControlObert +
-            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) -
-          navBar.offsetHeight +
-          'px';
-      }
-      const selector = document.querySelector('.tc-ctl-lcat-search');
-      if (selector) {
-        selector.style.height =
-          window.innerHeight -
-          (heightControlsActiusMenysControlObert +
-            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-          'px';
-      }
-    } else if (controlObert != null) {
-      //Sumem les altures dels controls excepte el que està actiu en aquest moment
-      arrControlsActius.forEach((obj) => {
-        if (obj == controls.links)
-          heightControlsActiusMenysControlObert += obj.offsetHeight;
-        else if (obj != controlObert)
-          heightControlsActiusMenysControlObert +=
-            obj.querySelector('h2').offsetHeight;
-      });
-
-      if (navBar) {
-        controlObert.style.height =
-          window.innerHeight -
-          (heightControlsActiusMenysControlObert +
-            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) -
-          navBar.offsetHeight +
-          'px';
-      } else {
-        controlObert.style.height =
-          window.innerHeight -
-          (heightControlsActiusMenysControlObert +
-            (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
-          'px';
-      }
-
-      switch (true) {
-        case controlObert == controls.bms:
-          bmsElmTree.style.height = 'unset';
-          //bmsElmTree.style.maxHeight = 'unset';
-          bmsElmTree.style.maxHeight =
-            toolsPanelElmContent.offsetHeight -
-            (controls.toc.offsetHeight +
-              controls.catalog.offsetHeight +
-              controls.xdata.offsetHeight +
-              controls.links.offsetHeight +
-              controls.bms.querySelector('h2').offsetHeight +
-              20) +
-            'px';
-
-          bmsElmTree.querySelector('ul').style.maxHeight = 'unset';
-          return;
-        case controlObert == controls.toc:
-          wlmElmContent.style.maxHeight = 'unset';
-          wlmElmContent.querySelector('ul').style.maxHeight = 'unset';
-          return;
-        case controlObert == controls.xdata:
-          return;
-      }
-    }
-    //40 és el height en px del header h2, lo que passa que si el header està collapsed dóna 0 i per açò no ho fem per codi
-    if (document.querySelector('.tc-ctl-legend-tree') != null) {
-      document.querySelector('.tc-ctl-legend-tree').style.height =
-        document.querySelector('.tc-ctl-legend-tree').parentElement
-          .parentElement.offsetHeight -
-        40 +
+    if (arbolElm != null) {
+      arbolElm.style.height = window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
         'px';
     }
-  }
-  if (document.getElementById('wlm').classList.value == 'tc-ctl tc-ctl-wlm') {
-    document
-      .getElementById('catalog')
-      .classList.add(TC.Consts.classes.COLLAPSED);
-    document.getElementById('bms').classList.add(TC.Consts.classes.COLLAPSED);
-  }
 
-  if (document.getElementById('bms').classList.value == 'tc-ctl tc-ctl-bms') {
-    document
-      .getElementById('catalog')
-      .classList.add(TC.Consts.classes.COLLAPSED);
-    document.getElementById('wlm').classList.add(TC.Consts.classes.COLLAPSED);
+    if (document.querySelector('.tc-ctl-lcat-search')) {
+      document.querySelector('.tc-ctl-lcat-search').style.height = window.innerHeight -
+        (heightControlsActiusMenysControlObert +
+          (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+        'px';
+    }
+  } else if (controlObert != null) {
+    //Sumem les altures dels controls excepte el que està actiu en aquest moment
+    arrControlsActius.forEach(obj => {
+      if (obj == controls.links) heightControlsActiusMenysControlObert += obj.offsetHeight;
+      else if (obj != controlObert) heightControlsActiusMenysControlObert += obj.querySelector('h2').offsetHeight;
+    });
+
+    controlObert.style.height = window.innerHeight -
+      (heightControlsActiusMenysControlObert +
+        (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
+      'px';
+
+    switch (true) {
+      case (controlObert == controls.bms):
+        bmsElmTree.style.height = 'unset';
+        //bmsElmTree.style.maxHeight = 'unset';
+        bmsElmTree.style.maxHeight = toolsPanelElmContent.offsetHeight - (controls.toc.offsetHeight +
+          controls.catalog.offsetHeight +
+          controls.xdata.offsetHeight +
+          controls.links.offsetHeight + controls.bms.querySelector('h2').offsetHeight + 20) + 'px';
+
+        bmsElmTree.querySelector('ul').style.maxHeight = 'unset';
+        return;
+      case (controlObert == controls.toc):
+        wlmElmContent.style.maxHeight = 'unset';
+        wlmElmContent.querySelector('ul').style.maxHeight = 'unset'
+        wlmElmContent.style.height = (controlObert.offsetHeight - controls.toc.querySelector('h2').offsetHeight) + 'px';
+        return;
+      case (controlObert == controls.xdata):
+        return;
+    }
   }
-};
+  //40 és el height en px del header h2, lo que passa que si el header està collapsed dóna 0 i per açò no ho fem per codi
+  if (document.querySelector('.tc-ctl-legend-tree') != null) {
+    document.querySelector('.tc-ctl-legend-tree').style.height =
+      (document.querySelector('.tc-ctl-legend-tree').parentElement.parentElement.offsetHeight - 40) + 'px';
+  }
+}
 
 function matches(el, selector) {
   return (
@@ -197,65 +151,42 @@ var ajustarPanellSilme = function () {
   var controlObert = null;
   var mapaElm = document.getElementById('mapa');
   var toolsPanelElm = document.getElementById('silme-panel');
-  var navBar = document.getElementsByClassName('nav-bar')[0];
-  var multiFeatureInfo = document.getElementById('multifeatureinfo');
+
   var controls = {
     localitzar: document.getElementById('localitzar'),
     reports: document.getElementById('reports'),
     measure: document.getElementById('measure'),
+    drawMeasureModifySilme: document.getElementById('drawmeasuremodify'),
     print: document.getElementById('print'),
-    share: document.getElementById('shared'),
-    download: document.getElementById('download'),
-    dataloader: document.getElementById('dataloader'),
+    share: document.getElementById('share'),
     downloadSilme: document.getElementById('downloadSilme'),
-    geolocation: document.getElementById('geolocation'),
-    wfsedit: document.getElementById('wfsedit'),
-    drawmeasuremodify: document.getElementById('drawmeasuremodify')
-  };
+    download: document.getElementById('download'),
+    geolocation: document.getElementById('geolocation')
+  }
 
   Object.entries(controls).forEach(([key, value]) => {
-    if (value != null) {
-      value.style.height = null;
-
-      //Agafem els controls que s'han carregat
-      if (value.querySelector('h2') != null) {
-        arrControlsActius.push(value);
-      }
-      //Agafem el control actiu en aquest moment
-      if (!value.classList.contains(TC.Consts.classes.COLLAPSED))
-        controlObert = value;
+    value.style.height = null;
+    //Agafem els controls que s'han carregat
+    if (value.querySelector('h2') != null) {
+      arrControlsActius.push(value);
     }
+    //Agafem el control actiu en aquest moment
+    if (!value.classList.contains(TC.Consts.classes.COLLAPSED)) controlObert = value;
   });
 
   //Sumem les altures dels controls excepte el que està actiu en aquest moment
-  arrControlsActius.forEach((obj) => {
-    if (obj != controlObert)
-      heightControlsActiusMenysControlObert +=
-        obj.querySelector('h2').offsetHeight;
+  arrControlsActius.forEach(obj => {
+    if (obj != controlObert) heightControlsActiusMenysControlObert += obj.querySelector('h2').offsetHeight
   });
 
   if (controlObert) {
     //Assignem el height necessàri al control actiu perque ocupi tota l'alçada del panell tinguent en compte els headers dels altres controls
-    if (navBar) {
-      controlObert.style.height =
-        window.innerHeight -
-        (heightControlsActiusMenysControlObert +
-          (mapaElm.offsetHeight -
-            toolsPanelElm.querySelector('.panel-content').offsetHeight +
-            navBar.offsetHeight +
-            multiFeatureInfo.offsetHeight)) +
-        'px';
-    } else {
-      controlObert.style.height =
-        window.innerHeight -
-        (heightControlsActiusMenysControlObert +
-          (mapaElm.offsetHeight -
-            toolsPanelElm.querySelector('.panel-content').offsetHeight +
-            multiFeatureInfo.offsetHeight)) +
-        'px';
-    }
+    controlObert.style.height = window.innerHeight -
+      (heightControlsActiusMenysControlObert +
+        (mapaElm.offsetHeight - toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
+      'px';
   }
-};
+}
 
 function getCssProperty(elmId, property) {
   var elem = document.getElementById(elmId);
@@ -374,7 +305,7 @@ document
       document
         .querySelector('#silme-panel')
         .classList.remove('left-collapsed-ovmap');
-      //document.querySelector('.tc-ctl-sv').classList.remove('tc-ctl-sv-exp');
+      document.querySelector('.tc-ctl-sv').classList.remove('tc-ctl-sv-exp');
       //document.querySelector('.tc-ctl-sv').classList.add('tc-ctl-sv-coll');
       document
         .querySelector('.tc-ctl-nav-home')
@@ -435,6 +366,8 @@ document
           document.querySelector('.tc-ctl-scl').style.visibility = 'hidden';
       }
     }
+
+    ajustarPanell();
   });
 
 var h1ImLeftPanel = document.querySelectorAll('.left-panel > h1');
@@ -444,7 +377,7 @@ h1ImLeftPanel.forEach((item) =>
     e.preventDefault();
     e.stopPropagation();
 
-    //var sv = document.querySelector('.tc-ctl-sv');
+    var sv = document.querySelector('.tc-ctl-sv');
     var navHome = document.querySelector('.tc-ctl-nav-home');
     var Component3d = document.querySelector('.tc-ctl-3d');
     var geolocationTrackCenter = document.querySelector(
@@ -475,7 +408,7 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('.tc-ctl-nav-home').style.visibility =
           'collapse';
         document.querySelector('.tc-ctl-3d').style.visibility = 'collapse';
-        //document.querySelector(".tc-ctl-sv").style.visibility = "collapse";
+        document.querySelector(".tc-ctl-sv").style.visibility = "collapse";
       }
 
       document.querySelector('.tc-ctl-cctr-right').style.left = '376px';
@@ -521,13 +454,13 @@ h1ImLeftPanel.forEach((item) =>
         }, 250);
       }
       panel.classList.toggle('left-collapsed');
-      //sv.classList.add('tc-ctl-sv-exp');
-      //sv.classList.remove('tc-ctl-sv-coll');
-      //sv.style.left = getCssProperty('nav', 'left');
-      //if (geolocationTrackCenter) {
-      //    geolocationTrackCenter.classList.add('tc-ctl-sv-exp');
-      //    geolocationTrackCenter.classList.remove('tc-ctl-sv-coll');
-      //}
+      sv.classList.add('tc-ctl-sv-exp');
+      sv.classList.remove('tc-ctl-sv-coll');
+      sv.style.left = getCssProperty('nav', 'left');
+      if (geolocationTrackCenter) {
+         geolocationTrackCenter.classList.add('tc-ctl-sv-exp');
+         geolocationTrackCenter.classList.remove('tc-ctl-sv-coll');
+      }
       if (navHome && navHome != undefined) {
         navHome.classList.add('tc-ctl-nav-home-exp');
         navHome.classList.remove('tc-ctl-nav-home-coll');
@@ -553,7 +486,7 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('#StreetView').style.visibility = 'unset';
         document.querySelector('.tc-ctl-nav-home').style.visibility = 'unset';
         document.querySelector('.tc-ctl-3d').style.visibility = 'unset';
-        //document.querySelector(".tc-ctl-sv").style.visibility = "unset";
+        document.querySelector(".tc-ctl-sv").style.visibility = "unset";
       }
 
       if (
@@ -642,12 +575,12 @@ h1ImLeftPanel.forEach((item) =>
               item.style.left = '';
             });
         }
-        //sv.classList.remove('tc-ctl-sv-exp');
-        //sv.classList.add('tc-ctl-sv-coll');
-        //if (geolocationTrackCenter) {
-        //    geolocationTrackCenter.classList.remove('tc-ctl-sv-exp');
-        //    geolocationTrackCenter.classList.add('tc-ctl-sv-coll');
-        //}
+        sv.classList.remove('tc-ctl-sv-exp');
+        sv.classList.add('tc-ctl-sv-coll');
+        if (geolocationTrackCenter) {
+           geolocationTrackCenter.classList.remove('tc-ctl-sv-exp');
+           geolocationTrackCenter.classList.add('tc-ctl-sv-coll');
+        }
         if (navHome && navHome != undefined) {
           navHome.classList.remove('tc-ctl-nav-home-exp');
           navHome.classList.add('tc-ctl-nav-home-coll');
@@ -658,8 +591,8 @@ h1ImLeftPanel.forEach((item) =>
           Component3d.classList.add('tc-ctl-3d-coll');
           Component3d.style.left = '';
         }
-        //sv.style.left = "";
-        //
+        sv.style.left = "";
+
       }
     }
 
@@ -696,7 +629,7 @@ document
   .querySelector('.tools-panel')
   .addEventListener(TC.Consts.event.CLICK, function (e) {
     var tab = e.target;
-    //var sv = document.querySelector('.tc-ctl-sv');//Silme mv
+    var sv = document.querySelector('.tc-ctl-sv');//Silme mv
     var navHome = document.querySelector('.tc-ctl-nav-home'); //Silme mv
     var Component3d = document.querySelector('.tc-ctl-3d'); //Silme mv
 
@@ -754,8 +687,8 @@ document
           .classList.remove('left-collapsed-legend');
         document.querySelector('#silme-panel').classList.add('left-collapsed');
         //Silme mv
-        //sv.classList.add('tc-ctl-sv-coll');
-        //sv.classList.remove('tc-ctl-sv-exp');
+        sv.classList.add('tc-ctl-sv-coll');
+        sv.classList.remove('tc-ctl-sv-exp');
         navHome.classList.add('tc-ctl-nav-home-coll');
         navHome.classList.remove('tc-ctl-nav-home-exp');
         Component3d.classList.add('tc-ctl-3d-coll');
