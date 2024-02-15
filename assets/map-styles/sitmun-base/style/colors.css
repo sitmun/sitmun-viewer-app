@@ -1,0 +1,290 @@
+﻿:root {
+    --ide-main-color: #FF9300;
+    --ide-main-color-light: #ffb100;
+
+    --ide-contrast-color: #080d4f;
+
+    --white: #ffffff;
+}
+
+.tc-ctl-scl input, .tc-ctl-ss input,
+#vedats, #ved_cac, #legend > div, .tc-ctl-wlm li.tc-ctl-wlm-elm:hover,
+#arbol > ul > li, #arbol > ul > li > ul > li > ul > li, #arbol > ul > li > ul > li > ul > li > ul > li,
+#arbol > ul > li > ul > li > ul > li > ul > li > ul > li,
+#arbol > ul > li > ul > li > ul > li > ul > li > ul > li > ul > li, .tc-alert,
+.tc-ctl-be-view .tc-ctl-be-btn-close, #arbol > ul > li > ul > li {
+    background-color: #ffffff;
+}
+
+.tc-ctl-wlm-metadata a:hover, .tc-ctl-wlm-descarregadades a:hover, .tc-ctl-lcat-metadata a:hover, .tc-ctl-lcat-descarregadades a:hover, .tc-ctl.tc-ctl-nav-home:hover {
+    background-color: #000000;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info h3, .tc-ctl-wlm-elm .tc-ctl-lcat-info h3 {
+    background-color: #dddddd;
+}
+
+input[type=range], .language-links > a, .tc-ctl-wlm input[type="range"] {
+    background-color: #999999;
+}
+
+.tc-float-btn {
+    background-color: unset;
+}
+
+.left-collapsed-silme #measure, .left-collapsed-silme #share, .left-collapsed-silme #download,
+.left-collapsed-silme #downloadSilme, .left-collapsed-silme #localitzar, .left-collapsed-silme #reports,
+.left-collapsed-silme #newovmap, .left-collapsed-silme #print, .left-collapsed-silme #geolocation,
+.left-collapsed-silme #wfsedit,
+.left-collapsed-silme #offline, .tc-ctl-legend, .tc-ctl-meas, .tc-ctl-share, .tc-ctl-download,
+.tc-ctl-bms, .tc-ctl-wlm, .tc-ctl-lcat, .language-links, .tc-ctl-dmm, .tc-ctl-localitzar, .tc-ctl-tctr {
+    background-color: #fafafa;
+}
+
+#xdata.tc-collapsed > h2, #catalog.tc-collapsed > h2, #toc.tc-collapsed > h2, #bms.tc-collapsed > h2,
+#measure.tc-collapsed > h2, #print.tc-collapsed > h2, #share.tc-collapsed > h2, #download.tc-collapsed > h2,
+#downloadSilme.tc-collapsed > h2, #geolocation.tc-collapsed > h2, #wfsedit.tc-collapsed > h2,
+#offline.tc-collapsed > h2,
+#localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2, #newovmap.tc-collapsed > h2 {
+    background-color: #0000000d;
+}
+
+.tc-ctl-coords, .tc-ctl-popup {
+    background-color: #ffffffe6;
+}
+
+button.tc-ctl-coords-crs, .tc-ctl-search-content {
+    background-color: transparent;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn, .tc-ctl-sv-btn, .tc-ctl-be,
+button.tc-ctl-fscreen-btn, .tc-ctl-nav-home {
+    background-color: #000000cc;
+}
+
+.tc-ctl-search-txt {
+    background-color: #ffffffcc;
+}
+
+button.tc-ctl-fscreen-btn.tc-active {
+    background-color: #b51818;
+}
+
+button.tc-ctl-fscreen-btn.tc-active:hover {
+    background-color: #a51818;
+}
+
+.tc-ctl-sv-btn {
+    background-color: #006a36cc;
+}
+
+.tc-ctl-sv-btn:hover {
+    background-color: #006a36;
+}
+
+.tc-ctl-be {
+    background-color: #00546acc;
+}
+
+.tc-ctl-be:hover {
+    background-color: #00546a;
+}
+
+.left-collapsed-legend #legend-tab, .left-collapsed-silme #silme-tab,
+.left-collapsed-ovmap #ovmap-tab {
+    background-color: #b51818;
+}
+
+.left-collapsed-ovmap #ovmap-tab:hover, .left-collapsed-silme #silme-tab:hover,
+.left-collapsed-legend #legend-tab:hover {
+    background-color: #a51818;
+}
+
+.tc-button, .tc-ctl-btn.tc-ctl-search-btn,
+.tc-ctl-load-dots, .share-email,
+.tc-ctl-finfo .tc-ctl-finfo-layer-n, .tc-ctl-finfo-tools button:hover {
+    background-color: var(--ide-main-color);
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-n, .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search,
+.tc-ctl-lcat h2 button.tc-ctl-lcat-btn-tree {
+  background-color: var(--ide-contrast-color);
+}
+
+.tc-btn-localitza:hover, .tc-btn-localitza:disabled, .tc-btn-reports:hover {
+    background-color: #8b9608;
+}
+
+.tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-share-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
+    background-color: #f5f5f5;
+}
+
+.tc-ctl-coords, .tc-ctl-coords-x, .tc-ctl-coords-y, .tc-ctl-coords-crs, .tc-ctl-sb,
+.tc-ctl-scl, .tc-ctl-sb .ol-scale-line .ol-scale-line-inner, #legend.tc-collapsed > h2,
+.language-links > a.tc-active, .tc-ctl-bms-node label span, .tc-ctl-wlm h2 button,
+.tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search::after, .tc-ctl-lcat-tree,
+.tc-ctl-be-view .tc-ctl-be-btn-close:after {
+    color: #000000;
+}
+
+.tc-group label, #measure.tc-collapsed > h2, #share.tc-collapsed > h2,
+#download.tc-collapsed > h2, #downloadSilme.tc-collapsed > h2,
+#localitzar.tc-collapsed > h2, #reports.tc-collapsed > h2,
+#newovmap.tc-collapsed > h2, #bms.tc-collapsed > h2, #toc.tc-collapsed > h2,
+#catalog.tc-collapsed > h2, #xdata.tc-collapsed > h2, #print.tc-collapsed > h2,
+#geolocation.tc-collapsed > h2, #offline.tc-collapsed > h2,
+#wfsedit.tc-collapsed > h2, #offline.tc-collapsed > h2,
+.tc-ctl-wlm.tc-collapsed h2 button, .tc-ctl-lcat.tc-collapsed h2 button.tc-ctl-lcat-btn-search::after,
+.tc-ctl-wlm .tc-ctl-wlm-btn-info, .tc-ctl-wlm-del, li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info,
+.tc-ctl-lcat .tc-ctl-lcat-descarregadades h4, .tc-ctl-wlm .tc-ctl-lcat-descarregadades h4, .tc-ctl-wlm .tc-ctl-lcat-metadata h4 {
+    color: #666666;
+}
+
+.tc-ctl-wlm-elm .tc-ctl-lcat-info-close {
+    color: #333333;
+}
+
+span .tc-beta, .tc-ctl-dmm .tc-ctl-mod > button.tc-active, .tc-ctl-search-list a b, .tc-ctl-lcat-search li h5:hover, .tc-ctl-finfo-tools button, #arbol li.tc-ctl-lcat-node.tc-checked > span, #arbol li.tc-ctl-lcat-leaf > span.tc-selectable:hover, #arbol li.tc-ctl-lcat-leaf:hover > span.tc-selectable, .tc-ctl-meas-prof-btn.tc-active, .tc-ctl-ftools button.tc-icon-btn:before {
+    color: var(--ide-main-color);
+}
+
+.language-links > a {
+    background-color: #ffffff;
+    color: #999999;
+}
+
+#measure > h2, #share > h2, #download > h2, #downloadSilme > h2,
+#localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2,
+#ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #xdata > h2,
+#print > h2, #geolocation > h2, #wfsedit > h2, #offline > h2 {
+    background-color: var(--ide-main-color);
+    color: var(--white);
+}
+
+.tc-textbox, .tc-combo, .tc-ctl-share .tc-ctl-share-url-box .tc-textbox,
+li.tc-ctl-legend-node, .tc-ctl-lcat-info, .tc-ctl-lcat-proj {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.tc-ctl-dmm .tc-ctl-mod > button, .tc-ctl-dmm-cmd > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
+    background-color: #ffffff;
+    color: #666666;
+}
+
+    .tc-ctl-dmm .tc-ctl-mod > button:disabled, .tc-ctl-dmm .tc-ctl-dmm-cmd button:disabled, .tc-ctl-draw .tc-ctl-draw-tools > button:disabled {
+    background-color: #eeeeee;
+    color: #cccccc;
+}
+
+.tc-ctl-draw .tc-ctl-draw-tools > button, .tc-ctl-meas-select input[type=radio]:checked ~ span,
+.tc-ctl-share-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
+    background-color: #ffffff;
+    color: var(--ide-main-color);
+}
+.tc-ctl-btn.tc-ctl-draw-btn-new.tc-active, .language-links > a:hover,
+.help-links > a:hover, .tc-btn-reports, .tc-btn-localitza {
+    background-color: var(--ide-main-color);
+    color: #ffffff;
+}
+
+/*LAST HERE*/
+.tc-ctl-wlm-metadata a, .tc-ctl-wlm-descarregadades a, .tc-ctl-lcat-metadata a, .tc-ctl-lcat-descarregadades a {
+    background-color: var(--ide-main-color);
+    color: #00000000;
+}
+
+.panel-content {
+    background-color: #fffffff2;
+    color: #666666;
+}
+
+.tc-ctl h2 {
+    background-color: transparent;
+    color: #333333;
+}
+
+.tc-ctl-wlm li.tc-ctl-wlm-elm, #arbol span {
+    background-color: transparent;
+    color: #000000;
+}
+
+.tc-ctl-meas-select label input[type=radio]:checked ~ span, .tc-ctl-share-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
+    border-color: var(--ide-main-color);
+}
+
+.tc-ctl-geolocation .tc-ctl-geolocation-select input[type=radio]:checked ~ span {
+    border-color: var(--ide-main-color);
+    color: var(--ide-main-color);
+}
+
+.tc-map .tc-button, .tc-ctl .tc-button, .tc-modal .tc-button, .tc-ctl-geolocation .tc-ctl-geolocation-track-mng input[type="file"] + label {
+    border-color: var(--ide-main-color);
+    background-color: var(--ide-main-color);
+}
+
+.tc-ctl-meas-select label:first-child input[type=radio]:checked ~ span,
+.tc-ctl-share-select label:first-child input[type=radio]:checked ~ span,
+.tc-ctl-tctr-select label.tc-ctl-tctr-tab:first-child input[type=radio]:checked ~ span,
+.tc-ctl-meas-select label:last-child input[type=radio]:checked ~ span,
+.tc-ctl-share-select label:last-child input[type=radio]:checked ~ span,
+.tc-ctl-tctr-select label.tc-ctl-tctr-tab:last-child input[type=radio]:checked ~ span,
+.tc-ctl-lcat-title {
+    border-bottom-color: var(--ide-main-color);
+}
+
+#search {
+    background-color: #ffffff24;
+}
+
+.share-fb {
+    background-color: #38529A;
+}
+
+.qr-generator {
+    background-color: #DC3FFF;
+}
+
+.share-twitter {
+    background-color: #55ACEE;
+}
+
+.share-star {
+    background-color: #FF8422;
+}
+
+.tc-ctl-bms-node input[type=radio]:checked ~ span {
+    border-color: var(--ide-main-color-light);;
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-btn-info.tc-checked, .tc-ctl-wlm .tc-ctl-wlm-type,
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info.tc-checked::after,
+li.tc-ctl-lcat-search-group button.tc-ctl-lcat-search-btn-info.tc-checked::after {
+    color: #af0000;
+}
+
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:hover,
+.tc-ctl-wlm-btn-info:hover, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:hover,
+.tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:checked,
+.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info.tc-checked {
+    background-color: #660000;
+}
+
+.tc-ctl-wlm-elm .tc-ctl-lcat-info h3:before {
+    color: #ffffff;
+    background-color: #660000;
+}
+
+.tc-ctl-geolocation .tc-ctl-geolocation-track-ui button.tc-ctl-geolocation-track-ui-deactivate {
+    background-color: rgb(82 89 0);
+    border-color: rgb(82 89 0);
+}
+
+.tc-map input:focus-visible, .tc-combo {
+    outline-color: var(--ide-main-color);
+}
+
+.tc-ctl-m-finfo-select input[type=radio]:checked ~ span {
+  background-color: var(--ide-main-color);
+  border-color: var(--ide-main-color);
+}

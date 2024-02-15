@@ -1,0 +1,22 @@
+<li class="tc-ctl-wlm-elm" tabindex="-1" data-tc-layer-name="{name}" data-tc-layer-uid="{uid}" {?isGroup}style="background:'#e4e6d0'"{/isGroup}>
+<div class="tc-ctl-wlm-type"></div><div class="tc-ctl-wlm-path" title="{#path}{.}{@sep} &bull; {/sep}{:else}{title}{/path}">{title}</div>
+<div class="tc-ctl-wlm-buttons">
+  <label class="container">
+    &nbsp;
+    <input type="checkbox" {^hide}checked="checked" style="right:0px;" {/hide} title="{@i18n $key=" visibilityOfThisLayer" /}" />
+    <span class="checkmark"></span>
+  </label>
+  <div class="tc-ctl-wlm-tools"></div>
+  <!--<input type="checkbox" {^hide}checked="checked" style="right:0px;" {/hide} title="{@i18n $key="visibilityOfThisLayer"/}" />-->
+  <!--Silme hem eliminat el margin-left<input type="range" value="{opacity}" style="margin-left:30px" title="{@i18n $key=" transparencyOfThisLayer"/}" />-->
+  <input type="range" value="{opacity}" title="{@i18n $key=" transparencyOfThisLayer" /}" />
+  <!--<div style="left:5px;" class="tc-ctl-wlm-btn-info" title="{@i18n $key=" infoFromThisLayer" /}">-->
+</div>
+<div class="tc-ctl-wlm-dd {?hide}tc-hidden{/hide}" title="{@i18n $key=" dragToReorder" /}">
+</div>
+<div class="tc-ctl-lcat-info tc-hidden">
+  {>tc-ctl-lcat-info:./}
+</div>
+<!--<div class="tc-ctl-wlm-del {^hide}tc-hidden{/hide}" title="{@i18n $key=" removeLayerFromMap"/}"></div>-->
+<div class="tc-ctl-wlm-del " title="{@i18n $key=" removeLayerFromMap"/}"></div>
+</li>

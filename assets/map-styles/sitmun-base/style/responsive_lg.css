@@ -1,0 +1,26 @@
+﻿@media (min-width: 1024px) {
+    .right-panel > .panel-content {
+        top: 0px;
+        border-top-left-radius: 0px;
+    }
+
+    .right-panel > h1 {
+        top: 20px;
+    }
+
+    .right-collapsed > h1 {
+        top: 20px;
+    }
+
+    .panel-content {
+        top: 20px;
+    }
+
+    #arbol, .tc-ctl-lcat-search {
+        height: calc(100vh - 229px);
+    }
+
+    #search.tc-ctl.tc-ctl-search.search-left-collapsed {
+        left: 340px;
+    }
+}

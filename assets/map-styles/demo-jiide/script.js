@@ -204,7 +204,7 @@ var ajustarPanellSilme = function () {
     reports: document.getElementById('reports'),
     measure: document.getElementById('measure'),
     print: document.getElementById('print'),
-    share: document.getElementById('shared'),
+    share: document.getElementById('share'),
     download: document.getElementById('download'),
     dataloader: document.getElementById('dataloader'),
     downloadSilme: document.getElementById('downloadSilme'),

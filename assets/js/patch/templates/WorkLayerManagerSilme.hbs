@@ -1,0 +1,30 @@
+<li class="tc-ctl-wlm-elm" tabindex="-1" data-tc-layer-name="{{name}}" data-tc-layer-uid="{{uid}}" {{#if isGroup}} style="background:'#e4e6d0'" {{/if}}>
+  <div class="tc-ctl-wlm-type"></div>
+  <div class="tc-ctl-wlm-path" title="{{#if path}}{{.}}{{#each sep}} &bull; {{/each}}{{else}}{{title}}{{/if}}">{{title}}</div>
+  <div class="tc-ctl-wlm-input">
+    <label class="container">
+      &nbsp;
+
+      <input type="checkbox" {{#unless hide}} checked="checked" style="right:0px;" {{/unless}} title="{{i18n "visibilityOfThisLayer" }}" />
+      <span class="checkmark"></span>
+    </label>
+    <div class="tc-ctl-wlm-tools">
+      {{#if hasInfo}}<sitna-toggle class="tc-ctl-wlm-cb-info" text="{{i18n "infoFromThisLayer"}}" checked-icon-text="&#xe923;" unchecked-icon-text="&#xe923;"></sitna-toggle>{{/if}}
+      <!--<sitna-toggle class="tc-ctl-wlm-cb-visibility" {{#unless hide}} checked {{/unless}} text="{{i18n "visibilityOfThisLayer"}}" checked-icon-text="&#xe910;" unchecked-icon-text="&#xe911;"></sitna-toggle>-->
+      {{#if hasExtent}}<sitna-button variant="minimal" icon-text="&#xe917;" class="tc-ctl-wlm-btn-zoom" text="{{i18n "zoomToLayerExtent"}}"></sitna-button>{{/if}}
+      <!--<sitna-button variant="minimal" icon="delete" class="tc-ctl-wlm-btn-del tc-item-tool-last" {{#if unremovable}} disabled{{else}}text="{{i18n "removeLayerFromMap"}}" {{/if}}></sitna-button>-->
+      <sitna-button variant="minimal" icon-text="&#x2022&#x2022&#x2022" class="tc-ctl-wlm-btn-more" text="{{i18n "otherTools"}}"></sitna-button>
+    </div>
+    <!--<input type="checkbox" {^hide}checked="checked" style="right:0px;" {/hide} title="{@i18n $key="visibilityOfThisLayer"/}" />-->
+    <!--Silme hem eliminat el margin-left<input type="range" value="{opacity}" style="margin-left:30px" title="{@i18n $key=" transparencyOfThisLayer"/}" />-->
+    <input type="range" value="{{opacity}}" title="{{i18n "transparencyOfThisLayer" }}" />
+
+  </div>
+  <div class="tc-ctl-wlm-dd {{#if hide}}tc-hidden{{/if}}" title="{{i18n "dragToReorder" }}">
+  </div>
+  <div class="tc-ctl-lcat-info tc-hidden">
+    {{> tc-ctl-lcat-info}}
+  </div>
+  <!--<div class="tc-ctl-wlm-del {^hide}tc-hidden{/hide}" title="{@i18n $key=" removeLayerFromMap"/}"></div>-->
+  <div class="tc-ctl-wlm-del " title="{{i18n "removeLayerFromMap"}}"></div>
+</li>

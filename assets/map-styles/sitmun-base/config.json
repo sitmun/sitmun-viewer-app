@@ -3,7 +3,7 @@
   "stateful": true,
   "googleMapsKey": "",
   "tabContainer": {
-      "div": "dataloader",
+      "div": "xdata",
       "defaultSelection": 0,
       "title": "addMaps",
       "controls": [

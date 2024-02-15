@@ -30,7 +30,8 @@
     "FullScreen": {
       "div": "FuScreen"
     },
-    "basemapSelectorSilme": {
+    //"basemapSelectorSilme": {
+    "basemapSelector": {
       "div": "bms"
     },
     "geolocation": {
