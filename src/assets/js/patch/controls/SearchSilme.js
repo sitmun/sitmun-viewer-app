@@ -22,4 +22,20 @@ if (!TC.control.Search) {
 
     return result;
   };
+
+  TC.control.SearchSilme.prototype.render = function (callback) {
+    const result = TC.control.Search.prototype.render.call(this, callback);
+  };
+
+  TC.control.SearchSilme.prototype.search = function (pattern, callback) {
+    map.getControlsByClass('TC.control.Search')[1].allowedSearchTypes = map.getControlsByClass('TC.control.Search')[0].allowedSearchTypes;
+    map.getControlsByClass('TC.control.Search')[1].availableSearchTypes = map.getControlsByClass('TC.control.Search')[0].availableSearchTypes;
+    const control = map.getControlsByClass('TC.control.Search')[0];
+    const result = TC.control.Search.prototype.search.call(control, pattern, callback);
+  }
+
+  TC.control.SearchSilme.prototype.getStringPattern = function (allowedRoles, pattern) {
+    map.getControlsByClass('TC.control.Search')[0].searchRequestsAbortController = map.getControlsByClass('TC.control.Search')[1].searchRequestsAbortController;
+    const result = TC.control.Search.prototype.getStringPattern.call(this, allowedRoles, pattern);
+  }
 })();

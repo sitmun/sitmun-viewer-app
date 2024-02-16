@@ -1,5 +1,7 @@
-﻿document.querySelectorAll('.tc-map').forEach(function (elm) {
-  const map = TC.Map.get(elm);
+﻿var map;
+
+document.querySelectorAll('.tc-map').forEach(function (elm) {
+  map = TC.Map.get(elm);
   map.loaded(function () {
 
     //mover el Multifeature info dentro del TOC
