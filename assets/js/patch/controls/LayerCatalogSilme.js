@@ -423,13 +423,56 @@ if (!TC.control.LayerCatalog) {
           li.classList.toggle(TC.Consts.classes.COLLAPSED);
           return;
         }
-        onSpanClick(evt, self, function () {
-          if (this.layers.length === 1) {
-            return this.layers[0];
-          }
-          return this.getLayer(li.closest(".tc-ctl-lcat-search-group") && li.closest(".tc-ctl-lcat-search-group").dataset.serviceId);
-        });
+        var layerName = li.dataset.layerName;
+        if (!layerName) {
+          return;
+        }
+        layerName = layerName.toString();
 
+        if (layerName.trim().length === 0) {
+          return;
+        }
+
+        //si la capa ya ha sido anteriormente, no la añadimos y mostramos un mensaje
+        if (li.classList.contains(TC.Consts.classes.CHECKED)) {
+          return;
+        } else {
+          var liParent = li;
+          do {
+            liParent = liParent.parentElement;
+          }
+          while (liParent && !liParent.matches('li.' + self.CLASS + '-search-group'));
+
+          const ctlLayer = !liParent ? self.layers[0] : self.layers.filter(l => l.id === liParent.dataset.serviceId)[0];
+          const url = ctlLayer.options.url;
+          const title = ctlLayer.title;
+
+          const layer = new TC.layer.Raster({
+            id: self.getUID(),
+            url: url,
+            title: title,
+            hideTitle: ctlLayer.hideTitle || ctlLayer.options.hideTitle,
+            hideTree: false,
+            layerNames: [layerName]
+          });
+          if (layer.isCompatible(self.map.crs)) {
+            self.map.addLayer(layer, function (layer) {
+              li.dataset.layerId = layer.id;
+              layer.wrap.$events.on(TC.Consts.event.TILELOADERROR, function (event) {
+                var layer = this.parent;
+                if (event.error.code === 401 || event.error.code === 403)
+                  layer.map.toast(event.error.text, { type: TC.Consts.msgType.ERROR });
+                layer.map.removeLayer(layer);
+              });
+            });
+            //marcamos el resultado como añadido
+            li.classList.add(TC.Consts.classes.CHECKED);
+            li.querySelector('h5').dataset.tooltip = self.getLocaleString('layerAlreadyAdded');
+          }
+          else {
+            showProjectionChangeDialog(self, layer);
+          }
+        }
       }));
 
       self.searchInit = true;
