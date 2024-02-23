@@ -355,7 +355,6 @@ if (!TC.control.LayerCatalog) {
       //botón de la lupa para alternar entre búsqueda y árbol
       self.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
         e.target.blur();
-        self.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
 
         const searchPane = self.div.querySelector('.' + self.CLASS + '-search');
         const treePane = self.div.querySelector('.' + self.CLASS + '-tree');
@@ -783,7 +782,7 @@ if (!TC.control.LayerCatalog) {
             break;
           }
           const t = infoToggle.parentElement.querySelector('span').innerText;
-          if (!name && title && t === title){
+          if (!name && title && t === title) {
             //buscar en el capapabilities por nombre de capa;
             const info = getInfoByTitle(layer.capabilities.Capability.Layer, title);
             //const infoBtn = self.div.querySelector('li [data-layer-name="' + n + '"] > button.' + self.CLASS + '-btn-info');
@@ -1134,7 +1133,7 @@ if (!TC.control.LayerCatalog) {
         realTree.children = new Array();
 
         //TC.control.LayerCatalog.prototype.render.call(self, function () {
-        renderParent.call(self, function() {
+        renderParent.call(self, function () {
 
           const getLayerTree = function (layer) {
             if (layer.tree == null) {
@@ -1242,72 +1241,7 @@ if (!TC.control.LayerCatalog) {
             // - Posar breaks allà on es puguin posar
             // Per a cada capa...
             for (var i = 0; i < treeLayers.length; i++) {
-
-              // Miram dins cada node...
-              for (var k = 0; k < catalog.layerTreeGroups.length; k++) {
-                if (catalog.layerTreeGroups[k].id == treeLayers[i].parentGroupNode) {
-                  // Si el nodeActual depen d'un nodePare
-                  if (catalog.layerTreeGroups[k].parentNode != "" && catalog.layerTreeGroups[k].parentNode != null
-                    && catalog.layerTreeGroups[k].id != catalog.layerTreeGroups[k].parentNode) {
-                    // Si el nodePare no és dins el realTree
-                    //TODO - DELETE si la línia d'abaix funciona
-                    //TODO - DELETE if (isEmpty(realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].parentNode))) {
-                    if (!cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].parentNode)) {
-                      // Busquem el nodePare dins l'array de nodes
-                      for (var j = 0; j < catalog.layerTreeGroups.length; j++) {
-                        // Per cada node dins l'array mirem si es tracta del nodePare
-                        if (catalog.layerTreeGroups[j].id == catalog.layerTreeGroups[k].parentNode) {
-                          // Afegim el nodePare al realTree i afegim el nodeActual al nodePare
-                          realTree.children.push(catalog.layerTreeGroups[j]);
-                          realTree.children.filter(e => e.id === catalog.layerTreeGroups[j].id)[0].children = new Array();
-                          realTree.children.filter(e => e.id === catalog.layerTreeGroups[j].id)[0].children.push(catalog.layerTreeGroups[k]);
-                        }
-                      }
-                    } else {
-                      // Si el nodePare ja és dins el realTree
-                      // Si el nodeActual ja és dins el realTree, no fem res
-                      // Si el nodeActual NO ES dins el realTree, afegim el nodeActual al nodePare
-                      if (!cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].id)) {
-                        var nodeActual = cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].parentNode);
-                        nodeActual.children.push(catalog.layerTreeGroups[k]);
-                      }
-                    }
-
-                    // Si el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
-                    // TODO - DELETE si la línia d'abaix funciona
-                    // TODO - DELETE if (isEmpty(realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].id))
-                    if (!cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].id)
-                      && catalog.layerTreeGroups[k].id != catalog.layerTreeGroups[k].parentNode) {
-                      treeLayers[i].children = treeLayers[i].getTree().children;
-                      // Per cercar el nodeActual hem de cercar dins els nodesFills de tots els nodes
-                      var nodeActual = cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].id);
-                      nodeActual.children = [];
-                      nodeActual.children.push(treeLayers[i]);
-                    } else {
-                      // Quan el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
-                      treeLayers[i].children = treeLayers[i].getTree().children;
-                      var nodeActual = cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].id);
-                      if (!nodeActual.children) nodeActual.children = [];
-                      nodeActual.children.push(treeLayers[i]);
-                    }
-                  } else {
-                    // Si el nodeActual NO depen d'un nodePare
-                    // TODO - DELETE si la línia d'abaix funciona
-                    // TODO - DELETE if (isEmpty(realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].id))) {
-                    if (!cercaIdDinsArray(realTree.children, catalog.layerTreeGroups[k].id)) {
-                      realTree.children.push(catalog.layerTreeGroups[k]);
-                      treeLayers[i].children = treeLayers[i].getTree().children;
-                      realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].id)[0].children = [];
-                      realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].id)[0].children.push(treeLayers[i]);
-                      break;
-                    } else {
-                      treeLayers[i].children = treeLayers[i].getTree().children;
-                      realTree.children.filter(e => e.id === catalog.layerTreeGroups[k].id)[0].children.push(treeLayers[i]);
-                      break;
-                    }
-                  }
-                }
-              }
+              AfageixTotsElsParesQueNoShaginAfegit(treeLayers[i].parentGroupNode, treeLayers[i]);
             }
 
             self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-branch').innerHTML = "";
@@ -1345,6 +1279,82 @@ if (!TC.control.LayerCatalog) {
 
           resolve();
         });
+
+        const AfageixTotsElsParesQueNoShaginAfegit = function (capaActualPare, capaActual) {
+          var catalog = silmeLayerCatalog.options;
+
+          // Miram dins cada node...
+          for (var k = 0; k < catalog.layerTreeGroups.length; k++) {
+            var nodeActual = catalog.layerTreeGroups[k];
+            var nodePare = nodeActual.parentNode;
+
+            if (nodeActual.id == capaActualPare) {
+              // Si el nodeActual depen d'un nodePare
+              if (nodePare != ""
+                && nodePare != null
+                && nodeActual.id != nodePare) {
+
+                // Si el nodePare no és dins el realTree
+                if (!cercaIdDinsArray(realTree.children, nodePare)) {
+
+                  //// Busquem el nodePare dins l'array de nodes
+                  nodePareAAfegir = AfageixTotsElsParesQueNoShaginAfegit(nodeActual.parentNode);
+
+                  if (nodePareAAfegir) {
+                    realTree.children.push(nodePareAAfegir);
+                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children = new Array();
+                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children.push(nodeActual);
+                  } else {
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
+                    if (!realNodeActual.children) realNodeActual.children = [];
+                    realNodeActual.children.push(nodeActual);
+                  }
+                } else {
+                  // Si el nodePare ja és dins el realTree
+                  // Si el nodeActual ja és dins el realTree, no fem res
+                  // Si el nodeActual NO ES dins el realTree, afegim el nodeActual al nodePare
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
+                    realNodeActual.children.push(nodeActual);
+                  }
+                }
+
+                // Si el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
+                if (capaActual) {
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)
+                    && nodeActual.id != nodePare) {
+                    capaActual.children = capaActual.getTree().children;
+                    // Per cercar el nodeActual hem de cercar dins els nodesFills de tots els nodes
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
+                    realNodeActual.children = [];
+                    realNodeActual.children.push(capaActual);
+                  } else {
+                    // Quan el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
+                    capaActual.children = capaActual.getTree().children;
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
+                    if (!realNodeActual.children) realNodeActual.children = [];
+                    realNodeActual.children.push(capaActual);
+                  }
+                }
+              } else {
+                // Si el nodeActual NO depen d'un nodePare
+                if (capaActual) {
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
+                    realTree.children.push(nodeActual);
+                    capaActual.children = capaActual.getTree().children;
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children = [];
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
+                  } else {
+                    capaActual.children = capaActual.getTree().children;
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
+                  }
+                } else {
+                  return nodeActual;
+                }
+              }
+            }
+          }
+        }
 
         //Event botó projectes
         self.div.addEventListener('click', TC.EventTarget.listenerBySelector('#canvi-projecte-silme', function (e) {
