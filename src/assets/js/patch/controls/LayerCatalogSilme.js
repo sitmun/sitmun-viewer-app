@@ -152,7 +152,7 @@ if (!TC.control.LayerCatalog) {
         var layer;
         for (var i = 0, len = ctl._roots.length; i < len; i++) {
           const root = ctl._roots[i];
-          if (root.contains(li)) {
+          if (root.contains(li) && li.parentElement.parentElement == ctl._roots[i]) {
             //layer = ctl.getLayer(root.dataset.layerId);//rewrite
             layer = ctl.getLayer(root.id);
             //layer = root;
