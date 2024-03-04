@@ -1708,20 +1708,46 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
 .tc-ctl-lcat-proj-content {
     height: 420px;
     padding: 0px 25px;
-    display: block;
+    display: flex;
+    flex-flow: column;
     max-height: 420px;
 }
 
-.tc-ctl-lcat-proj-childs {
-    padding: 0 0 0 0;
+ul.tc-ctl-lcat-proj-childs {
+    padding: 20px 35px;
+    margin: 0 0 0 0;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column;
+    flex-grow: 1;
+    justify-content: flex-start;
 }
 
 .tc-ctl-lcat-proj-content li {
-    display: inline-flex;
-    margin: 10px;
-    text-align: center;
+    padding: 10px 10px;
+    margin: 0 0 0 0;
+    display: flex;
+    flex-flow: row;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #ededed;
+}
+
+.tc-ctl-lcat-proj-selected {
+  background-color: var(--ide-main-color) !important;
+}
+
+.tc-ctl-lcat-proj-buttons {
+    padding: 20px 35px;
+    margin: 0 0 0 0;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+}
+
+.tc-ctl-lcat-proj-buttons button {
+    height: 30px;
+    width: 90px;
 }
 
 .tc-ctl-lcat-proj-window h3 {

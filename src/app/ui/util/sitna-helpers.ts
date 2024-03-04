@@ -3,7 +3,7 @@ import {
   SitnaControls,
   SitnaViews
 } from '@api/model/sitna-cfg';
-import { AppCfg, AppGroup, AppNodeInfo } from '@api/model/app-cfg';
+import { AppCfg, AppGroup, AppNodeInfo, AppTree } from '@api/model/app-cfg';
 import { Injectable } from '@angular/core';
 
 enum SitnaControlsEnum {
@@ -657,9 +657,10 @@ export class SitnaHelper {
    * - services
    * - tasks
    * - trees
+   * returns an array of catalogs: [{title: string, catalog: {div: string, enableSearch: boolean, layerTreeGroups: [], layers: []}}]
    */
   static toLayerCatalogSilme(apiConfig: AppCfg) {
-    let layerCatalogSilme = null;
+    var catalogs = [];
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
       x['ui-control'].startsWith('sitna.')
     );
@@ -674,136 +675,139 @@ export class SitnaHelper {
       });
       // if control LayerCatalog found
       if (layerCatalog) {
-        var ltg = [];
-        var lays = [];
         const layers = apiConfig.layers;
         const services = apiConfig.services;
 
         if (!layers.length || !services.length || !apiConfig.trees.length) {
-          return null;
+          return [];
         }
 
-        // get nodes from fisrt tree
-        // TODO - if we want to manage different trees we'll have to make changes here
-        const nodes: Map<string, AppNodeInfo> = new Map(
-          Object.entries(apiConfig.trees[0].nodes)
-        );
-        const arrayNodes = Array.from(nodes);
-        for (let currentNode of arrayNodes) {
-          let parentNode = null;
-          for (let i = 0; i < arrayNodes.length; i++) {
-            let node = arrayNodes[i];
-            // Para cada nodo, si el nodo tiene hijos
-            if (node[1].children) {
-              for (let j = 0; j < node[1].children.length; j++) {
-                let element = node[1].children[j];
-                // Si el currentNode es un hijo del nodo en el que estamos buscando
-                if (element === currentNode[0]) {
-                  // si el nodo padre es el rootNode, establecemos el nodo padre como el mismo currentNode,
-                  // es decir, el parentNode del currentNode es el propio currentNode, ya que el rootNode no debe estar presente
-                  if (node[0] === apiConfig.trees[0].rootNode)
-                    parentNode = currentNode[0];
-                  // establecemos el nodo en el que estamos buscando como padre
-                  else parentNode = node[0]; // node[0]: nombre del nodo
-                  break;
-                }
-              }
-            }
-            if (parentNode) break; // si hemos encontrado padre, salimos del bucle
-          }
-
-          // Si el currentNode no es hijo de ningún nodo (no hemos encontrado padre)
-          if (!parentNode) {
-            // TODO - ✏️Edit. Admin is bugged, it should return a root node with
-            //  all sub-root nodes as children, then we should discard the root node
-            //  and create all sub-roots nodes as LayerTreeGroups
-            //  All this must be done on the code above ⬆️
-
-            // TODO - ❌Delete when admin repaired
-            //Si el currentNode es el nodo raíz lo establecemos como padre
-            if (currentNode[0] == apiConfig.trees[0].rootNode) {
-              parentNode = currentNode[0];
-            }
-
-            // Todo - ❌Delete when admin repaired
-            if (!parentNode) {
-              let isNodeFound;
-              for (const property in apiConfig.trees[0].nodes) {
-                if (property === currentNode[0]) {
-                  isNodeFound = true;
-                  break;
-                }
-                isNodeFound = false;
-              }
-              if (isNodeFound) parentNode = currentNode[0];
-            }
-          }
-          // si no tiene hijos y tiene resource (una layer),
-          // se trata de una capa
-          if (
-            currentNode[1].children == null &&
-            currentNode[1].resource != null
-          ) {
-            const layer = layers.find(
-              (layer) => layer.id == currentNode[1].resource
-            );
-            if (layer) {
-              const service = services.find(
-                (service) => service.id == layer.service
-              );
-              if (service) {
-                if (parentNode) {
-                  if (layer.layers.length > 0) {
-                    lays.push({
-                      id: layer.id,
-                      title: layer.title,
-                      hideTitle: false,
-                      type: service.type,
-                      url: service.url,
-                      hideTree: true,
-                      format: '',
-                      layerNames: layer.layers,
-                      parentGroupNode: parentNode.replace('/', '')
-                    });
-                  } else {
-                    lays.push({
-                      id: layer.id,
-                      title: layer.title,
-                      hideTitle: false,
-                      type: service.type,
-                      url: service.url,
-                      hideTree: false,
-                      format: '',
-                      parentGroupNode: parentNode.replace('/', '')
-                    });
+        for (let currentTree of apiConfig.trees) {
+          let ltg = [];
+          let lays = [];
+          const nodes: Map<string, AppNodeInfo> = new Map(
+            Object.entries(currentTree.nodes)
+          );
+          const arrayNodes = Array.from(nodes);
+          for (let currentNode of arrayNodes) {
+            let parentNode = null;
+            for (let i = 0; i < arrayNodes.length; i++) {
+              let node = arrayNodes[i];
+              // Para cada nodo, si el nodo tiene hijos
+              if (node[1].children) {
+                for (let j = 0; j < node[1].children.length; j++) {
+                  let element = node[1].children[j];
+                  // Si el currentNode es un hijo del nodo en el que estamos buscando
+                  if (element === currentNode[0]) {
+                    // si el nodo padre es el rootNode, establecemos el nodo padre como el mismo currentNode,
+                    // es decir, el parentNode del currentNode es el propio currentNode, ya que el rootNode no debe estar presente
+                    if (node[0] === currentTree.rootNode)
+                      parentNode = currentNode[0];
+                    // establecemos el nodo en el que estamos buscando como padre
+                    else parentNode = node[0]; // node[0]: nombre del nodo
+                    break;
                   }
                 }
+              }
+              if (parentNode) break; // si hemos encontrado padre, salimos del bucle
+            }
+
+            // Si el currentNode no es hijo de ningún nodo (no hemos encontrado padre)
+            if (!parentNode) {
+              // TODO - ✏️Edit. Admin is bugged, it should return a root node with
+              //  all sub-root nodes as children, then we should discard the root node
+              //  and create all sub-roots nodes as LayerTreeGroups
+              //  All this must be done on the code above ⬆️
+
+              // TODO - ❌Delete when admin repaired
+              //Si el currentNode es el nodo raíz lo establecemos como padre
+              if (currentNode[0] == currentTree.rootNode) {
+                parentNode = currentNode[0];
+              }
+
+              // Todo - ❌Delete when admin repaired
+              if (!parentNode) {
+                let isNodeFound;
+                for (const property in currentTree.nodes) {
+                  if (property === currentNode[0]) {
+                    isNodeFound = true;
+                    break;
+                  }
+                  isNodeFound = false;
+                }
+                if (isNodeFound) parentNode = currentNode[0];
+              }
+            }
+            // si no tiene hijos y tiene resource (una layer),
+            // se trata de una capa
+            if (
+              currentNode[1].children == null &&
+              currentNode[1].resource != null
+            ) {
+              const layer = layers.find(
+                (layer) => layer.id == currentNode[1].resource
+              );
+              if (layer) {
+                const service = services.find(
+                  (service) => service.id == layer.service
+                );
+                if (service) {
+                  if (parentNode) {
+                    if (layer.layers.length > 0) {
+                      lays.push({
+                        id: layer.id,
+                        title: layer.title,
+                        hideTitle: false,
+                        type: service.type,
+                        url: service.url,
+                        hideTree: true,
+                        format: '',
+                        layerNames: layer.layers,
+                        parentGroupNode: parentNode.replace('/', '')
+                      });
+                    } else {
+                      lays.push({
+                        id: layer.id,
+                        title: layer.title,
+                        hideTitle: false,
+                        type: service.type,
+                        url: service.url,
+                        hideTree: false,
+                        format: '',
+                        parentGroupNode: parentNode.replace('/', '')
+                      });
+                    }
+                  }
+                } else {
+                  // error, no se ha encontrado service
+                }
               } else {
-                // error, no se ha encontrado service
+                // error, no se ha encontrado layer
               }
             } else {
-              // error, no se ha encontrado layer
-            }
-          } else {
-            if (parentNode) {
-              ltg.push({
-                id: currentNode[0].replace('/', ''),
-                title: currentNode[1].title,
-                parentNode: parentNode.replace('/', '')
-              });
+              if (parentNode) {
+                ltg.push({
+                  id: currentNode[0].replace('/', ''),
+                  title: currentNode[1].title,
+                  parentNode: parentNode.replace('/', '')
+                });
+              }
             }
           }
+          ltg.push({ id: 'node99', title: 'Altres serveis' });
+          catalogs.push({
+            title: currentTree.title,
+            catalog: {
+              div: 'catalog',
+              enableSearch: true,
+              layerTreeGroups: ltg,
+              layers: lays
+            }
+          });
         }
-        ltg.push({ id: 'node99', title: 'Altres serveis' });
-        layerCatalogSilme = {
-          div: 'catalog',
-          enableSearch: true,
-          layerTreeGroups: ltg,
-          layers: lays
-        };
       }
     }
-    return layerCatalogSilme;
+    return catalogs;
   }
   static toViews(apiConfig: AppCfg) {
     const sitnaViews = {} as SitnaViews;

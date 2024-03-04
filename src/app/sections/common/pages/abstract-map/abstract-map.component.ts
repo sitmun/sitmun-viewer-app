@@ -14,8 +14,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
-import { NavigationPath } from '@config/app.config';
-import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 
 declare const SITNA: any;
@@ -24,6 +22,10 @@ declare const SITNA: any;
 export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private componentDestroyed = new Subject<void>();
   private isInEmbedded: boolean;
+  private layerCatalogsSilme: any;
+  private currentCatalogIdx: number;
+  private currentGeneralCfg: GeneralCfg | undefined;
+  private currentAppCfg: AppCfg | undefined
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -44,6 +46,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
     const currentLang = this.translate.currentLang;
     this.locale = this.parseLang(currentLang);
+    this.currentCatalogIdx = 0;
   }
 
   ngOnInit(): void {
@@ -58,7 +61,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         .fetchMapConfiguration(this.applicationId, this.territoryId)
         .subscribe((appCfg) => {
           if (appCfg) {
-            this.loadMap(appCfg);
+            this.loadConfig(appCfg);
             // There might be a new theme in the recently fetched appCfg
             // We will share it with the rest of the app via
             // the commonService.updateMessage()
@@ -76,6 +79,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
           });
         });
     }
+
+    // Expose the current map
+    // Maybe this needs a proper refactor to avoid this kind of things...
+    (window as any).abstractMapObject = this;
   }
 
   ngOnDestroy() {
@@ -110,8 +117,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadMap(appCfg: AppCfg) {
-    const config = {
+  loadConfig(appCfg: AppCfg) {
+    this.currentAppCfg = appCfg;
+    this.currentGeneralCfg = {
       locale: this.locale,
       crs: SitnaHelper.toCrs(appCfg),
       initialExtent: SitnaHelper.toInitialExtent(appCfg),
@@ -122,10 +130,13 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       views: SitnaHelper.toViews(appCfg)
     };
 
-    let cfgCheck = this.checkConfiguration(config);
+    // We need to save the currentGeneralCfg and the currentAppCfg, so when the
+    // catalog change, the map can be loaded again with the same configuration
 
-    const layerCatalogSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
-    if (cfgCheck.ok && !layerCatalogSilme) {
+    let cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
+    this.layerCatalogsSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
+
+    if (cfgCheck.ok && !this.layerCatalogsSilme.length) {
       cfgCheck = {
         ok: false,
         message: 'map.error.layerCatalog'
@@ -142,15 +153,27 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return;
     }
 
-    SITNA.Cfg.controls.layerCatalogSilme = layerCatalogSilme;
-    //SITNA.Cfg.controls = SitnaHelper.toControls(appCfg);
-    const map = new SITNA.Map('mapa', config);
-
-    map.loaded(function () {
-      SitnaHelper.toWelcome(appCfg);
-      SitnaHelper.toHelp(appCfg);
-      SitnaHelper.toInterface();
+    // Parse the catalogs so we can use them in the LayerCatalogSilme.js
+    let idx = -1;
+    (window as any).layerCatalogsSilmeForModal = new Object({
+      currentCatalog: this.currentCatalogIdx,
+      catalogs: this.layerCatalogsSilme.map((catalog: any) => {
+        return { id: ++idx, catalog: catalog.title };
+      })
     });
+
+    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+  }
+
+  updateCatalog() {
+    if (this.currentAppCfg === undefined || this.currentGeneralCfg === undefined) {
+      return; // This is a safeguard, but it should never happen
+    }
+    this.currentCatalogIdx = (window as any).layerCatalogsSilmeForModal.currentCatalog;
+    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+
   }
 
   clearMap() {
@@ -214,6 +237,15 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     return {
       ok: true
     };
+  }
+
+  private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
+    const map = new SITNA.Map('mapa', cfg);
+    map.loaded(function() {
+      SitnaHelper.toWelcome(appCfg);
+      SitnaHelper.toHelp(appCfg);
+      SitnaHelper.toInterface();
+    });
   }
 
   abstract navigateToDashboard(): any;
