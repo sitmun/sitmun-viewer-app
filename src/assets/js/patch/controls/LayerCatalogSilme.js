@@ -1338,6 +1338,7 @@ if (!TC.control.LayerCatalog) {
         }));
 
         // Renderitzar l'html de la modal amb la llista de catàlegs
+        selfClass = self;
         self.getRenderedHtml(self.CLASS + '-proj', ({ "catalogs": window.layerCatalogsSilmeForModal.catalogs })).then(function (out) {
           var template = document.createElement('template');
           template.innerHTML = out;
