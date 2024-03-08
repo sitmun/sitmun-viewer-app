@@ -523,30 +523,19 @@ export class SitnaHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.Search
       )
     ) {
-      sitnaControls.searchSilme = {
-        div: 'search'
-      };
+      const search = sitnaControlsFilter.find((obj) => {
+        return obj['ui-control'] === SitnaControlsEnum.Search;
+      });
+
+      if (search) {
+        sitnaControls.searchSilme = {
+          div: 'search'
+        };
+        if (search.parameters != null) {
+          sitnaControls.search = search.parameters;
+        }
+      }
     }
-    // if (
-    //   sitnaControlsFilter.some(
-    //     (x) => x['ui-control'] === SitnaControlsEnum.LayerCatalog
-    //   )
-    // ) {
-    //   const layerCatalog = sitnaControlsFilter.find((obj) => {
-    //     return obj['ui-control'] === SitnaControlsEnum.LayerCatalog;
-    //   });
-    //   if (layerCatalog) {
-    //     if (layerCatalog.parameters == null) {
-    //       sitnaControls.layerCatalog = {
-    //         div: 'catalog',
-    //         enableSearch: true,
-    //         layers: SitnaHelper.toWorkLayers(apiConfig)
-    //       };
-    //     } else {
-    //       sitnaControls.layerCatalog = layerCatalog.parameters;
-    //     }
-    //   }
-    // }
 
     if (
       sitnaControlsFilter.some(
