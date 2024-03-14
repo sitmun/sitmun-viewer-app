@@ -849,79 +849,6 @@ if (!TC.control.LayerCatalog) {
     _refreshResultList.call(self);
   };
 
-  const getProjs = function () {
-
-    var request = new XMLHttpRequest();
-    request.open('POST', 'src/DBRequest.aspx/getProjs', true);
-    request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-
-    request.onreadystatechange = function () {
-      if (this.status >= 200 && this.status < 400) {
-        if (request.response != "") {
-          info = new Object();
-          info.projs = new Array();
-          var data = JSON.parse(request.response).d;
-          for (var i = 0; i < data.split(';').length; i++) {
-            info.projs[i] = new Object;
-            var tmp = data.split(';')[i];
-            info.projs[i].name = tmp.substring(0, tmp.indexOf('*'));
-            info.projs[i].id = tmp.substring(tmp.indexOf('*') + 1, tmp.indexOf('^'));
-            info.projs[i].thumbnail = tmp.substring(tmp.indexOf('^') + 1, tmp.indexOf('$'));
-            info.projs[i].tooltip = tmp.substring(tmp.indexOf('$') + 1);
-            //info.projs[i].name = data.d.split(';')[i];
-          }
-
-          selfClass.getRenderedHtml(selfClass.CLASS + '-proj', info, function (html) {
-            var template = document.createElement('template');
-            template.innerHTML = html;
-            selfClass.div.querySelector('.tc-ctl-lcat-proj').innerHTML = template.innerHTML;//Here
-            //selfClass.div.querySelector('.tc-ctl-lcat-proj').appendChild(template.content);
-          }.bind(this));
-        }
-      } else {
-        // We reached our target server, but it returned an error
-        alert("Error getting projects")
-
-      }
-    };
-
-    request.onerror = function () {
-      // There was a connection error of some sort
-      alert("Error getting projects")
-    };
-
-    if (typeof proj != 'undefined' && proj) request.send(JSON.stringify({ "proj": proj }));
-
-    //$.ajax({
-    //    type: "POST",
-    //    url: "src/DBRequest.aspx/getProjs",
-    //    contentType: "application/json; charset=utf-8",
-    //    dataType: "json",
-    //    data: JSON.stringify({ "proj": proj }),
-    //    success: function (data) {
-    //        info = new Object();
-    //        info.projs = new Array();
-    //        for (var i = 0; i < data.d.split(';').length; i++) {
-    //            info.projs[i] = new Object;
-    //            var tmp = data.d.split(';')[i];
-    //            info.projs[i].name = tmp.substring(0, tmp.indexOf('*'));
-    //            info.projs[i].id = tmp.substring(tmp.indexOf('*') + 1, tmp.indexOf('^'));
-    //            info.projs[i].thumbnail = tmp.substring(tmp.indexOf('^') + 1, tmp.indexOf('$'));
-    //            info.projs[i].tooltip = tmp.substring(tmp.indexOf('$') + 1);
-    //            //info.projs[i].name = data.d.split(';')[i];
-    //        }
-
-    //        selfClass.getRenderedHtml(selfClass.CLASS + '-proj', info, function (html) {
-    //            var template = document.createElement('template');
-    //            template.innerHTML = html;
-    //            selfClass.div.querySelector('.tc-ctl-lcat-proj').innerHTML = template.innerHTML;//Here
-    //            //selfClass.div.querySelector('.tc-ctl-lcat-proj').appendChild(template.content);
-    //        }.bind(this));
-    //    },
-    //    error: function () { alert("Error getting projects") }
-    //})
-  };
-
   const addLogicToNode = function (node, layer, control) {
     //const self = this;
     const self = control;
@@ -1358,7 +1285,6 @@ if (!TC.control.LayerCatalog) {
 
         //Event botó projectes
         self.div.addEventListener('click', TC.EventTarget.listenerBySelector('#canvi-projecte-silme', function (e) {
-          var infoProj;
           const projPane = self.div.querySelector('#projects');
 
           if (window.innerWidth < 760) {
@@ -1373,78 +1299,56 @@ if (!TC.control.LayerCatalog) {
           }
 
           projPane.classList.toggle(TC.Consts.classes.HIDDEN);
-          dust.render(self.CLASS + '-proj', infoProj, function (err, out) {
-            /*projPane.innerHTML = out;
-            if (err) {
-                TC.error(err);
-            }*/
-            projPane.querySelector('.' + self.CLASS + '-proj-close').addEventListener(TC.Consts.event.CLICK, function () {
-              self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+          projPane.querySelector('.' + self.CLASS + '-proj-close').addEventListener(TC.Consts.event.CLICK, function () {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
+              item.classList.remove(self.CLASS + '-proj-selected');
             });
           });
 
-          const topics = self.div.querySelectorAll('.tc-ctl-lcat-proj-topic');
-          for (var i = 0; i < topics.length; i++) {
-            topics[i].addEventListener(TC.Consts.event.CLICK, function () {
-              var url = window.location.href;
-              var ixOfQuestion = url.indexOf('?');
-              var ixOfProj = url.indexOf('projecte');
-              var projLength = ('projecte').length;
-              var numProj = this.id;
-              if (ixOfQuestion > -1) {
-                if (ixOfProj > -1) {
-                  //Dins aquest 'if' substituïm el número del projecte per el que hem seleccionat
-                  //Ho fa respectant la resta de paràmetres
-                  if (url.indexOf('&', ixOfProj) > -1) { //Hi ha més paràmetres DESPRÉS de 'projecte'
-                    url = url.substring(0, ixOfProj + projLength + 1) + numProj + url.substring(url.indexOf('&', ixOfProj))
-                  } else if (url.indexOf('#', ixOfProj) > -1) {// No hi ha més paràmetres però hi ha el '#' amb informació de la api darrera
-                    url = url.substring(0, ixOfProj + projLength + 1) + numProj + url.substring(url.indexOf('#', ixOfProj))
-                  } else { //No hi ha res més després del paràmetre 'projecte'
-                    url = url.substring(0, ixOfProj + projLength + 1) + numProj;
-                  }
-                } else {
-                  if (url.indexOf('#') > -1) {// No hi ha paràmetres però hi ha el '#' amb informació de la api darrera
-                    url = url.substring(0, url.indexOf('#')) + '&projecte=' + numProj + url.substring(url.indexOf('#'));
-                  } else {
-                    //Si no hi ha el paràmetre 'projecte' l'afegeix
-                    url += '&projecte=' + numProj;
-                  }
-                }
-              } else {
-                if (url.indexOf('#') > -1) {// No hi ha paràmetres però hi ha el '#' amb informació de la api darrera
-                  url = url.substring(0, url.indexOf('#')) + '?projecte=' + numProj + url.substring(url.indexOf('#'));
-                } else {
-                  //Si no hi ha cap paràmetre, afegeix el paràmetre 'projecte'
-                  url += '?projecte=' + numProj;
-                }
-              }
-              var askKeepLayers = false;
-              for (var i = 0; i < silmeMap.parent.workLayers.length; i++) {
-                if (silmeMap.parent.workLayers[i].type == "WMS") {
-                  askKeepLayers = true;
-                  break;
-                }
-              }
+          projPane.querySelector('.' + self.CLASS + '-proj-accept').addEventListener('click', function () {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            const id = parseInt(projPane.querySelector('.' + self.CLASS + '-proj-selected').querySelector('.' + self.CLASS + '-proj-catalog-id').value);
+            if (id !== window.layerCatalogsSilmeForModal.currentCatalog) {
+              window.layerCatalogsSilmeForModal.currentCatalog = id;
+              window.abstractMapObject.updateCatalog();
+            }
+          });
 
-              if (askKeepLayers == true) {
-                if (window.confirm(self.getLocaleString('keepLoadedInfo'))) {
-                  window.location.href = url;
-                } else {
-                  window.location.href = url.substring(0, url.indexOf('#'));
-                }
-              } else {
-                window.location.href = url;
-              }
+          projPane.querySelector('.' + self.CLASS + '-proj-cancel').addEventListener('click', function () {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
+              item.classList.remove(self.CLASS + '-proj-selected');
             });
-          }
+          });
+
+          // Extreure tots els elements de catàlegs dins de tc-ctl-lcat-proj-child i afegir un listener a cadascun
+          var catalogsList = projPane.querySelectorAll('.' + self.CLASS + '-proj-catalog');
+          catalogsList.forEach(catalogElement => {
+            const id = parseInt(catalogElement.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
+            if (id === window.layerCatalogsSilmeForModal.currentCatalog)
+              catalogElement.classList.add(self.CLASS + '-proj-selected');
+
+            // Afegir listener als catàlegs
+            catalogElement.addEventListener('click', function () {
+              projPane.querySelector('.' + self.CLASS + '-proj-selected').classList.remove(self.CLASS + '-proj-selected');
+              catalogElement.classList.add(self.CLASS + '-proj-selected');
+            });
+          });
         }));
 
+        // Renderitzar l'html de la modal amb la llista de catàlegs
         selfClass = self;
-        if (self.div.childElementCount > 0)
-          getProjs();
+        self.getRenderedHtml(self.CLASS + '-proj', ({ "catalogs": window.layerCatalogsSilmeForModal.catalogs })).then(function (out) {
+          var template = document.createElement('template');
+          template.innerHTML = out;
+          if (self.div.querySelector('.tc-ctl-lcat-proj') != null)
+            self.div.querySelector('.tc-ctl-lcat-proj').innerHTML = template.innerHTML;
+        }).catch(function (err) {
+          TC.error(err);
+        });
 
-
-        //2 Capes de fons
+        // 2 Capes de fons
         if (true) { // SILME - posam fals perque no volem dos mapes de fons
           if (treeLayers.length > 0) {
             if (typeof secondBaseLayer != 'undefined') {
