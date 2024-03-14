@@ -2,9 +2,9 @@
   <div class="menu-show">
     <div class="menu-options">
       <div class="lang-buttons">
-        <button type="button" (click)="useLanguage('es')">ES</button>
-        <button type="button" (click)="useLanguage('en')">EN</button>
         <button type="button" (click)="useLanguage('ca')">CA</button>
+        <button type="button" (click)="useLanguage('en')">EN</button>
+        <button type="button" (click)="useLanguage('es')">ES</button>
       </div>
       <div class="logged-in-options" *ngIf="isLoggedIn">
         <h4>{{'menu.hi' | translate}}{{username}}!</h4>
