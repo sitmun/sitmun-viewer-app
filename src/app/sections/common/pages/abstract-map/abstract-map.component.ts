@@ -172,6 +172,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     }
     this.currentCatalogIdx = (window as any).layerCatalogsSilmeForModal.currentCatalog;
     SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    this.clearMap();
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
 
   }

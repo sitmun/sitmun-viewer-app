@@ -1348,7 +1348,7 @@ if (!TC.control.LayerCatalog) {
           TC.error(err);
         });
 
-        //2 Capes de fons
+        // 2 Capes de fons
         if (true) { // SILME - posam fals perque no volem dos mapes de fons
           if (treeLayers.length > 0) {
             if (typeof secondBaseLayer != 'undefined') {
