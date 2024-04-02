@@ -125,7 +125,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       initialExtent: SitnaHelper.toInitialExtent(appCfg),
       layout: SitnaHelper.toLayout(appCfg),
       baseLayers: SitnaHelper.toBaseLayers(appCfg),
-      //workLayers: SitnaHelper.toWorkLayers(appCfg),
       controls: SitnaHelper.toControls(appCfg),
       views: SitnaHelper.toViews(appCfg)
     };
@@ -136,12 +135,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     let cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
     this.layerCatalogsSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
 
-    if (cfgCheck.ok && !this.layerCatalogsSilme.length) {
-      cfgCheck = {
-        ok: false,
-        message: 'map.error.layerCatalog'
-      };
-    }
+    // if (cfgCheck.ok && !this.layerCatalogsSilme.length) {
+    //   cfgCheck = {
+    //     ok: false,
+    //     message: 'map.error.layerCatalog'
+    //   };
+    // }
 
     if (!cfgCheck.ok) {
       const ref = this.modal.open(ErrorModalComponent, {
@@ -162,7 +161,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       })
     });
 
-    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    if (this.layerCatalogsSilme.length > 1) {
+      SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    } else {
+      SITNA.Cfg.controls.layerCatalogSilme = {};
+    }
+
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 

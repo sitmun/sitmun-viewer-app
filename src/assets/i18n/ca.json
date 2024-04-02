@@ -24,9 +24,9 @@
   "paginate.next": "Següent",
   "map.error.title": "Ha passat un error...",
   "map.error.description": "Descripció",
-  "map.error.locale": "La configuració de 'locale' és incorrecta.",
-  "map.error.crs": "La configuració de 'crs' és incorrecta.",
-  "map.error.initialExtent": "La configuració de 'initialExtent' és incorrecta.",
-  "map.error.baseLayers": "La configuració de 'baseLayers' és incorrecta.",
-  "map.error.layerCatalog": "La configuració de 'layerCatalog' és incorrecta."
+  "map.error.locale": "L'idioma requerit per a la interfície del mapa no està disponible. Si us plau, canvieu l'idioma requerit i torneu-ho a provar.",
+  "map.error.crs": "No s'ha trobat cap marc de referència de coordenades vàlid. Si us plau, afegiu-ne un i torneu-ho a provar.",
+  "map.error.initialExtent": "No s'ha definit una extensió inicial vàlida per a aquest mapa. Si us plau, afegiu-ne una i torneu-ho a provar.",
+  "map.error.baseLayers": "No hi ha capes definides com a base. Si us plau, afegiu almenys una capa base i torneu-ho a provar.",
+  "map.error.layerCatalog": "El catàleg de capes és buit. Si us plau, afegiu almenys una capa i intenteu-ho de nou."
 }

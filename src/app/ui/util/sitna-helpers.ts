@@ -784,15 +784,17 @@ export class SitnaHelper {
             }
           }
           ltg.push({ id: 'node99', title: 'Altres serveis' });
-          catalogs.push({
-            title: currentTree.title,
-            catalog: {
-              div: 'catalog',
-              enableSearch: true,
-              layerTreeGroups: ltg,
-              layers: lays
-            }
-          });
+          if (lays.length > 0) {
+            catalogs.push({
+              title: currentTree.title,
+              catalog: {
+                div: 'catalog',
+                enableSearch: true,
+                layerTreeGroups: ltg,
+                layers: lays
+              }
+            });
+          }
         }
       }
     }
@@ -838,16 +840,18 @@ export class SitnaHelper {
     if (
       apiConfig.tasks.some((x) => x['ui-control'] === 'markup-welcome-panel')
     ) {
-      // (
-      //   document.getElementsByClassName('welcome-panel')[0] as HTMLElement
-      // ).classList.add('tc-hidden');
+      // Do nothing and show the welcome panel as default
     } else {
-      (
-        document.getElementsByClassName('welcome-panel')[0] as HTMLElement
-      ).classList.add('tc-hidden');
-      (
-        document.getElementsByClassName('background-cover')[0] as HTMLElement
-      ).classList.add('tc-hidden');
+      const welcomeElements = document.getElementsByClassName('welcome-panel');
+      const backgroundCoverElements = document.getElementsByClassName('background-cover');
+
+      if (welcomeElements && welcomeElements[0]) {
+        (welcomeElements[0] as HTMLElement).classList.add('tc-hidden');
+      }
+
+      if (backgroundCoverElements && backgroundCoverElements[0]) {
+        (backgroundCoverElements[0] as HTMLElement).classList.add('tc-hidden');
+      }
     }
   }
   static toHelp(apiConfig: AppCfg) {
