@@ -1308,10 +1308,13 @@ if (!TC.control.LayerCatalog) {
 
           projPane.querySelector('.' + self.CLASS + '-proj-accept').addEventListener('click', function () {
             self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
-            const id = parseInt(projPane.querySelector('.' + self.CLASS + '-proj-selected').querySelector('.' + self.CLASS + '-proj-catalog-id').value);
-            if (id !== window.layerCatalogsSilmeForModal.currentCatalog) {
-              window.layerCatalogsSilmeForModal.currentCatalog = id;
-              window.abstractMapObject.updateCatalog();
+            const selectedProject = projPane.querySelector('.' + self.CLASS + '-proj-selected');
+            if (selectedProject) {
+              const id = parseInt(selectedProject.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
+              if (id !== window.layerCatalogsSilmeForModal.currentCatalog) {
+                window.layerCatalogsSilmeForModal.currentCatalog = id;
+                window.abstractMapObject.updateCatalog();
+              }
             }
           });
 

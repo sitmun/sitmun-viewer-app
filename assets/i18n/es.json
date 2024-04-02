@@ -24,9 +24,9 @@
   "paginate.next": "Siguiente",
   "map.error.title": "Ha ocurrido un error...",
   "map.error.description": "Descripción",
-  "map.error.locale": "La configuración de 'locale' es incorrecta.",
-  "map.error.crs": "La configuración de 'crs' es incorrecta.",
-  "map.error.initialExtent": "La configuración de 'initialExtent' es incorrecta.",
-  "map.error.baseLayers": "La configuración de 'baseLayers' es incorrecta.",
-  "map.error.layerCatalog": "La configuración de 'layerCatalog' es incorrecta."
+  "map.error.locale": "El idioma requerido para la interfaz de este mapa no está disponible. Por favor, cambie el idioma requerido e inténtelo de nuevo.",
+  "map.error.crs": "No se encuentra un sistema de referencia de coordenadas válido. Por favor, añada un sistema de referencia de coordenadas e inténtelo de nuevo.",
+  "map.error.initialExtent": "No se ha definido una extensión inicial válida para este mapa. Por favor, añada una e inténtelo de nuevo.",
+  "map.error.baseLayers": "No hay capas definidas como base. Por favor, añada al menos una capa base e inténtelo de nuevo.",
+  "map.error.layerCatalog": "El catálogo de capas disponibles se encuentra vacío. Por favor, añada al menos una capa e inténtelo de nuevo."
 }
