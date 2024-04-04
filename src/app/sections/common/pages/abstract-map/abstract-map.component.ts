@@ -135,13 +135,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     let cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
     this.layerCatalogsSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
 
-    // if (cfgCheck.ok && !this.layerCatalogsSilme.length) {
-    //   cfgCheck = {
-    //     ok: false,
-    //     message: 'map.error.layerCatalog'
-    //   };
-    // }
-
     if (!cfgCheck.ok) {
       const ref = this.modal.open(ErrorModalComponent, {
         data: { message: cfgCheck.message }
@@ -161,7 +154,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       })
     });
 
-    if (this.layerCatalogsSilme.length > 1) {
+    if (this.layerCatalogsSilme.length > 0) {
       SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
     } else {
       SITNA.Cfg.controls.layerCatalogSilme = {};
