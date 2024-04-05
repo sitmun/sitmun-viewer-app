@@ -24,9 +24,9 @@
   "paginate.next": "Next",
   "map.error.title": "An error has ocurred...",
   "map.error.description": "Description",
-  "map.error.locale": "The 'locale' setting is incorrect.",
-  "map.error.crs": "The 'crs' setting is incorrect.",
-  "map.error.initialExtent": "The 'initialExtent' setting is incorrect.",
-  "map.error.baseLayers": "The 'baseLayers' setting is incorrect.",
-  "map.error.layerCatalog": "The 'layerCatalog' setting is incorrect."
+  "map.error.locale": "The required interface language for this map is not available. Please change the required language and try again.",
+  "map.error.crs": "A valid coordinate reference system is not found. Please add one and try again.",
+  "map.error.initialExtent": "No valid initial extent has been defined for this map. Please add one and try again.",
+  "map.error.baseLayers": "There are no layers defined as background. Please add at least one base layer and try again.",
+  "map.error.layerCatalog": "The available layer catalog is empty. Please add at least one layer and try again."
 }

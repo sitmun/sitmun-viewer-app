@@ -2096,28 +2096,48 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-wlm-btn-info:ho
 }
 
 .tc-ctl-lcat-proj-content {
-  /*overflow: auto;*/
   height: 420px;
-  padding: 0 25px;
-  display: block;
+  padding: 0px 25px;
+  display: flex;
+  flex-flow: column;
   max-height: 420px;
 }
 
 ul.tc-ctl-lcat-proj-childs {
-  padding: 0 0 0 0;
+  padding: 20px 35px;
+  margin: 0 0 0 0;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column;
+  flex-grow: 1;
+  justify-content: flex-start;
 }
 
 .tc-ctl-lcat-proj-content li {
-  display: inline-flex;
-  /*border: 1px solid black;*/
-  margin: 10px;
-  text-align: center;
-  /*padding-top: 15px;
-  padding-bottom: 5px;
-  padding-left: 10px;
-  padding-right: 10px;*/
+  padding: 10px 10px;
+  margin: 0 0 0 0;
+  display: flex;
+  flex-flow: row;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+  background-color: #ededed;
+}
+
+.tc-ctl-lcat-proj-selected {
+  background-color: var(--ide-main-color) !important;
+}
+
+.tc-ctl-lcat-proj-buttons {
+  padding: 20px 35px;
+  margin: 0 0 0 0;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+}
+
+.tc-ctl-lcat-proj-buttons button {
+  height: 30px;
+  width: 90px;
 }
 
 .tc-ctl-lcat-proj-window h3 {
