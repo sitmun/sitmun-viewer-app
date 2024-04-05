@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
+    Array.from(document.getElementsByClassName('nav-bar') as HTMLCollectionOf<HTMLElement>)[0].style.visibility = 'hidden'; // MV SILME
     if (this.authenticationService.isLoggedIn()) {
       this.router.navigateByUrl('/');
     }

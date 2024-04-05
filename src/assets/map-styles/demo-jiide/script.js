@@ -1,5 +1,40 @@
 ﻿// document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
 // document.getElementById("logoIns").src = "../assets/IDEMenorca/img/DIBA-logo-300x169.jpg";
+
+var map;
+var silmeMap;
+
+
+document.querySelectorAll('.tc-map').forEach(function (elm) {
+  map = TC.Map.get(elm);
+  map.loaded(function () {
+    silmeMap = map.wrap;
+
+    //mover el Multifeature info dentro del TOC
+    const toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
+    const mfi = map.getControlsByClass('TC.control.MultiFeatureInfo')[0];
+    if (toc && mfi) {
+      Promise.all([toc.renderPromise(), mfi.renderPromise()]).then(() => {
+        toc.div.querySelector('.' + toc.CLASS + '-content').insertAdjacentElement('afterend', mfi.div);
+        mfi.containerControl = toc;
+      });
+    }
+  });
+});
+
+
+if (map && !map._layoutDone) {
+  map.ready(function () {
+    const lcSilme = map.getControlsByClass('TC.control.LayerCatalogSilme')[0];
+    if (lcSilme) {
+      lcSilme.loaded().then(() => {
+        lcSilme.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
+          lcSilme.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
+        });
+      });
+    }
+  });
+}
 function layerCatalogCarregat() {}
 var ajustarPanell = function () {
   var arrControlsActius = [];

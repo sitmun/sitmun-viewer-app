@@ -24,19 +24,29 @@
 }
 
 .login-page {
-  animation: fadeIn 3.5s;
-  animation-timing-function: ease;
+
+  //animation: fadeIn 3.5s;
+  //animation-timing-function: ease;
+
   /*background-image: url('~../../../../assets/logos/logo_b_l.png'); /* BROWN */
   /*background-image: url('~../../../../assets/logos/logo_p_l.png'); /* PINK */
-  background-image: url('~../../../../assets/logos/logo_o_l.png'); /* ORANGE */
+  // -- background-image: url('~../../../../assets/logos/logo_o_l.png'); /* ORANGE */
+  background-image: url('~../../../../assets/logos/bck_no_logo.jpg');
   background-position: bottom;
-  background-size: 70%;
+  // background-size: 70%;-->
+  background-size: 100%;
+  height: 100%;
   background-repeat: no-repeat;
 }
 
 .container {
   animation: none;
   margin-top: dimensions.$base-margin-8+80px;
+  // TODO - REVIEW MV SILME
+  background-color: #cccccc88;
+  padding: 30px;
+  border: 1px solid grey;
+  border-radius: 5px;
 
   .title {
     color: colors.$common-color-font-secondary;
@@ -44,6 +54,12 @@
     flex-direction: row;
     h1 {
       width: 50%;
+      // TODO - REVIEW MV SILME
+      background-image: url('~../../../../assets/logos/logo_blue.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      height: 55px;
+      color: transparent;
     }
     div {
       width: 50%;

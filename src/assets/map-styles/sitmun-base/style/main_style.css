@@ -2909,3 +2909,7 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
 .tc-ctl-wlm .tc-ctl-m-finfo-select {
   margin: 5px;
 }
+
+.tc-ctl-bms h2 button.tc-icon-btn.tc-details:before {
+  content: '';
+}
