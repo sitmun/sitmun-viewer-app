@@ -1,8 +1,11 @@
 ﻿var map;
+var silmeMap;
+
 
 document.querySelectorAll('.tc-map').forEach(function (elm) {
   map = TC.Map.get(elm);
   map.loaded(function () {
+    silmeMap = map.wrap;
 
     //mover el Multifeature info dentro del TOC
     const toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
@@ -15,6 +18,20 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
     }
   });
 });
+
+
+if (map && !map._layoutDone) {
+  map.ready(function () {
+    const lcSilme = map.getControlsByClass('TC.control.LayerCatalogSilme')[0];
+    if (lcSilme) {
+      lcSilme.loaded().then(() => {
+        lcSilme.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
+          lcSilme.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
+        });
+      });
+    }
+  });
+}
 
 
 // document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
