@@ -20,13 +20,17 @@
   "menu.logout": "Tancar sessió",
   "menu.changeApplication": "Canviar aplicació",
   "menu.changeTerritory": "Canviar territori",
+  "menu.continue": "Continuar",
   "paginate.previous": "Anterior",
   "paginate.next": "Següent",
   "map.error.title": "Ha passat un error...",
+  "map.warning.title": "Avis...",
   "map.error.description": "Descripció",
   "map.error.locale": "L'idioma requerit per a la interfície del mapa no està disponible. Si us plau, canvieu l'idioma requerit i torneu-ho a provar.",
   "map.error.crs": "No s'ha trobat cap marc de referència de coordenades vàlid. Si us plau, afegiu-ne un i torneu-ho a provar.",
   "map.error.initialExtent": "No s'ha definit una extensió inicial vàlida per a aquest mapa. Si us plau, afegiu-ne una i torneu-ho a provar.",
   "map.error.baseLayers": "No hi ha capes definides com a base. Si us plau, afegiu almenys una capa base i torneu-ho a provar.",
-  "map.error.layerCatalog": "El catàleg de capes és buit. Si us plau, afegiu almenys una capa i intenteu-ho de nou."
+  "map.error.layerCatalog": "El catàleg de capes és buit. Si us plau, afegiu almenys una capa i intenteu-ho de nou.",
+  "map.error.badConfigTree": "Alguns dels catàlegs de capes d'aquesta aplicació no estan configurats correctament i han estat omesos del mapa. Reviseu la configuració de l'aplicació si us plau.",
+  "map.error.ommitedCatalogs": "Catálegs omises"
 }

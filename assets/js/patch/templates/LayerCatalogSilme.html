@@ -7,7 +7,9 @@
     {/layerTrees}
     {?layers}
     <button class="tc-ctl-lcat-btn-search" title="{@i18n $key="searchLayersByText"/}"></button>
+    {?enableChangeTopic}
     <label id="canvi-projecte-silme" class="tc-ctl-lcat-btn-search-silme" title="{@i18n $key="changeTopicOrganization"/}">{@i18n $key="changeTopic"/}</label>
+    {/enableChangeTopic}
     {/layers}
     {/enableSearch}
 </h2>
