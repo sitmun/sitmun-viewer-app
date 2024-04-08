@@ -674,6 +674,7 @@ export class SitnaHelper {
         for (let currentTree of apiConfig.trees) {
           let ltg = [];
           let lays = [];
+          let badConfigTree = false;
           const nodes: Map<string, AppNodeInfo> = new Map(
             Object.entries(currentTree.nodes)
           );
@@ -772,6 +773,7 @@ export class SitnaHelper {
                 }
               } else {
                 // error, no se ha encontrado layer
+                badConfigTree = true;
               }
             } else {
               if (parentNode) {
@@ -784,17 +786,16 @@ export class SitnaHelper {
             }
           }
           ltg.push({ id: 'node99', title: 'Altres serveis' });
-          if (lays.length > 0) {
-            catalogs.push({
-              title: currentTree.title,
-              catalog: {
-                div: 'catalog',
-                enableSearch: true,
-                layerTreeGroups: ltg,
-                layers: lays
-              }
-            });
-          }
+          catalogs.push({
+            title: currentTree.title,
+            badConfigTree: badConfigTree,
+            catalog: {
+              div: 'catalog',
+              enableSearch: true,
+              layerTreeGroups: ltg,
+              layers: lays
+            }
+          });
         }
       }
     }

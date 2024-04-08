@@ -20,13 +20,17 @@
   "menu.logout": "Log Out",
   "menu.changeApplication": "Switch application",
   "menu.changeTerritory": "Switch territory",
+  "menu.continue": "Continue",
   "paginate.previous": "Previous",
   "paginate.next": "Next",
   "map.error.title": "An error has ocurred...",
+  "map.warning.title": "Warning",
   "map.error.description": "Description",
   "map.error.locale": "The required interface language for this map is not available. Please change the required language and try again.",
   "map.error.crs": "A valid coordinate reference system is not found. Please add one and try again.",
   "map.error.initialExtent": "No valid initial extent has been defined for this map. Please add one and try again.",
   "map.error.baseLayers": "There are no layers defined as background. Please add at least one base layer and try again.",
-  "map.error.layerCatalog": "The available layer catalog is empty. Please add at least one layer and try again."
+  "map.error.layerCatalog": "The available layer catalog is empty. Please add at least one layer and try again.",
+  "map.error.badConfigTree": "Some of the layer catalogs in this application are not configured correctly and have been omitted from the map. Please check the app settings.",
+  "map.error.ommitedCatalogs": "Ommited catalogs"
 }

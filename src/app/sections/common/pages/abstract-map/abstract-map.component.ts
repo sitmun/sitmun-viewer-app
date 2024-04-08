@@ -1,10 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  Renderer2
-} from '@angular/core';
+import { Directive, ElementRef, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
@@ -15,6 +9,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
+import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
 
 declare const SITNA: any;
 
@@ -145,22 +140,42 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Parse the catalogs so we can use them in the LayerCatalogSilme.js
+    // Parse the catalogs, so we can use them in the LayerCatalogSilme.js
     let idx = -1;
     (window as any).layerCatalogsSilmeForModal = new Object({
       currentCatalog: this.currentCatalogIdx,
-      catalogs: this.layerCatalogsSilme.map((catalog: any) => {
-        return { id: ++idx, catalog: catalog.title };
-      })
+      catalogs: this.layerCatalogsSilme
+        .filter((catalog: any) => {
+          return !catalog.badConfigTree;
+        }).map((catalog: any) => {
+          return { id: ++idx, catalog: catalog.title };
+        })
     });
 
-    if (this.layerCatalogsSilme.length > 0) {
-      SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
-    } else {
-      SITNA.Cfg.controls.layerCatalogSilme = {};
-    }
+    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
+      ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
+      : {};
 
-    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+    // If there is a badConfigTree, we need to show a warning modal before loading the map
+    if (this.layerCatalogsSilme.some((catalog: any) => { return catalog.badConfigTree })) {
+      const catalogs = this.layerCatalogsSilme
+        .filter((catalog: any) => { return catalog.badConfigTree })
+        .map((catalog: any) => { return catalog.title });
+
+      console.log("Catalogs with badConfigTree", catalogs);
+
+      const ref = this.modal.open(WarningModalComponent, {
+        data: { message: 'map.error.badConfigTree' , listTitle: "map.error.ommitedCatalogs", catalogs: catalogs }
+      });
+      ref.afterClosed.subscribe(() => {
+        if (this.currentAppCfg && this.currentGeneralCfg) {
+          this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+        }
+      });
+      return;
+    } else {
+      this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+    }
   }
 
   updateCatalog() {
@@ -178,6 +193,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
     const map = this.el.nativeElement.querySelector('#mapa');
+    const warningModal = this.el.nativeElement.querySelector('.modal-view');
     const overview = this.el.nativeElement.querySelector(
       '.tc-ctl-sv-view.tc-hidden'
     );
@@ -186,6 +202,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     }
     if (overview) {
       this.renderer.removeChild(mapFather, overview);
+    }
+
+    if(warningModal) {
+      this.renderer.removeChild(this.document.body, warningModal);
     }
 
     const div = this.renderer.createElement('div');

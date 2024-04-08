@@ -26,6 +26,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from './sections/common/modals/error-modal/error-modal.component';
+import { WarningModalComponent } from './sections/common/modals/warning-modal/warning-modal.component';
 registerLocaleData(localeEs);
 
 @NgModule({
@@ -38,7 +39,8 @@ registerLocaleData(localeEs);
     DashboardModalComponent,
     LoginModalComponent,
     EmbeddedMapComponent,
-    ErrorModalComponent
+    ErrorModalComponent,
+    WarningModalComponent
   ],
   imports: [
     BrowserModule,

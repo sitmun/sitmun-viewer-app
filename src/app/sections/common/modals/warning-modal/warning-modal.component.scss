@@ -1,0 +1,40 @@
+@use 'colors';
+@use 'dimensions';
+
+.modal-view-body {
+
+  color: colors.$modal-blue-color;
+
+  .error-description {
+
+    border: 2px solid colors.$modal-blue-color;
+    border-radius: 10px;
+    background-color: #eeeeee;
+    padding: 1rem 1rem 0 1rem;
+
+  }
+}
+
+.modal-view-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+
+  button {
+    font-size: dimensions.$navigation-bar-menu-font-size;
+    font-weight: bold;
+    width: auto;
+    height: auto;
+    margin: dimensions.$navigation-bar-menu-button-margin;
+    padding: dimensions.$navigation-bar-menu-button-padding;
+    color: colors.$navigation-bar-menu-button-color;
+    background: colors.$common-color-font-button;
+    border: dimensions.$navigation-bar-menu-button-border solid colors.$navigation-bar-menu-button-border-color;
+    border-radius: dimensions.$navigation-bar-menu-button-border-radius;
+  }
+
+  button:hover {
+    transform: scale(1.25);
+  }
+}
+

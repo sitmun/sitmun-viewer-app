@@ -1,0 +1,28 @@
+<div class="modal-view">
+  <div class="background"></div>
+  <div class="content">
+
+    <div class="modal-view-header">
+      <button (click)='onClose()'><div>&times;</div></button>
+    </div>
+
+    <div class="modal-view-body">
+      <h1>{{ 'map.warning.title' | translate }}</h1>
+      <div class="error-description">
+        <label><b>{{ 'map.error.description' | translate }}:</b></label>
+        <p>{{ message | translate }}</p>
+
+        <label><b>{{ listTitle | translate }}:</b></label>
+        <ul>
+          <li *ngFor="let catalog of catalogs">{{ catalog }}</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="modal-view-footer">
+      <button (click)='onClose()'>{{ 'menu.continue' | translate }}</button>
+    </div>
+
+  </div>
+</div>

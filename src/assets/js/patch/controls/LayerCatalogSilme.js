@@ -1283,7 +1283,7 @@ if (!TC.control.LayerCatalog) {
           }
         }
 
-        //Event botó projectes
+        // Event botó projectes
         self.div.addEventListener('click', TC.EventTarget.listenerBySelector('#canvi-projecte-silme', function (e) {
           const projPane = self.div.querySelector('#projects');
 
@@ -1388,7 +1388,7 @@ if (!TC.control.LayerCatalog) {
 
     return self._set1stRenderPromise(new Promise(function (resolve, _reject) {
       if (self.layers.length === 0) {
-        self.renderData({ layerTrees: [], enableSearch: false }, function () {
+        self.renderData({ layerTrees: [], enableSearch: false, enableChangeTopic: false }, function () {
 
           if (TC.Util.isFunction(callback)) {
             callback();
@@ -1397,7 +1397,8 @@ if (!TC.control.LayerCatalog) {
           resolve();
         });
       } else {
-        self.renderData({ layers: self.layers, enableSearch: true }, function () {
+        const shouldEnableChangeTopic = window.layerCatalogsSilmeForModal.catalogs.length > 1;
+        self.renderData({ layers: self.layers, enableSearch: true, enableChangeTopic: shouldEnableChangeTopic }, function () {
 
           createSearchAutocomplete.call(self);
 
