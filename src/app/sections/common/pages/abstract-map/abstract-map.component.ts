@@ -65,13 +65,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             this.commonService.updateMessage(appCfg.application.theme);
           }
         });
-
-      // Remove the drag and drop event listeners from the map container to delegate them to the map itself
-      const dragReciever = this.el.nativeElement.querySelector('.ol-viewport');
-      dragReciever.addEventListener('dragover', (event: DragEvent) => {
-        console.log('dragover');
-      });
-
     });
 
     if (!this.isInEmbedded) {
