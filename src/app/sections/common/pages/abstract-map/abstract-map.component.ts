@@ -5,7 +5,7 @@ import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
 import { SitnaHelper } from '@ui/util/sitna-helpers';
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
@@ -21,9 +21,11 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private currentCatalogIdx: number;
   private currentGeneralCfg: GeneralCfg | undefined;
   private currentAppCfg: AppCfg | undefined
+  private commonServiceSubscription: Subscription | undefined;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
+
 
   protected constructor(
     private translate: TranslateService,
@@ -52,7 +54,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         this.locale = this.parseLang(params['lang']);
       }
       this.clearMap();
-      this.commonService
+      this.commonServiceSubscription = this.commonService
         .fetchMapConfiguration(this.applicationId, this.territoryId)
         .subscribe((appCfg) => {
           if (appCfg) {
@@ -63,6 +65,13 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             this.commonService.updateMessage(appCfg.application.theme);
           }
         });
+
+      // Remove the drag and drop event listeners from the map container to delegate them to the map itself
+      const dragReciever = this.el.nativeElement.querySelector('.ol-viewport');
+      dragReciever.addEventListener('dragover', (event: DragEvent) => {
+        console.log('dragover');
+      });
+
     });
 
     if (!this.isInEmbedded) {
@@ -81,6 +90,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.commonServiceSubscription) {
+      this.commonServiceSubscription.unsubscribe();
+    }
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
     this.clearMap();
@@ -161,8 +173,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       const catalogs = this.layerCatalogsSilme
         .filter((catalog: any) => { return catalog.badConfigTree })
         .map((catalog: any) => { return catalog.title });
-
-      console.log("Catalogs with badConfigTree", catalogs);
 
       const ref = this.modal.open(WarningModalComponent, {
         data: { message: 'map.error.badConfigTree' , listTitle: "map.error.ommitedCatalogs", catalogs: catalogs }
