@@ -209,6 +209,8 @@ export class SitnaHelper {
           if (dataLoader.parameters.enableDragAndDrop) {
             sitnaControls.dataLoader.enableDragAndDrop =
               dataLoader.parameters.enableDragAndDrop;
+          } else { // If the dataloader is enabled, drag and drop is enabled by default
+            sitnaControls.dataLoader.enableDragAndDrop = true;
           }
         }
       }
