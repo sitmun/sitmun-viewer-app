@@ -157,28 +157,31 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         })
     });
 
-    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
-      ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-      : {};
-
     // If there is a badConfigTree, we need to show a warning modal before loading the map
     if (this.layerCatalogsSilme.some((catalog: any) => { return catalog.badConfigTree })) {
-      const catalogs = this.layerCatalogsSilme
+      const ommitedCatalogs = this.layerCatalogsSilme
         .filter((catalog: any) => { return catalog.badConfigTree })
         .map((catalog: any) => { return catalog.title });
 
       const ref = this.modal.open(WarningModalComponent, {
-        data: { message: 'map.error.badConfigTree' , listTitle: "map.error.ommitedCatalogs", catalogs: catalogs }
+        data: { message: 'map.error.badConfigTree' , listTitle: "map.error.ommitedCatalogs", catalogs: ommitedCatalogs }
       });
       ref.afterClosed.subscribe(() => {
-        if (this.currentAppCfg && this.currentGeneralCfg) {
-          this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
-        }
+        this.layerCatalogsSilme = this.layerCatalogsSilme.filter((catalog: any) => {
+          return !catalog.badConfigTree;
+        });
+        SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
+          ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
+          : {};
+        this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
       });
       return;
-    } else {
-      this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
     }
+
+    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
+      ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
+      : {};
+    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 
   updateCatalog() {
