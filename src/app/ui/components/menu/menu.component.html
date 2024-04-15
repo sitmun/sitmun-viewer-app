@@ -17,8 +17,8 @@
       </div>
       <button type="button" class="menu-button" *ngIf="!isLoggedIn && !isInLogin" (click)="openLoginModal()">{{'menu.login' | translate}}</button>
       <div *ngIf="isInMap">
-        <button type="button" class="menu-button" (click)="changeApplication()">{{'menu.changeApplication' | translate}}</button>
-        <button type="button" class="menu-button" (click)="changeTerritory()">{{'menu.changeTerritory' | translate}}</button>
+        <button *ngIf="shouldShowChangeApplication" type="button" class="menu-button" (click)="changeApplication()">{{'menu.changeApplication' | translate}}</button>
+        <button *ngIf="shouldShowChangeTerritory" type="button" class="menu-button" (click)="changeTerritory()">{{'menu.changeTerritory' | translate}}</button>
       </div>
     </div>
   </div>

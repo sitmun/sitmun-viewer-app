@@ -26,6 +26,8 @@ export class MenuComponent {
   isInMap: boolean;
   applicationId!: number;
   territoryId!: number;
+  shouldShowChangeApplication: boolean = false;
+  shouldShowChangeTerritory: boolean = false;
 
   constructor(
     private router: Router,
@@ -46,6 +48,18 @@ export class MenuComponent {
       const words = path.split('/');
       this.applicationId = Number(words[3]);
       this.territoryId = Number(words[4]);
+
+      this.commonService.fetchApplicationsByTerritory(
+        this.territoryId
+      )?.subscribe((response: ResponseDto) => {
+        this.shouldShowChangeApplication = response.numberOfElements > 1;
+      });
+
+      this.commonService.fetchTerritoriesByApplication(
+        this.applicationId
+      )?.subscribe((response: ResponseDto) => {
+        this.shouldShowChangeTerritory = response.numberOfElements > 1;
+      });
     }
   }
 
