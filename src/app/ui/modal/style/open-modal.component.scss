@@ -25,11 +25,10 @@
       background-color: colors.$white;
       border-radius: dimensions.$modal-border-radius;
       border: dimensions.$base-border-2 solid colors.$modal-background-border-color;
-      //@media (max-width: $breakpoint-xs) {
-      //  margin: 0;
-      //  width: 100% !important;
-      //  height: 100%;
-      //}
+      @media all and (max-width: 827px) {
+        width: 100% !important;
+        height: 100%;
+      }
       .modal-view-body {
         overflow-x: hidden;
         overflow-y: hidden;
