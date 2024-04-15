@@ -129,6 +129,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       views: SitnaHelper.toViews(appCfg)
     };
 
+    SitnaHelper.loadMiddleware(appCfg);
+
     // We need to save the currentGeneralCfg and the currentAppCfg, so when the
     // catalog change, the map can be loaded again with the same configuration
 

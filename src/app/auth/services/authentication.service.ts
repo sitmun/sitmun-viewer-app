@@ -97,11 +97,18 @@ export class AuthenticationService<T> {
   };
 
   private getToken = (): string | null => {
-    return localStorage.getItem(this.AUTH_TOKEN);
+    const token = localStorage.getItem(this.AUTH_TOKEN)
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "AUTH_TOKEN", token: token });
+    }
+    return token;
   };
 
   private setToken = (token: string): void => {
     localStorage.setItem(this.AUTH_TOKEN, token);
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "AUTH_TOKEN", token: token });
+    }
   };
 
   private getDetails = (): T | null => {

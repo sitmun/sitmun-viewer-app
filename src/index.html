@@ -8,6 +8,28 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <script src="assets/js/sitna/sitna.js"></script>
     <script src="assets/js/patch/patch_main.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+
+          navigator.serviceWorker.getRegistration().then(function(reg) {
+            if (reg.active && !navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+
+          navigator.serviceWorker.register('ServiceWorker.js', { scope: '/'})
+            .then(() => {
+              console.log("Service worker registered");
+            })
+            .catch((error) => {
+              console.error("Service worker registration failed:", error);
+            })
+        });
+      } else {
+        console.log("Service worker not supported");
+      }
+    </script>
 <!--    <script src="assets/js/patch/controls/LayerCatalogSilme.js"></script>-->
 <!--    <script src="assets/js/patch/SilmeModal.js"></script>-->
 <!--    <script src="assets/js/patch/SilmeSupport.js"></script>-->

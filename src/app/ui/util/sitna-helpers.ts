@@ -891,4 +891,15 @@ export class SitnaHelper {
     //   document.getElementsByClassName('tc-ctl-edit-mode')[0].children[0].textContent="";
     // console.log('variable a', a);
   }
+
+  static loadMiddleware(apiConfig: AppCfg) {
+    if (
+      apiConfig.application?.middleware && navigator.serviceWorker && navigator.serviceWorker.controller
+    ) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'MIDDLEWARE_URL',
+        url: apiConfig.application.middleware
+      });
+    }
+  }
 }

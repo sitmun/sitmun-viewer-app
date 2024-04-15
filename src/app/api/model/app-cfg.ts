@@ -39,6 +39,7 @@ export interface AppApplication {
   srs: string;
   'situation-map'?: string;
   initialExtent: [number, number, number, number];
+  middleware?: string;
 }
 
 export interface AppBackground {
