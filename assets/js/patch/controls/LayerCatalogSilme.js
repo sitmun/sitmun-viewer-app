@@ -565,39 +565,45 @@ if (!TC.control.LayerCatalog) {
             result.dataUrl.push({ format: l.DataURL.Format, type: l.DataURL.OnlineResource.type, url: l.DataURL.OnlineResource.href });
           }
 
+          if (Array.isArray(capabilities.Service)) {
+            currentNode = capabilities.Service[0];
+          } else {
+            currentNode = capabilities.Service;
+          }
+
           result.parentAbstract = [];
-          if (capabilities.Service.Abstract) {
-            result.parentAbstract = capabilities.Service.Abstract;
+          if (currentNode.Abstract) {
+            result.parentAbstract = currentNode.Abstract;
           }
 
           result.contactPerson = [];
-          if (capabilities.Service.ContactInformation.ContactPersonPrimary.ContactPerson) {
-            result.contactPerson = capabilities.Service.ContactInformation.ContactPersonPrimary.ContactPerson;
+          if (currentNode.ContactInformation.ContactPersonPrimary.ContactPerson) {
+            result.contactPerson = currentNode.ContactInformation.ContactPersonPrimary.ContactPerson;
           }
 
           result.contactOrganization = [];
-          if (capabilities.Service.ContactInformation.ContactPersonPrimary.ContactOrganization) {
-            result.contactOrganization = capabilities.Service.ContactInformation.ContactPersonPrimary.ContactOrganization;
+          if (currentNode.ContactInformation.ContactPersonPrimary.ContactOrganization) {
+            result.contactOrganization = currentNode.ContactInformation.ContactPersonPrimary.ContactOrganization;
           }
 
           result.contactMail = [];
-          if (capabilities.Service.ContactInformation.ContactElectronicMailAddress) {
-            result.contactMail = capabilities.Service.ContactInformation.ContactElectronicMailAddress;
+          if (currentNode.ContactInformation.ContactElectronicMailAddress) {
+            result.contactMail = currentNode.ContactInformation.ContactElectronicMailAddress;
           }
 
           result.contactTelephone = [];
-          if (capabilities.Service.ContactInformation.ContactVoiceTelephone) {
-            result.contactTelephone = capabilities.Service.ContactInformation.ContactVoiceTelephone;
+          if (currentNode.ContactInformation.ContactVoiceTelephone) {
+            result.contactTelephone = currentNode.ContactInformation.ContactVoiceTelephone;
           }
 
           result.fees = [];
-          if (capabilities.Service.Fees) {
-            result.fees = capabilities.Service.Fees;
+          if (currentNode.Fees) {
+            result.fees = currentNode.Fees;
           }
 
           result.accessConstraints = [];
-          if (capabilities.Service.AccessConstraints) {
-            result.accessConstraints = capabilities.Service.AccessConstraints;
+          if (currentNode.AccessConstraints) {
+            result.accessConstraints = currentNode.AccessConstraints;
           }
 
           result.url = [];
