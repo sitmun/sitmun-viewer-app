@@ -894,11 +894,11 @@ export class SitnaHelper {
 
   static loadMiddleware(apiConfig: AppCfg) {
     if (
-      apiConfig.application?.middleware && navigator.serviceWorker && navigator.serviceWorker.controller
+      apiConfig.global?.proxy && navigator.serviceWorker && navigator.serviceWorker.controller
     ) {
       navigator.serviceWorker.controller.postMessage({
         type: 'MIDDLEWARE_URL',
-        url: apiConfig.application.middleware
+        url: apiConfig.global.proxy
       });
     }
   }

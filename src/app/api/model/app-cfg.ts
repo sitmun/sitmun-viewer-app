@@ -13,6 +13,7 @@ export interface AppCfg {
   services: AppService[];
   tasks: AppTasks[];
   trees: AppTree[];
+  global?: AppGlobalConfiguration;
 }
 
 export interface GeneralCfg {
@@ -39,7 +40,6 @@ export interface AppApplication {
   srs: string;
   'situation-map'?: string;
   initialExtent: [number, number, number, number];
-  middleware?: string;
 }
 
 export interface AppBackground {
@@ -129,3 +129,19 @@ export interface AppNodeInfo {
   isRadio: boolean;
   children: string[];
 }
+
+export interface AppGlobalConfiguration {
+  proxy: string;
+  language: {
+    default: string;
+  };
+  srs: {
+    default: {
+      identifier: string;
+      x: number;
+      y: number;
+      proj4: string;
+    }
+  }
+}
+
