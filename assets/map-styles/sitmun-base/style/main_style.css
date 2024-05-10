@@ -679,6 +679,9 @@ span.tc-beta {
 
 .tc-ctl-sv-view .tc-ctl-sv-btn-close {
     right: 60px;
+    border-radius: var(--border-radius);
+    top: 55px;
+    padding-top: 0;
 }
 
 .tc-ctl-dmm .tc-ctl-dmm-mod {
@@ -1312,16 +1315,16 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
     line-height: inherit;
 }
 
-    .tc-ctl-lcat li.tc-ctl-lcat-node, .tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child {
-        background: none;
-        margin: 0px;
-        line-height: inherit !important;
-        padding: 0px;
-        background-image: url(../img/arbre_menys.png);
-        background-repeat: no-repeat;
-        background-size: 20px 20px;
-        position: relative;
-    }
+.tc-ctl-lcat li.tc-ctl-lcat-node, .tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child {
+    background: none;
+    margin: 0px;
+    line-height: inherit !important;
+    padding: 0px;
+    background-image: url(../img/arbre_menys.png);
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    position: relative;
+}
 
 #arbol li.tc-collapsed {
     background-image: url(../img/arbre_mes.png);
@@ -2938,4 +2941,37 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
 
 .tc-ctl-bms h2 button.tc-icon-btn.tc-details:before {
   content: '';
+}
+
+
+/*TODO REVISAR 20240430 folders*/
+/* Lo de sa posició i demés s'ha de revisar en aquest mateix document a sa línia 1345 en endevant */
+.tc-ctl-lcat li.sitmun-folder {
+  background-image: url(../img/folder_open.png);
+  background-size: 20px;
+  background-position-y: 5px !important;
+  background-position-x: 5px !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node.sitmun-folder, .tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node.sitmun-folder:last-child {
+  background-image: url(../img/folder_open.png);
+}
+
+#arbol li.tc-checked.sitmun-folder, #arbol li.tc-checked.sitmun-folder:last-child {
+  background-image: url(../img/folder_openV.png);
+}
+
+#arbol li.tc-collapsed.sitmun-folder {
+  background-image: url(../img/folder_closed.png);
+  background-size: 20px;
+  background-position-y: 5px !important;
+  background-position-x: 5px !important;
+}
+
+#arbol li.tc-collapsed.sitmun-folder.tc-checked {
+  background-image: url(../img/folder_closedV.png);
+}
+
+#arbol li.sitmun-folder span {
+  cursor: pointer;
 }
