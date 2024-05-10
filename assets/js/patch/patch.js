@@ -512,4 +512,39 @@
       });
     return result;
   };
+
+  TC.Util.getFeatureStyleFromCss = function (cssClass) {
+    let result = null;
+
+    if (cssClass) {
+      const iconDiv = document.createElement('div');
+      iconDiv.style.display = 'none';
+      iconDiv.classList.add(cssClass);
+      document.body.appendChild(iconDiv);
+
+      // The regular expression is nongreedy (.*?), otherwise in FF and IE it gets 'url_to_image"'
+      const computedStyle = window.getComputedStyle(iconDiv, null);
+      const urlMatch = /^url\(['"]?(.*?)['"]?\)$/gi.exec(computedStyle.backgroundImage);
+      if (urlMatch?.length > 1) {
+        result = {
+          url: urlMatch[urlMatch.length - 1]
+        };
+
+        const sizeMatch = /^(\d+)px(?: (\d+)px)?$/gi.exec(computedStyle.backgroundSize);
+        if (sizeMatch?.length > 2) {
+          result.width = parseInt(sizeMatch[1]);
+          if (sizeMatch[2]) {
+            result.height = parseInt(sizeMatch[2]);
+          }
+          else {
+            result.height = result.width;
+          }
+        }
+      }
+
+      iconDiv.parentElement.removeChild(iconDiv);
+    }
+
+    return result;
+  };
 })();
