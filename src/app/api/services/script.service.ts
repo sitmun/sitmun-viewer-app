@@ -10,7 +10,7 @@ export const ScriptStore: Scripts[] = [
     src: '../../../assets/js/patch/LayerCatalogSilme.js'
   },
   { name: 'sitmunModal', src: '../../../assets/js/patch/SilmeModal.js' },
-  { name: 'sitmunSupport', src: '../../../assets/js/patch/SilmeSupport.js' },
+  { name: 'sitmunSupport', src: '../../../assets/js/patch/SilmeUtils.js' },
   { name: 'sitmunTree', src: '../../../assets/js/patch/SilmeTree.js' },
   {
     name: 'sitmunProxification',

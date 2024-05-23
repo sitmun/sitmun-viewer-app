@@ -1,6 +1,8 @@
 @use 'dimensions';
 @use 'colors';
 
+$layout-breakpoint-small: 540px;
+
 .cards-container {
   display: flex;
   flex-wrap: wrap;
@@ -56,3 +58,12 @@
 
 }
 
+@media (max-width: $layout-breakpoint-small) {
+  .cards-container {
+    .card {
+      min-width: 95%;
+      width: 95%;
+      margin: 4px;
+    }
+  }
+}

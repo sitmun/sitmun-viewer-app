@@ -1,4 +1,4 @@
-﻿var ret = false;
+var ret = false;
 var info = null;
 var selfClass = null;
 
@@ -14,7 +14,7 @@ if (!TC.control.LayerCatalog) {
   const realTree = new Object();
   var SEARCH_MIN_LENGTH = 3;
 
-  TC.control.LayerCatalogSilme = function() {
+  TC.control.LayerCatalogSilmeFolders = function() {
     var _ctl = this;
 
     TC.control.LayerCatalog.apply(_ctl, arguments);
@@ -24,14 +24,14 @@ if (!TC.control.LayerCatalog) {
     };
   };
 
-  TC.inherit(TC.control.LayerCatalogSilme, TC.control.LayerCatalog);
+  TC.inherit(TC.control.LayerCatalogSilmeFolders, TC.control.LayerCatalog);
 
-  TC.control.LayerCatalogSilme.prototype.register = function(map) {
+  TC.control.LayerCatalogSilmeFolders.prototype.register = function(map) {
     var _ctl = this;
 
     _ctl.template[_ctl.CLASS] = "assets/js/patch/templates/LayerCatalogSilme.hbs";
-    _ctl.template[_ctl.CLASS + "-node"] = "assets/js/patch/templates/LayerCatalogNodeSilme.hbs";
-    _ctl.template[_ctl.CLASS + "-branch"] = "assets/js/patch/templates/LayerCatalogBranchSilme.hbs";
+    _ctl.template[_ctl.CLASS + "-node"] = "assets/js/patch/templates/LayerCatalogNodeSilmeFolders.hbs";
+    _ctl.template[_ctl.CLASS + "-branch"] = "assets/js/patch/templates/LayerCatalogBranchSilmeFolders.hbs";
     _ctl.template[_ctl.CLASS + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
     _ctl.template[_ctl.CLASS + '-results'] = "assets/js/patch/templates/LayerCatalogResultsSilme.hbs";
     _ctl.template[_ctl.CLASS + '-proj'] = "assets/js/patch/templates/LayerCatalogProjSilme.hbs";
@@ -48,7 +48,7 @@ if (!TC.control.LayerCatalog) {
 
           _ctl.loaded().then(function() { // Esperamos a que cargue primero las capas de la configuración
 
-            if (_ctl.getLayerRootNode(layer)) {
+            if (_ctl.getLayerRootNodes(layer)) {
               updateControl.call(_ctl, layer);
             } else {
               // la capa no está renderizada, pero podría estar en proceso, comprobamos que no está en la lista de capas del control
@@ -89,6 +89,17 @@ if (!TC.control.LayerCatalog) {
           _ctl.addLayer(e.layer);
           _ctl.div.classList.remove(TC.Consts.classes.COLLAPSED);
         }
+      })
+      .on(TC.Consts.event.LAYERREMOVE, function(e) {
+        const layer = e.layer;
+        _ctl.getLayerNodes(layer).forEach(function(node) {
+          // TODO - DOCUMENTAR 20240430
+          try {
+            uncheckParentFoldersIfChildless(node);
+          } catch (err) {
+            // parent not found
+          }
+        });
       });
 
     getInstance = function() {
@@ -104,6 +115,22 @@ if (!TC.control.LayerCatalog) {
       var _ctl = this;
       const result = TC.control.LayerCatalog.prototype.getRenderedHtml.call(_ctl, templateId, data, callback);
   };*/
+
+  const uncheckParentFoldersIfChildless = function(node) {
+    // trobar carpeta superior
+    var parent = node.parentElement;
+
+    // cuando llegamos al 'tc-ctl-lcat-tree' ya es la raíz del arlbol del control LayerCatalog
+    while (!parent.classList.contains('tc-ctl-lcat-tree')) {
+      if (parent.classList.contains('sitmun-folder'))
+      {
+        // comprovar si la carpeta té alguna capa carregada i desmarcarla si no n'hi ha cap
+        var nodesChecked = parent.querySelectorAll('li.tc-ctl-lcat-leaf.tc-checked');
+        if (nodesChecked.length == 0) parent.classList.remove(SITNA.Consts.classes.CHECKED);
+      }
+      parent = parent.parentElement;
+    }
+  }
 
   const addLogicToTreeGroup = function(node) {
     const self = this;
@@ -123,14 +150,16 @@ if (!TC.control.LayerCatalog) {
     });
   };
 
-  const onCollapseButtonClick = function (e) {
-    e.target.blur();
-    e.stopPropagation();
-    const li = e.target.parentElement;
-    if (li.tagName === 'LI' && !li.classList.contains(self.CLASS + '-leaf') && li.querySelector('ul')) {
-      li.classList.toggle(TC.Consts.classes.COLLAPSED);
-      const ul = li.querySelector('ul');
-      ul.classList.toggle(TC.Consts.classes.COLLAPSED);
+  const onCollapseButtonClick = function(e) {
+    if (e.target.tagName.toLocaleLowerCase() != "span" || !e.target.parentElement.querySelector('li')?.dataset.layerUid) {
+      e.target.blur();
+      e.stopPropagation();
+      const li = e.target.parentElement;
+      if (li.tagName === 'LI' && !li.classList.contains(self.CLASS + '-leaf') && li.querySelector('ul')) {
+        li.classList.toggle(TC.Consts.classes.COLLAPSED);
+        const ul = li.querySelector('ul');
+        ul.classList.toggle(TC.Consts.classes.COLLAPSED);
+      }
     }
   };
 
@@ -209,7 +238,12 @@ if (!TC.control.LayerCatalog) {
 
         //e.target.parentElement.querySelectorAll("ul")[0].querySelector('span.tc-selectable').dispatchEvent(clickEvent);
         e.target.parentElement.querySelectorAll("ul").forEach(value => {
-          value.querySelector('span.tc-selectable').dispatchEvent(clickEvent);
+          //value.querySelectorAll('li.sitmun-folder:not(.tc-loading) span').forEach(node => {
+          value.querySelectorAll('li.sitmun-folder > span, li:not(.tc-loading) > span.tc-selectable').forEach(node => {
+            if (node.style.display !== 'none') //To avoid clicking on 'serviceNodes', not necessary
+              node.dispatchEvent(clickEvent);
+          });
+          //value.querySelector('span.tc-selectable')?.dispatchEvent(clickEvent);
         })
       }
     }
@@ -510,12 +544,12 @@ if (!TC.control.LayerCatalog) {
       }
       return node.isVisible;
     };
-    // var checkIfFolder = function checkIfFolder(node) {
-    //   //if (node.folder)
-    //   result.serviceNode = true;
-    // }
+    var checkIfFolder = function checkIfFolder(node) {
+      //if (node.folder)
+       result.serviceNode = true;
+    }
     makeNodeVisible(result);
-    //checkIfFolder(result);
+    checkIfFolder(result);
     return result;
   };
 
@@ -990,7 +1024,7 @@ if (!TC.control.LayerCatalog) {
     });
   };
 
-  TC.control.LayerCatalogSilme.prototype.renderBranch = function(layer, callback, promiseRenderResolve) {
+  TC.control.LayerCatalogSilmeFolders.prototype.renderBranch = function(layer, callback, promiseRenderResolve) {
     const self = this;
 
     self.sourceLayers.unshift(layer);
@@ -1043,7 +1077,7 @@ if (!TC.control.LayerCatalog) {
       }.bind(layer));
   };
 
-  TC.control.LayerCatalogSilme.prototype.render = function(callback) {
+  TC.control.LayerCatalogSilmeFolders.prototype.render = function(callback) {
     const self = this;
 
     return self._set1stRenderPromise(new Promise(function(resolve, reject) {
@@ -1203,7 +1237,7 @@ if (!TC.control.LayerCatalog) {
 
           if (!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-loading-node') && !!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-node')) {
             //if ($('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-loading-node').length == 0 && $('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-node').length != 0) {
-            var catalog = SITNA.Cfg.controls.layerCatalogSilme;
+            var catalog = SITNA.Cfg.controls.LayerCatalogSilmeFolders;
             // TODO - REFACTORITZAR ⬇️
             // - Mirar d'agrupar funcions
             // - Posar breaks allà on es puguin posar
@@ -1463,7 +1497,7 @@ if (!TC.control.LayerCatalog) {
     }));
   };
 
-  TC.control.LayerCatalogSilme.prototype.addLayer = function(layer) {
+  TC.control.LayerCatalogSilmeFolders.prototype.addLayer = function(layer) {
     const self = this;
     return new Promise(function(resolve, reject) {
       var fromLayerCatalog = [];
@@ -1486,13 +1520,13 @@ if (!TC.control.LayerCatalog) {
           layer.compatibleLayers = layer.wrap.getCompatibleLayers(self.map.crs);
           layer.title = layer.title || layer.wrap.getServiceTitle();
 
-          if (!(SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children)) {
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children = new Array();
+          if (!(SITNA.Cfg.controls.LayerCatalogSilmeFolders.layerTreeGroups.filter(e => e.id === "node99")[0].children)) {
+            SITNA.Cfg.controls.LayerCatalogSilmeFolders.layerTreeGroups.filter(e => e.id === "node99")[0].children = new Array();
             layer.children = layer.getTree().children
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer)
+            SITNA.Cfg.controls.LayerCatalogSilmeFolders.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer)
           } else {
             layer.children = layer.getTree().children
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer);
+            SITNA.Cfg.controls.LayerCatalogSilmeFolders.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer);
           }
 
 
@@ -1500,7 +1534,7 @@ if (!TC.control.LayerCatalog) {
           //self.renderBranch(layer, function () {
           //    resolve(); //ver linea 55 y por ahí
           //});
-          TC.control.LayerCatalog.prototype.getRenderedHtml.call(self, 'tc-ctl-lcat-node', SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0], function(html) {
+          TC.control.LayerCatalog.prototype.getRenderedHtml.call(self, 'tc-ctl-lcat-node', SITNA.Cfg.controls.LayerCatalogSilmeFolders.layerTreeGroups.filter(e => e.id === "node99")[0], function(html) {
             var template = document.createElement('template');
             template.innerHTML = html;
 
@@ -1540,11 +1574,11 @@ if (!TC.control.LayerCatalog) {
     });
   };
 
-  TC.control.LayerCatalogSilme.prototype.loaded = function() {
+  TC.control.LayerCatalogSilmeFolders.prototype.loaded = function() {
     return this._readyPromise;
   };
 
-  TC.control.LayerCatalogSilme.prototype.hideLayerInfo = function() {
+  TC.control.LayerCatalogSilmeFolders.prototype.hideLayerInfo = function() {
     var self = this;
     self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
       btn.classList.remove(TC.Consts.classes.CHECKED);
@@ -1555,7 +1589,7 @@ if (!TC.control.LayerCatalog) {
     infoPanel.classList.add(TC.Consts.classes.HIDDEN);
   };
 
-  TC.control.LayerCatalogSilme.prototype.hideSearchLayerInfo = function() {
+  TC.control.LayerCatalogSilmeFolders.prototype.hideSearchLayerInfo = function() {
     var self = this;
     self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
       btn.checked = false;
@@ -1566,13 +1600,14 @@ if (!TC.control.LayerCatalog) {
     infoPanel.classList.add(TC.Consts.classes.HIDDEN);
   };
 
-  TC.control.LayerCatalogSilme.prototype.getLayerNodes = function(layer) {
+  TC.control.LayerCatalogSilmeFolders.prototype.getLayerNodes = function(layer) {
     const self = this;
     const result = [];
-    const rootNode = self.getLayerRootNode(layer);
+    const rootNode = self.getLayerRootNodes(layer);
     if (rootNode) {
       for (var i = 0; i < layer.names.length; i++) {
-        const liLayer = rootNode.querySelector('li[data-layer-name="' + layer.names[i] + '"]');
+        for (var j = 0; j < rootNode.length; j++) {
+        const liLayer = rootNode[j].querySelector('li[data-layer-name="' + layer.names[i] + '"]');
         if (!liLayer) {
           continue;
         }
@@ -1580,27 +1615,64 @@ if (!TC.control.LayerCatalog) {
         liLayer.querySelectorAll('li').forEach(function(li) {
           result.push(li);
         });
+        }
       }
     }
     return result;
   };
 
-  TC.control.LayerCatalogSilme.prototype.getLayerRootNode = function(layer) {
+  // TC.control.LayerCatalogSilmeFolders.prototype.getLayerNodes = function(layer) {
+  //   const self = this;
+  //   const result = [];
+  //   const rootNode = self.getLayerRootNodes(layer);
+  //   if (rootNode) {
+  //     for (var i = 0; i < layer.names.length; i++) {
+  //       const liLayer = rootNode.querySelector('li[data-layer-name="' + layer.names[i] + '"]');
+  //       if (!liLayer) {
+  //         continue;
+  //       }
+  //       result.push(liLayer);
+  //       liLayer.querySelectorAll('li').forEach(function(li) {
+  //         result.push(li);
+  //       });
+  //     }
+  //   }
+  //   return result;
+  // };
+
+  TC.control.LayerCatalogSilmeFolders.prototype.getLayerRootNodes = function(layer) {
     const self = this;
-    var result = null;
+    var result = [];
     if (!layer.isBase) {
       var url = layer.options.url;
       if (self._roots) {
         self._roots.forEach(function (li) {
           const lyr = self.getLayer(li.dataset.layerId);
           if (lyr && lyr.type === layer.type && lyr.options.url.toLowerCase() === url.toLowerCase()) {
-            if (layer.names.every((name) => li.querySelector(`li[data-layer-name="${name}"]`))) result = li;
+            if (layer.names.every((name) => li.querySelector(`li[data-layer-name="${name}"]`))) result.push(li);
           }
         });
       }
     }
-    return result;
+    return result.length > 0 ? result : null;
   };
+
+  // TC.control.LayerCatalogSilmeFolders.prototype.getLayerRootNode = function(layer) {
+  //   const self = this;
+  //   var result = null;
+  //   if (!layer.isBase) {
+  //     var url = layer.options.url;
+  //     if (self._roots) {
+  //       self._roots.forEach(function (li) {
+  //         const lyr = self.getLayer(li.dataset.layerId);
+  //         if (lyr && lyr.type === layer.type && lyr.options.url.toLowerCase() === url.toLowerCase()) {
+  //           if (layer.names.every((name) => li.querySelector(`li[data-layer-name="${name}"]`))) result = li;
+  //         }
+  //       });
+  //     }
+  //   }
+  //   return result;
+  // };
 
   function CercaLayerDinsCapabilities(e) {
     // quan arrencam visor el capabilites està buit

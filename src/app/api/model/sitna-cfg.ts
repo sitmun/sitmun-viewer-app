@@ -43,23 +43,21 @@ export interface SitnaLayerOptions {
 export interface SitnaControls {
   attribution?: boolean | SitnaControlOptions;
   basemapSelector?: boolean | SitnaControlOptions;
+  basemapSelectorSilme?: any;
   BirdEye?: SitnaControlOptions;
   click?: boolean;
   coordinates?: boolean | SitnaControlsCoordinates;
   dataLoader?: boolean | SitnaControlsDataLoader;
   download?: boolean | SitnaControlsDownload;
   drawMeasureModify?: boolean | SitnaControlsDrawMeasureModify;
+  drawMeasureModifySilme?: any;
   featureInfo?: boolean | SitnaFeatureInfoOptions;
+  featureInfoSilme?: any;
   fullScreen?: boolean | SitnaControlOptions;
   geolocation?: boolean | SitnaControlsGeolocation;
   layerCatalog?: boolean | SitnaLayerCatalogOptions;
-  layerCatalogSilme?: any;
+  layerCatalogSilmeFolders?: any;
   externalWMSSilme?: any;
-  workLayerManagerSilme?: any;
-  drawMeasureModifySilme?: any;
-  searchSilme?: any;
-  //basemapSelectorSilme?: any;
-  streetViewSilme?: any;
   legend: boolean | SitnaControlOptions;
   loadingIndicator?: boolean | SitnaControlOptions;
   //measure?: boolean | SitnaControlOptions;
@@ -73,13 +71,16 @@ export interface SitnaControls {
   scaleBar?: boolean | SitnaControlOptions;
   scaleSelector?: boolean | SitnaControlOptions;
   search?: SitnaControlsSearch;
+  searchSilme?: any;
   share?: boolean | SitnaControlOptions;
   streetView?: boolean | SitnaStreetViewOptions;
+  streetViewSilme?: any;
   TOC?: SitnaControlsTOC;
   //threeD?: boolean;
   //WFSEdit?: SitnaControlsWFSEdit;
   WFSQuery?: boolean;
   workLayerManager?: boolean | SitnaControlOptions;
+  workLayerManagerSilme?: any;
   controlContainer?: boolean | SitnaControlContainerOptions;
 }
 
@@ -91,7 +92,7 @@ export interface SitnaControlContainerOptions extends SitnaControlOptions {
   controls: [SitnaElementsContainer?];
 }
 
-export interface SitnaBaseMapSelector {
+export interface SitnaBaseMapSelectorSilme {
   basemapSelector: boolean;
   div: string;
 }

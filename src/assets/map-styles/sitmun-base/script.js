@@ -17,21 +17,21 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
       });
     }
   });
-});
 
-
-if (map && !map._layoutDone) {
-  map.ready(function () {
-    const lcSilme = map.getControlsByClass('TC.control.LayerCatalogSilme')[0];
-    if (lcSilme) {
-      lcSilme.loaded().then(() => {
-        lcSilme.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
-          lcSilme.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
+  // obrim el panell LC quan premem el botó de cerca de capes en cas que no estigui obert
+  if (map && !map._layoutDone) {
+    map.ready(function () {
+      const lcSilme = map.getControlsByClass('TC.control.LayerCatalogSilme')[0];
+      if (lcSilme) {
+        lcSilme.loaded().then(() => {
+          lcSilme.div.querySelector('h2 button').addEventListener(TC.Consts.event.CLICK, function (e) {
+            lcSilme.div.classList.remove(TC.Consts.classes.COLLAPSED); // SILME MV
+          });
         });
-      });
-    }
-  });
-}
+      }
+    });
+  }
+});
 
 
 // document.getElementById("logoImg").src = "../assets/IDEMenorca/img/logo_sitmun.svg";
@@ -42,7 +42,7 @@ function layerCatalogCarregat() {
     // A vegades, en dispositius mòvils o mides de pantalla petites no s'ajusta bé el LC
   } catch {}
 }
-var ajustarPanell = function () {
+/*var ajustarPanell = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
@@ -67,7 +67,7 @@ var ajustarPanell = function () {
   }
 
   if (tocHeightBefore != tocElm.offsetHeight && arbolElm != null) {
-    arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
+    //arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
     tocHeightBefore = tocElm.offsetHeight;
   }
 
@@ -102,14 +102,14 @@ var ajustarPanell = function () {
     });
 
     if (arbolElm != null) {
-      arbolElm.style.height = window.innerHeight -
+      arbolElm.style.height = mapaElm.offsetHeight -
         (heightControlsActiusMenysControlObert +
           (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
         'px';
     }
 
     if (document.querySelector('.tc-ctl-lcat-search')) {
-      document.querySelector('.tc-ctl-lcat-search').style.height = window.innerHeight -
+      document.querySelector('.tc-ctl-lcat-search').style.height = mapaElm.offsetHeight -
         (heightControlsActiusMenysControlObert +
           (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
         'px';
@@ -121,7 +121,7 @@ var ajustarPanell = function () {
       else if (obj != controlObert) heightControlsActiusMenysControlObert += obj.querySelector('h2').offsetHeight;
     });
 
-    controlObert.style.height = window.innerHeight -
+    controlObert.style.height = mapaElm.offsetHeight -
       (heightControlsActiusMenysControlObert +
         (mapaElm.offsetHeight - toolsPanelElmContent.offsetHeight)) +
       'px';
@@ -151,7 +151,7 @@ var ajustarPanell = function () {
     document.querySelector('.tc-ctl-legend-tree').style.height =
       (document.querySelector('.tc-ctl-legend-tree').parentElement.parentElement.offsetHeight - 40) + 'px';
   }
-}
+}*/
 
 function matches(el, selector) {
   return (
@@ -164,7 +164,7 @@ function matches(el, selector) {
   ).call(el, selector);
 }
 
-var ajustarPanellSilme = function () {
+/*var ajustarPanellSilme = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
@@ -200,12 +200,12 @@ var ajustarPanellSilme = function () {
 
   if (controlObert) {
     //Assignem el height necessàri al control actiu perque ocupi tota l'alçada del panell tinguent en compte els headers dels altres controls
-    controlObert.style.height = window.innerHeight -
+    controlObert.style.height = mapaElm.offsetHeight -
       (heightControlsActiusMenysControlObert +
         (mapaElm.offsetHeight - toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
       'px';
   }
-}
+}*/
 
 function getCssProperty(elmId, property) {
   var elem = document.getElementById(elmId);
@@ -226,7 +226,6 @@ if (window.innerWidth < 760) {
 }
 
 document.querySelectorAll('.tc-map').forEach(function (elm) {
-  //SILME MV 20211021
   const map = TC.Map.get(elm);
 
   if (map && !map._layoutDone) {
@@ -253,27 +252,27 @@ if (getCookie(cookiesShowPanel) == cookiesAccepted) {
   document
     .querySelector('.welcome-btn')
     .addEventListener(TC.Consts.event.CLICK, function (e) {
-      document
-        .querySelector('.welcome-panel')
-        .classList.add(TC.Consts.classes.HIDDEN);
-      document
-        .querySelector('#background-cover')
-        .classList.remove('background-cover');
-      if (document.querySelector('#welcome-chk').checked) {
-        var d = new Date();
-        var year = d.getFullYear();
-        var month = d.getMonth();
-        var day = d.getDate();
-        var c = new Date(year + 1, month, day);
-        document.cookie =
-          cookiesShowPanel +
-          '=' +
-          cookiesAccepted +
-          '; expires=' +
-          c.toString() +
-          ';SameSite=None;Secure';
-      }
-    });
+    document
+      .querySelector('.welcome-panel')
+      .classList.add(TC.Consts.classes.HIDDEN);
+    document
+      .querySelector('#background-cover')
+      .classList.remove('background-cover');
+    if (document.querySelector('#welcome-chk').checked) {
+      var d = new Date();
+      var year = d.getFullYear();
+      var month = d.getMonth();
+      var day = d.getDate();
+      var c = new Date(year + 1, month, day);
+      document.cookie =
+        cookiesShowPanel +
+        '=' +
+        cookiesAccepted +
+        '; expires=' +
+        c.toString() +
+        ';SameSite=None;Secure';
+    }
+  });
 }
 
 //Panell ajuda
@@ -314,7 +313,9 @@ document
         .querySelector('#silme-panel')
         .classList.contains('left-collapsed')
     ) {
-      document.querySelector('#silme-panel').classList.toggle('left-collapsed');
+      document
+        .querySelector('#silme-panel')
+        .classList.toggle('left-collapsed');
       document
         .querySelector('#silme-panel')
         .classList.remove('left-collapsed-silme');
@@ -324,16 +325,26 @@ document
       document
         .querySelector('#silme-panel')
         .classList.remove('left-collapsed-ovmap');
-      document.querySelector('.tc-ctl-sv').classList.remove('tc-ctl-sv-exp');
-      //document.querySelector('.tc-ctl-sv').classList.add('tc-ctl-sv-coll');
+      document
+        .querySelector('.tc-ctl-sv')
+        .classList.remove('tc-ctl-sv-exp');
+      document
+        .querySelector('.tc-ctl-sv')
+        .classList.add('tc-ctl-sv-coll');
       document
         .querySelector('.tc-ctl-nav-home')
         .classList.remove('tc-ctl-nav-home-exp');
       document
         .querySelector('.tc-ctl-nav-home')
         .classList.add('tc-ctl-nav-home-coll');
-      document.querySelector('.tc-ctl-3d').classList.remove('tc-ctl-3d-exp');
-      document.querySelector('.tc-ctl-3d').classList.add('tc-ctl-3d-coll');
+      if (document.querySelector('.tc-ctl-3d')) {
+        document
+          .querySelector('.tc-ctl-3d')
+          .classList.remove('tc-ctl-3d-exp');
+        document
+          .querySelector('.tc-ctl-3d')
+          .classList.add('tc-ctl-3d-coll');
+      }
     }
 
     if (window.innerWidth < 760 || window.innerHeight < 550) {
@@ -357,32 +368,50 @@ document
       }
 
       if (panel.classList.contains('right-collapsed')) {
-        document.querySelector('#silme-panel').classList.remove('left-opacity');
+        document
+          .querySelector('#silme-panel')
+          .classList.remove('left-opacity');
         document
           .querySelector('.tc-ctl-nav-home')
           .classList.remove(TC.Consts.classes.HIDDEN);
         document
-          .querySelector('.tc-ctl-3d')
+          .querySelector('.tc-ctl-sv-btn')
           .classList.remove(TC.Consts.classes.HIDDEN);
-        //document.querySelector('.tc-ctl-sv-btn').classList.remove(TC.Consts.classes.HIDDEN);
+        if (document.querySelector('.tc-ctl-3d'))
+          document
+            .querySelector('.tc-ctl-3d')
+            .classList.remove(TC.Consts.classes.HIDDEN);
         if (document.querySelector('.tc-ctl-sb'))
-          document.querySelector('.tc-ctl-sb').style.visibility = 'visible';
+          document
+            .querySelector('.tc-ctl-sb')
+            .style.visibility = 'visible';
         if (document.querySelector('.tc-ctl-scl'))
-          document.querySelector('.tc-ctl-scl').style.visibility = 'visible';
+          document
+            .querySelector('.tc-ctl-scl')
+            .style.visibility = 'visible';
       } else {
-        document.querySelector('#silme-panel').classList.add('left-opacity');
+        document
+          .querySelector('#silme-panel')
+          .classList.add('left-opacity');
         document
           .querySelector('.tc-ctl-nav-home')
           .classList.add(TC.Consts.classes.HIDDEN);
-        document
-          .querySelector('.tc-ctl-3d')
-          .classList.add(TC.Consts.classes.HIDDEN);
-        //if (window.innerWidth < 760)
-        //document.querySelector('.tc-ctl-sv-btn').classList.add(TC.Consts.classes.HIDDEN);
+        if (window.innerWidth < 760)
+          document
+            .querySelector('.tc-ctl-sv-btn')
+            .classList.add(TC.Consts.classes.HIDDEN);
+        if (document.querySelector('.tc-ctl-3d'))
+          document
+            .querySelector('.tc-ctl-3d')
+            .classList.add(TC.Consts.classes.HIDDEN);
         if (document.querySelector('.tc-ctl-sb'))
-          document.querySelector('.tc-ctl-sb').style.visibility = 'hidden';
+          document
+            .querySelector('.tc-ctl-sb')
+            .style.visibility = 'hidden';
         if (document.querySelector('.tc-ctl-scl'))
-          document.querySelector('.tc-ctl-scl').style.visibility = 'hidden';
+          document
+            .querySelector('.tc-ctl-scl')
+            .style.visibility = 'hidden';
       }
     }
 
@@ -424,17 +453,20 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('#BirdEye').style.visibility = 'collapse';
         document.querySelector('#FuScreen').style.visibility = 'collapse';
         document.querySelector('#StreetView').style.visibility = 'collapse';
-        document.querySelector('.tc-ctl-nav-home').style.visibility =
-          'collapse';
-        document.querySelector('.tc-ctl-3d').style.visibility = 'collapse';
-        document.querySelector(".tc-ctl-sv").style.visibility = "collapse";
+        document.querySelector('.tc-ctl-nav-home').style.visibility = 'collapse';
+        if (document.querySelector('.tc-ctl-3d'))
+          document.querySelector('.tc-ctl-3d').style.visibility = 'collapse';
+        document.querySelector('.tc-ctl-sv').style.visibility = 'collapse';
       }
 
       document.querySelector('.tc-ctl-cctr-right').style.left = '376px';
+      document.querySelector('.tc-ctl-cctr-left').style.left = '329px';
       if (document.querySelector('.silme-control-flotant') != null) {
-        document.querySelectorAll('.silme-control-flotant').forEach((item) => {
-          if (window.innerWidth < 760) item.style.left = '100vw';
-          else item.style.left = '328px';
+        document.querySelectorAll('.silme-control-flotant').forEach(item => {
+          if (window.innerWidth < 760)
+            item.style.left = '100vw';
+          else
+            item.style.left = '328px';
         });
       }
 
@@ -493,7 +525,9 @@ h1ImLeftPanel.forEach((item) =>
       document
         .querySelector('#search')
         .classList.toggle('search-left-collapsed');
-      document.querySelector('#links').classList.toggle('links-collapsed');
+      document
+        .querySelector('#links')
+        .classList.toggle('links-collapsed');
     } else {
       if (window.innerWidth < 760) {
         document.querySelector('#silme-tab').style.visibility = 'unset';
@@ -504,8 +538,9 @@ h1ImLeftPanel.forEach((item) =>
         document.querySelector('#FuScreen').style.visibility = 'unset';
         document.querySelector('#StreetView').style.visibility = 'unset';
         document.querySelector('.tc-ctl-nav-home').style.visibility = 'unset';
-        document.querySelector('.tc-ctl-3d').style.visibility = 'unset';
-        document.querySelector(".tc-ctl-sv").style.visibility = "unset";
+        if (document.querySelector('.tc-ctl-3d'))
+          document.querySelector('.tc-ctl-3d').style.visibility = 'unset';
+        document.querySelector('.tc-ctl-sv').style.visibility = 'unset';
       }
 
       if (
@@ -516,7 +551,9 @@ h1ImLeftPanel.forEach((item) =>
         document
           .querySelector('#search')
           .classList.toggle('search-left-collapsed');
-        document.querySelector('#links').classList.toggle('links-collapsed');
+        document
+          .querySelector('#links')
+          .classList.toggle('links-collapsed');
         panel.classList.toggle('left-collapsed-silme');
         document
           .querySelector('.ol-overviewmap-map')
@@ -530,12 +567,16 @@ h1ImLeftPanel.forEach((item) =>
         document
           .querySelector('#search')
           .classList.toggle('search-left-collapsed');
-        document.querySelector('#links').classList.toggle('links-collapsed');
+        document
+          .querySelector('#links')
+          .classList.toggle('links-collapsed');
         panel.classList.toggle('left-collapsed-legend');
         document
           .querySelector('.ol-overviewmap-map')
           ?.classList.add(TC.Consts.classes.HIDDEN);
-        document.querySelector('#ovmap').style.display = 'none';
+        document
+          .querySelector('#ovmap')
+          .style.display = 'none';
       } else if (
         this.id == 'ovmap-tab' &&
         panel.classList.contains('left-collapsed-ovmap')
@@ -587,10 +628,11 @@ h1ImLeftPanel.forEach((item) =>
       if (panel.classList.contains('left-collapsed')) {
         //Silme mv
         document.querySelector('.tc-ctl-cctr-right').style.left = '';
+        document.querySelector('.tc-ctl-cctr-left').style.left = '';
         if (document.querySelector('.silme-control-flotant') != null) {
           document
             .querySelectorAll('.silme-control-flotant')
-            .forEach((item) => {
+            .forEach(item => {
               item.style.left = '';
             });
         }
@@ -611,7 +653,6 @@ h1ImLeftPanel.forEach((item) =>
           Component3d.style.left = '';
         }
         sv.style.left = "";
-
       }
     }
 
@@ -653,10 +694,10 @@ document
     var Component3d = document.querySelector('.tc-ctl-3d'); //Silme mv
 
     //Silme
+    // Si la mida de la pantalla és inferior a 760px d'ample amagam el layerCatalog quan obrim un altre menú
     if (window.innerWidth > 760) {
-      // Si la mida de la pantalla és inferior a 760px d'ample amagam el layerCatalog quan obrim un altre menú
+      //Silme si es -1 es que fem click per primera vegada
       if (ctlLcatNum == -1) {
-        //Silme si es -1 es que fem click per primera vegada
         var childs = e.target.parentElement.parentElement.children;
         for (var i = 0; i < childs.length; i++) {
           if (childs[i].classList.contains('tc-ctl-lcat')) ctlLcatNum = i;
@@ -664,30 +705,30 @@ document
       }
     }
 
-    if (matches(tab, 'h2')) {
-      var ctl = tab.parentElement;
+  if (matches(tab, 'h2')) {
+    var ctl = tab.parentElement;
 
-      if (ctl.classList.contains(TC.Consts.classes.COLLAPSED)) {
-        var ctlsTmp = this.querySelectorAll('h2');
-        var ctls = [];
-        for (let item of ctlsTmp) {
-          if (!item.parentElement.classList.contains('.tc-ctl-search'))
-            if (
-              item.parentElement !==
-              e.target.parentElement.parentElement.children[ctlLcatNum]
-            )
-              ctls.push(item.parentElement);
-        }
-
-        for (let item of ctls) {
-          if (item !== ctl) item.classList.add(TC.Consts.classes.COLLAPSED);
-        }
+    if (ctl.classList.contains(TC.Consts.classes.COLLAPSED)) {
+      var ctlsTmp = this.querySelectorAll('h2');
+      var ctls = [];
+      for (let item of ctlsTmp) {
+        if (!item.parentElement.classList.contains('.tc-ctl-search'))
+          if (
+            item.parentElement !==
+            e.target.parentElement.parentElement.children[ctlLcatNum]
+          )
+            ctls.push(item.parentElement);
       }
-      ctl.classList.toggle(TC.Consts.classes.COLLAPSED);
 
-      //Silme redimensionam controls
-      ajustarPanell();
+      for (let item of ctls) {
+        if (item !== ctl) item.classList.add(TC.Consts.classes.COLLAPSED);
+      }
     }
+    ctl.classList.toggle(TC.Consts.classes.COLLAPSED);
+
+    //Silme redimensionam controls
+    ajustarPanell();
+  }
 
     if (
       matches(tab, '.tc-ctl-wlm-del') ||
@@ -710,8 +751,10 @@ document
         sv.classList.remove('tc-ctl-sv-exp');
         navHome.classList.add('tc-ctl-nav-home-coll');
         navHome.classList.remove('tc-ctl-nav-home-exp');
-        Component3d.classList.add('tc-ctl-3d-coll');
-        Component3d.classList.remove('tc-ctl-3d-exp');
+        if (Component3d && Component3d != undefined) {
+          Component3d.classList.add('tc-ctl-3d-coll');
+          Component3d.classList.remove('tc-ctl-3d-exp');
+        }
         //
         document
           .querySelector('#search')
@@ -1848,116 +1891,6 @@ if (TC.browserFeatures.touch()) {
   }
 })();
 
-/*
-var ajustarPanell = function () {
-    var tocElm = document.getElementById('toc');
-    var arbolElm = document.getElementById('arbol');
-    var bmsElm = document.getElementById('bms');
-    var catalogElm = document.getElementById('catalog');
-    var linksElm = document.getElementById('links');
-    var xdataElm = document.getElementById('xdata');
-    var mapaElm = document.getElementById('mapa');
-    var toolsPanelElm = document.getElementById('tools-panel');
-
-    tocHeightBefore = tocHeightBefore ? tocHeightBefore : 0;
-
-    if (tocHeightBefore != tocElm.offsetHeight) {
-        arbolElm.scrollTop = arbolElm.scroll + (tocElm.offsetHeight - tocHeightBefore);
-        tocHeightBefore = tocElm.offsetHeight;
-    }
-    if (!bmsElm.classList.contains(TC.Consts.classes.COLLAPSED) && !catalogElm.classList.contains(TC.Consts.classes.COLLAPSED)) {
-        arbolElm.style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.querySelector('h2').offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-
-        document.querySelector('.tc-ctl-lcat-search').style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.querySelector('h2').offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-    } else if (!xdataElm.classList.contains(TC.Consts.classes.COLLAPSED) && !catalogElm.classList.contains(TC.Consts.classes.COLLAPSED)) {
-        arbolElm.style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-
-        document.querySelector('.tc-ctl-lcat-search').style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-    } else if (!tocElm.classList.contains(TC.Consts.classes.COLLAPSED) && !catalogElm.classList.contains(TC.Consts.classes.COLLAPSED)) {
-        arbolElm.style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.offsetHeight +
-                tocElm.offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-
-        document.querySelector('.tc-ctl-lcat-search').style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.querySelector('h2').offsetHeight +
-                tocElm.offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-    } else {
-        arbolElm.style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.querySelector('h2').offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-
-        document.querySelector('.tc-ctl-lcat-search').style.height = 'calc(' +
-            window.innerHeight + 'px - ' + (
-                linksElm.offsetHeight +
-                bmsElm.querySelector('h2').offsetHeight +
-                catalogElm.querySelector('h2').offsetHeight +
-                xdataElm.querySelector('h2').offsetHeight +
-                tocElm.querySelector('h2').offsetHeight + (
-                    mapaElm.offsetHeight -
-                    toolsPanelElm.querySelector('.panel-content').offsetHeight)) +
-            'px)';
-    }
-
-    document.querySelector('.tc-ctl-legend-tree').style.height = 'calc(' + (window.innerHeight * 0, 85) + 'px';
-}
-*/
 
 function getCookie(cname) {
   var name = cname + '=';

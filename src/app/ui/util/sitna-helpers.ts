@@ -153,8 +153,8 @@ export class SitnaHelper {
         (x) => x['ui-control'] === SitnaControlsEnum.BasemapSelector
       )
     ) {
-      //sitnaControls.basemapSelectorSilme = {
-      sitnaControls.basemapSelector = {
+      sitnaControls.basemapSelectorSilme = {
+      //sitnaControls.basemapSelector = {
         div: 'bms'
       };
     }
@@ -592,7 +592,7 @@ export class SitnaHelper {
       });
       if (featureInfo) {
         if (featureInfo.parameters == null) {
-          sitnaControls.featureInfo = {
+          sitnaControls.featureInfoSilme = {
             persistentHighlights: true
           };
         } else {
@@ -706,18 +706,11 @@ export class SitnaHelper {
 
             // Si el currentNode no es hijo de ningún nodo (no hemos encontrado padre)
             if (!parentNode) {
-              // TODO - ✏️Edit. Admin is bugged, it should return a root node with
-              //  all sub-root nodes as children, then we should discard the root node
-              //  and create all sub-roots nodes as LayerTreeGroups
-              //  All this must be done on the code above ⬆️
-
-              // TODO - ❌Delete when admin repaired
               //Si el currentNode es el nodo raíz lo establecemos como padre
               if (currentNode[0] == currentTree.rootNode) {
                 parentNode = currentNode[0];
               }
 
-              // Todo - ❌Delete when admin repaired
               if (!parentNode) {
                 let isNodeFound;
                 for (const property in currentTree.nodes) {
@@ -783,21 +776,26 @@ export class SitnaHelper {
                   id: currentNode[0].replace('/', ''),
                   title: currentNode[1].title,
                   parentNode: parentNode.replace('/', '')
+                  // TODO
+                  , carpeta: (['node12103', 'node12102', 'node12336', 'node12243', 'node12130'].includes(currentNode[0].replace('/', ''))) ? false : true
+                  // Afegir-ho a Altres serveis?
                 });
               }
             }
           }
           ltg.push({ id: 'node99', title: 'Altres serveis' });
-          catalogs.push({
-            title: currentTree.title,
-            badConfigTree: badConfigTree,
-            catalog: {
-              div: 'catalog',
-              enableSearch: true,
-              layerTreeGroups: ltg,
-              layers: lays
-            }
-          });
+          if (lays.length > 0) {
+            catalogs.push({
+              title: currentTree.title,
+              badConfigTree: badConfigTree,
+              catalog: {
+                div: 'catalog',
+                enableSearch: true,
+                layerTreeGroups: ltg,
+                layers: lays
+              }
+            });
+          }
         }
       }
     }

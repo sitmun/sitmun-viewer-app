@@ -506,6 +506,8 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
               });
               li.querySelector('.container').style.background = '#e4e6d0';
             }
+            //Silme redimensionam controls
+            ajustarPanell();
           });
 
           //Silme redimensionam controls

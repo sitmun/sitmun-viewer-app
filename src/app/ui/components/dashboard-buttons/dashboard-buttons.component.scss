@@ -1,6 +1,8 @@
 @use 'dimensions';
 @use 'colors';
 
+$layout-breakpoint-small: 540px;
+
 .dashboard-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -32,5 +34,12 @@
   button:focus {
     color: colors.$dashboard-component-button-focus;
     border-color: colors.$dashboard-component-button-border-focus;
+  }
+}
+
+@media (max-width: $layout-breakpoint-small) {
+  .dashboard-buttons {
+    margin: 20px 20px 0 20px;
+    flex-flow: column;
   }
 }

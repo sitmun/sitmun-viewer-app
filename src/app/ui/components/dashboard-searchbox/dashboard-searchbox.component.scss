@@ -1,6 +1,8 @@
 @use 'dimensions';
 @use 'colors';
 
+$layout-breakpoint-small: 540px;
+
 form {
   display: flex;
   flex-direction: row;
@@ -55,4 +57,10 @@ form {
 
 form:hover {
   border-color: #758BFD;
+}
+
+@media (max-width: $layout-breakpoint-small) {
+  form {
+    margin: 20px 4px;
+  }
 }

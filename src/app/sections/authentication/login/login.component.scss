@@ -1,6 +1,8 @@
 @use 'colors';
 @use 'dimensions';
 
+$layout-breakpoint-small: 540px;
+
 .login-page {
   position: absolute;
   background: linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
@@ -12,6 +14,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  position: fixed;
 }
 
 @keyframes fadeIn {
@@ -37,6 +40,7 @@
   background-size: cover;
   height: 100%;
   background-repeat: no-repeat;
+  top: 0;
 }
 
 .container {
@@ -99,6 +103,14 @@
         border: dimensions.$base-border solid colors.$common-color-border-input;
       }
 
+      @media (max-width: $layout-breakpoint-small) {
+        input {
+          padding: 0;
+          width: 80%;
+          padding: 0 5%;
+        }
+      }
+
       input,
       input::placeholder {
         font: dimensions.$login-page-input-font-size sans-serif;
@@ -128,4 +140,34 @@
     }
   }
 
+}
+
+@media (max-width: $layout-breakpoint-small) {
+  .container {
+    margin: auto;
+
+    .title {
+      flex-direction: column;
+
+      h1 {
+        width: 100%;
+      }
+
+      div {
+        width: 100%;
+        padding: 10px 0;
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+
+    .form form {
+      input {
+        margin: 6px auto;
+        width: 88%;
+      }
+    }
+  }
 }

@@ -288,3 +288,8 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-tree ul in
   background-color: var(--ide-main-color);
   border-color: var(--ide-main-color);
 }
+
+.tc-ctl-m-finfo-select input[type=radio]:disabled ~ span {
+  background-color: #cccccc;
+  border-color: #cccccc;
+}

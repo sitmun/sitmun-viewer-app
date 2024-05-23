@@ -172,7 +172,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         this.layerCatalogsSilme = this.layerCatalogsSilme.filter((catalog: any) => {
           return !catalog.badConfigTree;
         });
-        SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
+        SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme.length > 0
           ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
           : {};
         this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
@@ -180,7 +180,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return;
     }
 
-    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme.length > 0
+    SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme.length > 0
       ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
       : {};
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
@@ -191,7 +191,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return; // This is a safeguard, but it should never happen
     }
     this.currentCatalogIdx = (window as any).layerCatalogsSilmeForModal.currentCatalog;
-    SITNA.Cfg.controls.layerCatalogSilme = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
     this.clearMap();
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
 
