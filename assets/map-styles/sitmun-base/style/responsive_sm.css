@@ -46,7 +46,7 @@
     }
 
     .tc-map div.tc-ctl-cctr div.tc-ctl.tc-ctl-p-results div.prpanel-group {
-        transform: translateY(-69px);
+        /*transform: translateY(-69px);*/
     }
 
     .tc-map div.tc-ctl-cctr div.tc-ctl.tc-ctl-p-results div.prpanel-group div.tc-ctl-p-results-resize-handler {
@@ -69,6 +69,10 @@
 
     button.tc-icon-btn.tc-ctl-p-results-min-btn:before {
         line-height: 1.5em;
+    }
+
+    button.tc-icon-btn.tc-ctl-p-results-share-btn:before {
+      line-height: 1.6em;
     }
 
     .tc-ctl-p-results .prpanel-title {
@@ -242,7 +246,7 @@
     }
 
     .tc-ctl-lcat-info-content {
-        height: 92%;
+        height: 75%;
         padding: 20px 10px 10px 5px;
         text-align: justify;
     }
@@ -503,7 +507,7 @@
 
     /*Amb 'li.tc-ctl-cctr-elm-2' fem que s'apliqui només al panell d'elevacions*/
     /* NO VA */
-    /*    div.tc-map div.tc-ctl-cctr li.tc-ctl-cctr-elm-2 div.tc-ctl.tc-ctl-p-results div.prpanel-group { 
+    /*    div.tc-map div.tc-ctl-cctr li.tc-ctl-cctr-elm-2 div.tc-ctl.tc-ctl-p-results div.prpanel-group {
         bottom: 126px;
     }*/
 
@@ -544,7 +548,7 @@
         overflow-y: auto;
     }
 
-    table.tc-attr { 
+    table.tc-attr {
         table-layout: fixed;
         width: 100%;
     }
@@ -648,4 +652,17 @@
         border: none;
         width: auto;
     }
+
+  .tc-ctl-p-results-info .tc-ctl-finfo-layers li h4, .tc-ctl-p-results .tc-ctl-p-results-info .tc-ctl-finfo h3 span, div.tc-ctl-p-results div.tc-ctl-p-results-info.tc-ctl-ftools-zoom > h3, div.tc-ctl-p-results div.tc-ctl-p-results-info.tc-ctl-ftools-zoom > h4 {
+    white-space: nowrap;
+    text-overflow: unset;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  div.tc-ctl-p-results div.tc-ctl-p-results-info.tc-ctl-ftools-zoom {
+    max-height: 45vh;
+    overflow-y: auto;
+    max-width: unset;
+  }
 }

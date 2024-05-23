@@ -1,0 +1,17 @@
+<li {{#if children}} class="tc-ctl-lcat-node {{#if carpeta}}sitmun-folder{{/if}} {{#if children}}{{#unless name}}tc-collapsed{{/unless}}{{/if}} {{#unless serviceNode}}{{#if children}}{{#if uid}}tc-collapsed{{/if}}{{/if}}{{/unless}}"
+  {{#if serviceNode}}style="background-image:none;border-top:none;margin-left:10px"{{/if}}
+
+{{else}} class="tc-ctl-lcat-node tc-ctl-lcat-leaf" {{/if}}
+                     data-layer-name="{{name}}" data-layer-uid="{{uid}}" id="{{id}}">
+  {{#if children}}<button aria-label="Collapse Button" class="tc-ctl-lcat-collapse-btn"></button>{{/if}}
+  <span {{#if serviceNode}}style="display:none"{{/if}} title="{{#if name}}{{title}}{{/if}}">{{title}}</span>
+  {{#if name}} <input type="checkbox" title="{{i18n "infoFromThisLayer"}}" class="tc-toggle tc-ctl-lcat-btn-info"></input>{{/if}}
+{{#if children}}<ul class="tc-ctl-lcat-branch {{#if children}}{{#unless uid}}tc-collapsed{{/unless}}{{/if}} {{#unless serviceNode}}{{#if children}}{{#if uid}}tc-collapsed{{/if}}{{/if}}{{/unless}}">
+  {{/if}}
+
+  {{#each children}}
+    {{> tc-ctl-lcat-node}}
+  {{/each}}
+
+  {{#if children}}</ul>{{/if}}
+</li>

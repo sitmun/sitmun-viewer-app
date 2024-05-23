@@ -12,39 +12,39 @@
 }
 
 .right-panel > h1 {
-  top: 50px;
+  top: 10px;
 }
 
 .right-panel > .panel-content, .silme-panel > .panel-content {
-  top: 40px;
+  top: 0px;
 }
 
 .tc-ctl.tc-ctl-nav {
-  top: 54px;
+  top: 14px;
 }
 
 .tc-ctl.tc-ctl-nav-home {
-  top: 138px;
+  top: 98px;
 }
 
 .tc-ctl-fscreen {
-  top: 180px !important;
+  top: 140px !important;
 }
 
 .silme-panel > h1 {
-  top: 244px;
+  top: 204px;
 }
 
 .tc-ctl-sv {
-  top: 308px !important;
+  top: 268px !important;
 }
 
 #legend-tab {
-  top: 350px;
+  top: 310px;
 }
 
 #ovmap-tab {
-  top: 392px;
+  top: 352px;
 }
 
 #search {
@@ -98,4 +98,43 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
     font-size: 1.3em;
   }
 
+}
+
+@media (max-width: 768px) {
+  .tools-panel > h1 {
+    top: 84px;
+  }
+
+  #search {
+    left: 20px;
+  }
+
+  #legend-tab {
+    top: 168px;
+  }
+
+  .left-collapsed .tc-ctl-sv {
+    left: 20px;
+    top: 215px !important;
+  }
+
+  .tc-ctl-lcat-info {
+    height: calc(100% - 40px);
+    width: 100%;
+    max-height: unset;
+    top: 40px;
+    left: 0px;
+    border-radius: 0px;
+  }
+
+  #projects {
+    height: calc(100% - 40px);
+    width: 100%;
+    max-height: 100%;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
 }

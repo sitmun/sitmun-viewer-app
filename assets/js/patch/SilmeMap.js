@@ -1,8 +1,7 @@
 var silmeMap;
 var silmeLayerCatalog;
 var silmeSearch;
-
-
+var pendingLayer;
 
 function setExtent(extent) {
   silmeMap.map.getView().fit(extent, { maxZoom: 14 });
