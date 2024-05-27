@@ -141,7 +141,6 @@ export interface AppGlobalConfiguration {
       x: number;
       y: number;
       proj4: string;
-    }
-  }
+    };
+  };
 }
-

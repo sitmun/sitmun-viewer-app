@@ -4,7 +4,7 @@
  * @see ElevationOptions
  */
 TC.Consts.elevationService = {
-    /** 
+    /**
      * Identificador del servicio de elevación de la API de Google Maps.
      * @var {string}
      * @memberof SITNA.Consts.elevationService
@@ -12,7 +12,7 @@ TC.Consts.elevationService = {
      * @default
      */
     GOOGLE: 'elevationServiceGoogle',
-    /** 
+    /**
      * Identificador del servicio de elevación de IDENA.
      * @var {string}
      * @memberof SITNA.Consts.elevationService
@@ -20,7 +20,7 @@ TC.Consts.elevationService = {
      * @default
      */
     IDENA: 'elevationServiceIDENA',
-    /** 
+    /**
      * Identificador del servicio de elevación del Instituto Geográfico Nacional de España.
      * @var {string}
      * @memberof SITNA.Consts.elevationService
@@ -28,7 +28,7 @@ TC.Consts.elevationService = {
      * @default
      */
     IGN_ES: 'elevationServiceIGNEs',
-    /** 
+    /**
      * Identificador del servicio de elevación del Instituto Geográfico Nacional Francés.
      * @var {string}
      * @memberof SITNA.Consts.elevationService
@@ -42,19 +42,19 @@ TC.Consts.elevationService = {
  * Opciones de la herramienta de elevación.
  * @typedef ElevationOptions
  * @see DrawMeasureModifyOptions
- * @property {number} [resolution] - Distancia máxima en metros entre puntos con elevaciones. 
- * Si la distancia entre vértices de la geometría de la que queremos obtener los valores de elevación es mayor 
+ * @property {number} [resolution] - Distancia máxima en metros entre puntos con elevaciones.
+ * Si la distancia entre vértices de la geometría de la que queremos obtener los valores de elevación es mayor
  * que este valor, se añaden puntos intermedios hasta que esa distancia sea menor o igual a este valor.
  * @property {number} [sampleNumber] - Número total de puntos de la geometría con elevación.
- * 
- * Si la geometría tiene más puntos que el valor de esta propiedad, se elminarán de manera repartida los 
+ *
+ * Si la geometría tiene más puntos que el valor de esta propiedad, se elminarán de manera repartida los
  * puntos sobrantes.
- * 
+ *
  * Si la geometría tiene menos puntos que este valor, se insertarán puntos de manera repartida a lo largo de la geometría.
- * 
+ *
  * Si esta propiedad entra en conflicto con la propiedad `resolution`, prevalece `resolution`.
- * @property {string[]|ElevationServiceOptions[]} [services={@link SITNA.Consts.elevationService.IDENA}, {@link SITNA.Consts.elevationService.IGN_FR}, {@link SITNA.Consts.elevationService.IGN_ES}] - Lista priorizada con identificadores de servicio de elevación 
- * (miembros de {@link SITNA.Consts.elevationService}) u objetos de configuración de servicio a los que se consulta para obtener el dato de elevación. 
+ * @property {string[]|ElevationServiceOptions[]} [services={@link SITNA.Consts.elevationService.IDENA}, {@link SITNA.Consts.elevationService.IGN_FR}, {@link SITNA.Consts.elevationService.IGN_ES}] - Lista priorizada con identificadores de servicio de elevación
+ * (miembros de {@link SITNA.Consts.elevationService}) u objetos de configuración de servicio a los que se consulta para obtener el dato de elevación.
  * Si varios servicios devuelven un valor válido para un punto, se toma el valor del servicio que esté representado antes en esta lista.
  */
 
@@ -516,7 +516,7 @@ TC.tool.Elevation = function (options) {
                 }
                 if (Array.isArray(r)) {
                     const rPoint = r[i];
-                    if (elevation === null && rPoint) {
+                    if (rPoint) {
                         elevation = rPoint[2];
                         if (rPoint.length > 3 && height === null) {
                             height = rPoint[3];

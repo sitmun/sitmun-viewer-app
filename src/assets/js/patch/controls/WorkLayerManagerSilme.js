@@ -197,8 +197,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
 
     //Silme
     self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('.tc-ctl-lcat-info-close', function (e) {
-      const a = e.target;
-      var li = a;
+      var li = e.target;
       do {
         li = li.parentElement;
       }
@@ -220,8 +219,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
       if (e.target.classList.contains('tc-unavailable') || e.target.classList.contains('tc-loading')) {
         return;
       }
-      const a = e.target;
-      var li = a;
+      var li = e.target;
       do {
         li = li.parentElement;
       }
@@ -232,8 +230,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
 
     //self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector(`.${self.CLASS}-btn-info`, function (e) {
     self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector(`.${self.CLASS}-cb-info`, function (e) {
-      const checkbox = e.target;
-      var li = checkbox;
+      var li = e.target;
       do {
         li = li.parentElement;
       }
@@ -262,8 +259,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
     const self = this;
     const li = self.#findLayerElement(layer);
     if (li) {
-      const visible = layer.getVisibility();
-      li.querySelector('input[type="checkbox"]').checked = visible;
+      li.querySelector('input[type="checkbox"]').checked = layer.getVisibility();
     }
   };
 
@@ -308,7 +304,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
         var layerTitle = layer.title;//Silme || layer.wrap.getServiceTitle();
         var layerData = {
           title: layer.options.hideTitle ? '' : layerTitle,
-          hide: layer.renderOptions && layer.renderOptions.hide ? true : false,
+          hide: !!(layer.renderOptions && layer.renderOptions.hide),
           opacity: layer.renderOptions && layer.renderOptions.opacity ? (layer.renderOptions.opacity * 100) : 100,
           customLegend: layer.customLegend,
           unremovable: layer.unremovable

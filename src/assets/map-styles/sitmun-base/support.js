@@ -100,7 +100,7 @@
 
 function matches(el, selector) {
     return (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector).call(el, selector);
-};
+}
 
 var ajustarPanellSilme = function () {
     var arrControlsActius = [];
@@ -146,4 +146,4 @@ var ajustarPanellSilme = function () {
 function getCssProperty(elmId, property) {
     var elem = document.getElementById(elmId);
     return window.getComputedStyle(elem, null).getPropertyValue(property);
-};
+}

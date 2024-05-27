@@ -42,7 +42,7 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
               break;
           }
         }
-      };
+      }
     }
 
     if (layer != self.map.getBaseLayer()) {

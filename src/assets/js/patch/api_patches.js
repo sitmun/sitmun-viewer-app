@@ -36,13 +36,13 @@ TC.layer.Raster.prototype.searchSubLayers = function (text) {
   if (text && text.length && text.length >= 3) {
     var self = this;
     var layers = null;
-    /*URI:Si la cadena a buscar contiene a la busqueda anterior, por ejemplo, antes he buscado "cat" y ahora busco "cata" porque esto escribiendo "catastro" ...
-    en vez de buscar en todas las capas del servicio busco en los resultados encotrados en la búsqueda anterior */
+    /*URI:Si la cadena a buscar contiene a la búsqueda anterior, por ejemplo, antes he buscado "cat" y ahora busco "cata" porque esto escribiendo "catastro" ...
+    en vez de buscar en todas las capas del servicio busco en los resultados encontrados en la búsqueda anterior */
     if (this.lastPattern && text.indexOf(this.lastPattern) >= 0) {
       layers = this.lastMatches;
     }
     else {
-      /*si se ha definido el parametro layers de esta capa en configuraci\u00f3n filtro las capas del capability para que busque solo en las capas que est\u00e9n en
+      /*si se ha definido el parámetro layers de esta capa en configuraci\u00f3n filtro las capas del capability para que busque solo en las capas que est\u00e9n en
       configuraci\u00f3n y sus hijas*/
       if (self.availableNames && self.availableNames.length > 0) {
         layers = [];
@@ -95,7 +95,7 @@ TC.layer.Raster.prototype.searchSubLayers = function (text) {
             keywordIx = res3 ? res3.index : -1;
             if (keywordIx >= 0) {
               keywordIx = 0;
-              break keyword;
+              break;
             }
           }
       }//End Silme
@@ -482,10 +482,8 @@ if (basemapSelectorSilme) {
               if (viewOptions.minResolution && r < viewOptions.minResolution) {
                 return false;
               }
-              if (viewOptions.maxResolution && r > viewOptions.maxResolution) {
-                return false;
-              }
-              return true;
+              return !(viewOptions.maxResolution && r > viewOptions.maxResolution);
+
             });
           if (newResolutions.length < resolutions.length) {
             viewOptions.resolutions = newResolutions;

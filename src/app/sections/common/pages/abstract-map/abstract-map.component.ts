@@ -1,4 +1,10 @@
-import { Directive, ElementRef, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  Renderer2
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
@@ -20,12 +26,11 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private layerCatalogsSilme: any;
   private currentCatalogIdx: number;
   private currentGeneralCfg: GeneralCfg | undefined;
-  private currentAppCfg: AppCfg | undefined
+  private currentAppCfg: AppCfg | undefined;
   private commonServiceSubscription: Subscription | undefined;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
-
 
   protected constructor(
     private translate: TranslateService,
@@ -154,47 +159,69 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       catalogs: this.layerCatalogsSilme
         .filter((catalog: any) => {
           return !catalog.badConfigTree;
-        }).map((catalog: any) => {
+        })
+        .map((catalog: any) => {
           return { id: ++idx, catalog: catalog.title };
         })
     });
 
     // If there is a badConfigTree, we need to show a warning modal before loading the map
-    if (this.layerCatalogsSilme.some((catalog: any) => { return catalog.badConfigTree })) {
-      const ommitedCatalogs = this.layerCatalogsSilme
-        .filter((catalog: any) => { return catalog.badConfigTree })
-        .map((catalog: any) => { return catalog.title });
+    if (
+      this.layerCatalogsSilme.some((catalog: any) => {
+        return catalog.badConfigTree;
+      })
+    ) {
+      const omittedCatalogs = this.layerCatalogsSilme
+        .filter((catalog: any) => {
+          return catalog.badConfigTree;
+        })
+        .map((catalog: any) => {
+          return catalog.title;
+        });
 
       const ref = this.modal.open(WarningModalComponent, {
-        data: { message: 'map.error.badConfigTree' , listTitle: "map.error.ommitedCatalogs", catalogs: ommitedCatalogs }
+        data: {
+          message: 'map.error.badConfigTree',
+          listTitle: 'map.error.omittedCatalogs',
+          catalogs: omittedCatalogs
+        }
       });
       ref.afterClosed.subscribe(() => {
-        this.layerCatalogsSilme = this.layerCatalogsSilme.filter((catalog: any) => {
-          return !catalog.badConfigTree;
-        });
-        SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme.length > 0
-          ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-          : {};
+        this.layerCatalogsSilme = this.layerCatalogsSilme.filter(
+          (catalog: any) => {
+            return !catalog.badConfigTree;
+          }
+        );
+        SITNA.Cfg.controls.layerCatalogSilmeFolders =
+          this.layerCatalogsSilme.length > 0
+            ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
+            : {};
         this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
       });
       return;
     }
 
-    SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme.length > 0
-      ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-      : {};
+    SITNA.Cfg.controls.layerCatalogSilmeFolders =
+      this.layerCatalogsSilme.length > 0
+        ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
+        : {};
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 
   updateCatalog() {
-    if (this.currentAppCfg === undefined || this.currentGeneralCfg === undefined) {
+    if (
+      this.currentAppCfg === undefined ||
+      this.currentGeneralCfg === undefined
+    ) {
       return; // This is a safeguard, but it should never happen
     }
-    this.currentCatalogIdx = (window as any).layerCatalogsSilmeForModal.currentCatalog;
-    SITNA.Cfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    this.currentCatalogIdx = (
+      window as any
+    ).layerCatalogsSilmeForModal.currentCatalog;
+    SITNA.Cfg.controls.layerCatalogSilmeFolders =
+      this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
     this.clearMap();
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
-
   }
 
   clearMap() {
@@ -212,7 +239,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       this.renderer.removeChild(mapFather, overview);
     }
 
-    if(warningModal) {
+    if (warningModal) {
       this.renderer.removeChild(this.document.body, warningModal);
     }
 
@@ -267,7 +294,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
     const map = new SITNA.Map('mapa', cfg);
-    map.loaded(function() {
+    map.loaded(function () {
       SitnaHelper.toWelcome(appCfg);
       SitnaHelper.toHelp(appCfg);
       SitnaHelper.toInterface();

@@ -8,8 +8,8 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
     silmeMap = map.wrap;
 
     //mover el Multifeature info dentro del TOC
-    const toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
-    const mfi = map.getControlsByClass('TC.control.MultiFeatureInfo')[0];
+    let toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
+    let mfi = map.getControlsByClass('TC.control.MultiFeatureInfo')[0];
     if (toc && mfi) {
       Promise.all([toc.renderPromise(), mfi.renderPromise()]).then(() => {
         toc.div.querySelector('.' + toc.CLASS + '-content').insertAdjacentElement('afterend', mfi.div);
@@ -512,12 +512,12 @@ h1ImLeftPanel.forEach((item) =>
          geolocationTrackCenter.classList.add('tc-ctl-sv-exp');
          geolocationTrackCenter.classList.remove('tc-ctl-sv-coll');
       }
-      if (navHome && navHome != undefined) {
+      if (navHome) {
         navHome.classList.add('tc-ctl-nav-home-exp');
         navHome.classList.remove('tc-ctl-nav-home-coll');
         navHome.style.left = getCssProperty('nav', 'left');
       }
-      if (Component3d && Component3d != undefined) {
+      if (Component3d) {
         Component3d.classList.add('tc-ctl-3d-exp');
         Component3d.classList.remove('tc-ctl-3d-coll');
         Component3d.style.left = getCssProperty('nav', 'left');
@@ -642,12 +642,12 @@ h1ImLeftPanel.forEach((item) =>
            geolocationTrackCenter.classList.remove('tc-ctl-sv-exp');
            geolocationTrackCenter.classList.add('tc-ctl-sv-coll');
         }
-        if (navHome && navHome != undefined) {
+        if (navHome) {
           navHome.classList.remove('tc-ctl-nav-home-exp');
           navHome.classList.add('tc-ctl-nav-home-coll');
           navHome.style.left = '';
         }
-        if (Component3d && Component3d != undefined) {
+        if (Component3d) {
           Component3d.classList.remove('tc-ctl-3d-exp');
           Component3d.classList.add('tc-ctl-3d-coll');
           Component3d.style.left = '';
@@ -751,7 +751,7 @@ document
         sv.classList.remove('tc-ctl-sv-exp');
         navHome.classList.add('tc-ctl-nav-home-coll');
         navHome.classList.remove('tc-ctl-nav-home-exp');
-        if (Component3d && Component3d != undefined) {
+        if (Component3d) {
           Component3d.classList.add('tc-ctl-3d-coll');
           Component3d.classList.remove('tc-ctl-3d-exp');
         }
@@ -880,7 +880,6 @@ if (TC.browserFeatures.touch()) {
         if (aLex === '' && bLex !== '') return 1;
         if (aLex !== '' && bLex === '') return -1;
         if (aLex !== '' && bLex !== '') return aLex > bLex ? 1 : -1;
-        continue;
       } else if (aInt > bInt) {
         return 1;
       } else {
@@ -1219,13 +1218,9 @@ if (TC.browserFeatures.touch()) {
       'use strict';
       var touch = event.changedTouches[0],
         boundary = this.touchBoundary;
-      if (
-        Math.abs(touch.pageX - this.touchStartX) > boundary ||
-        Math.abs(touch.pageY - this.touchStartY) > boundary
-      ) {
-        return true;
-      }
-      return false;
+      return Math.abs(touch.pageX - this.touchStartX) > boundary ||
+        Math.abs(touch.pageY - this.touchStartY) > boundary;
+
     };
     FastClick.prototype.onTouchMove = function (event) {
       'use strict';
@@ -1414,10 +1409,8 @@ if (TC.browserFeatures.touch()) {
           return true;
         }
       }
-      if (layer.style.msTouchAction === 'none') {
-        return true;
-      }
-      return false;
+      return layer.style.msTouchAction === 'none';
+
     };
     FastClick.attach = function (layer) {
       'use strict';
@@ -1835,7 +1828,7 @@ if (TC.browserFeatures.touch()) {
     };
     Switchery.prototype.bindClick = function () {
       var parent = this.element.parentNode.tagName.toLowerCase(),
-        labelParent = parent === 'label' ? false : true;
+        labelParent = parent !== 'label';
       this.setPosition(labelParent);
       this.handleOnchange(this.element.checked);
     };

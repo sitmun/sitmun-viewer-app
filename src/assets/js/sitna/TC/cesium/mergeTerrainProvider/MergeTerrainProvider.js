@@ -1,5 +1,5 @@
 /* MergeTerrainProvider */
-(function () {    
+(function () {
     /* d3-polygon: para validar si un punto está dentro de la cobertura de Navarra */
     // https://d3js.org/d3-polygon/ Version 1.0.3. Copyright 2017 Mike Bostock.
     !function (n, r) { "object" == typeof exports && "undefined" != typeof module ? r(exports) : "function" == typeof define && define.amd ? define(["exports"], r) : r(n.d3 = n.d3 || {}) }(this, function (n) { "use strict"; function r(n, r) { return n[0] - r[0] || n[1] - r[1] } function e(n) { for (var r = n.length, e = [0, 1], t = 2, o = 2; o < r; ++o) { for (; t > 1 && f(n[e[t - 2]], n[e[t - 1]], n[o]) <= 0;)--t; e[t++] = o } return e.slice(0, t) } var t = function (n) { for (var r, e = -1, t = n.length, o = n[t - 1], f = 0; ++e < t;) r = o, o = n[e], f += r[1] * o[0] - r[0] * o[1]; return f / 2 }, o = function (n) { for (var r, e, t = -1, o = n.length, f = 0, u = 0, l = n[o - 1], i = 0; ++t < o;) r = l, l = n[t], i += e = r[0] * l[1] - l[0] * r[1], f += (r[0] + l[0]) * e, u += (r[1] + l[1]) * e; return i *= 3, [f / i, u / i] }, f = function (n, r, e) { return (r[0] - n[0]) * (e[1] - n[1]) - (r[1] - n[1]) * (e[0] - n[0]) }, u = function (n) { if ((o = n.length) < 3) return null; var t, o, f = new Array(o), u = new Array(o); for (t = 0; t < o; ++t) f[t] = [+n[t][0], +n[t][1], t]; for (f.sort(r), t = 0; t < o; ++t) u[t] = [f[t][0], -f[t][1]]; var l = e(f), i = e(u), g = i[0] === l[0], a = i[i.length - 1] === l[l.length - 1], c = []; for (t = l.length - 1; t >= 0; --t) c.push(n[f[l[t]][2]]); for (t = +g; t < i.length - a; ++t) c.push(n[f[i[t]][2]]); return c }, l = function (n, r) { for (var e, t, o = n.length, f = n[o - 1], u = r[0], l = r[1], i = f[0], g = f[1], a = !1, c = 0; c < o; ++c) f = n[c], e = f[0], t = f[1], t > l != g > l && u < (i - e) * (l - t) / (g - t) + e && (a = !a), i = e, g = t; return a }, i = function (n) { for (var r, e, t = -1, o = n.length, f = n[o - 1], u = f[0], l = f[1], i = 0; ++t < o;) r = u, e = l, f = n[t], u = f[0], l = f[1], r -= u, e -= l, i += Math.sqrt(r * r + e * e); return i }; n.polygonArea = t, n.polygonCentroid = o, n.polygonHull = u, n.polygonContains = l, n.polygonLength = i, Object.defineProperty(n, "__esModule", { value: !0 }) });
@@ -23,9 +23,9 @@
         });
 
         this.defaultFallbackProvider = new cesium.EllipsoidTerrainProvider();
-        
+
         this.attributions = {};
-        
+
         if (options.attributions) {
             this.attributions = options.attributions;
             this.view.map.trigger(TC.Consts.event.TERRAINPROVIDERADD, { terrainProvider: this });
@@ -43,7 +43,7 @@
 
         cesium.when.all([this._readyPromise, this.fallbackProvider[0].readyPromise, this.surfaceHasTilesToRender], function () {
             this.commutingProvidersReady = true;
-            this.commutingProvidersPromises.resolve();            
+            this.commutingProvidersPromises.resolve();
         }.bind(this))
     }
 
@@ -89,7 +89,7 @@
             loadPolygonContains();
         }
 
-        if (!d3.polygonContains(this.boundaries, [cesium.Math.toDegrees(cartographic.longitude), cesium.Math.toDegrees(cartographic.latitude)])) {            
+        if (!d3.polygonContains(this.boundaries, [cesium.Math.toDegrees(cartographic.longitude), cesium.Math.toDegrees(cartographic.latitude)])) {
             return false;
         }
 
@@ -118,7 +118,7 @@
 
     MergeTerrainProvider.prototype.getTileDataAvailable = function (x, y, level) {
 
-        ///* la disponibilidad del globo depende de que haya tiles renderizados/pendientes de rederizar. Si resuelvo la promesa al instanciar, 
+        ///* la disponibilidad del globo depende de que haya tiles renderizados/pendientes de rederizar. Si resuelvo la promesa al instanciar,
         //   no al pedir tiles, llega a usar el globo antes de estar disponible.  */
         if (this.surfaceTilesToRender > 5) {
             this.surfaceHasTilesToRender.resolve();
@@ -135,7 +135,7 @@
 
     MergeTerrainProvider.prototype.getAttribution = function () {
         var self = this;
-        
+
         return self.attributions;
     };
 
@@ -299,7 +299,7 @@ WCSTerrainProvider  */
                 var linkNode = xml.querySelector('Service').querySelector('metadataLink');
                 if (linkNode) {
                     this.attributions.site = linkNode.getAttribute('about');
-                }                
+                }
             }
         }.bind(this));
 
@@ -328,16 +328,16 @@ WCSTerrainProvider  */
         var index = 0;
         var heightBuffer = new Float32Array(size.height * size.width);
 
-        // Convert pixelValue to heightBuffer 
+        // Convert pixelValue to heightBuffer
         //--------------------------------------
         // We need to return a Heighmap of size 65x65
-        // The requested Tile from WCS should be cloth but not 65x65 
+        // The requested Tile from WCS should be cloth but not 65x65
         // We need to work in Native coordinate then get the pixel from the Parser.
 
-        // Here we need to check if the tilingScheme.CRS is the same of the Image 
-        // If no we need to convert 
-        // But It will to slow the processus then we should assume tilingScheme has been set 
-        // with the CRS of the image 
+        // Here we need to check if the tilingScheme.CRS is the same of the Image
+        // If no we need to convert
+        // But It will to slow the processus then we should assume tilingScheme has been set
+        // with the CRS of the image
 
         if (size.height != height || size.width != width) {
             var rect = tilingSc.tileXYToNativeRectangle(x, y, level);
@@ -402,7 +402,7 @@ WCSTerrainProvider  */
 
     WCSTerrainProvider.prototype.getAttribution = function () {
         var self = this;
-        
+
         return self.attributions;
     };
 
@@ -439,7 +439,7 @@ WCSTerrainProvider  */
                             }
 
                             // If the requested tile is in the TileCacheService then return it
-                            // Otherwise use WCS Get Coverage to request the tile                              
+                            // Otherwise use WCS Get Coverage to request the tile
                             retour = cesium.when(provider.tileCacheService.getTileData(x, y, level), function (tileData) {
 
                                 var myHeightmapTerrainData = WCSTerrainProvider.HeightmapTerrainData(tileData.data, {
@@ -490,7 +490,7 @@ WCSTerrainProvider  */
 
                     if (cesium.defined(resultat.getHeightmapTerrainDataFromWCS)) {
 
-                        if (!provider.adviced && level > 14) {                            
+                        if (!provider.adviced && level > 14) {
                             provider.view.map.toast(TC.Util.getLocaleString(provider.view.map.options.locale, "threed.terrainAdvice"), { type: TC.Consts.msgType.INFO });
                             provider.adviced = true;
                         }
@@ -498,9 +498,9 @@ WCSTerrainProvider  */
                         if (level <= resultat.minLevel &&
                             level >= resultat.maxLevel) {
 
-                            if (resultat.isTileInside(x, y, level, provider) == true) {                                
+                            if (resultat.isTileInside(x, y, level, provider) == true) {
                                 retour = resultat.getHeightmapTerrainDataFromWCS(x, y, level);
-                            } else {                                
+                            } else {
                                 retour = cesium.when.defer().reject();
                             }
                         } else {
@@ -580,14 +580,14 @@ WCSTerrainProvider  */
                         var xSpacing = (rect.east - rect.west) / (provider.heightMapWidth - 1);
                         var ySpacing = (rect.north - rect.south) / (provider.heightMapHeight - 1);
                         var scalingX = provider.pixelSize[0] / xSpacing
-                        var scalingY = provider.pixelSize[1] / ySpacing;                        
+                        var scalingY = provider.pixelSize[1] / ySpacing;
 
                         if (scalingX < 10 && scalingX > 1 / 10 && Math.abs(scalingY) < 10 && Math.abs(scalingY) > 1 / 10) {
                             if (j < resultat.minLevel) resultat.minLevel = j;
                             if (j > resultat.maxLevel) resultat.maxLevel = j;
 
                         }
-                    }                    
+                    }
                 }
             } else {
                 console.log("Error al obtener terreno fuera de Navarra");
@@ -1394,8 +1394,8 @@ WCSTerrainProvider  */
                         // No break : if numBytes != 3 && 4 --> throw error
                     }
                 case 5: // Complex Int
-                case 6: // Complex IEEE floating point 
-                case 4: // void or undefined  
+                case 6: // Complex IEEE floating point
+                case 4: // void or undefined
                 default:
                     throw Error("Do not attempt to parse the data  not handled  : " + sampleFormat);
                     break;
@@ -1570,9 +1570,9 @@ WCSTerrainProvider  */
             return null;
         },
 
-        /* add the new block to the list of the block 
+        /* add the new block to the list of the block
          * ToDo : limit the number of block loaded in order to control the memory isage
-         * remove older block 
+         * remove older block
          */
         addBlock: function (stripToLoad, block) {
             this.blocks[stripToLoad] = block
@@ -1619,7 +1619,7 @@ WCSTerrainProvider  */
                 if (ent_location == 0) {
                     /* store value into data value */
                     value = ent_val_offset;
-                    //console.log("ent_val_offset =" + value );	
+                    //console.log("ent_val_offset =" + value );
                 }
                 else if (this.getFieldTagName(ent_location) == "GeoKeyDirectory") {
                     console.log("ent_key =" + this.getGeoKeyName(ent_key));
@@ -1631,7 +1631,7 @@ WCSTerrainProvider  */
                 else if (this.getFieldTagName(ent_location) == "GeoDoubleParams") {
                     /*
                         console.log("ent_key =" + this.getGeoKeyName(ent_key));
-                        console.log("ent_count =" + ent_count );		
+                        console.log("ent_count =" + ent_count );
                         console.log("ent_val_offset =" + ent_val_offset );
                         console.log("GeoDoubleParams ="  +GeoDoubleParams[ent_val_offset]);
                         */
@@ -1736,7 +1736,7 @@ WCSTerrainProvider  */
 
         /*
          * parse Header
-         * 
+         *
          */
         parseHeader: function (tiffArrayBuffer) {
 
@@ -1786,7 +1786,7 @@ WCSTerrainProvider  */
             }
 
 
-            if (fileDirectory.hasOwnProperty('PlanarConfiguration') && true &&
+            if (fileDirectory.hasOwnProperty('PlanarConfiguration') &&
                 fileDirectory.PlanarConfiguration.hasOwnProperty('values') == true)
                 this.planarConfiguration = fileDirectory.PlanarConfiguration.values[0];
 
@@ -1796,7 +1796,7 @@ WCSTerrainProvider  */
 
         /*
         * SubFunction (should be private)
-        * Decode a Strip or a Tiles 
+        * Decode a Strip or a Tiles
         */
         decodeBlock: function (stripOffset, stripByteCount, moduleDecompression) {
             var decodedBlock = [];
@@ -1846,8 +1846,8 @@ WCSTerrainProvider  */
                     var decompressed = LZString.decompressFromUint8Array(decodedBlock);
 
                     break;
-                    // Deflate 
-                    // Code not yes validate 
+                    // Deflate
+                    // Code not yes validate
                 case 32946:
                     var inflator = new moduleDecompression.Inflate();
                     var bitOffset = 0;
@@ -1987,7 +1987,7 @@ WCSTerrainProvider  */
         */
         getDecompressionModule: function (stripOffset, stripByteCount, moduleDecompression) {
             var moduleDecompression = undefined;
-            // utiliser requirejs pour charger les modules de décompression 
+            // utiliser requirejs pour charger les modules de décompression
             if (this.compression == 32946) {
                 define(function (require) {
                     moduleDecompression = require('pako_inflate');
@@ -1998,7 +1998,7 @@ WCSTerrainProvider  */
         },
 
         /**
-         * Load Pixels 
+         * Load Pixels
          */
         loadPixels: function () {
             var FullPixelValues = [];
@@ -2065,7 +2065,7 @@ WCSTerrainProvider  */
                         green = this.clampColorSample(pixelSamples[1], this.sampleProperties[1].bitsPerSample);
                         blue = this.clampColorSample(pixelSamples[2], this.sampleProperties[2].bitsPerSample);
                     }
-                    // Assuming 4 => RGBA 
+                    // Assuming 4 => RGBA
                     if (this.samplesPerPixel == 4) {
                         // Check this function A should be a value between 0->1 ? then devide pixelSamples[3]/this.sampleProperties[3].bitsPerSample
                         var maxValue = Math.pow(2, this.sampleProperties[0].bitsPerSample);
@@ -2148,7 +2148,7 @@ WCSTerrainProvider  */
                         green = this.clampAffineColorSample(pixelSamples[1], this.sampleProperties[1].bitsPerSample, vmin, vmax);
                         blue = this.clampAffineColorSample(pixelSamples[2], this.sampleProperties[2].bitsPerSample, vmin, vmax);
                     }
-                    // Assuming 4 => RGBA 
+                    // Assuming 4 => RGBA
                     if (this.samplesPerPixel == 4) {
                         // Check this function A should be a value between 0->1 ? then devide pixelSamples[3]/this.sampleProperties[3].bitsPerSample
                         var maxValue = Math.pow(2, this.sampleProperties[0].bitsPerSample);
@@ -2181,7 +2181,7 @@ WCSTerrainProvider  */
         },
 
         /* Test getPixelValueOnDemand
-       *  start implementation : 
+       *  start implementation :
        *  1 -  check if the block is loaded  if not load the block
        *  2 - get the pixel value in the block
        */
@@ -2264,7 +2264,7 @@ WCSTerrainProvider  */
         },
 
         /* Test getPixelValueOnDemand
-        *  start implementation : 
+        *  start implementation :
         *  1 -  check if the block is loaded  if not load the block
         *  2 - get the pixel value in the block
         */
@@ -2277,19 +2277,19 @@ WCSTerrainProvider  */
                 return this.getClosestPixelValue(x, y);
             }
 
-            /* Calcul de l'interpolation 
+            /* Calcul de l'interpolation
             var ix= Math.floor(x);
             var iy= Math.floor(y);
             var  a1 = this.getPixelValueOnDemand(ix, iy);
             var  a2 = this.getPixelValueOnDemand(ix + 1, iy);
             var  a3 = this.getPixelValueOnDemand(ix + 1, iy + 1);
             var  a4 = this.getPixelValueOnDemand(ix, iy + 1);
-            // Avant d'inerpoler  : vérifier si on a les même valeurs 
+            // Avant d'inerpoler  : vérifier si on a les même valeurs
 
-            // puis calculer l'interpolation en tre 4 val (formule ?) 
+            // puis calculer l'interpolation en tre 4 val (formule ?)
             */
 
-            // retourne la valeur du pixel le plus proche 
+            // retourne la valeur du pixel le plus proche
             var ix = Math.floor(x + 0.5);
             var iy = Math.floor(y + 0.5);
             return this.getClosestPixelValue(ix, iy);
@@ -2358,7 +2358,7 @@ WCSTerrainProvider  */
         /** isPixelArea */
         isPixelArea: function () {
             if (this.geoKeys.hasOwnProperty('GTRasterTypeGeoKey') == false)
-                return true; // default 
+                return true; // default
             if (this.getRasterTypeName(this.geoKeys.GTRasterTypeGeoKey.value) == 'RasterPixelIsArea')
                 return true;
 
@@ -2366,7 +2366,7 @@ WCSTerrainProvider  */
         },
 
         /**
-         * Get the pixel value 
+         * Get the pixel value
          * Ex : var pixels = parse.parseTIFF(response);
          *      var pixel = parse.getPixelValue(pixels,i,j);
          */
@@ -2411,7 +2411,7 @@ WCSTerrainProvider  */
         },
 
         /**
-         * This function display the tiff into a canvas 
+         * This function display the tiff into a canvas
          */
 
         toCanvas: function (canvas, xmin, ymin, xmax, ymax, vmin, vmax) {
@@ -2425,7 +2425,7 @@ WCSTerrainProvider  */
             mycanvas.width = xmax - xmin;
             mycanvas.height = ymax - xmin;
             var pixrgba = [];
-            // Set a default fill style.	
+            // Set a default fill style.
             ctx.fillStyle = this.makeRGBAFillValue(255, 255, 255, 0);
             for (var y = ymin; y < ymax; y++) {
                 for (var x = xmin; x < xmax; x++) {
@@ -2546,8 +2546,8 @@ WCSTerrainProvider  */
             }
 
             //--------------------------------------------------------------------
-            //If the pixelscale count is zero, but we have tiepoints use      
-            //the tiepoint based approach.                                    
+            //If the pixelscale count is zero, but we have tiepoints use
+            //the tiepoint based approach.
             //--------------------------------------------------------------------
             if (tiepoint_count > 6 && count == 0) {
                 console.log(" tiepoint_count ", tiepoint_count);
@@ -2556,7 +2556,7 @@ WCSTerrainProvider  */
             }
 
                 //--------------------------------------------------------------------
-                //If we have a transformation matrix, use it. 			
+                //If we have a transformation matrix, use it.
                 //--------------------------------------------------------------------
             else if (transform_count == 16) {
                 var transform = fileDirectory.ModelTransformation.values;
@@ -2571,8 +2571,8 @@ WCSTerrainProvider  */
             }
 
                 //--------------------------------------------------------------------
-                //For now we require one tie point, and a valid pixel scale.      
-                //-------------------------------------------------------------------- 
+                //For now we require one tie point, and a valid pixel scale.
+                //--------------------------------------------------------------------
             else if (count < 3 || tiepoint_count < 6) {
                 res = [0, x, y];
             }
@@ -2630,9 +2630,9 @@ WCSTerrainProvider  */
             var res = [0, x, y];
             var tiepoint_count, count, transform_count = 0;
 
-            // -------------------------------------------------------------------- 
-            //      Fetch tiepoints and pixel scale.                                
-            // -------------------------------------------------------------------- 
+            // --------------------------------------------------------------------
+            //      Fetch tiepoints and pixel scale.
+            // --------------------------------------------------------------------
             var fileDirectory = this.fileDirectories[0];
             if (typeof (fileDirectory.ModelTiepoint) == 'undefined' || fileDirectory.ModelTiepoint == null ||
                 typeof (fileDirectory.ModelTiepoint.values) == 'undefined' || fileDirectory.ModelTiepoint.values == null)
@@ -2658,18 +2658,18 @@ WCSTerrainProvider  */
                 var modelTransformation = fileDirectory.ModelTransformation.values;
                 transform_count = modelTransformation.length;
             }
-            // -------------------------------------------------------------------- 
-            //      If the pixelscale count is zero, but we have tiepoints use      
-            //      the tiepoint based approach.                                    
-            // -------------------------------------------------------------------- 
+            // --------------------------------------------------------------------
+            //      If the pixelscale count is zero, but we have tiepoints use
+            //      the tiepoint based approach.
+            // --------------------------------------------------------------------
             if (tiepoint_count > 6 && count == 0) {
                 res = this.GTIFTiepointTranslate(tiepoint_count / 6, x, y, false);
             }
 
-                // -------------------------------------------------------------------- 
-                //      Handle matrix - convert to "geotransform" format, invert and    
-                //      apply.                                                          
-                // -------------------------------------------------------------------- 
+                // --------------------------------------------------------------------
+                //      Handle matrix - convert to "geotransform" format, invert and
+                //      apply.
+                // --------------------------------------------------------------------
             else if (transform_count == 16) {
                 var transform = fileDirectory.ModelTransformation.values;
 
@@ -2698,9 +2698,9 @@ WCSTerrainProvider  */
                 }
             }
 
-                // -------------------------------------------------------------------- 
-                //      For now we require one tie point, and a valid pixel scale.      
-                // -------------------------------------------------------------------- 
+                // --------------------------------------------------------------------
+                //      For now we require one tie point, and a valid pixel scale.
+                // --------------------------------------------------------------------
             else if (count >= 3 && tiepoint_count >= 6) {
                 var pixel_scale = fileDirectory.ModelPixelScale.values;
                 var tiepoints = fileDirectory.ModelTiepoint.values;

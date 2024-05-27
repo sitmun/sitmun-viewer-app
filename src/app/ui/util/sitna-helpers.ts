@@ -209,7 +209,8 @@ export class SitnaHelper {
           if (dataLoader.parameters.enableDragAndDrop) {
             sitnaControls.dataLoader.enableDragAndDrop =
               dataLoader.parameters.enableDragAndDrop;
-          } else { // If the dataloader is enabled, drag and drop is enabled by default
+          } else {
+            // If the dataloader is enabled, drag and drop is enabled by default
             sitnaControls.dataLoader.enableDragAndDrop = true;
           }
         }
@@ -516,7 +517,7 @@ export class SitnaHelper {
       sitnaControls.drawMeasureModifySilme = {
         div: 'measure',
         displayElevation: {
-          displayOn: "controlContainer"
+          displayOn: 'controlContainer'
         }
       };
     }
@@ -775,9 +776,9 @@ export class SitnaHelper {
                 ltg.push({
                   id: currentNode[0].replace('/', ''),
                   title: currentNode[1].title,
-                  parentNode: parentNode.replace('/', '')
+                  parentNode: parentNode.replace('/', ''),
                   // TODO
-                  , carpeta: (['node12103', 'node12102', 'node12336', 'node12243', 'node12130'].includes(currentNode[0].replace('/', ''))) ? false : true
+                  carpeta: (['node12103', 'node12102', 'node12336', 'node12243', 'node12130'].includes(currentNode[0].replace('/', ''))) ? false : true
                   // Afegir-ho a Altres serveis?
                 });
               }

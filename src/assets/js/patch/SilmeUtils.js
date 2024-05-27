@@ -179,7 +179,7 @@ function amagaPanellEsquerra() {
 function getCssProperty(elmId, property) {
   var elem = document.getElementById(elmId);
   return window.getComputedStyle(elem, null).getPropertyValue(property);
-};
+}
 
 /**
  * @param {any} wktString   -- 'POLYGON(( 4.110861180357364 39.95803551880287,4.110895425006135 39.957050330899115,4.111672576886696 39.95700425844337,
@@ -283,7 +283,7 @@ function gup(name, url) {
 
 function matches(el, selector) {
   return (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector).call(el, selector);
-};
+}
 
 function habilitaClickMapa(valor) {
   //Sino no funciona 1.6

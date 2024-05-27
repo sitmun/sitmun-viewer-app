@@ -108,7 +108,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
 
 .tc-ctl-wlm .tc-ctl-wlm-n, .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-search,
 .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-tree {
-  background-color: var(--ide-contrast-color);
+  background-color: var(--ide-main-color);
 }
 
 .tc-btn-localitza:hover, .tc-btn-localitza:disabled, .tc-btn-reports:hover {
@@ -157,8 +157,8 @@ span .tc-beta, .tc-ctl-dmm .tc-ctl-mod > button.tc-active, .tc-ctl-search-list a
 #localitzar > h2, #reports > h2, #newovmap > h2, #legend > h2,
 #ovmapH2, #bms > h2, #toc > h2, #catalog > h2, #xdata > h2,
 #print > h2, #geolocation > h2, #wfsedit > h2, #offline > h2 {
-    background-color: var(--ide-main-color);
-    color: var(--white);
+    background-color: #0000001a;
+    color: black;
 }
 
 .tc-textbox, .tc-combo, .tc-ctl-share .tc-ctl-share-url-box .tc-textbox,

@@ -47,7 +47,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
           if (this.authenticationService.isLoggedIn()) {
             // const currentPath = this.router.url;
             // TODO mensaxe en paxina de login? Caducou a sua sesión volva a logearse?
-            // TOOD redirect á url previa?
+            // TODO redirect á url previa?
             const decoded: any = jwt_decode(
               this.authenticationService.getLoggedToken()
             );

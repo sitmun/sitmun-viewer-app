@@ -32,12 +32,10 @@ export class NavigationBarComponent implements OnInit {
         // without some "hacking".
         // Another option would be retrieving them from the API and
         // sharing them in the msg object
-        this.styleBackground = "#ff000099";
+        //this.styleBackground = "#ff000099";
       } else if (msg.theme === 'sitmun-base') {
-        //this.styleBackground = "#bc986a99"; // - BROWN
-        //this.styleBackground = "#c38d9e99"; // - PINK
-        this.styleBackground = "#d7992299"; // - ORANGE
-        //this.styleBackground = "#FF930099";
+        //this.styleBackground = "#d7992299"; // - ORANGE
+        this.styleBackground = "#d79922";
       }
     });
   }

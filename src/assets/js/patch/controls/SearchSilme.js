@@ -18,9 +18,7 @@ if (!TC.control.Search) {
 
     self.template[self.CLASS] = "assets/js/patch/templates/SearchSilme.hbs";
 
-    const result = TC.Control.prototype.register.call(self, map);
-
-    return result;
+    return TC.Control.prototype.register.call(self, map);
   };
 
   TC.control.SearchSilme.prototype.render = function (callback) {

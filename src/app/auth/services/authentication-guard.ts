@@ -27,7 +27,7 @@ export class AuthenticationGuard {
     const isAuthenticated = this.authenticationService.isLoggedIn();
 
     if (!isPublicUrl && !isAuthenticated) {
-      // Sent to login (+ url to redirect after succesfully)
+      // Sent to login (+ url to redirect after successfully)
       this.router
         .navigate([AUTH_CONFIG.routes.loginPath], {
           queryParams: {
