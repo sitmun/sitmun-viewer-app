@@ -107,7 +107,6 @@ TC.inherit(TC.control.ExternalWMSSilme, TC.control.ExternalWMS);
                             TC.alert(self.getLocaleString('noLayersFoundInService'));
                             loadingCtrl.hide();
                             addButton.disabled = false;
-                            return;
                         } else {
                             var root = cap.Capability.Layer;
                             if (root.CRS && root.CRS.indexOf(self.map.crs) == -1 && !self.allowReprojection) {
@@ -148,7 +147,7 @@ TC.inherit(TC.control.ExternalWMSSilme, TC.control.ExternalWMS);
                     addWMS();
                 }
             });
-        });       
+        });
 
         self.div.addEventListener('click', TC.EventTarget.listenerBySelector('button[name="agregar"]', addWMS));
 

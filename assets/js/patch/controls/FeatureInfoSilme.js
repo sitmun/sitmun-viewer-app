@@ -18,8 +18,6 @@ if (!TC.control.FeatureInfo) {
 
     self.template[self.CLASS] = "assets/js/patch/templates/FeatureInfoSilme.hbs";
 
-    const result = TC.control.FeatureInfo.prototype.register.call(self, map);
-
-    return result;
+    return TC.control.FeatureInfo.prototype.register.call(self, map);
   };
 })();

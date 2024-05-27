@@ -60,7 +60,7 @@
     }
 
     #canvi-projecte-silme:hover {
-        background-color: #7A8500;
+        background-color: var(--ide-main-color);
         color: #fff;
     }
 

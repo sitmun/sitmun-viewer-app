@@ -952,8 +952,7 @@ if (!TC.control.LayerCatalog) {
           a.parentElement.removeChild(a);
         } else {
           a.addEventListener(TC.Consts.event.CLICK, function(e) {
-            const a = e.target;
-            var li = a;
+            var li = e.target;
             do {
               li = li.parentElement;
             }

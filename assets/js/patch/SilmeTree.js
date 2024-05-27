@@ -348,7 +348,7 @@ function cercaNodePerNom(rama, layerName) {
     }
 }
 
-//Silme 
+//Silme
 function isEmpty(obj) {
     for (var key in obj) {
         if (obj.hasOwnProperty(key))
@@ -364,7 +364,6 @@ function cercaLayers(layers, uid) {
                 if (layers.tree.children[i].uid == uid) {
                     //trobat
                     return layers.tree.children[i];
-                    break;
                 } else {
                     var tmpLayer = cercaLayers(layers.tree.children[i], uid);
                     if (tmpLayer != null)
@@ -377,7 +376,6 @@ function cercaLayers(layers, uid) {
             if (layers.children[i].uid == uid) {
                 //trobat
                 return layers.children[i];
-                break;
             } else {
                 var tmpLayer = cercaLayers(layers.children[i], uid);
                 if (tmpLayer != null)
@@ -389,7 +387,6 @@ function cercaLayers(layers, uid) {
             if (layers[i].uid == uid) {
                 //trobat
                 return layers[i];
-                break;
             } else {
                 var tmpLayer = cercaLayers(layers[i], uid);
                 if (tmpLayer != null)
@@ -409,7 +406,6 @@ function cercaLayersPerLayerName(layers, layerName) {
                 if (layers.tree.children[i].name == layerName) {
                     //trobat
                     return layers.tree.children[i];
-                    break;
                 } else {
                     var tmpLayer = cercaLayersPerLayerName(layers.tree.children[i], layerName);
                     if (tmpLayer != null)
@@ -422,7 +418,6 @@ function cercaLayersPerLayerName(layers, layerName) {
             if (layers.children[i].name == layerName) {
                 //trobat
                 return layers.children[i];
-                break;
             } else {
                 var tmpLayer = cercaLayersPerLayerName(layers.children[i], layerName);
                 if (tmpLayer != null)
@@ -434,7 +429,6 @@ function cercaLayersPerLayerName(layers, layerName) {
             if (layers[i].name == layerName) {
                 //trobat
                 return layers[i];
-                break;
             } else {
                 var tmpLayer = cercaLayersPerLayerName(layers[i], layerName);
                 if (tmpLayer != null)
