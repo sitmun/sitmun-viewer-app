@@ -2,6 +2,20 @@
 
 The SITMUN Viewer Application is a web-based application built using TypeScript, JavaScript, npm, and Angular.
 
+# Common Build Arguments
+
+**Environments:**
+
+- Default (`src/environments/environment.ts`)
+- Development (`src/environments/environment.development.ts`) 
+- Test deployment (`src/environments/environment.testdeployment.ts`) 
+
+**Variables:**
+
+- `production`: Specifies if the environment is a production or a development enviroment. The default value is `false`.
+- `hashLocationStrategy`: Enables the Angular `HashLocationStrategy`. The default value is `true`.
+- `apiUrl`: Specifies the base URL for the SITMUN Backend used by the aplication. The default value is `https://sitmun-backend-core.herokuapp.com`. 
+
 ## Docker Support
 
 The application is containerized using Docker, as defined in the Dockerfile. The Dockerfile is divided into two stages:
@@ -81,3 +95,37 @@ docker-compose up
 
 This command will start the SITMUN Viewer Application and map port 80 in the container to port 80 on the host machine.
 The application should now be accessible at http://localhost on your machine.
+
+## Development Container support
+
+A development container (or dev container for short) allows you to use a container as a full-featured development environment. 
+The provided devcontainer file uses `mcr.microsoft.com/devcontainers/universal:2` and installs **node 16.14.0**.
+
+```json
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+  },
+  "postCreateCommand": "bash -i -c 'nvm install 16.14.0'"
+}
+```
+
+### Development Build Arguments
+
+The development for the SITMUN Viewer Application takes three arguments during the build stage:
+
+- `BASE_HREF`: Specifies the base URL for the application, used by Angular for routing.
+- `CONFIGURATION`: Specifies the build configuration for the Angular application (i.e. `testdeployment` and `development`).
+
+### Building the application
+
+To build the application, run the following command in the terminal:
+
+```bash
+npm ci
+npm run build -- --configuration=testdeployment --base-href=/
+```
+
+Adjust the `BASE_HREF` and `CONFIGURATION` as needed.
+
+These commands will build the application. The output will be available in `dist/viewer-app`.
