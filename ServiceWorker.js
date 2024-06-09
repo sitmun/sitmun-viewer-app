@@ -52,11 +52,9 @@ self.addEventListener("fetch", (event) => {
     });
 
     console.log("Sending modified request to", modifiedRequest.url);
-    event.respondWith(fetch(modifiedRequest))
-      .then(response => { return response; });
+    event.respondWith(fetch(modifiedRequest));
   } else {
     console.log("No auth token found, sending original request");
     event.respondWith(fetch(request))
-      .then(response => { return response; })
   }
 });
