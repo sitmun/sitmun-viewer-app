@@ -45,6 +45,7 @@ export interface AppApplication {
 export interface AppBackground {
   id: string;
   title: string;
+  thumbnail: string;
 }
 export interface AppGroup {
   id?: string;

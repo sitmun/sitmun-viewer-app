@@ -66,13 +66,22 @@ export class SitnaHelper {
   }
 
   static toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
+    /**
+     * WARNING
+     * Thumbnails coming from backgorunds, but backgrounds may contain more than one layer.
+     * This has to be rethought from the admin, once done, the code marked with 'TODO-redo' must be reviewed.     * 
+     */
     let baseLayers: SitnaBaseLayer[] = [];
     if (apiConfig.backgrounds.length) {
       let backgrounds: string[] = [];
       let groups: AppGroup[] = [];
       let layers: string[] = [];
+      let thumbnail: string = ""; // TODO-redo
       for (let background of apiConfig.backgrounds) {
         backgrounds.push(background.id);
+        if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
+          thumbnail = background.thumbnail;
+        }
       }
       for (let background of backgrounds) {
         const group = apiConfig.groups.find((elem) => elem.id === background);
@@ -102,7 +111,8 @@ export class SitnaHelper {
               layerNames: layer.layers,
               matrixSet: service.parameters.matrixSet,
               format: service.parameters.format,
-              isBase: true
+              isBase: true,
+              thumbnail: thumbnail // TODO-redo
             };
             if (service.type == 'WMTS') {
               a.layerNames = layer.layers[0];

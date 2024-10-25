@@ -16,7 +16,7 @@
     background-color: #ffffff;
 }
 
-.tc-ctl-wlm-metadata a:hover, .tc-ctl-wlm-descarregadades a:hover, .tc-ctl-lcat-metadata a:hover, .tc-ctl-lcat-descarregadades a:hover, .tc-ctl.tc-ctl-nav-home:hover {
+.tc-ctl-wlm-metadata a:hover, .tc-ctl-wlm-descarregadades a:hover, .tc-ctl-lcat-metadata a:hover, .tc-ctl-lcat-descarregadades a:hover, .tc-ctl.tc-ctl-nav-home:hover, .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info.tc-checked, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:checked {
     background-color: #000000;
 }
 
@@ -263,10 +263,9 @@ li.tc-ctl-lcat-search-group button.tc-ctl-lcat-search-btn-info.tc-checked::after
     color: #af0000;
 }
 
-li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:hover,
-.tc-ctl-wlm-btn-info:hover, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:hover,
-.tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:checked,
-.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info.tc-checked {
+/* .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:hover NOT USING ANYMORE */
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, 
+.tc-ctl-wlm-btn-info:hover {
     background-color: #660000;
 }
 
