@@ -257,7 +257,7 @@ button.tc-ctl-fscreen-btn {
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
-    background-image: url(../img/mapaCerrar.png);
+    background-image: url(../img/mapaCerrarReverse.png);
     background-color: rgba(0, 0, 0, 1);
 }
 
@@ -1215,22 +1215,28 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
 }
 
 .tc-ctl-lcat li.tc-ctl-lcat-node > input[type="checkbox"].tc-ctl-lcat-btn-info, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info {
-    border-radius: 100%;
+    border-radius: 0.15rem;
     top: 0.5em;
-    background-color: #666;
+    background-color: #cccccc;
     width: 1em;
     height: 1em;
+    transition: background-color 0.3s ease;
 }
 
 .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info {
     top: 0.2em
 }
 
-    .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:before, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:before {
-        color: white;
-        font-size: 0.6em;
-        line-height: 1.7em;
-    }
+.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:before, 
+.tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:before {
+    color: black;
+    font-size: 0.6em;
+    line-height: 1.7em;
+}
+
+.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info.tc-checked:before, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info.tc-checked:before, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:checked, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:checked:before {
+    color: white;
+}
 
 .tc-ctl-lcat h2 button.tc-ctl-lcat-btn-tree {
     margin-left: 10px;
@@ -2967,4 +2973,16 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
 
 #arbol li.sitmun-folder span {
   cursor: pointer;
+}
+
+.tc-ctl-fscreenToMap.tc-ctl-sv-active.tc-collapsed, .tc-ctl-fscreenToMap.tc-ctl-be-active.tc-collapsed {
+    top: unset !important;
+    bottom: 15px !important;
+    height: 25vh !important;
+}
+
+body:fullscreen > .tc-map.tc-ctl-sv-active.tc-collapsed, body:fullscreen > .tc-map.tc-ctl-be-active.tc-collapsed {
+    top: unset;
+    bottom: 15px;
+    height: 25vh;
 }
