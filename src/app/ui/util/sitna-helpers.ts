@@ -5,6 +5,7 @@ import {
 } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup, AppNodeInfo, AppTree } from '@api/model/app-cfg';
 import { Injectable } from '@angular/core';
+import { timeout } from 'rxjs';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -69,7 +70,7 @@ export class SitnaHelper {
     /**
      * WARNING
      * Thumbnails coming from backgorunds, but backgrounds may contain more than one layer.
-     * This has to be rethought from the admin, once done, the code marked with 'TODO-redo' must be reviewed.     * 
+     * This has to be rethought from the admin, once done, the code marked with 'TODO-redo' must be reviewed.     *
      */
     let baseLayers: SitnaBaseLayer[] = [];
     if (apiConfig.backgrounds.length) {
@@ -687,7 +688,6 @@ export class SitnaHelper {
         for (let currentTree of apiConfig.trees) {
           let ltg = [];
           let lays = [];
-          let badConfigTree = false;
           const nodes: Map<string, AppNodeInfo> = new Map(
             Object.entries(currentTree.nodes)
           );
@@ -779,7 +779,6 @@ export class SitnaHelper {
                 }
               } else {
                 // error, no se ha encontrado layer
-                badConfigTree = true;
               }
             } else {
               if (parentNode) {
@@ -798,7 +797,6 @@ export class SitnaHelper {
           if (lays.length > 0) {
             catalogs.push({
               title: currentTree.title,
-              badConfigTree: badConfigTree,
               catalog: {
                 div: 'catalog',
                 enableSearch: true,

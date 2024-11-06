@@ -157,49 +157,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     (window as any).layerCatalogsSilmeForModal = new Object({
       currentCatalog: this.currentCatalogIdx,
       catalogs: this.layerCatalogsSilme
-        .filter((catalog: any) => {
-          return !catalog.badConfigTree;
-        })
         .map((catalog: any) => {
           return { id: ++idx, catalog: catalog.title };
         })
     });
-
-    // If there is a badConfigTree, we need to show a warning modal before loading the map
-    if (
-      this.layerCatalogsSilme.some((catalog: any) => {
-        return catalog.badConfigTree;
-      })
-    ) {
-      const omittedCatalogs = this.layerCatalogsSilme
-        .filter((catalog: any) => {
-          return catalog.badConfigTree;
-        })
-        .map((catalog: any) => {
-          return catalog.title;
-        });
-
-      const ref = this.modal.open(WarningModalComponent, {
-        data: {
-          message: 'map.error.badConfigTree',
-          listTitle: 'map.error.omittedCatalogs',
-          catalogs: omittedCatalogs
-        }
-      });
-      ref.afterClosed.subscribe(() => {
-        this.layerCatalogsSilme = this.layerCatalogsSilme.filter(
-          (catalog: any) => {
-            return !catalog.badConfigTree;
-          }
-        );
-        SITNA.Cfg.controls.layerCatalogSilmeFolders =
-          this.layerCatalogsSilme.length > 0
-            ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-            : {};
-        this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
-      });
-      return;
-    }
 
     SITNA.Cfg.controls.layerCatalogSilmeFolders =
       this.layerCatalogsSilme.length > 0
