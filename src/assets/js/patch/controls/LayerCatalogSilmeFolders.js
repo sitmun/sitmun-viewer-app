@@ -1490,9 +1490,9 @@ if (!TC.control.LayerCatalog) {
 
           createSearchAutocomplete.call(self);
 
-          self.layers.forEach(function(layer) {
-            self.renderBranch(layer, callback, resolve);
-          });
+          // Hay que encadenar las promesas de renderBranch para que se resuelvan una a una, siguiendo
+          // el orden en el que llegan las capas del árbol
+          self.layers.reduce((promise, layer) => promise.then(() => self.renderBranch(layer, callback, resolve)), Promise.resolve());
         });
       }
     }));

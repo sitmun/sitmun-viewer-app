@@ -129,6 +129,7 @@ export interface AppNodeInfo {
   resource: string;
   isRadio: boolean;
   children: string[];
+  order: number;
 }
 
 export interface AppGlobalConfiguration {

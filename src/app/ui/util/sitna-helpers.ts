@@ -752,6 +752,7 @@ export class SitnaHelper {
                     if (layer.layers.length > 0) {
                       lays.push({
                         id: layer.id,
+                        order: currentNode[1].order,
                         title: layer.title,
                         hideTitle: false,
                         type: service.type,
@@ -764,6 +765,7 @@ export class SitnaHelper {
                     } else {
                       lays.push({
                         id: layer.id,
+                        order: currentNode[1].order,
                         title: layer.title,
                         hideTitle: false,
                         type: service.type,
@@ -784,6 +786,7 @@ export class SitnaHelper {
               if (parentNode) {
                 ltg.push({
                   id: currentNode[0].replace('/', ''),
+                  order: currentNode[1].order,
                   title: currentNode[1].title,
                   parentNode: parentNode.replace('/', ''),
                   // TODO
