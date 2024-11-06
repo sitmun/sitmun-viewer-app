@@ -1064,6 +1064,7 @@ if (!TC.control.LayerCatalog) {
             // self.map.toast(self.getLocaleString('errorCarregarCapa') + self.layers[i].title, {
             //   type: TC.Consts.msgType.ERROR
             // });
+            console.log("Cannot load layer: " + self.layers[i].title);
             self.layers.splice(i, 1);
             i--;
           }
