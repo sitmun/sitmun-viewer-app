@@ -4,13 +4,18 @@
 $layout-breakpoint-small: 540px;
 
 .cards-container {
-  display: flex;
+  /*display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: flex-start;*/
+  display: grid;
+  gap:20px;
+  grid-template-columns: calc((100% / 3) - (40px / 3)) calc((100% / 3) - (40px / 3)) calc((100% / 3) - (40px / 3));
+  grid-template-columns: calc((100% / 4) - (60px / 4)) calc((100% / 4) - (60px / 4)) calc((100% / 4) - (60px / 4)) calc((100% / 4) - (60px / 4));
+
 
 
   .card {
-    display: flex;
+    /*display: flex;
     width: 21%;
     min-width: 384px;
     max-width: fit-content;
@@ -18,41 +23,51 @@ $layout-breakpoint-small: 540px;
     margin: dimensions.$base-margin-2;
     color: colors.$card-component-font;
     background: colors.$card-component-background;
-    border: dimensions.$base-border-3 solid colors.$card-component-border;
-    border-radius: 15px;
+    border: dimensions.$base-border-3 solid colors.$card-component-border;*/
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
   }
 
   .card:hover {
-    border: dimensions.$base-border-3 solid colors.$card-component-border-hover;
+    //border: dimensions.$base-border-3 solid colors.$card-component-border-hover;
     .card-img img {
-      background-color: colors.$card-component-img-hover;
+      /*background-color: colors.$card-component-img-hover;*/
       opacity: 100%;
     }
   }
 
   .card-img {
-    display: flex;
+    /*display: flex;
     justify-content: center;
     align-items: center;
     width: fit-content;
     margin: dimensions.$base-margin-2;
-    border-radius: 10px;
+    border-radius: 10px;*/
 
     img {
-      width: dimensions.$card-component-img-height;
+      /*width: dimensions.$card-component-img-height;
       height: dimensions.$card-component-img-width;
-      border-radius: dimensions.$card-component-img-radius;
-      opacity: 50%;
+      border-radius: dimensions.$card-component-img-radius;*/
+      opacity: 80%;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
     }
   }
 
   .card-titles {
     display: flex;
     flex-direction: column;
-    margin: dimensions.$base-margin-2;
+    margin: 20px;
+    gap: 10px;
+    
+    div {
 
-    label {
-      margin: dimensions.$base-margin;
+      label {
+      }
     }
   }
 

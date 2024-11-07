@@ -1,13 +1,15 @@
-<div class="nav-bar" [style.background]="styleBackground">
-  <div class="logo">
-    <img src='assets/logos/logo.png' (click)='logoClicked()'>
-  </div>
-  <div class="menu">
-    <button type="button" (click)="onShowMenu()">
-      <img src="assets/img/menu.svg" alt='Menu'>
-    </button>
+<div class='{{TamanyMenu()}}'>
+  <div class="dashboard-container">
+    <div class="logo">
+      <img src='assets/logos/logo.png' (click)='logoClicked()'>
+    </div>
+    <div class="menu">
+      <button type="button" (click)="onShowMenu()">
+        <img src="assets/img/menu.svg" alt='Menu'>
+      </button>
+    </div>
+    <ng-container *ngIf="showMenu">
+      <app-menu/>
+    </ng-container>
   </div>
 </div>
-<ng-container *ngIf="showMenu">
-  <app-menu/>
-</ng-container>

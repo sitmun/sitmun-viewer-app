@@ -20,6 +20,7 @@ export interface DashboardItem {
   title: string;
   name?: string;
   type?: string;
+  logo?: string;
 }
 
 export interface DashboardItemsResponse {

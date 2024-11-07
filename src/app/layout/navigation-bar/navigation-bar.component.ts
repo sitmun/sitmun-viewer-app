@@ -47,4 +47,15 @@ export class NavigationBarComponent implements OnInit {
   onShowMenu() {
     this.showMenu = !this.showMenu;
   }
+
+  TamanyMenu() {
+    if (this.router.url == "/auth/login") {
+      return 'nav-bar login';
+    }else if (this.router.url.includes("/map/")){
+      return 'nav-bar pet';
+    }
+    else{
+      return 'nav-bar';
+    }
+  }
 }

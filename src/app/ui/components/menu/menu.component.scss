@@ -9,7 +9,7 @@
   z-index: 10090;
   height: auto;
   width: dimensions.$navigation-bar-menu-width;
-  top: 40px;
+  top: 60px;
 
   .menu-show {
     font-size: dimensions.$navigation-bar-menu-font-size;
@@ -18,9 +18,7 @@
     padding: dimensions.$navigation-bar-menu-padding;
     color: colors.$navigation-bar-menu-color;
     background: white;
-    border-right: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
-    border-left: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
-    border-bottom: dimensions.$navigation-bar-menu-border solid colors.$navigation-bar-menu-border;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
 
     .menu-options {
 
@@ -103,4 +101,8 @@
       }
     }
   }
+}
+.menu-show-div.pet {
+  top: 30px;
+  right: 10px;
 }

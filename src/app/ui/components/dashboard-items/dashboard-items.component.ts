@@ -13,7 +13,7 @@ export class DashboardItemsComponent {
   @Input() totalElements: number = 0;
   @Output() id = new EventEmitter<number>();
 
-  constructor() {}
+  constructor() {  }
 
   onCardClicked(id: number) {
     this.id.emit(id);
