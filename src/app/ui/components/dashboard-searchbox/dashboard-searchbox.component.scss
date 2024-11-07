@@ -4,7 +4,7 @@
 $layout-breakpoint-small: 540px;
 
 form {
-  display: flex;
+  /*display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -14,44 +14,70 @@ form {
   height: dimensions.$dashboard-page-input-height;
   padding: 0 15px;
   border: 3px solid #27187e;
-  border-radius: 50px;
+  border-radius: 50px;*/
+  display: block;
+  position: relative;
+  height: 50px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 
-  input {
-    border: none;
-  }
-
-  .text-input {
+  div {
+    background-color: #fff;
     border-radius: 50px;
-    font-size: 20px;
-  }
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    max-width: 100%;
 
-  .text-input:active {
-    outline: none;
-    box-shadow: none;
-  }
+    input {
+      border: none;
+      line-height: 50px;
+      background-color: transparent;
+      margin-left: 20px;
+      width: 350px;
+      max-width: 100%;
+    }
 
-  .text-input:focus {
-    outline: none;
-    box-shadow: none;
-  }
+    .text-input {
+      font-size: 16px;
+    }
 
-  .text-input:focus-visible {
-    outline: none;
-    box-shadow: none;
-  }
+    .text-input:active {
+      outline: none;
+      box-shadow: none;
+    }
 
-  .text-input:active {
-    outline: none;
-    box-shadow: none;
-  }
+    .text-input:focus {
+      outline: none;
+      box-shadow: none;
+    }
 
-  button {
-    width: 50px;
-    height: 44px;
-    padding: 0;
-    background: white;
-    border: none;
-    cursor: pointer;
+    .text-input:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .text-input:active {
+      outline: none;
+      box-shadow: none;
+    }
+
+    button {
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+
+      img {
+        width: 20px;
+        height: 20px;
+      }
+    }
   }
 }
 

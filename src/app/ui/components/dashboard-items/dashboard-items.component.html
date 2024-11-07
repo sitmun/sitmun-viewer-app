@@ -7,13 +7,18 @@
       </div>
     </ng-container>
     <ng-template #noimg>
-      <div class="card-img">
-        <img src="assets/img/card-no-image.svg">
+      <div class="card-img card-img{{item.id}}">
+        <img src="{{ item.logo ? item.logo : 'assets/img/card-no-image.svg' }}" >
       </div>
     </ng-template>
     <div class="card-titles">
-      <label>{{'dashboardPage.name' | translate}}: {{item.title}} {{item.name}}</label>
-      <label>{{'dashboardPage.id' | translate}}: {{item.id}}</label>
+      <div>
+        <!-- <label>{{'dashboardPage.name' | translate}}:</label>&nbsp;<strong>{{item.title}} {{item.name}}</strong> -->
+        <strong>{{item.title}} {{item.name}}</strong>
+      </div>
+      <!-- <div>
+        <label>{{'dashboardPage.id' | translate}}: {{item.id}}</label>
+      </div> -->
     </div>
   </div>
 </div>

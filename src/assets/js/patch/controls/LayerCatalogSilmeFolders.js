@@ -1096,9 +1096,10 @@ if (!TC.control.LayerCatalog) {
         //hauriem de veure si es pot eliminar codi redundant o fer una funció que s'executi després, hagi fallat o no (HERE)
         for (var i = 0; i < self.layers.length; i++) {
           if (self.layers[i].capabilities == undefined) {
-            self.map.toast(self.getLocaleString('errorCarregarCapa') + self.layers[i].title, {
-              type: TC.Consts.msgType.ERROR
-            });
+            // self.map.toast(self.getLocaleString('errorCarregarCapa') + self.layers[i].title, {
+            //   type: TC.Consts.msgType.ERROR
+            // });
+            console.log("Cannot load layer: " + self.layers[i].title);
             self.layers.splice(i, 1);
             i--;
           }
@@ -1489,9 +1490,9 @@ if (!TC.control.LayerCatalog) {
 
           createSearchAutocomplete.call(self);
 
-          self.layers.forEach(function(layer) {
-            self.renderBranch(layer, callback, resolve);
-          });
+          // Hay que encadenar las promesas de renderBranch para que se resuelvan una a una, siguiendo
+          // el orden en el que llegan las capas del árbol
+          self.layers.reduce((promise, layer) => promise.then(() => self.renderBranch(layer, callback, resolve)), Promise.resolve());
         });
       }
     }));

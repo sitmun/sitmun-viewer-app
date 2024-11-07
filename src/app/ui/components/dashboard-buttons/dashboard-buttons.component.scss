@@ -4,42 +4,62 @@
 $layout-breakpoint-small: 540px;
 
 .dashboard-buttons {
-  display: flex;
+  /*display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  margin: 120px 20px 0 20px;
+  margin: 120px 20px 0 20px;*/
+  margin-bottom: 40px;
+  display: flex;
+  gap:30px;
 
   .selected {
-    color: colors.$dashboard-component-button-focus;
-    border-color: colors.$dashboard-component-button-border-focus;
+    /*color: colors.$dashboard-component-button-focus;
+    border-color: colors.$dashboard-component-button-border-focus;*/
+    color: #000;
+    background-color: transparent;
+    order: 1;
+    padding-left: 0px;
+    padding-right: 0px;
+    font-size: 1.6em;
   }
 
   button {
-    font-weight: bold;
+    /*font-weight: bold;
     font-size: dimensions.$base-font-size-xxl;
     color: colors.$dashboard-component-button;
     background: colors.$dashboard-component-button-background;
     border: none;
     border-bottom: dimensions.$base-border-3 solid colors.$dashboard-component-button-border;
-    padding-bottom: 5px;
+    padding-bottom: 5px;*/
+    background-color: #FF9300;
+    color: #fff;
+    border: none;
+    line-height: 40px;
+    border-radius: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1.2em;
+    order: 2;
   }
 
-  button:hover {
-    color: colors.$dashboard-component-button-hover;
-    border-color: colors.$dashboard-component-button-border-hover;
+  button:hover:not(.selected) {
+    background-color: #e18200;
+    cursor: pointer;
+    /*color: colors.$dashboard-component-button-hover;
+    border-color: colors.$dashboard-component-button-border-hover;*/
   }
 
   button:focus {
-    color: colors.$dashboard-component-button-focus;
-    border-color: colors.$dashboard-component-button-border-focus;
+    /*color: colors.$dashboard-component-button-focus;
+    border-color: colors.$dashboard-component-button-border-focus;*/
   }
 }
 
 @media (max-width: $layout-breakpoint-small) {
   .dashboard-buttons {
-    margin: 20px 20px 0 20px;
-    flex-flow: column;
+    /*margin: 20px 20px 0 20px;
+    flex-flow: column;*/
   }
 }

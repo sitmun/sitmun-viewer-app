@@ -13,7 +13,7 @@ $layout-breakpoint-small: 540px;
   background-size: cover;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   position: fixed;
 }
 
@@ -45,25 +45,29 @@ $layout-breakpoint-small: 540px;
 
 .container {
   animation: none;
-  margin-top: dimensions.$base-margin-8+80px;
+  //margin-top: dimensions.$base-margin-8+80px;
   // TODO - REVIEW MV SILME
-  background-color: #cccccc88;
+  background-color: #ffffffdd;
   padding: 30px;
-  border: 1px solid grey;
-  border-radius: 5px;
+  //border: 1px solid grey;
+  border-radius: 10px;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
 
   .title {
     color: colors.$common-color-font-secondary;
     display: flex;
     flex-direction: row;
+    margin-bottom: 20px;
     h1 {
       width: 50%;
       // TODO - REVIEW MV SILME
-      background-image: url('~../../../../assets/logos/logo_blue.png');
+      background-image: url('~../../../../assets/logos/logo_black.png');
       background-size: contain;
       background-repeat: no-repeat;
       height: 55px;
       color: transparent;
+      margin-top: 0px;
+      margin-bottom: 0px;
     }
     div {
       width: 50%;
@@ -78,9 +82,13 @@ $layout-breakpoint-small: 540px;
         border-radius: dimensions.$login-page-button-radius;
         font-weight: bold;
         border: none;
+        background-color: #222;
+        cursor: pointer;
+        font-size: 1em;
       }
       button:hover {
         background: colors.$login-page-button-public-hover;
+        background-color: #000;
       }
 
     }
@@ -100,7 +108,9 @@ $layout-breakpoint-small: 540px;
         padding: 0 dimensions.$base-margin-6;
         border-radius: dimensions.$login-page-input-radius;
         outline: 0;
+        box-sizing: border-box;
         border: dimensions.$base-border solid colors.$common-color-border-input;
+        border:0px;
       }
 
       @media (max-width: $layout-breakpoint-small) {
@@ -113,25 +123,35 @@ $layout-breakpoint-small: 540px;
 
       input,
       input::placeholder {
-        font: dimensions.$login-page-input-font-size sans-serif;
+        font: 1em sans-serif;
         color: colors.$login-page-input-font;
       }
 
       input:focus-visible {
-        border: dimensions.$base-border-2 solid colors.$login-page-input-focus;
+        //border: dimensions.$base-border-2 solid colors.$login-page-input-focus;
+        color: #000;
       }
 
       button {
-        align-self: center;
+        align-self: flex-start;
         font-size: dimensions.$login-page-button-font;
         color: colors.$login-page-button-font;
         background: colors.$login-page-button-login-background;
         font-weight: bold;
         margin: dimensions.$base-margin-2 0;
-        width: dimensions.$login-page-button-width;
-        height: dimensions.$login-page-input-height;
+        //width: dimensions.$login-page-button-width;
+        //height: dimensions.$login-page-input-height;
         border-radius: dimensions.$login-page-button-radius;
         border: none;
+        background-color: #FF9300;
+        color: #fff;
+        line-height: 40px;
+        border-radius: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        font-size: 1em;
+        cursor: pointer;
+        margin-top: 20px;
       }
 
       button:hover {

@@ -4,39 +4,50 @@
 
 .modal-view {
   display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &>div {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
     &.background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
       bottom: 0;
       z-index: dimensions.$modal-background-z-index;
       background-color: colors.$modal-background-around-color;
       opacity: dimensions.$modal-transparency;
     }
     &.content {
+      position: inherit;
       @include mixins.centered-item();
       z-index: dimensions.$modal-content-z-index;
       @include mixins.modal-content-shadow();
-      margin-top: dimensions.$modal-margin-top;
+      //margin-top: dimensions.$modal-margin-top;
       width: dimensions.$modal-regular-width;
       background-color: colors.$white;
       border-radius: dimensions.$modal-border-radius;
-      border: dimensions.$base-border-2 solid colors.$modal-background-border-color;
       @media all and (max-width: 827px) {
         width: 100% !important;
         height: 100%;
       }
       .modal-view-body {
-        overflow-x: hidden;
-        overflow-y: hidden;
-        max-height: dimensions.$modal-body-max-height;
-        min-height: dimensions.$modal-body-min-height;
-        @include mixins.horizontal-padding(dimensions.$modal-body-padding);
-        padding-right: 0;
-        padding-top: round(dimensions.$modal-body-padding * 0.5);
+        //overflow-x: hidden;
+        //overflow-y: hidden;
+        //max-height: dimensions.$modal-body-max-height;
+        //min-height: dimensions.$modal-body-min-height;
+        //@include mixins.horizontal-padding(dimensions.$modal-body-padding);
+        //padding-right: 0;
+        //padding-top: round(dimensions.$modal-body-padding * 0.5);
+        padding: 20px;
+        width: 100%;
+        box-sizing: border-box;
         //@media (max-width: $breakpoint-xs) {
         //  max-height: calc(100% - #{dimensions.$modal-header-height});
         //  @include horizontal-padding(dimensions.$modal-body-padding - round(dimensions.$modal-body-padding * 0.25));

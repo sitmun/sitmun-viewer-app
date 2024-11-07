@@ -152,54 +152,23 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Order layers
+    this.layerCatalogsSilme.forEach((tree: any) => {
+      const layersAux = tree.catalog.layers;
+      const groupAux = tree.catalog.layerTreeGroups;
+      tree.catalog.layers = this.orderLayers(layersAux, groupAux);
+    });
+
+
     // Parse the catalogs, so we can use them in the LayerCatalogSilme.js
     let idx = -1;
     (window as any).layerCatalogsSilmeForModal = new Object({
       currentCatalog: this.currentCatalogIdx,
       catalogs: this.layerCatalogsSilme
-        .filter((catalog: any) => {
-          return !catalog.badConfigTree;
-        })
         .map((catalog: any) => {
           return { id: ++idx, catalog: catalog.title };
         })
     });
-
-    // If there is a badConfigTree, we need to show a warning modal before loading the map
-    if (
-      this.layerCatalogsSilme.some((catalog: any) => {
-        return catalog.badConfigTree;
-      })
-    ) {
-      const omittedCatalogs = this.layerCatalogsSilme
-        .filter((catalog: any) => {
-          return catalog.badConfigTree;
-        })
-        .map((catalog: any) => {
-          return catalog.title;
-        });
-
-      const ref = this.modal.open(WarningModalComponent, {
-        data: {
-          message: 'map.error.badConfigTree',
-          listTitle: 'map.error.omittedCatalogs',
-          catalogs: omittedCatalogs
-        }
-      });
-      ref.afterClosed.subscribe(() => {
-        this.layerCatalogsSilme = this.layerCatalogsSilme.filter(
-          (catalog: any) => {
-            return !catalog.badConfigTree;
-          }
-        );
-        SITNA.Cfg.controls.layerCatalogSilmeFolders =
-          this.layerCatalogsSilme.length > 0
-            ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-            : {};
-        this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
-      });
-      return;
-    }
 
     SITNA.Cfg.controls.layerCatalogSilmeFolders =
       this.layerCatalogsSilme.length > 0
@@ -299,6 +268,47 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       SitnaHelper.toHelp(appCfg);
       SitnaHelper.toInterface();
     });
+  }
+
+  private orderLayers(layers: any[], groups: any[]): any[] {
+    const groupsMap = new Map<string, any>();
+    groups.forEach((group) => groupsMap.set(group.id, group));
+
+    // Build the path to the root for each layer
+    function buildPathToRoot(layer: any): number[] {
+      let path: number[] = [layer.order];
+      let currentGroup = groupsMap.get(layer.parentGroupNode);
+
+      while (currentGroup) {
+        path.unshift(currentGroup.order); // Add the group order to the start of the path
+        currentGroup = (currentGroup.parentNode && currentGroup.parentNode !== currentGroup.id) ? groupsMap.get(currentGroup.parentNode) : null;
+      }
+
+      return path;
+    }
+
+    // Assign each layer its "order path"
+    const layersWithPaths = layers.map((layer) => ({
+      layer,
+      path: buildPathToRoot(layer),
+    }));
+
+    // Sort the layers based on their "order paths"
+    layersWithPaths.sort((a, b) => {
+      const minLength = Math.min(a.path.length, b.path.length);
+      for (let i = 0; i < minLength; i++) {
+        if (a.path[i] !== b.path[i]) {
+          return a.path[i] - b.path[i];
+        }
+      }
+
+      // In case of a tie, the shorter path wins
+      return a.path.length - b.path.length;
+    });
+
+    // Returns the sorted list of layers
+    return layersWithPaths.map((item) => item.layer);
+
   }
 
   abstract navigateToDashboard(): any;

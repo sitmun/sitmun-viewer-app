@@ -63,6 +63,14 @@ export class MenuComponent {
     }
   }
 
+  TamanyMenu() {
+    if (this.router.url.includes("/map/")) {
+      return 'menu-show-div pet';
+    }else{
+      return 'menu-show-div';
+    }
+  }
+
   logout() {
     this.authenticationService.logout();
   }
