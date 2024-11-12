@@ -80,9 +80,9 @@ export class SitnaHelper {
       let thumbnail: string = ""; // TODO-redo
       for (let background of apiConfig.backgrounds) {
         backgrounds.push(background.id);
-        if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
-          thumbnail = background.thumbnail;
-        }
+        // if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
+        //   thumbnail = background.thumbnail;
+        // }
       }
       for (let background of backgrounds) {
         const group = apiConfig.groups.find((elem) => elem.id === background);
@@ -103,6 +103,13 @@ export class SitnaHelper {
           const service = apiConfig.services.find(
             (service) => service.id === layer.service
           );
+          for (let background of apiConfig.backgrounds) {
+            thumbnail = "";
+            if(typeof background.thumbnail!='undefined' && background.thumbnail && groups.find(x => (x.id == background.id && x.layers?.includes(layerElement)))) { // TODO-redo
+              thumbnail = background.thumbnail;
+              break;
+            }
+          }
           if (service != undefined) {
             let a: SitnaBaseLayer = {
               id: layer.title,

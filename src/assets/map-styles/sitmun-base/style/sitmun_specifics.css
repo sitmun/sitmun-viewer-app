@@ -1,7 +1,7 @@
 :root {
   /*--ide-main-color: #bc986a; /* -- BROWN */
   /*--ide-main-color: #c38d9e; /* -- PINK */
-  --ide-main-color: #d79922; /* -- ORANGE */
+  --ide-main-color: #ff9300; /* -- ORANGE */
 }
 
 .login-page {
@@ -90,6 +90,10 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
 .tc-ctl-lcat-info h4 {
   margin: 0.5em 0 0.2em 0;
   text-transform: unset;
+}
+
+.slide-panel > h1#silme-tab {
+  background-color: var(--ide-main-color);
 }
 
 #arbol li.sitmun-folder span:hover {

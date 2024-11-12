@@ -90,7 +90,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
     background-color: #00546a;
 }
 
-.left-collapsed-legend #legend-tab, .left-collapsed-silme #silme-tab,
+.left-collapsed-legend #legend-tab, .left-collapsed-silme.slide-panel > h1#silme-tab,
 .left-collapsed-ovmap #ovmap-tab {
     background-color: #b51818;
 }
