@@ -156,7 +156,7 @@ export class SitnaHelper {
   static toControls(apiConfig: AppCfg) {
     const sitnaControls = {} as SitnaControls;
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
-      x['ui-control'].startsWith('sitna.')
+      (x['ui-control'] != null) && (x['ui-control'].startsWith('sitna.'))
     );
     sitnaControls.controlContainer = {
       div: 'ccontainer',
@@ -672,7 +672,7 @@ export class SitnaHelper {
   static toLayerCatalogSilme(apiConfig: AppCfg) {
     var catalogs = [];
     const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
-      x['ui-control'].startsWith('sitna.')
+      (x['ui-control'] != null) && (x['ui-control'].startsWith('sitna.'))
     );
     // if control LayerCatalog is included in config
     if (
