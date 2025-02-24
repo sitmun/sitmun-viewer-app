@@ -1,0 +1,27 @@
+@use 'colors';
+@use 'dimensions';
+
+.primary-button {
+  align-self: flex-start;
+  font-size: dimensions.$login-page-button-font;
+  color: colors.$login-page-button-font;
+  background: colors.$login-page-button-login-background;
+  font-weight: bold;
+  margin: dimensions.$base-margin-2 0;
+  border-radius: dimensions.$login-page-button-radius;
+  border: none;
+  line-height: 40px;
+  border-radius: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+  font-size: 1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primary-button:hover {
+  background: colors.$login-page-button-login-hover;
+}

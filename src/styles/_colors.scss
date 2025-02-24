@@ -1,7 +1,9 @@
 // Base
 $transparent: #00000000;
 $black: #1A0E00;
-$orange:  #d79922; // - ORANGE
+$orange:  #d79922;
+$primary-orange: #FF8C00;
+$secondary-orange: #FF6E00;
 $orange-transp-60percent: #ff930099;
 $orange-transp-20percent: #ff930033;
 $orange-dark: darkorange;
@@ -41,11 +43,12 @@ $navigation-bar-menu-logout-button-background: $light-orange;
 
 // Login page
 $login-page-button-font: $white;
-$login-page-button-login-background: $orange;
-$login-page-button-login-hover: $orange-dark;
+$login-page-button-login-background: $primary-orange;
+$login-page-button-login-hover: $secondary-orange;
 $login-page-button-public-background: $light-blue;
 $login-page-button-public-hover: $blue;
 $login-page-input-font: $gray;
+$login-page-input-text: $primary-orange;
 $login-page-input-focus: $blue;
 
 // Card component
