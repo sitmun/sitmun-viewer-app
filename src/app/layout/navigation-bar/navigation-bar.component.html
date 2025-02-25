@@ -1,15 +1,11 @@
 <div class='{{TamanyMenu()}}'>
   <div class="dashboard-container">
-    <div class="logo">
-      <img src='assets/logos/logo.png' (click)='logoClicked()'>
+    <div class="select-language">
+        <select>
+          <option value="CA" (click)="useLanguage('ca')">Català</option>
+          <option value="EN" (click)="useLanguage('en')">English</option>
+          <option selected value="ES" (click)="useLanguage('es')">Español</option>
+        </select>
     </div>
-    <div class="menu">
-      <button type="button" (click)="onShowMenu()">
-        <img src="assets/img/menu.svg" alt='Menu'>
-      </button>
-    </div>
-    <ng-container *ngIf="showMenu">
-      <app-menu/>
-    </ng-container>
   </div>
 </div>

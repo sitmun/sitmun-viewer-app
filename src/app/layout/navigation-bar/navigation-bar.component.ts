@@ -1,6 +1,7 @@
 import { Component, Injectable, OnInit } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { CommonService } from '@api/services/common.service';
+import { TranslateService } from '@ngx-translate/core';
 
 
 @Component({
@@ -13,7 +14,7 @@ export class NavigationBarComponent implements OnInit {
   showMenu: boolean;
   styleBackground: string = "#000000FF"; // by default, 100% transparent
 
-  constructor(private router: Router, private commonService: CommonService) {
+  constructor(private router: Router, private commonService: CommonService, private translate: TranslateService) {
     this.showMenu = false;
     router.events.forEach((event) => {
       if (event instanceof NavigationStart) {
@@ -57,5 +58,9 @@ export class NavigationBarComponent implements OnInit {
     else{
       return 'nav-bar';
     }
+  }
+
+  useLanguage(lang: string) {
+    this.translate.use(lang);
   }
 }
