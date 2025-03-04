@@ -13,6 +13,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { PrimaryButtonComponent } from './components/primary-button/primary-button.component';
 import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
 import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
+import { NotificationComponent } from './components/notification/notification.component';
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule],
@@ -25,7 +26,8 @@ import { FormFieldInputComponent } from './components/form-field-input/form-fiel
     DashboardPaginationComponent,
     PrimaryButtonComponent,
     SecondaryButtonComponent,
-    FormFieldInputComponent
+    FormFieldInputComponent,
+    NotificationComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -37,7 +39,8 @@ import { FormFieldInputComponent } from './components/form-field-input/form-fiel
     MenuComponent,
     PrimaryButtonComponent,
     SecondaryButtonComponent,
-    FormFieldInputComponent
+    FormFieldInputComponent,
+    NotificationComponent
   ],
   providers: []
 })
