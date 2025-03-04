@@ -20,6 +20,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+
+  img {
+    margin-right : 5px;
+  }
 }
 
 .primary-button:hover {

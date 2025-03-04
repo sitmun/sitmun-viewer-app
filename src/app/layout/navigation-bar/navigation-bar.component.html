@@ -1,11 +1,11 @@
 <div class='{{TamanyMenu()}}'>
   <div class="dashboard-container">
     <div class="select-language">
-        <select>
-          <option value="CA" (click)="useLanguage('ca')">Català</option>
-          <option value="EN" (click)="useLanguage('en')">English</option>
-          <option selected value="ES" (click)="useLanguage('es')">Español</option>
-        </select>
+      <select [ngModel]="currentLang" (change)="useLanguage($event)">
+        <option value="ca">Català</option>
+        <option value="en">English</option>
+        <option selected value="es">Español</option>
+      </select>
     </div>
   </div>
 </div>

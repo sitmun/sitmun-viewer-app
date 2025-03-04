@@ -13,6 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
 export class NavigationBarComponent implements OnInit {
   showMenu: boolean;
   styleBackground: string = "#000000FF"; // by default, 100% transparent
+  currentLang : string;
 
   constructor(private router: Router, private commonService: CommonService, private translate: TranslateService) {
     this.showMenu = false;
@@ -21,6 +22,8 @@ export class NavigationBarComponent implements OnInit {
         this.showMenu = false;
       }
     });
+
+    this.currentLang = localStorage.getItem('language') || 'es';
   }
 
   ngOnInit() {
@@ -50,7 +53,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   TamanyMenu() {
-    if (this.router.url == "/auth/login") {
+    if (this.router.url.includes("/auth/login")) {
       return 'nav-bar login';
     }else if (this.router.url.includes("/map/")){
       return 'nav-bar pet';
@@ -60,7 +63,9 @@ export class NavigationBarComponent implements OnInit {
     }
   }
 
-  useLanguage(lang: string) {
-    this.translate.use(lang);
+  useLanguage(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.translate.use(target.value);
+    localStorage.setItem('language', target.value);
   }
 }

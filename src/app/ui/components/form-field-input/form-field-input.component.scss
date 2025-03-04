@@ -1,5 +1,6 @@
 @use 'colors';
 @use 'dimensions';
+
 .form-section-input:focus-within {
   border: 1px solid;
   border-color: colors.$login-page-button-login-background;

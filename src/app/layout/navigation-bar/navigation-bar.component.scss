@@ -15,9 +15,6 @@
   background-color: #FF9300;
 
   div {
-    margin-left: auto;
-    margin-right:auto;
-    max-width: 1630px;
     height: 70px;
     position: relative;
 
@@ -121,36 +118,15 @@
         }
       }
     }
+    .select-language {
+      margin: 5px 5px 0 0;
+    }
   }
 }
 .nav-bar.login{
   background-color: transparent;
   div {
     max-width: calc(100% - 20px);
-  }
-}
-
-@media all and (max-width: 1623px) and (min-width: 1234px) {
-  .nav-bar {
-    div {
-      max-width: 1220px;
-    }
-  }
-}
-
-@media all and (max-width: 1233px) and (min-width: 828px) {
-  .nav-bar {
-    div {
-      max-width: 812px;
-    }
-  }
-}
-
-@media all and (max-width: 827px) {
-  .nav-bar {
-    div {
-      max-width: 420px;
-    }
   }
 }
 
