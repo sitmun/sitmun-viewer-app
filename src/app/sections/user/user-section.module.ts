@@ -6,9 +6,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MapComponent } from './map/map.component';
 import { FormsModule } from '@angular/forms';
 import { UiModule } from '@ui/ui.module';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
-  declarations: [DashboardComponent, MapComponent],
+  declarations: [DashboardComponent, MapComponent, ProfileComponent],
   imports: [
     CommonModule,
     UserRoutingModule,

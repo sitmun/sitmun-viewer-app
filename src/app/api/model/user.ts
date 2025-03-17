@@ -1,27 +1,36 @@
 import { StringUtils } from '@ui/util/helpers';
 
-// TODO just an example
 export interface UserDto {
   id: number;
-  email: string;
-  name: string;
-  surname: string;
+  mail: string;
+  username: string;
+  password: string;
+  passwordSet: boolean;
+  firstname: string;
+  lastname: string;
+  identificationNumber: number;
+  identificationType: string;
+  administrator: boolean;
+  blocked: boolean;
+  generic: boolean;
+  createDate: Date;
 }
 
 export class UserUtils {
   static userFullName(u: UserDto): string {
     const parts = [];
     if (u) {
-      parts.push(u.name);
-      parts.push(u.surname);
+      parts.push(u.firstname);
+      parts.push(u.lastname);
     }
+    console.log(parts.filter((s) => StringUtils.isNotEmpty(s)).join(' '));
     return parts.filter((s) => StringUtils.isNotEmpty(s)).join(' ');
   }
 
-  static fullName(name: string, surname: string): string {
+  static fullName(firstname: string, lastname: string): string {
     const parts = [];
-    parts.push(name);
-    parts.push(surname);
+    parts.push(firstname);
+    parts.push(lastname);
     return parts.filter((s) => StringUtils.isNotEmpty(s)).join(' ');
   }
 }

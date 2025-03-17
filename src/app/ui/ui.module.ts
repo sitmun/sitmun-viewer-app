@@ -14,6 +14,7 @@ import { PrimaryButtonComponent } from './components/primary-button/primary-butt
 import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
 import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
 import { NotificationComponent } from './components/notification/notification.component';
+import { ProfileInformationComponent } from './components/profile-information/profile-information.component';
 import { DashboardItemComponent } from './components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
 import { DashboardTerritoriesTagComponent } from './components/dashboard/dashboard-territories-tag/dashboard-territories-tag.component';
@@ -53,7 +54,8 @@ import { MatIconModule } from '@angular/material/icon';
     NotificationComponent,
     DashboardItemComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent
+    DashboardTerritoriesTagComponent,
+    ProfileInformationComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -68,7 +70,8 @@ import { MatIconModule } from '@angular/material/icon';
     FormFieldInputComponent,
     NotificationComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent
+    DashboardTerritoriesTagComponent,
+    ProfileInformationComponent
   ],
   providers: []
 })
