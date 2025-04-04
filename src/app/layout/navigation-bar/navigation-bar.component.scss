@@ -15,9 +15,6 @@
   background-color: #FF9300;
 
   div {
-    margin-left: auto;
-    margin-right:auto;
-    max-width: 1630px;
     height: 70px;
     position: relative;
 
@@ -28,6 +25,48 @@
         width: auto;
         height: 50px;
       }
+    }
+
+    .select-language {
+      margin: 20px 20px 0px 0px;
+      height: 40px;
+      width: 140px;
+      position: absolute;
+      right: 0px;
+      top: 0px;
+
+      select {
+        border: 0;
+        outline: 0;
+        height: 40px;
+        width: 130px;
+        color: white;
+        border-radius: 0.25em;
+        border: 1px solid #ffffff;
+        background-color: transparent;
+        backdrop-filter: blur(2px);
+        cursor: pointer;
+        padding-left: 7px;
+      }
+
+      select::after {
+        content: '\25BC';
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 1em;
+        background-color: #34495e;
+        transition: .25s all ease;
+        pointer-events: none;
+      }
+
+      select:hover::after {
+        color: #f39c12;
+      }
+    }
+
+    .select-language > select > option {
+      background-color: red;
     }
 
     .menu {
@@ -79,6 +118,9 @@
         }
       }
     }
+    .select-language {
+      margin: 5px 5px 0 0;
+    }
   }
 }
 .nav-bar.login{
@@ -88,26 +130,23 @@
   }
 }
 
-@media all and (max-width: 1623px) and (min-width: 1234px) {
-  .nav-bar {
-    div {
-      max-width: 1220px;
-    }
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  .select-language {
+    margin-top: 10px !important;
+    margin-right: 5px !important;
   }
-}
 
-@media all and (max-width: 1233px) and (min-width: 828px) {
-  .nav-bar {
-    div {
-      max-width: 812px;
-    }
+  .select-language::after {
+    border-left: var(--size) solid transparent;
+    border-right: var(--size) solid transparent;
+    border-top: var(--size) solid black;
+    top: 55%;
+    background-color: red;
   }
-}
 
-@media all and (max-width: 827px) {
-  .nav-bar {
+  .nav-bar.login{
     div {
-      max-width: 420px;
+      max-width: calc(100%);
     }
   }
 }
