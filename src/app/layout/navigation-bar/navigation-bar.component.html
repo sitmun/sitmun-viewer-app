@@ -1,11 +1,49 @@
 <div class='{{TamanyMenu()}}'>
   <div class="dashboard-container">
-    <div class="select-language">
-      <select [ngModel]="currentLang" (change)="useLanguage($event)">
-        <option value="ca">Català</option>
-        <option value="en">English</option>
-        <option selected value="es">Español</option>
-      </select>
+    <div class="left">
+      <img (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="IsConnected()"/>
     </div>
+
+    <div class="right">
+      <button (click)="homeRedirect()" [class.active]="navigationClassActive == 'home'" class="home-menu button-menu" *ngIf="IsConnected()"> </button>
+      <div class="select-language">
+        <select [ngModel]="currentLang" (change)="useLanguage($event)">
+          <option value="ca"> Català </option>
+          <option value="en"> English </option>
+          <option value="es"> Español </option>
+          <option value="fr"> Français </option>
+        </select>
+      </div>
+      <div class="profile-page" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
+        <p> {{ 'genericPrivateHeader.hi' | translate }},</p>
+        <button (click)="profileRedirect()" class="button-menu">
+          <div class="icon"></div>
+          <p id="username"> {{ username | titlecase}} </p>
+        </button>
+      </div>
+      <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard()">
+        <img src="assets/img/Icona-desconnexió.svg"/>
+        <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
+      </button>
+      <primary-button
+        *ngIf="IsConnected() && isPublicDashboard()"
+        [button_text]="'loginPage.title' | translate"
+        (click)="homeRedirect()"
+        />
+    </div>
+  </div>
+</div>
+
+<div class="navbar-responsive" *ngIf="IsConnected()">
+  <div class="home-button" [class.active]="navigationClassActive == 'home'">
+    <button (click)="homeRedirect()">
+      <div class="icon"></div>
+    </button>
+  </div>
+
+  <div class="logout-button">
+    <button (click)="logout()">
+      <div class="icon"></div>
+    </button>
   </div>
 </div>
