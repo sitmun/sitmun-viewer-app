@@ -31,6 +31,24 @@ export interface AuthenticationRequest {
   password: string;
 }
 
+export interface RecoveryRequest {
+  /**
+   * Login (mail or username) of the account to recover the password
+   */
+  login : string;
+}
+
 export interface AuthenticationResponse {
   id_token: string;
+}
+
+export interface UserRequest {
+  /**
+   * New password of the account
+   */
+  password: string | null;
+  /**
+   * Token for password recovery
+   */
+  token: string | null;
 }

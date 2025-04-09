@@ -109,7 +109,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   TamanyMenu() {
-    if (this.router.url.startsWith("/auth/login")) {
+    if (this.router.url.startsWith("/auth/login") || this.router.url.startsWith("/auth/forgot-password")) {
       return 'nav-bar login';
     }else if (this.router.url.startsWith("/map/")){
       return 'nav-bar pet';
