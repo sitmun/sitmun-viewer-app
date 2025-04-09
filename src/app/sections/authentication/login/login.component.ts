@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthenticationRequest } from '@auth/authentication.options';
 import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private authenticationService: AuthenticationService<unknown>,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private notificationService : NotificationService,
   ) {
     this.authenticationRequest = {
       username: '',
@@ -25,7 +27,6 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    //Array.from(document.getElementsByClassName('nav-bar') as HTMLCollectionOf<HTMLElement>)[0].style.visibility = 'hidden'; // MV SILME
     if (this.authenticationService.isLoggedIn()) {
       this.router.navigateByUrl('/');
     }
@@ -44,9 +45,8 @@ export class LoginComponent implements OnInit {
           if (error.status && error.status === 401) {
             this.authenticationRequest.username = '';
             this.authenticationRequest.password = '';
-            let traduction: string = '';
             this.translate.get('loginPage.incorrectLogin').subscribe((trad) => {
-              traduction = trad;
+              this.notificationService.error(trad);
             });
           }
         }
