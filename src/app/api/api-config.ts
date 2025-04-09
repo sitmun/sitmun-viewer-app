@@ -7,6 +7,9 @@ export const URL_API_APPLICATIONS = '/api/config/client/application';
 
 export const URL_API_TERRITORIES = '/api/config/client/territory';
 
+
+export const URL_API_TERRITORIES_POSITIONS = '/api/config/client/territory/position'
+
 export const URL_API_MAP_CONFIG = (appId: number, territoryId: number) =>
   `/api/config/client/profile/${appId}/${territoryId}`;
 

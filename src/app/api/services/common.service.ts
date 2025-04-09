@@ -21,6 +21,14 @@ export interface DashboardItem {
   name?: string;
   type?: string;
   logo?: string;
+  description? : string;
+  isUnavailable: boolean;
+  lastUpdate?: Date;
+  maintenanceInformation?: string;
+  appPrivate: boolean;
+  updateDate: Date;
+  createdDate: Date;
+  creator: string;
 }
 
 export interface DashboardItemsResponse {

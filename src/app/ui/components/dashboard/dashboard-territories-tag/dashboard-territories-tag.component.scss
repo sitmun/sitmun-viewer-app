@@ -1,0 +1,191 @@
+@use 'dimensions';
+@use 'colors';
+
+$path_base: "./../../../assets/img/";
+
+.territories-tag-dashboard {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  .territories-tag-items-many {
+    background-color: colors.$blue-light;
+  }
+}
+
+.territories-tag {
+  background-color: white;
+  width: 400px;
+  height: 400px;
+  max-height: 400px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-top: 20px;
+  padding-bottom: 50px;
+  position: relative;
+
+  .territories-tag-items-many {
+    padding: 10px;
+    height: 100%;
+
+    #territory-list {
+      overflow-y: auto;
+      max-height: 250px;
+      scrollbar-width: none;        // Firefox
+      -ms-overflow-style: none;     // Internet Explorer & Edge
+
+      &::-webkit-scrollbar {
+        display: none;              // Chrome, Safari, etc.
+      }
+    }
+
+    form {
+      width: 80%;
+
+      div {
+        background-color: #fff;
+        right: 0px;
+        top: 0px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        max-width: 100%;
+        border: gray 1px solid;
+        border-radius: 3px;
+
+        input {
+          border: none;
+          line-height: 50px;
+          background-color: transparent;
+          max-width: 100%;
+          width: 80%;
+        }
+
+        .text-input {
+          font-size: 16px;
+        }
+
+        .text-input:active {
+          outline: none;
+          box-shadow: none;
+        }
+
+        .text-input:focus {
+          outline: none;
+          box-shadow: none;
+        }
+
+        .text-input:focus-visible {
+          outline: none;
+          box-shadow: none;
+        }
+
+        .text-input:active {
+          outline: none;
+          box-shadow: none;
+        }
+
+        button {
+          width: 50px;
+          height: 50px;
+          padding: 0;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+
+          img {
+            width: 20px;
+            height: 20px;
+          }
+        }
+
+        #clear-text-button:hover {
+          filter: grayscale(100%) brightness(0);
+        }
+      }
+    }
+
+    form:hover {
+      border-color: #758BFD;
+    }
+
+  }
+
+  .searchbox-wrapper #territories-searchbox {
+    width: 300px;
+  }
+
+  #hide-territories-tag {
+    all: unset;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  #hide-territories-tag:hover {
+    opacity: 0.5;
+    cursor: pointer;
+  }
+}
+
+.territory-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 50px;
+  background-color: white;
+  position: relative;
+}
+
+.left-side {
+  position: relative;
+  all: unset;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  width: 80%;
+  border: 1px solid rgba(211, 211, 211, 0.3);
+  padding-left: 10px;
+
+  .left-icon {
+    margin-right: 1rem;
+    background-image: $path_base + "";
+  }
+
+  .territory-text {
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.left-side:hover {
+  cursor: pointer;
+}
+
+.left-side:hover .territory-text {
+  color: colors.$blue;
+}
+
+.right-side {
+  all: unset;
+  height: 100%;
+  display: flex;
+  width: 20%;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(211, 211, 211, 0.3);
+
+  .right-icon {
+    height: 60%;
+  }
+}
+
+.right-side:hover {
+  cursor: pointer;
+}
+
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+ .territories-tag {
+  width: 100%;
+ }
+}

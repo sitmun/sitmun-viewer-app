@@ -21,10 +21,4 @@ export class PublicDashboardComponent
   ) {
     super(router, commonService, modal);
   }
-
-  override navigateToMap(applicationId: number, territoryId: number) {
-    this.router.navigateByUrl(
-      NavigationPath.Section.Public.Map(applicationId, territoryId)
-    );
-  }
 }

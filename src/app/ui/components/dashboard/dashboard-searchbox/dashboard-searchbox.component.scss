@@ -1,0 +1,176 @@
+@use 'dimensions';
+@use 'colors';
+
+$layout-breakpoint-small: 540px;
+
+$padding-base: 10px;
+* {
+  box-sizing: border-box;
+}
+
+form {
+  height: 50px;
+  margin-top: 20px;
+  padding-bottom: 20px;
+  width: 100%;
+
+  div {
+    width: 100%;
+    background-color: #fff;
+    right: 0;
+    top: 0;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    border: colors.$light-gray 1px solid;
+    padding: 0;
+
+    button {
+      flex: 0 0 40px;
+      width: 40px;
+      height: 50px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    input {
+      flex: 1;
+      height: 50px;
+      border: none;
+      background-color: transparent;
+      font-size: 16px;
+      padding: 0 10px;
+      margin: 0;
+      outline: none;
+      width: 100%;
+
+      &.text-input {
+        font-size: 16px;
+      }
+    }
+
+    #clear-text-button {
+      flex: 0 0 40px;
+      height: 50px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        filter: grayscale(100%) brightness(0);
+      }
+    }
+  }
+}
+
+
+.suggestions-list {
+  border: 1px solid #ccc;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: white;
+  display: block;
+  z-index: 1000;
+  position: absolute;
+
+  div {
+    .suggestion-title {
+      color: colors.$gray;
+      height: 10px;
+      padding-left: $padding-base;
+    }
+
+    .item-app{
+      display: flex;
+      align-items: center;
+      width: 100%;
+      all: unset;
+
+      .territory-name {
+        flex: 1;
+        text-align: left;
+      }
+
+      .territory-totalApp {
+        margin-left: auto;
+        flex: 0 0 auto;
+        color: gray;
+      }
+
+      p {
+        padding-right: $padding-base;
+        padding-left: $padding-base;
+        margin: 0;
+      }
+
+      button {
+        all: unset;
+      }
+    }
+
+    .item-app:hover {
+      background-color: #f1f1f1;
+      cursor: pointer;
+    }
+
+    .item-territory {
+      text-align: left;
+      height: 50px;
+      cursor: pointer;
+      align-items: center;
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .item-application {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      width: 100%;
+
+      p {
+        flex: 0 0 80%;
+        margin: 0;
+        padding-left: $padding-base;
+      }
+
+      div {
+        flex: 0 0 10%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        img {
+          width: 80%;
+          height: auto;
+          border-radius: 10px;
+          object-fit: cover;
+          display: block;
+        }
+      }
+   }
+
+  }
+}

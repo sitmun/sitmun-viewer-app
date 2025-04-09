@@ -1,0 +1,69 @@
+@use 'dimensions';
+@use 'colors';
+
+app-dashboard-expand-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+}
+
+h3 {
+  color: colors.$gray;
+  font-size: 23px;
+}
+
+.separation-line {
+  border: none;
+  border-top: 1px solid colors.$gray;
+  opacity: 0.15;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.center-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  pointer-events: auto;
+  height: auto;
+  max-height: 50%;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 20px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  flex-shrink: 0;
+  max-width: 500px;
+  box-sizing: border-box;
+}
+
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  .cards-container {
+    justify-content: flex-start;
+    margin: 0px !important;
+    padding: 0px !important;
+    gap: 0px !important;
+  }
+
+  .card {
+    max-width: 100%;
+    padding-left: 0px;
+  }
+}

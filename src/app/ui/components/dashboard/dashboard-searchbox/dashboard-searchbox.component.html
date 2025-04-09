@@ -1,0 +1,34 @@
+<form (submit)="handleSubmit()" #inputForm [style.width]="searchWidth" (keydown)="loseFocus($event)">
+  <div>
+    <button type="submit">
+      <img src="assets/img/search.svg" alt="Search"/>
+    </button>
+    <input #inputSearch class="text-input" type="text" placeholder="{{'dashboardDialog.inputPlaceholder' | translate}}"
+      [(ngModel)]="input" name="text-input" (keyup)="onKeywordsChange()" (focus)="onFocus()" />
+    <button id="clear-text-button" (click)="clearSearchText()">
+      <img src="assets/img/fi_992660.svg" alt="deleteText" />
+    </button>
+  </div>
+</form>
+
+<!-- Liste des propositions de territoires -->
+<div #suggestionsDiv *ngIf="showSuggestions" class="suggestions-list" [style.width]="searchWidth">
+  <div *ngIf="filterTerritories().length > 0">
+    <p class="suggestion-title"> {{ 'dashboardPage.coveredTerritories' | translate }} </p>
+    <button class="item-app item-territory" *ngFor="let territory of filterTerritories()" (click)="navigateToTerritoryPresentation(territory.id)">
+      <p class="territory-name" [innerHTML]="researchHighlight(territory.name)"> </p>
+      <p class="territory-totalApp" *ngIf="showDetailedSuggestions"> {{ totalTerritories() }} {{ 'dashboardPage.shortAppTitle' | translate }} </p>
+    </button>
+  </div>
+
+  <!-- Liste des propositions d'applications -->
+  <div *ngIf="showDetailedSuggestions && filterApplications().length > 0">
+    <p class="suggestion-title">Applications</p>
+    <button class="item-app item-application" *ngFor="let application of filterApplications()" (click)="navigateToApplicationPresentation(application.id)">
+      <p [innerHTML]="researchHighlight(application.title)"></p>
+      <div>
+        <img src="{{ application.logo ? application.logo : 'assets/img/card-no-image.svg' }}" />
+      </div>
+    </button>
+  </div>
+</div>

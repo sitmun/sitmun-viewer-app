@@ -21,10 +21,26 @@ export class DashboardComponent
   ) {
     super(router, commonService, modal);
   }
+  application : any;
+  territories : any;
 
-  override navigateToMap(applicationId: number, territoryId: number) {
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Map(applicationId, territoryId)
-    );
+  displayTag : boolean = false;
+
+  displayTerritoriesTag(display: any) {
+    if(display.application != null){
+      this.displayTag = true;
+      this.application = display.application;
+      this.territories = display.territories.content;
+      console.log(this.territories);
+
+    }
+    else {
+      this.displayTag = false;
+    }
   }
+}
+
+export interface MapTerritory {
+  appId : number;
+  territoryId : number;
 }

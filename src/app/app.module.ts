@@ -27,6 +27,12 @@ import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from './sections/common/modals/error-modal/error-modal.component';
 import { WarningModalComponent } from './sections/common/modals/warning-modal/warning-modal.component';
+import {
+  IgxAutocompleteModule,
+  IgxDropDownModule,
+  IgxInputGroupModule
+} from 'igniteui-angular';
+
 registerLocaleData(localeEs);
 
 @NgModule({
@@ -48,6 +54,9 @@ registerLocaleData(localeEs);
     AuthenticationModule,
     UiModule,
     HttpClientModule,
+    IgxAutocompleteModule,
+    IgxDropDownModule,
+    IgxInputGroupModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

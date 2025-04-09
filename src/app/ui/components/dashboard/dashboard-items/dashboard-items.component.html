@@ -1,0 +1,50 @@
+<div>
+  <div *ngIf="isPublic() && allItems.length > 0">
+    <div class="cards-container">
+      <div class="card" *ngFor="let item of allItems">
+        <app-dashboard-item
+          [item]="item"
+          (tag)="displayTerritoriesTag($event)"/>
+      </div>
+    </div>
+    <app-dashboard-expand-button (expandAll)="displayAllApplications($event)"/>
+  </div>
+</div>
+
+
+<div *ngIf="!isPublic() && items.length > 0">
+  <div *ngIf="privateItems.length > 0">
+    <h3>{{ 'dashboardPage.applicationPrivate' | translate }}</h3>
+    <div class="cards-container">
+      <div class="card" *ngFor="let item of privateItems">
+        <app-dashboard-item
+          [item]="item"
+          (tag)="displayTerritoriesTag($event)"/>
+      </div>
+    </div>
+    <app-dashboard-expand-button (expandAll)="displayAllPrivateApplications($event)"/>
+  </div>
+
+  <hr class="separation-line"
+      *ngIf="publicItems.length > 0 && privateItems.length > 0 && isDashboard() && !isPublic()" />
+
+  <div *ngIf="publicItems.length > 0">
+    <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
+    <div class="cards-container">
+      <div class="card" *ngFor="let item of publicItems">
+        <app-dashboard-item
+          [item]="item"
+          (tag)="displayTerritoriesTag($event)"/>
+      </div>
+    </div>
+    <app-dashboard-expand-button (expandAll)="displayAllPublicApplications($event)"/>
+  </div>
+</div>
+
+<div class="center-container">
+  <app-dashboard-territories-tag
+    *ngIf="displayTag"
+    [territories]="territoriesToDisplayTag"
+    [application]="applicationToDisplayTag"
+    (hide)="displayTerritoriesTag($event)"/>
+</div>

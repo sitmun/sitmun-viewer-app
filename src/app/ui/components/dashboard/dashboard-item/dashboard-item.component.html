@@ -1,0 +1,26 @@
+<div class="dashboard-item">
+  <div class="dashboard-item-image" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
+    <img [src]="item.logo || 'assets/img/card-no-image.svg'" />
+  </div>
+
+
+  <div class="dashboard-item-content" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
+    <h3 class="dashboard-item-title"> {{item.title}} {{item.name}} </h3>
+
+    <button class="dashboard-item-nbTerritories" [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }" *ngIf="nbTerritory == 1" (click)="displayTerritoriesTag(item)">
+      {{ this.listOfTerritories.content[0].name }}
+    </button>
+    <button class="dashboard-item-nbTerritories" [disabled]="item.isUnavailable" *ngIf="nbTerritory > 1" (click)="displayTerritoriesTag(item)">
+      {{ nbTerritory }} {{ 'dashboardPage.nbTerritoriesTitle' | translate }}
+    </button>
+
+    <p class="dashboard-item-description">
+      {{ item.description && item.description.length > DESCRIPTION_MAX_CHARACTER
+          ? (item.description.slice(0, DESCRIPTION_MAX_CHARACTER) + '...')
+          : item.description }}
+    </p>
+    <p class="dashboard-item-warning" *ngIf="item.maintenanceInformation && item.maintenanceInformation.length > 0"> {{ item.maintenanceInformation }} </p>
+    <button class="dashboard-item-moreDetails" *ngIf="!item.isUnavailable"> {{ 'dashboardPage.moreDetails' | translate }} > </button>
+    <p class="dashboard-item-maintenanceInfo" *ngIf="item.isUnavailable"> {{ 'dashboardPage.maintenance' | translate }} </p>
+  </div>
+</div>
