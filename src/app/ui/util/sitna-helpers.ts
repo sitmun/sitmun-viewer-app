@@ -3,9 +3,8 @@ import {
   SitnaControls,
   SitnaViews
 } from '@api/model/sitna-cfg';
-import { AppCfg, AppGroup, AppNodeInfo, AppTree } from '@api/model/app-cfg';
+import { AppCfg, AppGroup, AppNodeInfo } from '@api/model/app-cfg';
 import { Injectable } from '@angular/core';
-import { timeout } from 'rxjs';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -40,9 +39,9 @@ enum SitnaControlsEnum {
   //WFSEdit = 'sitna.WFSEdit',
   WFSQuery = 'sitna.WFSQuery'
 }
-var showLegendButton = false;
-var showOverViewMapButton = false;
-var showToolsButton = false;
+let showLegendButton = false;
+let showOverViewMapButton = false;
+let showToolsButton = false;
 
 @Injectable()
 export class SitnaHelper {
@@ -77,7 +76,7 @@ export class SitnaHelper {
       let backgrounds: string[] = [];
       let groups: AppGroup[] = [];
       let layers: string[] = [];
-      let thumbnail: string = ""; // TODO-redo
+      let thumbnail: string = ''; // TODO-redo
       for (let background of apiConfig.backgrounds) {
         backgrounds.push(background.id);
         // if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
@@ -104,8 +103,15 @@ export class SitnaHelper {
             (service) => service.id === layer.service
           );
           for (let background of apiConfig.backgrounds) {
-            thumbnail = "";
-            if(typeof background.thumbnail!='undefined' && background.thumbnail && groups.find(x => (x.id == background.id && x.layers?.includes(layerElement)))) { // TODO-redo
+            thumbnail = '';
+            if (
+              typeof background.thumbnail != 'undefined' &&
+              background.thumbnail &&
+              groups.find(
+                (x) => x.id == background.id && x.layers?.includes(layerElement)
+              )
+            ) {
+              // TODO-redo
               thumbnail = background.thumbnail;
               break;
             }
@@ -155,44 +161,144 @@ export class SitnaHelper {
   // }
   static toControls(apiConfig: AppCfg) {
     const sitnaControls = {} as SitnaControls;
-    const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
-      (x['ui-control'] != null) && (x['ui-control'].startsWith('sitna.'))
+    const sitnaControlsFilter = apiConfig.tasks.filter(
+      (x) => x['ui-control'] != null && x['ui-control'].startsWith('sitna.')
     );
+
+    // Initialize control container
     sitnaControls.controlContainer = {
       div: 'ccontainer',
       controls: []
     };
-    sitnaControls.attribution = sitnaControlsFilter.some(
-      (x) => x['ui-control'] === SitnaControlsEnum.Attribution
-    );
 
+    // Process each control type
+    this.processAttributionControl(sitnaControls, sitnaControlsFilter);
+    this.processBasemapSelectorControl(sitnaControls, sitnaControlsFilter);
+    this.processClickControl(sitnaControls, sitnaControlsFilter);
+    this.processCoordinatesControl(sitnaControls, sitnaControlsFilter);
+    this.processDataLoaderControl(sitnaControls, sitnaControlsFilter);
+    this.processDownloadControl(sitnaControls, sitnaControlsFilter);
+    this.processDrawMeasureModifyControl(sitnaControls, sitnaControlsFilter);
+    this.processFullScreenControl(sitnaControls, sitnaControlsFilter);
+    this.processGeolocationControl(sitnaControls, sitnaControlsFilter);
+    this.processLegendControl(sitnaControls, sitnaControlsFilter);
+    this.processLoadingIndicatorControl(sitnaControls, sitnaControlsFilter);
+    this.processMeasureControl(sitnaControls, sitnaControlsFilter);
+    this.processMultiFeatureInfoControl(sitnaControls, sitnaControlsFilter);
+    this.processNavBarControl(sitnaControls, sitnaControlsFilter);
+    this.processOfflineMapMakerControl(sitnaControls, sitnaControlsFilter);
+    this.processOverviewMapControl(
+      sitnaControls,
+      sitnaControlsFilter,
+      apiConfig
+    );
+    this.processPopupControl(sitnaControls, sitnaControlsFilter);
+    this.processPrintMapControl(sitnaControls, sitnaControlsFilter);
+    this.processScaleControl(sitnaControls, sitnaControlsFilter);
+    this.processScaleBarControl(sitnaControls, sitnaControlsFilter);
+    this.processScaleSelectorControl(sitnaControls, sitnaControlsFilter);
+    this.processSearchControl(sitnaControls, sitnaControlsFilter);
+    this.processSearchControlOriginal(sitnaControls, sitnaControlsFilter);
+    this.processShareControl(sitnaControls, sitnaControlsFilter);
+    this.processStreetViewControl(sitnaControls, sitnaControlsFilter);
+    this.processTOCControl(sitnaControls, sitnaControlsFilter);
+    this.processThreeDControl(sitnaControls, sitnaControlsFilter);
+    this.processWorkLayerManagerControl(sitnaControls, sitnaControlsFilter);
+    this.processFeatureInfoControl(sitnaControls, sitnaControlsFilter);
+    this.processWFSEditControl(sitnaControls, sitnaControlsFilter);
+    this.processWFSQueryControl(sitnaControls, sitnaControlsFilter);
+    this.processBirdEyeControl(sitnaControls);
+
+    return sitnaControls;
+  }
+
+  /**
+   * Helper method to check if a control is present in the filter
+   */
+  private static isControlPresent(
+    sitnaControlsFilter: any[],
+    controlType: SitnaControlsEnum
+  ): boolean {
+    return sitnaControlsFilter.some((x) => x['ui-control'] === controlType);
+  }
+
+  /**
+   * Helper method to find a specific control in the filter
+   */
+  private static findControl(
+    sitnaControlsFilter: any[],
+    controlType: SitnaControlsEnum
+  ) {
+    return sitnaControlsFilter.find((obj) => obj['ui-control'] === controlType);
+  }
+
+  /**
+   * Helper method to check if parameters are empty or undefined
+   */
+  private static areParametersEmpty(parameters: any): boolean {
+    return !parameters || Object.keys(parameters).length === 0;
+  }
+
+  /**
+   * Process attribution control
+   */
+  private static processAttributionControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    sitnaControls.attribution = this.isControlPresent(
+      sitnaControlsFilter,
+      SitnaControlsEnum.Attribution
+    );
+  }
+
+  /**
+   * Process basemap selector control
+   */
+  private static processBasemapSelectorControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.BasemapSelector
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.BasemapSelector
       )
     ) {
       sitnaControls.basemapSelectorSilme = {
-      //sitnaControls.basemapSelector = {
         div: 'bms'
       };
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Click
-      )
-    ) {
+  }
+
+  /**
+   * Process click control
+   */
+  private static processClickControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Click)) {
       sitnaControls.click = true;
     }
+  }
+
+  /**
+   * Process coordinates control
+   */
+  private static processCoordinatesControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Coordinates
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Coordinates)
     ) {
-      const coordinates = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.Coordinates;
-      });
+      const coordinates = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.Coordinates
+      );
       if (coordinates) {
-        if (coordinates.parameters == null) {
+        if (this.areParametersEmpty(coordinates.parameters)) {
           sitnaControls.coordinates = {
             div: 'coordinates'
           };
@@ -203,16 +309,24 @@ export class SitnaHelper {
     } else {
       sitnaControls.coordinates = false;
     }
+  }
+
+  /**
+   * Process data loader control
+   */
+  private static processDataLoaderControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.DataLoader
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.DataLoader)
     ) {
-      const dataLoader = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.DataLoader;
-      });
+      const dataLoader = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.DataLoader
+      );
       if (dataLoader) {
-        if (dataLoader.parameters == null) {
+        if (this.areParametersEmpty(dataLoader.parameters)) {
           sitnaControls.dataLoader = {
             div: 'xdata'
           };
@@ -235,16 +349,24 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+  }
+
+  /**
+   * Process download control
+   */
+  private static processDownloadControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Download
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Download)
     ) {
-      const download = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.Download;
-      });
+      const download = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.Download
+      );
       if (download) {
-        if (download.parameters == null) {
+        if (this.areParametersEmpty(download.parameters)) {
           sitnaControls.download = {
             div: 'download'
           };
@@ -254,7 +376,9 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
-    /*
+  }
+
+  /*
     if (
       sitnaControlsFilter.some(
         (x) => x['ui-control'] === SitnaControlsEnum.DrawMeasureModify
@@ -275,25 +399,39 @@ export class SitnaHelper {
       showToolsButton = true;
     }
     */
+
+  /**
+   * Process full screen control
+   */
+  private static processFullScreenControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.FullScreen
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.FullScreen)
     ) {
       sitnaControls.fullScreen = {
         div: 'FuScreen'
       };
     }
+  }
+
+  /**
+   * Process geolocation control
+   */
+  private static processGeolocationControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Geolocation
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Geolocation)
     ) {
-      const geolocation = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.Geolocation;
-      });
+      const geolocation = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.Geolocation
+      );
       if (geolocation) {
-        if (geolocation.parameters == null) {
+        if (this.areParametersEmpty(geolocation.parameters)) {
           sitnaControls.geolocation = {
             div: 'geolocation'
           };
@@ -303,36 +441,61 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Legend
-      )
-    ) {
+  }
+
+  /**
+   * Process legend control
+   */
+  private static processLegendControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Legend)) {
       sitnaControls.legend = {
         div: 'legend'
       };
       showLegendButton = true;
     }
-    sitnaControls.loadingIndicator = sitnaControlsFilter.some(
-      (x) => x['ui-control'] === SitnaControlsEnum.LoadingIndicator
+  }
+
+  /**
+   * Process loading indicator control
+   */
+  private static processLoadingIndicatorControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    sitnaControls.loadingIndicator = this.isControlPresent(
+      sitnaControlsFilter,
+      SitnaControlsEnum.LoadingIndicator
     );
+  }
+
+  /**
+   * Process measure control (commented out in original)
+   */
+  private static processMeasureControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
     /*
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Measure
-      )
-    ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Measure)) {
       sitnaControls.measure = {
         div: 'measure'
       };
       showToolsButton = true;
     }
     */
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.NavBar
-      )
-    ) {
+  }
+
+  /**
+   * Process nav bar control
+   */
+  private static processNavBarControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.NavBar)) {
       sitnaControls.navBar = {
         div: 'nav'
       };
@@ -341,18 +504,23 @@ export class SitnaHelper {
       //   navBarHome: true
       // });
     }
+  }
 
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.OfflineMapMaker
-      )
-    ) {
+  /**
+   * Process offline map maker control (commented out in original)
+   */
+  private static processOfflineMapMakerControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
+    /*
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.OfflineMapMaker)) {
       // TODO
       // const offlineMapMaker = sitnaControlsFilter.find((obj) => {
       //   return obj['ui-control'] === SitnaControlsEnum.OfflineMapMaker;
       // });
       // if (offlineMapMaker) {
-      //   if (offlineMapMaker.parameters == null) {
+      //   if (!offlineMapMaker.parameters || Object.keys(offlineMapMaker.parameters).length === 0) {
       //     sitnaControls.offlineMapMaker = {
       //       div: 'offline'
       //     };
@@ -362,16 +530,26 @@ export class SitnaHelper {
       // }
       // showToolsButton = true;
     }
+    */
+  }
+
+  /**
+   * Process overview map control
+   */
+  private static processOverviewMapControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[],
+    apiConfig: AppCfg
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.OverviewMap
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.OverviewMap)
     ) {
-      const overviewMap = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.OverviewMap;
-      });
+      const overviewMap = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.OverviewMap
+      );
       if (overviewMap) {
-        if (overviewMap.parameters == null) {
+        if (this.areParametersEmpty(overviewMap.parameters)) {
           if (apiConfig.application['situation-map']) {
             const group = apiConfig.groups.find(
               (elem) => elem.id === apiConfig.application['situation-map']
@@ -413,26 +591,39 @@ export class SitnaHelper {
       }
       showOverViewMapButton = true;
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.PopUp
-      )
-    ) {
+  }
+
+  /**
+   * Process popup control
+   */
+  private static processPopupControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.PopUp)) {
       sitnaControls.popup = true;
     }
+  }
+
+  /**
+   * Process print map control
+   */
+  private static processPrintMapControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.PrintMap
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.PrintMap)
     ) {
-      const print = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.PrintMap;
-      });
+      const print = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.PrintMap
+      );
       if (print) {
-        if (print.parameters == null) {
+        if (this.areParametersEmpty(print.parameters)) {
           sitnaControls.printMap = {
             div: 'print',
-            logo: "assets/logos/logo_black.png",
+            logo: 'assets/logos/logo_black.png',
             legend: {
               visible: true
             }
@@ -443,34 +634,56 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Scale
-      )
-    ) {
+  }
+
+  /**
+   * Process scale control
+   */
+  private static processScaleControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Scale)) {
       sitnaControls.scale = true;
     }
+  }
+
+  /**
+   * Process scale bar control
+   */
+  private static processScaleBarControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.ScaleBar
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.ScaleBar)
     ) {
       sitnaControls.scaleBar = true;
     }
-    // if (
-    //   sitnaControlsFilter.some(
-    //     (x) => x['ui-control'] === SitnaControlsEnum.ScaleSelector
-    //   )
-    // ) {
+  }
+
+  /**
+   * Process scale selector control (commented out in original)
+   */
+  private static processScaleSelectorControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
+    // if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.ScaleSelector)) {
     //   //TODO
     //   // sitnaControls.scaleSelector = true;
     // }
+  }
+
+  /**
+   * Process search control (original implementation - commented out)
+   */
+  private static processSearchControlOriginal(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
     /*
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Search
-      )
-    ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Search)) {
       const search = sitnaControlsFilter.find((obj) => {
         return obj['ui-control'] === SitnaControlsEnum.Search;
       });
@@ -481,27 +694,40 @@ export class SitnaHelper {
         }
       }
     }
-     */
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Share
-      )
-    ) {
+    */
+  }
+
+  /**
+   * Process share control
+   */
+  private static processShareControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Share)) {
       sitnaControls.share = {
         div: 'share'
       };
       showToolsButton = true;
     }
+  }
+
+  /**
+   * Process street view control
+   */
+  private static processStreetViewControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.StreetView
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.StreetView)
     ) {
-      const streetView = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.StreetView;
-      });
+      const streetView = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.StreetView
+      );
       if (streetView) {
-        if (streetView.parameters == null) {
+        if (this.areParametersEmpty(streetView.parameters)) {
           sitnaControls.streetViewSilme = {
             div: 'StreetView'
           };
@@ -510,26 +736,53 @@ export class SitnaHelper {
         }
       }
     }
-    // if (
-    //   sitnaControlsFilter.some((x) => x['ui-control'] === SitnaControlsEnum.TOC)
-    // ) {
+  }
+
+  /**
+   * Process TOC control (commented out in original)
+   */
+  private static processTOCControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
+    // if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.TOC)) {
     //   sitnaControls.TOC = {
     //     TOC: true,
     //     div: 'toc'
     //   };
     // }
+  }
+
+  /**
+   * Process work layer manager control
+   */
+  private static processWorkLayerManagerControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.WorkLayerManager
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.WorkLayerManager
       )
     ) {
       sitnaControls.workLayerManagerSilme = {
         div: 'toc'
       };
     }
+  }
+
+  /**
+   * Process draw measure modify control
+   */
+  private static processDrawMeasureModifyControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.DrawMeasureModify
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.DrawMeasureModify
       )
     ) {
       sitnaControls.drawMeasureModifySilme = {
@@ -539,35 +792,54 @@ export class SitnaHelper {
         }
       };
     }
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.Search
-      )
-    ) {
-      const search = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.Search;
-      });
+  }
+
+  /**
+   * Process search control
+   */
+  private static processSearchControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Search)) {
+      const search = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.Search
+      );
 
       if (search) {
         sitnaControls.searchSilme = {
           div: 'search'
         };
-        if (search.parameters != null) {
+        if (
+          search.parameters != null &&
+          Object.keys(search.parameters).length > 0
+        ) {
           sitnaControls.search = search.parameters;
         }
       }
     }
+  }
 
+  /**
+   * Process multi feature info control
+   */
+  private static processMultiFeatureInfoControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.MultiFeatureInfo
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.MultiFeatureInfo
       )
     ) {
-      const multiFeatureInfo = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.MultiFeatureInfo;
-      });
+      const multiFeatureInfo = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.MultiFeatureInfo
+      );
       if (multiFeatureInfo) {
-        if (multiFeatureInfo.parameters == null) {
+        if (this.areParametersEmpty(multiFeatureInfo.parameters)) {
           sitnaControls.multiFeatureInfo = {
             div: 'multifeatureinfo',
             active: true,
@@ -591,26 +863,38 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
+  }
 
+  /**
+   * Process three D control (commented out in original)
+   */
+  private static processThreeDControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
     /*
+      if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.ThreeD)) {
+        sitnaControls.threeD = true;
+      }
+      */
+  }
+
+  /**
+   * Process feature info control
+   */
+  private static processFeatureInfoControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.ThreeD
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.FeatureInfo)
     ) {
-      sitnaControls.threeD = true;
-    }
-    */
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.FeatureInfo
-      )
-    ) {
-      const featureInfo = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.FeatureInfo;
-      });
+      const featureInfo = this.findControl(
+        sitnaControlsFilter,
+        SitnaControlsEnum.FeatureInfo
+      );
       if (featureInfo) {
-        if (featureInfo.parameters == null) {
+        if (this.areParametersEmpty(featureInfo.parameters)) {
           sitnaControls.featureInfoSilme = {
             persistentHighlights: true
           };
@@ -621,18 +905,22 @@ export class SitnaHelper {
     } else {
       sitnaControls.featureInfo = false;
     }
+  }
 
+  /**
+   * Process WFS edit control (commented out in original)
+   */
+  private static processWFSEditControl(
+    _sitnaControls: SitnaControls,
+    _sitnaControlsFilter: any[]
+  ) {
     /*
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.WFSEdit
-      )
-    ) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.WFSEdit)) {
       const wfsEdit = sitnaControlsFilter.find((obj) => {
         return obj['ui-control'] === SitnaControlsEnum.WFSEdit;
       });
       if (wfsEdit) {
-        if (wfsEdit.parameters == null) {
+        if (!wfsEdit.parameters || Object.keys(wfsEdit.parameters).length === 0) {
           sitnaControls.WFSEdit = {
             div: 'wfsedit'
           };
@@ -642,19 +930,30 @@ export class SitnaHelper {
       }
       showToolsButton = true;
     }
-     */
+    */
+  }
 
+  /**
+   * Process WFS query control
+   */
+  private static processWFSQueryControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
     if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.WFSQuery
-      )
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.WFSQuery)
     ) {
       sitnaControls.WFSQuery = true;
     }
+  }
+
+  /**
+   * Process bird eye control (commented out in original)
+   */
+  private static processBirdEyeControl(_sitnaControls: SitnaControls) {
     // sitnaControls.BirdEye = {
     //   div: 'BirdEye'
     // };
-    return sitnaControls;
   }
 
   /**
@@ -670,9 +969,9 @@ export class SitnaHelper {
    * returns an array of catalogs: [{title: string, catalog: {div: string, enableSearch: boolean, layerTreeGroups: [], layers: []}}]
    */
   static toLayerCatalogSilme(apiConfig: AppCfg) {
-    var catalogs = [];
-    const sitnaControlsFilter = apiConfig.tasks.filter((x) =>
-      (x['ui-control'] != null) && (x['ui-control'].startsWith('sitna.'))
+    const catalogs = [];
+    const sitnaControlsFilter = apiConfig.tasks.filter(
+      (x) => x['ui-control'] != null && x['ui-control'].startsWith('sitna.')
     );
     // if control LayerCatalog is included in config
     if (
@@ -797,7 +1096,13 @@ export class SitnaHelper {
                   title: currentNode[1].title,
                   parentNode: parentNode.replace('/', ''),
                   // TODO
-                  carpeta: (['node12103', 'node12102', 'node12336', 'node12243', 'node12130'].includes(currentNode[0].replace('/', ''))) ? false : true
+                  carpeta: ![
+                    'node12103',
+                    'node12102',
+                    'node12336',
+                    'node12243',
+                    'node12130'
+                  ].includes(currentNode[0].replace('/', ''))
                   // Afegir-ho a Altres serveis?
                 });
               }
@@ -863,7 +1168,8 @@ export class SitnaHelper {
       // Do nothing and show the welcome panel as default
     } else {
       const welcomeElements = document.getElementsByClassName('welcome-panel');
-      const backgroundCoverElements = document.getElementsByClassName('background-cover');
+      const backgroundCoverElements =
+        document.getElementsByClassName('background-cover');
 
       if (welcomeElements && welcomeElements[0]) {
         (welcomeElements[0] as HTMLElement).classList.add('tc-hidden');
@@ -911,7 +1217,9 @@ export class SitnaHelper {
 
   static loadMiddleware(apiConfig: AppCfg) {
     if (
-      apiConfig.global?.proxy && navigator.serviceWorker && navigator.serviceWorker.controller
+      apiConfig.global?.proxy &&
+      navigator.serviceWorker &&
+      navigator.serviceWorker.controller
     ) {
       navigator.serviceWorker.controller.postMessage({
         type: 'MIDDLEWARE_URL',
@@ -920,3 +1228,4 @@ export class SitnaHelper {
     }
   }
 }
+
