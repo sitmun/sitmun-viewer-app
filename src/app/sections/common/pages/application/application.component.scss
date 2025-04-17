@@ -1,0 +1,67 @@
+@use 'colors';
+@use 'dimensions';
+
+#content {
+  background-color: colors.$blue-light;
+
+  #application {
+    padding-top: 5%;
+    margin: 0 auto;
+    width: 80%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    #application-title {
+      padding-left: 20px;
+    }
+
+    #application-details {
+      display: flex;
+      gap: 24px;
+
+      #left-side {
+        flex: 2;
+        max-width: 70%;
+      }
+
+      #right-side {
+        flex: 1;
+
+        #associated-territories {
+          height: 50%;
+        }
+      }
+    }
+
+    button {
+      all: unset;
+      color: gray;
+      padding-left: 20px;
+    }
+
+    button:hover {
+      cursor: pointer;
+      filter: opacity(50%);
+    }
+  }
+}
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  #application {
+    width: 95%;
+    margin-top: 20px;
+    padding: 16px;
+  }
+
+  #application-details {
+    flex-direction: column;
+
+    #left-side,
+    #right-side {
+      flex: unset;
+      width: 100%;
+      flex-wrap: nowrap;
+    }
+  }
+}

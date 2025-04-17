@@ -1,0 +1,50 @@
+#application-details {
+  width: 800px;
+
+  #application-title {
+    padding-left: 20px;
+  }
+
+  #application-informations {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    #application-information-logo {
+      padding-left: 20px;
+
+      img {
+        border-radius: 15px;
+        width: 150px;
+        height: 150px;
+      }
+    }
+
+    #application-information-details {
+      p {
+        color: gray;
+      }
+    }
+  }
+
+  span {
+    font-weight: bold;
+    color: black;
+  }
+
+  #application-description {
+    padding-left: 20px;
+
+    #application-description-title {
+      font-weight: bold;
+    }
+
+    #application-description-content {
+      color: gray;
+    }
+  }
+}
+
+.value-missing {
+  font-style: italic;
+}

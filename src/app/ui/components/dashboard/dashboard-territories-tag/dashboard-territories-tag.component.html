@@ -22,6 +22,7 @@
           <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
         </button>
         <button class="right-side tooltip"
+          (click)="navigateToTerritoryDetails(territories[0].id)"
           (mouseover)="changeRightImage(true, 'territory'+territories[0].name)"
           (mouseout)="changeRightImage(false, 'territory'+territories[0].name)">
           <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
@@ -53,6 +54,7 @@
             <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
           </button>
           <button class="right-side tooltip"
+            (click)="navigateToTerritoryDetails(item.id)"
             (mouseover)="changeRightImage(true, 'territory'+item.name)"
             (mouseout)="changeRightImage(false, 'territory'+item.name)">
             <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />

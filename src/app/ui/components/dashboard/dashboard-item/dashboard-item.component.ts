@@ -1,6 +1,6 @@
 import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
-import { CommonService, DashboardItem } from '@api/services/common.service';
 import { Router } from '@angular/router';
+import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 
 
@@ -13,7 +13,7 @@ export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER : number = 75;
+  readonly DESCRIPTION_MAX_CHARACTER : number = 100;
   nbTerritory : number = 0;
   applicationId : number = 0;
   listOfTerritories : any;
@@ -53,10 +53,23 @@ export class DashboardItemComponent {
     this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
-        this.listOfTerritories = res.content;
+        this.listOfTerritories = res;
         this.nbTerritory = res.numberOfElements;
       }
     });
+  }
+
+  navigateToApplicationDetails(idApp: number) {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Application(idApp)
+      );
+    }
+    else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Application(idApp)
+      );
+    }
   }
 
   displayTerritoriesTag(application : any) {

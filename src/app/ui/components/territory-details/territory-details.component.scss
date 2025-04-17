@@ -1,0 +1,23 @@
+#territory-details {
+  width: 800px;
+
+  #territory-informations {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    #territory-information-logo {
+      padding-left: 20px;
+
+      img {
+        border-radius: 15px;
+        width: 150px;
+        height: auto;
+      }
+    }
+  }
+
+  span {
+    font-weight: bold;
+  }
+}
