@@ -1,54 +1,155 @@
 @use 'colors';
 @use 'dimensions';
 
+$path_base: "./../../../assets/img/";
+
 :host
 {
   display: flex;
 }
 
+.button-menu {
+  all: unset;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
 
 .nav-bar {
-  color: colors.$common-color-font-primary;
-  background: colors.$common-color-background-navbar-with-opacity;
   z-index: 99999;
   width: 100%;
-  background-color: #FF9300;
+  color: black;
 
   div {
-    margin-left: auto;
-    margin-right:auto;
-    max-width: 1630px;
     height: 70px;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
 
-    .logo {
-      padding-top: 10px;
-
+    .left{
       img {
-        width: auto;
-        height: 50px;
+        padding-left: 20px;
+        width: 120px;
+      }
+
+      img:hover {
+        cursor: pointer;
       }
     }
 
-    .menu {
-      position: absolute;
-      right: 0px;
-      top: 0px;
-      height: 70px;
-      display: inline-block;
-      width: 70px;
+    .right {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
 
-      button {
+      .home-menu {
+        width: 40px;
+        height: 40px;
+        margin: 0;
         padding: 0;
-        border: none;
-        background: colors.$navigation-bar-menu-button-background;
-        cursor: pointer;
-        height: 70px;
-        width: 70px;
+        background-image: url($path_base + "home.svg");
+      }
 
-        img {
-          height: 40px;
+      .home-menu:hover{
+        background-image: url($path_base + "home-hover.svg");
+        cursor: pointer;
+      }
+
+      .home-menu.active {
+        background-image: url($path_base + "home-hover.svg");
+      }
+
+      .home-menu,
+      .profile-page {
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .select-language {
+        width: 140px;
+
+        select {
+          outline: 0;
+          height: 50px;
+          width: 150px;
+          color: black;
+          border-radius: 0.25em;
+          border: 1px solid lightgray;
+          background-color: transparent;
+          backdrop-filter: blur(2px);
+          cursor: pointer;
+          padding-left: 7px;
         }
+
+        select::after {
+          content: '\25BC';
+          position: absolute;
+          top: 0;
+          right: 0;
+          padding: 1em;
+          background-color: #34495e;
+          transition: .25s all ease;
+          pointer-events: none;
+        }
+
+        select:hover::after {
+          color: #f39c12;
+        }
+      }
+
+    .profile-page {
+      button.button-menu {
+        all: unset;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        cursor: pointer;
+        width: 100%;
+        padding: 8px;
+        background: none;
+        box-sizing: border-box;
+      }
+
+      button.button-menu .icon {
+        height: 24px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-image: url($path_base + "Icona-usuari.svg");
+      }
+
+      button.button-menu:hover {
+        cursor: pointer;
+
+        .icon {
+          background-image: url($path_base + "Icona-usuari-azul.svg");
+        }
+
+        #username {
+          color: colors.$blue;
+        }
+      }
+    }
+
+    .profile-page.active {
+      #username {
+        color: colors.$blue;
+      }
+
+      button.button-menu .icon {
+        background-image: url($path_base + "Icona-usuari-azul.svg");
+      }
+    }
+
+      .logout {
+        gap: 3px;
+      }
+
+      .logout:hover {
+        opacity: calc(75%);
       }
     }
   }
@@ -79,35 +180,124 @@
         }
       }
     }
+    .select-language {
+      margin: 5px 5px 0 0;
+    }
   }
 }
 .nav-bar.login{
+  color: white;
   background-color: transparent;
   div {
     max-width: calc(100% - 20px);
-  }
-}
 
-@media all and (max-width: 1623px) and (min-width: 1234px) {
-  .nav-bar {
-    div {
-      max-width: 1220px;
+    .right {
+      .select-language {
+        select {
+          color: white;
+        }
+      }
     }
   }
 }
-
-@media all and (max-width: 1233px) and (min-width: 828px) {
-  .nav-bar {
-    div {
-      max-width: 812px;
-    }
-  }
+.navbar-responsive{
+  display: none;
 }
 
-@media all and (max-width: 827px) {
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
   .nav-bar {
-    div {
-      max-width: 420px;
+    .right {
+      .home-menu,
+      .profile-page,
+      .logout {
+        display: none;
+      }
+
+      .select-language {
+        margin-top: 10px !important;
+        margin-right: 5px !important;
+      }
+
+      .select-language::after {
+        border-left: var(--size) solid transparent;
+        border-right: var(--size) solid transparent;
+        border-top: var(--size) solid black;
+        top: 55%;
+        background-color: red;
+      }
+    }
+  }
+
+  .navbar-responsive {
+    height: 10%;
+    background-color: colors.$violet;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+
+    .home-button,
+    .news-button,
+    .profile-button,
+    .logout-button {
+      button {
+        all: unset;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        margin: 0;
+        background: none;
+        background-size: 100% 100%;
+        box-sizing: border-box;
+        background-position: center;
+      }
+
+      .icon {
+        width: 80%;
+        height: 80%;
+        display: block;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+    }
+
+    /* buttons */
+    .home-button button .icon {
+      background-image: url($path_base + "home.svg");
+    }
+
+    .news-button button .icon{
+      background-image: url($path_base + "Icona-notícies.svg");
+    }
+
+    .profile-button button .icon{
+      background-image: url($path_base + "Icona-usuari.svg");
+    }
+
+    .logout-button button .icon{
+      background-image: url($path_base + "Icona-desconnexió.svg");
+    }
+
+    /* active buttons */
+    .home-button.active button .icon {
+      background-image: url($path_base + "home-hover.svg");
+    }
+
+    .news-button.active button .icon {
+      background-image: url($path_base + "Icona-notícies-naranja.svg");
+    }
+
+    .profile-button.active button .icon {
+      background-image: url($path_base + "Icona-usuari-naranja.svg");
     }
   }
 }

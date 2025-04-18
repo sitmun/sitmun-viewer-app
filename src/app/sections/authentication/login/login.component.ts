@@ -48,7 +48,6 @@ export class LoginComponent implements OnInit {
             this.translate.get('loginPage.incorrectLogin').subscribe((trad) => {
               traduction = trad;
             });
-            // alert(traduction);
           }
         }
       });

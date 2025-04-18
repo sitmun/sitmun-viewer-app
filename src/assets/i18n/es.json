@@ -1,4 +1,6 @@
 {
+  "genericPrivateHeader.hi": "Hola",
+  "genericPrivateHeader.logout": "Desconexión",
   "loginPage.title": "Login",
   "loginPage.publicDashboardButton": "Acceso público",
   "loginPage.usernamePlaceholder": "Nombre de usuario",
