@@ -38,26 +38,34 @@
     width: 100%;
     margin: 0px;
     padding: 0px;
-    all : unset;
+
 
     input {
       all: unset;
+      flex: 1;
       color: white;
       height: 60%;
-      width: 100%;
       margin-top: 5px;
     }
 
-    img {
-      width: 10%;
-      height: 25px;
-      background: none;
-      filter: none;
-    }
+    button {
+      all: unset;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
 
-    img:hover {
-      cursor: pointer;
-      filter:opacity(75%);
+      img {
+        width: 25px;
+        height: 25px;
+        padding-right: 5px;
+        background: none;
+        filter: none;
+      }
+
+      img:hover {
+        cursor: pointer;
+        filter: opacity(75%);
+      }
     }
   }
 }

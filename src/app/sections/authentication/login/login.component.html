@@ -24,12 +24,14 @@
           [input_model]="authenticationRequest.username"
           (output_model)="authenticationRequest.username = $event" />
         <form-field-input
-          [input_type]="'password'"
+          [input_type]="displayPassword"
           [input_title]="'loginPage.passwordText' | translate"
           [input_placeholder]="'loginPage.passwordPlaceholder' | translate"
           [input_name]="'password'"
+          [input_image]="passwordImage"
           [input_model]="authenticationRequest.password"
-          (output_model)="authenticationRequest.password = $event" />
+          (output_model)="authenticationRequest.password = $event"
+          (input_button_click)="showOrHidePassword()"/>
         <p>
           <a href="#"> {{'loginPage.passwordForgotten' | translate }} </a>
         </p>

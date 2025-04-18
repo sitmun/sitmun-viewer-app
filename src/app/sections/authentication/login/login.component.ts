@@ -14,6 +14,12 @@ import { NotificationService } from 'src/app/notifications/services/Notification
 export class LoginComponent implements OnInit {
   authenticationRequest: AuthenticationRequest;
 
+  showPassword : boolean = false;
+  passwordImage : string = "";
+  showPasswordImage : string = "assets/img/showPassword=Default.svg"
+  hidePasswordImage : string = "assets/img/hidePassword=Default.svg"
+  displayPassword : string = "password";
+
   constructor(
     private authenticationService: AuthenticationService<unknown>,
     private router: Router,
@@ -24,6 +30,7 @@ export class LoginComponent implements OnInit {
       username: '',
       password: ''
     };
+    this.passwordImage = this.showPasswordImage;
   }
 
   ngOnInit() {
@@ -56,5 +63,17 @@ export class LoginComponent implements OnInit {
 
   publicDashboard() {
     this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
+  }
+
+  showOrHidePassword() {
+    if(this.showPassword) {
+      this.passwordImage = this.showPasswordImage;
+      this.displayPassword = "password";
+    }
+    else {
+      this.passwordImage = this.hidePasswordImage;
+      this.displayPassword = "text";
+    }
+    this.showPassword = !this.showPassword;
   }
 }
