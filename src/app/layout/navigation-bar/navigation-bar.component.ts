@@ -1,8 +1,9 @@
-import { Component, Injectable, OnInit } from '@angular/core';
-import { NavigationStart, Router } from '@angular/router';
+import { Component, HostListener, Injectable, OnInit } from '@angular/core';
+import { NavigationStart, Router, NavigationEnd } from '@angular/router';
 import { CommonService } from '@api/services/common.service';
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
+import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -17,6 +18,8 @@ export class NavigationBarComponent implements OnInit {
   username : string = "";
   currentLang : string;
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
+  isResponsive : boolean = false;
+  mediaQueryListener: any;
 
   constructor(
     private router: Router,
@@ -35,6 +38,8 @@ export class NavigationBarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.CheckIfResponsive();
+
     this.commonService.message$.subscribe(msg => {
       if (msg.theme === 'sitmun-base') {
         this.styleBackground = "#d79922";
@@ -45,16 +50,50 @@ export class NavigationBarComponent implements OnInit {
       this.username = this.authenticationService.getLoggedUsername();
     }
 
-    if(this.router.url.startsWith("/user/profile"))
+    this.CheckWichClassIsActive();
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.CheckWichClassIsActive();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.mediaQueryListener) {
+      this.mediaQueryListener.removeListener();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event : any) {
+    this.CheckIfResponsive();
+  }
+
+  CheckWichClassIsActive() {
+    if(this.router.url.includes("profile"))
       this.navigationClassActive = NavigationButtonActive.PROFILE;
-    else if(this.router.url.startsWith("/user/dashboard"))
+    else if(this.router.url.includes("dashboard"))
       this.navigationClassActive = NavigationButtonActive.HOME;
+    else
+      this.navigationClassActive = NavigationButtonActive.OTHER;
   }
 
   homeRedirect() {
     this.navigationClassActive = NavigationButtonActive.HOME;
-    this.router.navigate(['/']);
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Dashboard
+      );
+    }
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Dashboard
+      );
+    }
   }
+
+  loginRedirect() {
+    this.router.navigate(['/auth/login']);  }
 
   profileRedirect() {
     this.navigationClassActive = NavigationButtonActive.PROFILE;
@@ -97,10 +136,16 @@ export class NavigationBarComponent implements OnInit {
     this.translate.use(target.value);
     localStorage.setItem('language', target.value);
   }
+
+  CheckIfResponsive(): void {
+    const breakpoint = 640;
+    this.isResponsive =  window.innerWidth <= breakpoint;
+  }
 }
 
 enum NavigationButtonActive {
   HOME = "home",
   NEWS = "news",
-  PROFILE = "profile"
+  PROFILE = "profile",
+  OTHER = "other"
 }
