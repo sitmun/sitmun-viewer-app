@@ -22,7 +22,7 @@ export class ProfileComponent {
   copyUserProfile!: UserDto;
   userProfile: UserDto = {
     id: 0,
-    mail: "",
+    email: "",
     username: "",
     password: "",
     passwordSet: false,
@@ -100,8 +100,8 @@ export class ProfileComponent {
       this.verificationAccountService.emailVerification(value).subscribe({
         next: (emailAlreadyExist : any) => {
           if(!emailAlreadyExist){ // update email if not used by another one
-            this.userProfile.mail = value;
-            this.userProfile = { ...this.userProfile, mail: value };
+            this.userProfile.email = value;
+            this.userProfile = { ...this.userProfile, email: value };
           }
           else{
             this.translateService.get('profile.emailAlreadyExistError').subscribe((trad) => {
@@ -123,7 +123,7 @@ export class ProfileComponent {
   }
 
   displayPopupSaveProfile() {
-    if(this.userProfile.mail != this.copyUserProfile.mail || this.userProfile.password != this.copyUserProfile.password) {
+    if(this.userProfile.email != this.copyUserProfile.email || this.userProfile.password != this.copyUserProfile.password) {
       this.displayPopup = true;
     }
     else {

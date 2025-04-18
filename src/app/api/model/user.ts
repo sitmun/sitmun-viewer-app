@@ -2,7 +2,7 @@ import { StringUtils } from '@ui/util/helpers';
 
 export interface UserDto {
   id: number;
-  mail: string;
+  email: string;
   username: string;
   password: string;
   passwordSet: boolean;
