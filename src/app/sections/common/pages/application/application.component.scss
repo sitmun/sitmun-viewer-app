@@ -8,7 +8,8 @@
     padding-top: 5%;
     margin: 0 auto;
     width: 80%;
-    height: 100vh;
+    min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
 
@@ -29,39 +30,44 @@
         flex: 1;
 
         #associated-territories {
-          height: 50%;
+          box-sizing: border-box;
+          height: 500px;
         }
       }
     }
 
     button {
       all: unset;
-      color: gray;
       padding-left: 20px;
     }
 
     button:hover {
       cursor: pointer;
-      filter: opacity(50%);
+      color: colors.$primary-orange
     }
   }
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   #application {
-    width: 95%;
+    width: 100% !important;
     margin-top: 20px;
-    padding: 16px;
+    padding: 0px;
   }
 
   #application-details {
     flex-direction: column;
+    padding-left: 0px;
 
     #left-side,
     #right-side {
       flex: unset;
-      width: 100%;
       flex-wrap: nowrap;
+    }
+
+    #right-side {
+      width: 100vw;
+      margin-bottom: 150px;
     }
   }
 }

@@ -1,3 +1,6 @@
+@use 'dimensions';
+@use 'colors';
+
 #application-details {
   width: 800px;
 
@@ -47,4 +50,41 @@
 
 .value-missing {
   font-style: italic;
+}
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  #application-details {
+    width: 100%;
+  }
+
+  #application-title {
+    padding-left: 0px;
+  }
+
+  #application-informations {
+    margin-left: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #application-information-logo {
+    padding-left: 0px !important;
+    margin-bottom: 20px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  * {
+    padding-left: 0px;
+  }
+
+  #application-information-details p {
+    word-wrap: break-word;
+    max-width: 100%;
+  }
+
+  #right-side {
+    margin-bottom: 160px;
+  }
+
 }

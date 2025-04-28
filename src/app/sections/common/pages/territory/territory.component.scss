@@ -3,11 +3,13 @@
 
 #research {
   margin-bottom: 20px;
+  width: 600px;
 }
 
 #content {
   background-color: colors.$orange-light;
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
 
   #territory {
     padding-top: 5%;
@@ -26,8 +28,8 @@
       gap: 24px;
 
       #left-side {
-        flex: 2;
-        max-width: 70%;
+        flex: 3;
+        max-width: 75%;
 
         #dashboard-items-user {
           p {
@@ -47,6 +49,7 @@
       #right-side {
         flex: 1;
         #territory-information {
+          box-sizing: border-box;
           background-color: white;
           width: 100%;
           height: auto;
@@ -65,30 +68,57 @@
 
     button {
       all: unset;
-      color: gray;
     }
 
     button:hover {
       cursor: pointer;
-      filter:opacity(50%);
+      color: colors.$primary-orange;
     }
   }
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
+  #research {
+    width: 100%;
+  }
+
   #territory {
-    width: 95%;
+    width: 100% !important;
     margin-top: 20px;
-    padding: 16px;
+    padding: 0 !important;
+    box-sizing: border-box;
+
+    button {
+      padding: 10px !important;
+    }
+
+    h1 {
+      width: 95% !important;
+      padding: 10px;
+    }
   }
 
   #territory-details {
     flex-direction: column;
+    gap: 0;
 
     #left-side,
     #right-side {
       flex: unset;
-      width: 100%;
+    }
+
+    #left-side {
+      flex: unset;
+      box-sizing: border-box;
+      max-width: 100% !important;
+      width: 100% !important;
+      padding: 10px;
+    }
+
+    #right-side {
+      width: 100vw;
+      margin-bottom: 150px;
+      padding: 0px !important;
     }
   }
 }

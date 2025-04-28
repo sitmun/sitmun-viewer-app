@@ -1,19 +1,19 @@
 <div class="dashboard-item">
   <div class="dashboard-item-image" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
-    <button >
+    <button (click)="navigateToApplicationDetails(item.id)">
       <img [src]="item.logo || 'assets/img/card-no-image.svg'" />
     </button>
   </div>
 
 
   <div class="dashboard-item-content" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
-    <button >
+    <button (click)="navigateToApplicationDetails(item.id)">
       <h3 class="dashboard-item-title"> {{item.title}} {{item.name}} </h3>
     </button>
 
     <button class="dashboard-item-nbTerritories" 
     [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }" 
-    (click)="displayTerritoriesTag(item)"
+    (click)="navigateToTerritory(this.listOfTerritories.content[0].id)"
     *ngIf="nbTerritory == 1" >
       {{ this.listOfTerritories[0].name }}
     </button>

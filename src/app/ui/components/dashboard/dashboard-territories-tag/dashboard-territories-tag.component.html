@@ -56,7 +56,8 @@
           <button class="right-side tooltip"
             (click)="navigateToTerritoryDetails(item.id)"
             (mouseover)="changeRightImage(true, 'territory'+item.name)"
-            (mouseout)="changeRightImage(false, 'territory'+item.name)">
+            (mouseout)="changeRightImage(false, 'territory'+item.name)"
+            (click)="navigateToTerritoryDetails(item.id)">
             <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
             <span class="tooltiptext"> {{ 'dashboardPage.territoryHover' | translate }} </span>
           </button>
