@@ -14,7 +14,6 @@ export class DashboardSearchboxComponent {
   @ViewChild('inputSearch') inputSearch! : ElementRef;
 
   @Input() applications : any;
-  @Input() searchWidth : string = "450px";
 
   @Output() keywords = new EventEmitter<string>();
   @Output() territory = new EventEmitter<any>();
@@ -50,12 +49,18 @@ export class DashboardSearchboxComponent {
       this.commonService.fetchTerritoriesByApplication(application.id).subscribe({
         next: (res : ResponseDto) => {
           res.content.forEach((territory : any) => {
-            let object = {
-              "id": territory.id,
-              "name": territory.name,
-              "application": application
+            let existingTerritory = this.territories.find((t: any) => t.name === territory.name);
+
+            if (!existingTerritory) {
+              existingTerritory = {
+                id: territory.id,
+                name: territory.name,
+                application: []
+              };
+              this.territories.push(existingTerritory);
             }
-            this.territories.push(object);
+
+            existingTerritory.application.push(application);
             application.territories = res.content;
           });
         }

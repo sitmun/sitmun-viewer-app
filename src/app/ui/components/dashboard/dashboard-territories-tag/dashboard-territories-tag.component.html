@@ -13,17 +13,19 @@
     <!-- If one territory -->
     <div class="territories-tag-items-one" *ngIf="territories.length == 1">
       <div class="territory-item" [id]="'territory'+territories[0].name">
-        <button class="left-side"
+        <button class="left-side tooltip"
           (click)="navigateToMap(application.id, territories[0].id)"
           (mouseover)="changeLeftImage(true, 'territory'+territories[0].name)"
           (mouseout)="changeLeftImage(false, 'territory'+territories[0].name)">
           <img class="left-icon" src="assets/img/Icona-mapa.svg" alt="" />
           <p class="territory-text">{{ territories[0].name }} </p>
+          <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
         </button>
-        <button class="right-side"
+        <button class="right-side tooltip"
           (mouseover)="changeRightImage(true, 'territory'+territories[0].name)"
           (mouseout)="changeRightImage(false, 'territory'+territories[0].name)">
           <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
+          <span class="tooltiptext"> {{ 'dashboardPage.territoryHover' | translate }} </span>
         </button>
       </div>
     </div>
@@ -42,18 +44,19 @@
       </form>
       <div id="territory-list">
         <div *ngFor="let item of filteredTerritories()" class="territory-item" [id]="'territory' + item.name">
-          <button class="left-side"
+          <button class="left-side tooltip"
             (click)="navigateToMap(application.id, item.id)"
             (mouseover)="changeLeftImage(true, 'territory'+item.name)"
             (mouseout)="changeLeftImage(false, 'territory'+item.name)">
             <img class="left-icon" src="assets/img/Icona-mapa.svg" alt="" />
             <p class="territory-text">{{ item.name }}</p>
+            <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
           </button>
-          <button class="right-side"
-            (click)="navigateToTerritoryDetails(item.id)"
+          <button class="right-side tooltip"
             (mouseover)="changeRightImage(true, 'territory'+item.name)"
             (mouseout)="changeRightImage(false, 'territory'+item.name)">
             <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
+            <span class="tooltiptext"> {{ 'dashboardPage.territoryHover' | translate }} </span>
           </button>
         </div>
       </div>

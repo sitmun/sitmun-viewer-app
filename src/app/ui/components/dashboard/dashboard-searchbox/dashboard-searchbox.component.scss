@@ -1,18 +1,23 @@
 @use 'dimensions';
 @use 'colors';
 
-$layout-breakpoint-small: 540px;
-
+$layout-breakpoint-small: 100%;
 $padding-base: 10px;
+
 * {
   box-sizing: border-box;
+}
+
+#searchbox {
+  width: $layout-breakpoint-small;
+  position: relative;
 }
 
 form {
   height: 50px;
   margin-top: 20px;
   padding-bottom: 20px;
-  width: 100%;
+  width: $layout-breakpoint-small;
 
   div {
     width: 100%;
@@ -84,6 +89,7 @@ form {
 
 
 .suggestions-list {
+  width: $layout-breakpoint-small;
   border: 1px solid #ccc;
   max-height: 400px;
   overflow-y: auto;
@@ -159,12 +165,14 @@ form {
       div {
         flex: 0 0 10%;
         display: flex;
-        justify-content: center;
+        justify-content: right;
         align-items: center;
+        padding-right: $padding-base;
+
 
         img {
-          width: 80%;
-          height: auto;
+          width: 40px;
+          height: 40px;
           border-radius: 10px;
           object-fit: cover;
           display: block;

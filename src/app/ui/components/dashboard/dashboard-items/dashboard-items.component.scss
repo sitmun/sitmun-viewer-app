@@ -6,6 +6,7 @@ app-dashboard-expand-button {
   justify-content: center;
   align-items: center;
   margin-top: 50px;
+  margin-bottom: 10px;
 }
 
 h3 {
@@ -23,14 +24,15 @@ h3 {
 }
 
 .center-container {
+  width: 400px;
+  height: auto;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
   pointer-events: auto;
-  height: auto;
-  max-height: 50%;
+
 }
 
 .cards-container {
@@ -49,21 +51,29 @@ h3 {
   flex-direction: column;
   flex-grow: 0;
   flex-shrink: 0;
-  max-width: 500px;
   box-sizing: border-box;
+  flex-basis: calc((100% - 40px) / 3);
+  min-width: 530px;
 }
 
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
     justify-content: flex-start;
-    margin: 0px !important;
-    padding: 0px !important;
-    gap: 0px !important;
+
+    .card {
+      flex: 1 1 calc(50% - 10px);
+      max-width: calc(50% - 10px);
+      box-sizing: border-box;
+      min-width: 100px;
+    }
   }
 
-  .card {
-    max-width: 100%;
-    padding-left: 0px;
+
+  .main-content {
+    padding-bottom: 150px;
   }
 }

@@ -12,11 +12,12 @@
 }
 
 #research {
+  width: 600px;
   margin-bottom: 20px;
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   #research {
-    width: 70%;
+    width: 100%;
   }
 }

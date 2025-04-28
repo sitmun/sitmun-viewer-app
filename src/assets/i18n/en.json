@@ -80,6 +80,8 @@
   "dashboardDialogTag.inputPlaceholder": "Filter the list",
   "dashboardPage.shortAppTitle":"App",
   "dashboardPage.coveredTerritories":"Covered territories",
+  "dashboardPage.territoryHover": "Territorio",
+  "dashboardPage.mapHover": "Mapa",
   "mapPage.title": "Sample map",
   "dashboardDialog.inputPlaceholder": "Search",
   "menu.login": "Access",

@@ -1,5 +1,5 @@
-<div>
-  <div *ngIf="isPublic() && allItems.length > 0">
+<div  *ngIf="isPublic()" class="main-content">
+  <div *ngIf="allItems.length > 0">
     <div class="cards-container">
       <div class="card" *ngFor="let item of allItems">
         <app-dashboard-item
@@ -7,12 +7,12 @@
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllApplications($event)" *ngIf="allItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllApplications($event)" *ngIf="totalItems > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 </div>
 
 
-<div *ngIf="!isPublic() && items.length > 0">
+<div *ngIf="!isPublic() && items.length > 0" class="main-content">
   <div *ngIf="privateItems.length > 0">
     <h3>{{ 'dashboardPage.applicationPrivate' | translate }}</h3>
     <div class="cards-container">
@@ -22,13 +22,13 @@
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPrivateApplications($event)" *ngIf="privateItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllPrivateApplications($event)" *ngIf="totalPrivateItems > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 
   <hr class="separation-line"
       *ngIf="publicItems.length > 0 && privateItems.length > 0 && isDashboard() && !isPublic()" />
 
-  <div *ngIf="publicItems.length > 0">
+  <div *ngIf="publicItems.length > 0" >
     <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
     <div class="cards-container">
       <div class="card" *ngFor="let item of publicItems">
@@ -37,7 +37,7 @@
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPublicApplications($event)" *ngIf="publicItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllPublicApplications($event)" *ngIf="totalPublicItems > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 </div>
 

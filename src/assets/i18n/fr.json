@@ -27,6 +27,8 @@
   "dashboardDialogTag.inputPlaceholder": "Filtrer la liste",
   "dashboardPage.shortAppTitle":"App",
   "dashboardPage.coveredTerritories":"Territoires couverts",
+  "dashboardPage.territoryHover": "Territoire",
+  "dashboardPage.mapHover": "Carte",
   "mapPage.title": "Carte d'exemple",
   "dashboardDialog.inputPlaceholder": "Rechercher",
   "menu.login": "Accéder",

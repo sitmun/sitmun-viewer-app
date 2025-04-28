@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonService, DashboardItem } from '@api/services/common.service';
+import { Codelist } from '@api/model/app-codelist';
+import { DashboardItem } from '@api/services/common.service';
 
 @Component({
   selector: 'app-dashboard-items',
@@ -8,85 +9,87 @@ import { CommonService, DashboardItem } from '@api/services/common.service';
   styleUrls: ['./dashboard-items.component.scss']
 })
 export class DashboardItemsComponent {
-  @Input() items: Array<DashboardItem> = [];
+  @Input() items: DashboardItem[] = [];
   @Input() image_src: string = "";
 
-  applicationSelected : any = null;
-  hasWarning : boolean = false;
-  isInMaintenance : boolean = false;
-  displayTag : boolean = false;
+  applicationSelected: any = null;
+  hasWarning: boolean = false;
+  isInMaintenance: boolean = false;
+  displayTag: boolean = false;
 
-  applicationToDisplayTag! : DashboardItem;
-  territoriesToDisplayTag! : any;
+  applicationToDisplayTag!: DashboardItem;
+  territoriesToDisplayTag!: any;
 
-  privateItems: Array<DashboardItem> = [];
-  publicItems: Array<DashboardItem> = [];
-  allItems: Array<DashboardItem> = [];
+  public privateItems: DashboardItem[] = [];
+  public publicItems: DashboardItem[] = [];
+  public allItems: DashboardItem[] = [];
 
-  readonly MAX_HIDDEN_MODE_ITEMS : number = 3;
+  totalItems: number = 0;
+  totalPrivateItems: number = 0;
+  totalPublicItems: number = 0;
 
-  constructor(private router : Router) {}
+  readonly MAX_HIDDEN_MODE_ITEMS: number = 3;
+
+  constructor(private router: Router) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
-      if(this.isPublic()){
+      if (this.isPublic()) {
         this.displayAllApplications(false);
-      }
-      else {
+      } else {
         this.displayAllPrivateApplications(false);
         this.displayAllPublicApplications(false);
       }
     }
   }
 
-
   ngOnInit() {
-    if(this.isPublic()){
+    if (this.isPublic()) {
       this.displayAllApplications(false);
-    }
-    else {
+    } else {
       this.displayAllPrivateApplications(false);
       this.displayAllPublicApplications(false);
     }
   }
 
-
   displayTerritoriesTag(display: any) {
-    if(display.application != null){
+    if (display.application != null) {
       this.displayTag = true;
       this.applicationToDisplayTag = display.application;
       this.territoriesToDisplayTag = display.territories.content;
-    }
-    else {
+    } else {
       this.displayTag = false;
     }
   }
 
-
-  displayAllApplications(displayAll : boolean) {
+  displayAllApplications(displayAll: boolean) {
     this.allItems = [...this.items];
     this.allItems = this.displayApplications(this.allItems, displayAll);
+    this.totalItems = this.items.length;
   }
 
   displayAllPrivateApplications(displayAll : boolean) {
-    this.privateItems = this.items.filter(item => item.appPrivate);
-    this.privateItems = this.displayApplications(this.privateItems, displayAll);
+    const filtered = this.items.filter(item => item.type == Codelist.INTERNAL);
+    this.totalPrivateItems = filtered.length;
+    this.privateItems = this.displayApplications(filtered, displayAll);
   }
 
   displayAllPublicApplications(displayAll : boolean) {
-    this.publicItems = this.items.filter(item => !item.appPrivate);
-    this.publicItems = this.displayApplications(this.publicItems, displayAll);
+    const filtered = this.items.filter(item => item.type == Codelist.EXTERNAL);
+    this.totalPublicItems = filtered.length;
+    this.publicItems = this.displayApplications(filtered, displayAll);
   }
 
-  displayApplications(list: any[], display: boolean) {
+  displayApplications(list: DashboardItem[], display: boolean): DashboardItem[] {
+    this.totalItems = list.length;
     return display ? list : list.slice(0, this.MAX_HIDDEN_MODE_ITEMS);
   }
 
-  isDashboard() {
-    return this.router.url.startsWith("/user/dashboard") || this.router.url.startsWith("/public/dashboard")
+  isDashboard(): boolean {
+    return this.router.url.startsWith("/user/dashboard") || this.router.url.startsWith("/public/dashboard");
   }
 
-  isPublic() {
+  isPublic(): boolean {
     return this.router.url.startsWith("/public");
   }
 }

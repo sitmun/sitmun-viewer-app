@@ -16,9 +16,6 @@ export abstract class AbstractDashboardComponent implements OnInit {
   type: DashboardTypes;
 
   items: DashboardItem[];
-  page: number = 1;
-  size: number = 2;
-  keywords: string = '';
   totalElements: number = 0;
   protected constructor(
     protected router: Router,
@@ -30,12 +27,12 @@ export abstract class AbstractDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.searchDashboardItems(this.page, 1);
+    this.loadItems();
   }
 
-  searchDashboardItems(page: number, size?: number, keywords?: string) {
+  loadItems(keyword : string = "") {
     this.commonService
-      .fetchDashboardItems(this.type, page - 1, this.size, keywords)
+      .fetchDashboardItems(this.type, keyword)
       .subscribe((res: DashboardItemsResponse) => {
         this.items = res.content;
         this.totalElements = res.totalElements;
@@ -49,17 +46,11 @@ export abstract class AbstractDashboardComponent implements OnInit {
       this.type = DashboardTypes.TERRITORIES;
     }
     this.items = [];
-    this.page = 1;
-    this.searchDashboardItems(this.page);
+    this.loadItems();
   }
 
   onKeywordsSearch(keywords: string) {
-    this.page = 1;
-    this.searchDashboardItems(this.page, this.size, keywords);
+    this.loadItems(keywords);
   }
 
-  onPageChange(page: number) {
-    this.page = page;
-    this.searchDashboardItems(page, this.size, this.keywords);
-  }
 }

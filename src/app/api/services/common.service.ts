@@ -84,8 +84,6 @@ export class CommonService {
 
   fetchDashboardItems(
     dashboardType: DashboardTypes,
-    page?: number,
-    size?: number,
     keywords?: string
   ) {
     let path;
@@ -96,12 +94,6 @@ export class CommonService {
       case DashboardTypes.TERRITORIES:
         path = URL_API_TERRITORIES;
         break;
-    }
-    if (page != undefined && page >= 0) {
-      path += '?page=' + page;
-    }
-    if (size) {
-      path += '&size=' + size;
     }
     if (keywords) {
       path += '?keywords=' + keywords;

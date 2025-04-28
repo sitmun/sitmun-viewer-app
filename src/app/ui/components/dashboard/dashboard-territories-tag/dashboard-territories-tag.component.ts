@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
@@ -107,4 +107,5 @@ export class DashboardTerritoriesTagComponent {
   DisplayCloseButton() : boolean {
     return this.IsInDashboard() || this.router.url.startsWith("/user/territory") || this.router.url.startsWith("/public/territory");
   }
+
 }

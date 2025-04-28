@@ -27,6 +27,8 @@
   "dashboardDialogTag.inputPlaceholder": "Filtra la llista",
   "dashboardPage.shortAppTitle":"App",
   "dashboardPage.coveredTerritories":"Territoris coberts",
+  "dashboardPage.territoryHover": "Territori",
+  "dashboardPage.mapHover": "Mapa",
   "mapPage.title": "Mapa d'exemple",
   "dashboardDialog.inputPlaceholder": "Cerca",
   "menu.login": "Accedir",

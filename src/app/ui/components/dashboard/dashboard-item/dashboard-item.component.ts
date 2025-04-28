@@ -1,4 +1,4 @@
-import { Component , EventEmitter, Input, Output } from '@angular/core';
+import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CommonService, DashboardItem } from '@api/services/common.service';
 
 
@@ -10,15 +10,37 @@ import { CommonService, DashboardItem } from '@api/services/common.service';
 export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
-  readonly DESCRIPTION_MAX_CHARACTER = 100;
+  @Output() tag = new EventEmitter<any>();
+  DESCRIPTION_MAX_CHARACTER : number = 75;
   nbTerritory : number = 0;
   listOfTerritories : any;
-  @Output() tag = new EventEmitter<any>();
+  mediaQueryListener: any;
 
   constructor(private commonService : CommonService) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
+    this.checkWindowSize();
+  }
+
+  ngOnDestroy() {
+    if (this.mediaQueryListener) {
+      this.mediaQueryListener.removeListener();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event : any) {
+    this.checkWindowSize();
+  }
+
+  private checkWindowSize() {
+    const width = window.innerWidth;
+    if (width <= 640) {
+      this.DESCRIPTION_MAX_CHARACTER = 30;
+    } else {
+      this.DESCRIPTION_MAX_CHARACTER = 75;
+    }
   }
 
   fillTerritory(appId : number) {
