@@ -41,7 +41,7 @@
     </button>
   </div>
 
-  <div class="profile-button" [class.active]="navigationClassActive == 'profile'">
+  <div class="profile-button" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
     <button (click)="profileRedirect()">
       <div class="icon"></div>
     </button>
