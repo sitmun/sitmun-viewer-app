@@ -6,7 +6,7 @@
     <div id="application-information-details">
       <p [ngClass]="{ 'value-missing': !application.updateDate }">
         <span>{{ 'application.lastUpdateDate' | translate }} :</span>
-        {{ application.lastUpdate ? (application.updateDate | date:'dd/MM/yyyy') : ('application.valueMissing' | translate) }}
+        {{ application.lastUpdate ? (application.lastUpdate | date:'dd/MM/yyyy') : ('application.valueMissing' | translate) }}
       </p>
       <p [ngClass]="{ 'value-missing': !application.createdDate }">
         <span>{{ 'application.creationDate' | translate }} :</span>

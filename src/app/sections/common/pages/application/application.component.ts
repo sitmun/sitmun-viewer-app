@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Location } from '@angular/common'
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonService, DashboardItem, DashboardTypes } from '@api/services/common.service';
+import { AccountService } from '@api/services/account.service';
+import { UserDto } from '@api/model/user';
 
 @Component({
   selector: 'app-application',
@@ -13,7 +15,7 @@ export class ApplicationComponent {
   application!: DashboardItem;
   territories: any[] = [];
 
-  constructor(private location: Location, private route: ActivatedRoute, private commonService : CommonService, private router : Router) {
+  constructor(private location: Location, private route: ActivatedRoute, private commonService : CommonService, private router : Router, private accountService : AccountService) {
     let appId = this.route.snapshot.paramMap.get('applicationId');
     this.applicationId = Number(appId);
   }
@@ -23,6 +25,12 @@ export class ApplicationComponent {
       next: (res : any) => {
         this.application = res.content.find((app : DashboardItem) => {
           return app.id == this.applicationId;
+        });
+
+        this.accountService.getUserByID(this.application.creator).subscribe({
+          next: (res: UserDto) => {
+            this.application.creator = res.username;
+          }
         })
       }
     });
