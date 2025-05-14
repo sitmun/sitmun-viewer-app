@@ -27,11 +27,23 @@ export class ApplicationComponent {
           return app.id == this.applicationId;
         });
 
-        this.accountService.getUserByID(this.application.creator).subscribe({
-          next: (res: UserDto) => {
-            this.application.creator = res.username;
+        if(this.application.id != null) {
+          if(this.router.url.startsWith("/public")){
+            this.accountService.getUserByIDPublic(this.application.creator).subscribe({
+              next: (res: UserDto) => {
+                this.application.creator = res.username;
+              }
+            })
           }
-        })
+          else {
+            this.accountService.getUserByID(this.application.creator).subscribe({
+              next: (res: UserDto) => {
+                this.application.creator = res.username;
+              }
+            })
+          }
+
+        }
       }
     });
 

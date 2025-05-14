@@ -2,6 +2,7 @@
 export const URL_AUTH_LOGIN = '/api/authenticate';
 
 export const URL_API_USER_ACCOUNT = '/api/account'
+export const URL_API_USER_ACCOUNT_PUBLIC = '/api/account/public'
 
 export const URL_RECOVER_PASSWORD = '/api/recover-password'
 

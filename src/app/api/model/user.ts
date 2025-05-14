@@ -6,6 +6,7 @@ export interface UserDto {
   email: string;
   name: string;
   surname: string;
+  username: string;
 }
 
 export class UserUtils {
