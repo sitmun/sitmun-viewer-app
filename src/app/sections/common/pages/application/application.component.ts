@@ -26,24 +26,26 @@ export class ApplicationComponent {
         this.application = res.content.find((app : DashboardItem) => {
           return app.id == this.applicationId;
         });
-
-        if(this.application.id != null) {
-          if(this.router.url.startsWith("/public")){
-            this.accountService.getUserByIDPublic(this.application.creator).subscribe({
-              next: (res: UserDto) => {
-                this.application.creator = res.username;
-              }
-            })
-          }
-          else {
-            this.accountService.getUserByID(this.application.creator).subscribe({
-              next: (res: UserDto) => {
-                this.application.creator = res.username;
-              }
-            })
+        if(this.application.creator!= null) {
+          if(this.application.id != null) {
+            if(this.router.url.startsWith("/public")){
+              this.accountService.getUserByIDPublic(this.application.creator).subscribe({
+                next: (res: UserDto) => {
+                  this.application.creator = res.username;
+                }
+              })
+            }
+            else{
+              this.accountService.getUserByID(this.application.creator).subscribe({
+                next: (res: UserDto) => {
+                  this.application.creator = res.username;
+                }
+              })
+            }
           }
 
         }
+
       }
     });
 
