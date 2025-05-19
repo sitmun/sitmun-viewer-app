@@ -89,7 +89,6 @@ export class NavigationBarComponent implements OnInit {
           let applicationSelectedId = this.router.url.split('/')[3];
           let application = res.content.find((app) => app.id.toString() == applicationSelectedId);
           if(application?.headerParams) {
-            console.log(application.headerParams);
             this.headerBase = {};
             this.headerLeftSection = [];
             this.headerRightSection = [];
