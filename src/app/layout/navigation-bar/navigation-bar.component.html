@@ -12,7 +12,7 @@
         <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
       </div>
       <secondary-button
-        *ngIf="isOnMap() && totalApplicationLength > 1 && (headerBase?.switchApplication?.visible !== false)"
+        *ngIf="isOnMap() && showChangeAppOrTerritoryButton && (headerBase?.switchApplication?.visible !== false)"
         (click)="displayTerritoriesAppList = !displayTerritoriesAppList"
         [button_text]="'genericPrivateHeaders.changeAppOrTerritory' | translate"
         [button_img_url]="'assets/img/Icona-canviar.svg'"

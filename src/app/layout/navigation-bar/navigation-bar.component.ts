@@ -23,7 +23,7 @@ export class NavigationBarComponent implements OnInit {
   mediaQueryListener: any;
   navigationBarIsHidden : boolean = false;
   displayTerritoriesAppList : boolean = false;
-  totalApplicationLength! : number;
+  showChangeAppOrTerritoryButton : boolean = true;
 
   headerLeftSection: any;
   headerRightSection : any;
@@ -44,7 +44,7 @@ export class NavigationBarComponent implements OnInit {
     });
 
     this.currentLang = localStorage.getItem('language') || 'es';
-    this.getTotalApplicationLength();
+    this.shouldShowChangeButton();
   }
 
   ngOnInit() {
@@ -67,6 +67,7 @@ export class NavigationBarComponent implements OnInit {
       }
     });
 
+    this.OverideNavbar(this.router.url);
     this.location.onUrlChange(url => {this.OverideNavbar(url)});
   }
 
@@ -208,12 +209,20 @@ export class NavigationBarComponent implements OnInit {
     return this.router.url.startsWith("/user/map") || this.router.url.startsWith("/public/map");
   }
 
-  getTotalApplicationLength(): Promise<number> {
+  shouldShowChangeButton(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS)
         .subscribe({
-          next: (res: DashboardItemsResponse) => {
-            this.totalApplicationLength = res.content.length;
+          next: (applications: DashboardItemsResponse) => {
+            if(applications.totalElements == 1) {
+              let app = applications.content[0];
+              this.commonService.fetchTerritoriesByApplication(app.id).subscribe({
+                next: (territories: any) => {
+                  if(territories.numberOfElements == 1)
+                    this.showChangeAppOrTerritoryButton = false;
+                }
+              });
+            }
           },
           error: (err) => {
             reject(err);
