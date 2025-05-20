@@ -56,7 +56,7 @@ export class DashboardItemsComponent {
     if (display.application != null) {
       this.displayTag = true;
       this.applicationToDisplayTag = display.application;
-      this.territoriesToDisplayTag = display.territories.content;
+      this.territoriesToDisplayTag = display.territories;
     } else {
       this.displayTag = false;
     }
