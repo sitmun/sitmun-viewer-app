@@ -53,10 +53,22 @@ export class DashboardItemComponent {
     this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
-        this.listOfTerritories = res;
+        this.listOfTerritories = res.content;
         this.nbTerritory = res.numberOfElements;
       }
     });
+  }
+
+  /**
+   * If the nb of territories > 1, navigate to applicationDetails. If nb of territories <= 1, navigate directly to the map of the territory
+   */
+  navigateToApplicationDetailsOrMap(idApp: number) {
+    if(this.nbTerritory > 1) {
+      this.navigateToApplicationDetails(idApp);
+    }
+    else if(this.nbTerritory == 1){
+      this.navigateToMap(idApp);
+    }
   }
 
   navigateToApplicationDetails(idApp: number) {
@@ -68,6 +80,19 @@ export class DashboardItemComponent {
     else {
       this.router.navigateByUrl(
         NavigationPath.Section.User.Application(idApp)
+      );
+    }
+  }
+
+  navigateToMap(idApp : number) {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
+      );
+    }
+    else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
       );
     }
   }
