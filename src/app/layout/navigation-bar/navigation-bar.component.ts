@@ -67,8 +67,9 @@ export class NavigationBarComponent implements OnInit {
       }
     });
 
-    this.OverideNavbar(this.router.url);
-    this.location.onUrlChange(url => {this.OverideNavbar(url)});
+    this.router.events.subscribe(event => {
+      this.OverideNavbar(this.router.url)
+    });
   }
 
   ngOnDestroy() {
