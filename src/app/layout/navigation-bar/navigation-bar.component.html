@@ -22,7 +22,7 @@
         </button>
       </div>
       <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard()">
-        <img src="assets/img/Icona-desconnexió.svg"/>
+        <div class="icon"></div>
         <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
       </button>
       <primary-button
