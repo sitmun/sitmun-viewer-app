@@ -1,7 +1,10 @@
-import { Component, Injectable, OnInit } from '@angular/core';
-import { NavigationStart, Router } from '@angular/router';
+import { Component, HostListener, Injectable, OnInit } from '@angular/core';
+import { NavigationStart, Router, NavigationEnd } from '@angular/router';
 import { CommonService } from '@api/services/common.service';
-
+import { CustomDetails } from '@api/services/user.service';
+import { AuthenticationService } from '@auth/services/authentication.service';
+import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -11,37 +14,94 @@ import { CommonService } from '@api/services/common.service';
 
 export class NavigationBarComponent implements OnInit {
   showMenu: boolean;
-  styleBackground: string = "#000000FF"; // by default, 100% transparent
+  styleBackground: string = "#000000FF";
+  username : string = "";
+  currentLang : string;
+  navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
+  isResponsive : boolean = false;
+  mediaQueryListener: any;
 
-  constructor(private router: Router, private commonService: CommonService) {
+  constructor(
+    private router: Router,
+    private commonService: CommonService,
+    private translate: TranslateService,
+    private authenticationService : AuthenticationService<CustomDetails>
+  ) {
     this.showMenu = false;
     router.events.forEach((event) => {
       if (event instanceof NavigationStart) {
         this.showMenu = false;
       }
     });
+
+    this.currentLang = localStorage.getItem('language') || 'es';
   }
 
   ngOnInit() {
-    // We will receive notifications of potential theme changes via
-    // the commonService.message$ observable
+    this.CheckIfResponsive();
+
     this.commonService.message$.subscribe(msg => {
-      if (msg.theme === 'demo-jiide') {
-        // TODO: we can't have the colors for the theme hardcoded here.
-        // It is not possible, AFAIK, to read them from the SASS files
-        // without some "hacking".
-        // Another option would be retrieving them from the API and
-        // sharing them in the msg object
-        //this.styleBackground = "#ff000099";
-      } else if (msg.theme === 'sitmun-base') {
-        //this.styleBackground = "#d7992299"; // - ORANGE
+      if (msg.theme === 'sitmun-base') {
         this.styleBackground = "#d79922";
+      }
+    });
+
+    if(this.IsConnected() && !this.isPublicDashboard()) {
+      this.username = this.authenticationService.getLoggedUsername();
+    }
+
+    this.CheckWichClassIsActive();
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.CheckWichClassIsActive();
       }
     });
   }
 
-  logoClicked() {
-    this.router.navigate(['/']);
+  ngOnDestroy() {
+    if (this.mediaQueryListener) {
+      this.mediaQueryListener.removeListener();
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event : any) {
+    this.CheckIfResponsive();
+  }
+
+  CheckWichClassIsActive() {
+    if(this.router.url.includes("profile"))
+      this.navigationClassActive = NavigationButtonActive.PROFILE;
+    else if(this.router.url.includes("dashboard"))
+      this.navigationClassActive = NavigationButtonActive.HOME;
+    else
+      this.navigationClassActive = NavigationButtonActive.OTHER;
+  }
+
+  homeRedirect() {
+    this.navigationClassActive = NavigationButtonActive.HOME;
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Dashboard
+      );
+    }
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Dashboard
+      );
+    }
+  }
+
+  loginRedirect() {
+    this.router.navigate(['/auth/login']);  }
+
+  profileRedirect() {
+    this.navigationClassActive = NavigationButtonActive.PROFILE;
+    this.router.navigate(['/user/profile']);
+  }
+
+  logout() {
+    this.authenticationService.logout();
   }
 
   onShowMenu() {
@@ -49,13 +109,43 @@ export class NavigationBarComponent implements OnInit {
   }
 
   TamanyMenu() {
-    if (this.router.url == "/auth/login") {
+    if (this.router.url.startsWith("/auth/login")) {
       return 'nav-bar login';
-    }else if (this.router.url.includes("/map/")){
+    }else if (this.router.url.startsWith("/map/")){
       return 'nav-bar pet';
     }
     else{
       return 'nav-bar';
     }
   }
+
+  IsConnected() {
+    let isConnected = true;
+    if(this.router.url.startsWith("/auth/login") || this.router.url.startsWith("/auth/forgot-password")){
+      isConnected = false;
+    }
+    return isConnected;
+  }
+
+  isPublicDashboard() {
+    return this.router.url.startsWith("/public");
+  }
+
+  useLanguage(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.translate.use(target.value);
+    localStorage.setItem('language', target.value);
+  }
+
+  CheckIfResponsive(): void {
+    const breakpoint = 640;
+    this.isResponsive =  window.innerWidth <= breakpoint;
+  }
+}
+
+enum NavigationButtonActive {
+  HOME = "home",
+  NEWS = "news",
+  PROFILE = "profile",
+  OTHER = "other"
 }

@@ -1,15 +1,57 @@
 <div class='{{TamanyMenu()}}'>
   <div class="dashboard-container">
-    <div class="logo">
-      <img src='assets/logos/logo.png' (click)='logoClicked()'>
+    <div class="left">
+      <img (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="IsConnected()"/>
     </div>
-    <div class="menu">
-      <button type="button" (click)="onShowMenu()">
-        <img src="assets/img/menu.svg" alt='Menu'>
+
+    <div class="right">
+      <button (click)="homeRedirect()" [class.active]="navigationClassActive == 'home'" class="home-menu button-menu" *ngIf="IsConnected()"> </button>
+      <div class="select-language">
+        <select [ngModel]="currentLang" (change)="useLanguage($event)">
+          <option value="ca"> Català </option>
+          <option value="en"> English </option>
+          <option value="es"> Español </option>
+          <option value="fr"> Français </option>
+        </select>
+      </div>
+      <div class="profile-page" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
+        <p> {{ 'genericPrivateHeader.hi' | translate }},</p>
+        <button (click)="profileRedirect()" class="button-menu">
+          <div class="icon"></div>
+          <p id="username"> {{ username | titlecase}} </p>
+        </button>
+      </div>
+      <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard()">
+        <img src="assets/img/Icona-desconnexió.svg"/>
+        <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
       </button>
+      <primary-button
+        *ngIf="IsConnected() && isPublicDashboard() && !isResponsive"
+        [button_text]="'loginPage.title' | translate"
+        (click)="loginRedirect()"
+        />
     </div>
-    <ng-container *ngIf="showMenu">
-      <app-menu/>
-    </ng-container>
+  </div>
+</div>
+
+<div class="navbar-responsive" *ngIf="IsConnected()">
+  <div class="home-button" [class.active]="navigationClassActive == 'home'">
+    <button (click)="homeRedirect()">
+      <div class="icon"></div>
+    </button>
+  </div>
+
+  <div class="login-button" *ngIf="isPublicDashboard()">
+    <primary-button
+    [button_text]="'loginPage.title' | translate"
+    [img_src]="'assets/img/Icona-connexió.svg'"
+    (click)="loginRedirect()"
+    />
+  </div>
+
+  <div class="logout-button" *ngIf="!isPublicDashboard()">
+    <button (click)="logout()">
+      <div class="icon"></div>
+    </button>
   </div>
 </div>

@@ -1,0 +1,11 @@
+<div class="form-section-input">
+  <p> {{ input_title }} </p>
+  <div>
+    <input
+        [type]="input_type"
+        [placeholder]="input_placeholder"
+        [name]="input_name"
+        [(ngModel)]="input_model"
+        (input)="onInputChange()" />
+  </div>
+</div>

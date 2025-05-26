@@ -10,6 +10,10 @@ import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog
 import { MenuComponent } from './components/menu/menu.component';
 import { DashboardPaginationComponent } from './components/dashboard-pagination/dashboard-pagination.component';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { PrimaryButtonComponent } from './components/primary-button/primary-button.component';
+import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
+import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
+import { NotificationComponent } from './components/notification/notification.component';
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule],
@@ -19,17 +23,24 @@ import { NgxPaginationModule } from 'ngx-pagination';
     DashboardSearchboxComponent,
     DialogFilterPipe,
     MenuComponent,
-    DashboardPaginationComponent
+    DashboardPaginationComponent,
+    PrimaryButtonComponent,
+    SecondaryButtonComponent,
+    FormFieldInputComponent,
+    NotificationComponent
   ],
   exports: [
     DashboardItemsComponent,
     DashboardButtonsComponent,
     DashboardSearchboxComponent,
-    DashboardSearchboxComponent,
     ModalModule,
     DialogFilterPipe,
     DashboardPaginationComponent,
-    MenuComponent
+    MenuComponent,
+    PrimaryButtonComponent,
+    SecondaryButtonComponent,
+    FormFieldInputComponent,
+    NotificationComponent
   ],
   providers: []
 })
