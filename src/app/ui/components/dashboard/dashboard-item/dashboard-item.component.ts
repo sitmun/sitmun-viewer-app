@@ -46,7 +46,7 @@ export class DashboardItemComponent {
   fillTerritory(appId : number) {
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
-        this.listOfTerritories = res;
+        this.listOfTerritories = res.content;
         this.nbTerritory = res.numberOfElements;
       }
     });
