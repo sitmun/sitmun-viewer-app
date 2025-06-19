@@ -1,22 +1,6 @@
 @use 'colors';
 @use 'dimensions';
 
-$layout-breakpoint-small: 540px;
-
-.login-page {
-  position: absolute;
-  background: linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
-    colors.$common-color-background-navbar-with-opacity 30%,
-    colors.$common-color-background-with-opacity 80%), url('~../../../../assets/img/login-back.png') no-repeat;
-  height: calc(100% - 80px);
-  width: 100%;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-}
-
 @keyframes fadeIn {
   from {
     background-position: 0% 100%;
@@ -26,167 +10,209 @@ $layout-breakpoint-small: 540px;
   }
 }
 
+/* Prevents the gradient from overlapping the elements */
+.login-page * {
+  position: relative;
+}
+
 .login-page {
-
-  //animation: fadeIn 3.5s;
-  //animation-timing-function: ease;
-
-  /*background-image: url('~../../../../assets/logos/logo_b_l.png'); /* BROWN */
-  /*background-image: url('~../../../../assets/logos/logo_p_l.png'); /* PINK */
-  // -- background-image: url('~../../../../assets/logos/logo_o_l.png'); /* ORANGE */
+  position: absolute;
+  background:
+    linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
+    colors.$common-color-background-navbar-with-opacity 30%, colors.$common-color-background-with-opacity 80%), url('~../../../../assets/img/login-back.png') no-repeat;
+  height: calc(100% - 80px);
+  width: 100%;
+  background-size: cover;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  position: fixed;
+  padding-left: 150px;
   background-image: url('~../../../../assets/logos/bck_no_logo.jpg');
   background-position: bottom;
-  // background-size: 70%;-->
   background-size: cover;
   height: 100%;
   background-repeat: no-repeat;
   top: 0;
 }
 
+.login-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #0A0623 15%, transparent 100%);
+}
+
+::ng-deep .login-button {
+  button {
+    height: 55px;
+    margin-top: 20px;
+  }
+}
+
 .container {
   animation: none;
-  //margin-top: dimensions.$base-margin-8+80px;
-  // TODO - REVIEW MV SILME
-  background-color: #ffffffdd;
   padding: 30px;
-  //border: 1px solid grey;
   border-radius: 10px;
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
 
-  .title {
+  .title-section {
     color: colors.$common-color-font-secondary;
     display: flex;
-    flex-direction: row;
-    margin-bottom: 20px;
-    h1 {
-      width: 50%;
-      // TODO - REVIEW MV SILME
-      background-image: url('~../../../../assets/logos/logo_black.png');
+    flex-direction: column;
+
+    .logo-sitmun {
+      width: 70%;
+      height: 75px;
+      background-image: url('~../../../../assets/logos/logo_orange.png');
       background-size: contain;
       background-repeat: no-repeat;
-      height: 55px;
       color: transparent;
+      font-weight: bold;
       margin-top: 0px;
-      margin-bottom: 0px;
+      margin-bottom: 50px;
     }
-    div {
-      width: 50%;
-      align-self: center;
-      text-align: right;
 
-      button {
-        width: dimensions.$login-page-button-width;
-        height: dimensions.$login-page-button-height;
-        color: colors.$common-color-font-button;
-        background: colors.$login-page-button-public-background;
-        border-radius: dimensions.$login-page-button-radius;
-        font-weight: bold;
-        border: none;
-        background-color: #222;
+    h1 {
+      margin: 0;
+      padding: 0;
+      color: colors.$login-page-button-font;
+      font-size: 40px;
+    }
+
+    .public-dashboard {
+      display: flex;
+      flex-direction: row;
+
+      p {
+        margin: 0;
+        color: colors.$login-page-button-font;
+        display: flex;
+        flex-direction: row;
+        padding: 3px;
+        align-items: center;
+        margin-right: 20px;
+      }
+
+      a {
         cursor: pointer;
-        font-size: 1em;
-      }
-      button:hover {
-        background: colors.$login-page-button-public-hover;
-        background-color: #000;
+        color: colors.$login-page-input-text;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
       }
 
+      a img {
+        height: 20px;
+        width: auto;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
     }
   }
 
-  .form {
+  .form-section {
+    p {
+      color: #B7B6BE;
+      margin: 0px;
+      padding-bottom: 20px;
+    }
 
     form {
-
       display: flex;
       flex-flow: column;
 
-      input {
+      div {
         margin: dimensions.$base-margin-1-5 0;
-        width: dimensions.$login-page-input-width;
-        height: dimensions.$login-page-input-height;
-        padding: 0 dimensions.$base-margin-6;
-        border-radius: dimensions.$login-page-input-radius;
+        width: dimensions.$login-page-input-width + 90px;
+        height: dimensions.$login-page-input-height + 10px;
+        padding: 0 dimensions.$base-margin-3;
+        border-radius: 5px;
         outline: 0;
         box-sizing: border-box;
-        border: dimensions.$base-border solid colors.$common-color-border-input;
-        border:0px;
+        box-shadow: 0 4px 8px rgba(170, 170, 170, 0.1);
+        background-color: rgba(255, 255, 255, 0.192);
+        color: white;
       }
 
-      @media (max-width: $layout-breakpoint-small) {
-        input {
-          padding: 0;
-          width: 80%;
-          padding: 0 5%;
+      p {
+        color: transparent;
+
+        a {
+          text-decoration: none;
+          color: #B7B6BE;
+        }
+
+        a:hover {
+          color: colors.$login-page-input-text;
         }
       }
 
-      input,
-      input::placeholder {
-        font: 1em sans-serif;
-        color: colors.$login-page-input-font;
-      }
 
-      input:focus-visible {
-        //border: dimensions.$base-border-2 solid colors.$login-page-input-focus;
-        color: #000;
-      }
-
-      button {
-        align-self: flex-start;
-        font-size: dimensions.$login-page-button-font;
-        color: colors.$login-page-button-font;
-        background: colors.$login-page-button-login-background;
-        font-weight: bold;
-        margin: dimensions.$base-margin-2 0;
-        //width: dimensions.$login-page-button-width;
-        //height: dimensions.$login-page-input-height;
-        border-radius: dimensions.$login-page-button-radius;
-        border: none;
-        background-color: #FF9300;
-        color: #fff;
-        line-height: 40px;
-        border-radius: 20px;
-        padding-left: 20px;
-        padding-right: 20px;
-        font-size: 1em;
-        cursor: pointer;
-        margin-top: 20px;
-      }
-
-      button:hover {
-        background: colors.$login-page-button-login-hover;
-      }
     }
   }
-
 }
 
-@media (max-width: $layout-breakpoint-small) {
-  .container {
-    margin: auto;
 
-    .title {
-      flex-direction: column;
+/* Layout for phone */
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
 
-      h1 {
-        width: 100%;
-      }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
 
-      div {
-        width: 100%;
-        padding: 10px 0;
+  .login-page::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      linear-gradient(135deg, transparent 15%, rgba(2, 0, 15, 0.568) 50%, rgba(10, 6, 35, 0.568) 85%),
+      linear-gradient(315deg, transparent 15%, rgba(10, 6, 35, 0.568) 50%, rgba(10, 6, 35, 0.568) 85%);
 
-        button {
-          width: 100%;
+  }
+
+  .login-page {
+    padding-left: 30px;
+
+    .container {
+      padding: 0px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0;
+
+      .title-section {
+        .logo-sitmun {
+          width: 50%;
+          height: 75px;
+        }
+
+        .public-dashboard {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
       }
-    }
 
-    .form form {
-      input {
-        margin: 6px auto;
-        width: 88%;
+      .form-section {
+        form {
+          div {
+            width: 80%;
+          }
+        }
       }
     }
   }
