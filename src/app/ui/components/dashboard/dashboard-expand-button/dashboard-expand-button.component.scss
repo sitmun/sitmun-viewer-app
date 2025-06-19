@@ -1,0 +1,28 @@
+@use 'dimensions';
+@use 'colors';
+
+button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid colors.$gray;
+  border-radius: 10px;
+
+  padding-left: 15px;
+  padding-right: 15px;
+
+  img {
+    width: fit-content;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+button:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}

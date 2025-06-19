@@ -1,0 +1,65 @@
+<div class="territories-tag" [ngClass]="IsInDashboard() ? 'territories-tag-dashboard' : ''">
+  <button id="hide-territories-tag" (click)="closeTag()" *ngIf="DisplayCloseButton()">
+    <img src="assets/img/fi_2732657.svg" alt="" />
+  </button>
+  <div class="territories-tag-title">
+    <img src="" alt="" />
+    <h2 *ngIf="IsInDashboard()"> {{ applicationName }} </h2>
+    <h2 *ngIf="!IsInDashboard()"> {{ 'application.territoriesAssociated' | translate }} </h2>
+  </div>
+  <div class="territories-tag-content">
+    <p *ngIf="territories.length > 1 && IsInDashboard()"> {{ 'dashboardPage.filterTerritories' | translate }} :</p>
+    <p *ngIf="territories.length <= 1 && IsInDashboard()"> {{ 'dashboardPage.choiceTag' | translate }} :</p>
+    <!-- If one territory -->
+    <div class="territories-tag-items-one" *ngIf="territories.length == 1">
+      <div class="territory-item" [id]="'territory'+territories[0].name">
+        <button class="left-side tooltip"
+          (click)="navigateToMap(application.id, territories[0].id)"
+          (mouseover)="changeLeftImage(true, 'territory'+territories[0].name)"
+          (mouseout)="changeLeftImage(false, 'territory'+territories[0].name)">
+          <img class="left-icon" src="assets/img/Icona-mapa.svg" alt="" />
+          <p class="territory-text">{{ territories[0].name }} </p>
+          <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
+        </button>
+        <button class="right-side tooltip"
+          (mouseover)="changeRightImage(true, 'territory'+territories[0].name)"
+          (mouseout)="changeRightImage(false, 'territory'+territories[0].name)">
+          <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
+          <span class="tooltiptext"> {{ 'dashboardPage.territoryHover' | translate }} </span>
+        </button>
+      </div>
+    </div>
+    <!-- If more than one territory -->
+    <div class="territories-tag-items-many" *ngIf="territories.length > 1">
+      <form>
+        <div>
+          <button type="submit">
+            <img src="assets/img/search.svg" alt="Search"/>
+          </button>
+          <input class="text-input" type="text" placeholder="{{'dashboardDialogTag.inputPlaceholder' | translate}}" name="researchInput"  [(ngModel)]="researchInput">
+          <button id="clear-text-button" (click)="clearSearchText()">
+            <img src="assets/img/fi_992660.svg" alt="deleteText" />
+          </button>
+        </div>
+      </form>
+      <div id="territory-list">
+        <div *ngFor="let item of filteredTerritories()" class="territory-item" [id]="'territory' + item.name">
+          <button class="left-side tooltip"
+            (click)="navigateToMap(application.id, item.id)"
+            (mouseover)="changeLeftImage(true, 'territory'+item.name)"
+            (mouseout)="changeLeftImage(false, 'territory'+item.name)">
+            <img class="left-icon" src="assets/img/Icona-mapa.svg" alt="" />
+            <p class="territory-text">{{ item.name }}</p>
+            <span class="tooltiptext"> {{ 'dashboardPage.mapHover' | translate }} </span>
+          </button>
+          <button class="right-side tooltip"
+            (mouseover)="changeRightImage(true, 'territory'+item.name)"
+            (mouseout)="changeRightImage(false, 'territory'+item.name)">
+            <img class="right-icon" src="assets/img/Icona-document.svg" alt="" />
+            <span class="tooltiptext"> {{ 'dashboardPage.territoryHover' | translate }} </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

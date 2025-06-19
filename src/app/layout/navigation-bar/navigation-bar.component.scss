@@ -146,10 +146,24 @@ $path_base: "./../../../assets/img/";
 
       .logout {
         gap: 3px;
+
+        .icon {
+          height: 24px;
+          background-size: contain;
+          align-items: center;
+          justify-content: center;
+          background-repeat: no-repeat;
+          background-image: url($path_base + "Icona-desconnexió.svg");
+        }
       }
 
       .logout:hover {
-        opacity: calc(75%);
+        color: colors.$blue;
+
+        .icon {
+          background-image: url($path_base + "Icona-desconnexió-azul.svg");
+
+        }
       }
     }
   }

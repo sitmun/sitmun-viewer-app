@@ -32,9 +32,14 @@
               "src/styles/main.scss"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/styles"]
+              "includePaths": [
+                "src/styles",
+                "node_modules"
+              ]
             },
-            "scripts": []
+            "scripts": [
+              "./node_modules/hammerjs/hammer.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -151,9 +156,14 @@
               "src/styles/main.scss"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/styles"]
+              "includePaths": [
+                "src/styles",
+                "node_modules"
+              ]
             },
-            "scripts": []
+            "scripts": [
+              "./node_modules/hammerjs/hammer.min.js"
+            ]
           }
         },
         "lint": {

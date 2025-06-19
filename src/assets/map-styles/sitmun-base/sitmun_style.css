@@ -976,7 +976,7 @@ span.tc-beta {
 
 .tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-shared-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
   border: 1px solid #ccc;
-  background-color: #f5f5f5;
+  background-color: white;
 }
 
 .tc-ctl-meas-select input[type=radio]:checked ~ span, .tc-ctl-shared-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
