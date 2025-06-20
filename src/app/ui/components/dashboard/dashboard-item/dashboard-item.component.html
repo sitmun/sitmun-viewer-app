@@ -10,7 +10,10 @@
       <h3 class="dashboard-item-title"> {{item.title}} {{item.name}} </h3>
     </button>
 
-    <button class="dashboard-item-nbTerritories" [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }" *ngIf="nbTerritory == 1" >
+    <button class="dashboard-item-nbTerritories" 
+    [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }" 
+    (click)="navigateToMap(applicationId, listOfTerritories[0].id)"
+    *ngIf="nbTerritory == 1" >
       {{ this.listOfTerritories[0].name }}
     </button>
     <button class="dashboard-item-nbTerritories" [disabled]="item.isUnavailable" *ngIf="nbTerritory > 1" (click)="displayTerritoriesTag(item)">

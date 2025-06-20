@@ -1,5 +1,7 @@
 import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CommonService, DashboardItem } from '@api/services/common.service';
+import { Router } from '@angular/router';
+import { NavigationPath } from '@config/app.config';
 
 
 @Component({
@@ -13,10 +15,14 @@ export class DashboardItemComponent {
   @Output() tag = new EventEmitter<any>();
   DESCRIPTION_MAX_CHARACTER : number = 75;
   nbTerritory : number = 0;
+  applicationId : number = 0;
   listOfTerritories : any;
   mediaQueryListener: any;
 
-  constructor(private commonService : CommonService) {}
+  constructor(
+    private commonService : CommonService,
+    private router : Router
+  ) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
@@ -44,6 +50,7 @@ export class DashboardItemComponent {
   }
 
   fillTerritory(appId : number) {
+    this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
@@ -59,4 +66,19 @@ export class DashboardItemComponent {
     }
     this.tag.emit(object);
   }
+
+  navigateToMap(applicationId : number, territoryId: number) {
+    let navigationPath = "";
+    if(this.router.url.startsWith("/user")){
+      navigationPath = NavigationPath.Section.User.Map(applicationId, territoryId);
+    }
+    else if(this.router.url.startsWith("/public")){
+      navigationPath = NavigationPath.Section.Public.Map(applicationId, territoryId);
+    }
+
+    this.router.navigateByUrl(
+      navigationPath
+    );
+  }
+
 }
