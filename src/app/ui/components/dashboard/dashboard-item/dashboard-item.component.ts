@@ -13,7 +13,7 @@ export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  readonly DESCRIPTION_MAX_CHARACTER : number = 100;
+  DESCRIPTION_MAX_CHARACTER : number = 100;
   nbTerritory : number = 0;
   applicationId : number = 0;
   listOfTerritories : any;
@@ -67,7 +67,7 @@ export class DashboardItemComponent {
       this.navigateToApplicationDetails(idApp);
     }
     else if(this.nbTerritory == 1){
-      this.navigateToMap(idApp);
+      this.navigateToMap(idApp, this.listOfTerritories[0].id);
     }
   }
 
@@ -80,19 +80,6 @@ export class DashboardItemComponent {
     else {
       this.router.navigateByUrl(
         NavigationPath.Section.User.Application(idApp)
-      );
-    }
-  }
-
-  navigateToMap(idApp : number) {
-    if(this.router.url.startsWith("/public")){
-      this.router.navigateByUrl(
-        NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
-      );
-    }
-    else {
-      this.router.navigateByUrl(
-        NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
       );
     }
   }
@@ -118,5 +105,4 @@ export class DashboardItemComponent {
       NavigationPath.Section.User.Territory(territoryId)
     );
   }
-
 }

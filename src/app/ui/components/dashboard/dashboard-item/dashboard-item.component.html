@@ -13,7 +13,7 @@
 
     <button class="dashboard-item-nbTerritories" 
     [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }" 
-    (click)="navigateToTerritory(this.listOfTerritories.content[0].id)"
+    (click)="navigateToMap(applicationId, this.listOfTerritories.content[0].id)"
     *ngIf="nbTerritory == 1" >
       {{ this.listOfTerritories[0].name }}
     </button>
