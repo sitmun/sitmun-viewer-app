@@ -1,0 +1,649 @@
+<!-- start:source.tmpl.hbs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+		<title>TC/control/Coordinates.js</title>
+		<!--[if lt IE 9]>
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+		<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+		<link type="text/css" rel="stylesheet" href="css/prism.min.css">
+		<link type="text/css" rel="stylesheet" href="css/template.min.css">
+			<link type="text/css" rel="stylesheet" href="css/sitnaCSS.css">
+			<style>
+				.page-header,
+				pre.code-toolbar > .toolbar:hover {
+					background-color: #cc0000;
+				}
+				.callout-primary,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus,
+				pre.code-toolbar > .toolbar:hover {
+					border-left-color: #cc0000;
+				}
+				pre.code-toolbar > .toolbar:hover {
+					border-bottom-color: #cc0000;
+				}
+				.callout-primary h5,
+				.symbol-title.collapsible-symbol .toggle-icon,
+				.breadcrumb li a,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus {
+					color: #cc0000;
+				}
+			</style>
+		<script type="text/javascript">
+			window.TEMPLATE_OPTIONS = {"includeDate":true,"dateFormat":"DD/MM/YYYY","systemName":"API SITNA","systemSummary":"API JavaScript para la visualización de datos georreferenciados en aplicaciones web","systemLogo":"img/sitna-logo.png","systemColor":"#cc0000","navMembers":[{"kind":"class","title":"Clases"},{"kind":"external","title":"Externals","summary":"All documented external members."},{"kind":"global","title":"Tipos globales"},{"kind":"mixin_","title":"Mixins","summary":"All documented mixins."},{"kind":"interface","title":"Interfaces","summary":"All documented interfaces."},{"kind":"module","title":"Modules","summary":"All documented modules."},{"kind":"namespace","title":"Espacios de nombres"},{"kind":"tutorial","title":"Documentación"}],"footer":"","copyright":"© 2019 Gobierno de Navarra. <a href=\"https://github.com/sitna/api-sitna/blob/master/LICENSE.md\">Licencia BSD-2-Clause</a>.","linenums":true,"collapseSymbols":false,"inverseNav":false,"inlineNav":false,"outputSourceFiles":false,"sourceRootPath":null,"disablePackagePath":true,"outputSourcePath":false,"showTableOfContents":true,"showAccessFilter":false,"analytics":null,"methodHeadingReturns":true,"sort":"longname, version, since","search":true,"favicon":null,"stylesheets":["css/sitnaCSS.css"],"scripts":[],"monospaceLinks":false,"cleverLinks":true,"systemVersion":"v4.1.0"};
+			window.DOCLET_TOC_ENABLED = false;
+			window.DOCLET_AFILTER_ENABLED = false;
+		</script>
+</head>
+<body>
+	<!-- start:navbar.hbs -->
+	<header class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand branding-logo" href="index.html" style="background-image: url(img/sitna-logo.png);">
+					API SITNA
+				</a>
+	            <a href="tutorial-4-changes.html" class="navbar-version">v4.1.0</a>
+				<!-- displayed on small devices -->
+				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="topNavigation">
+				<ul class="nav navbar-nav">
+								<li class="dropdown">
+									<a href="list_class.html" class="dropdown-toggle" data-toggle="dropdown">Clases<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.feature.Circle.html">SITNA.feature.Circle</a></li>
+											<li><a href="SITNA.feature.Feature.html">SITNA.feature.Feature</a></li>
+											<li><a href="SITNA.feature.Marker.html">SITNA.feature.Marker</a></li>
+											<li><a href="SITNA.feature.MultiMarker.html">SITNA.feature.MultiMarker</a></li>
+											<li><a href="SITNA.feature.MultiPoint.html">SITNA.feature.MultiPoint</a></li>
+											<li><a href="SITNA.feature.MultiPolygon.html">SITNA.feature.MultiPolygon</a></li>
+											<li><a href="SITNA.feature.MultiPolyline.html">SITNA.feature.MultiPolyline</a></li>
+											<li><a href="SITNA.feature.Point.html">SITNA.feature.Point</a></li>
+											<li><a href="SITNA.feature.Polygon.html">SITNA.feature.Polygon</a></li>
+											<li><a href="SITNA.feature.Polyline.html">SITNA.feature.Polyline</a></li>
+											<li><a href="SITNA.layer.Layer.html">SITNA.layer.Layer</a></li>
+											<li><a href="SITNA.layer.Raster.html">SITNA.layer.Raster</a></li>
+											<li><a href="SITNA.layer.Vector.html">SITNA.layer.Vector</a></li>
+											<li><a href="SITNA.Map.html">SITNA.Map</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_namespace.html" class="dropdown-toggle" data-toggle="dropdown">Espacios de nombres<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.html">SITNA</a></li>
+											<li><a href="SITNA.control.html">SITNA.control</a></li>
+											<li><a href="SITNA.feature.html">SITNA.feature</a></li>
+											<li><a href="SITNA.layer.html">SITNA.layer</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_tutorial.html" class="dropdown-toggle" data-toggle="dropdown">Documentación<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="tutorial-1-configuration.html">Cómo configurar un mapa</a></li>
+											<li><a href="tutorial-2-css.html">Clases CSS para identificar elementos de la API</a></li>
+											<li><a href="tutorial-3-embedding.html">Cómo añadir multimedia y páginas web incrustadas</a></li>
+											<li><a href="tutorial-4-changes.html">Historial de cambios</a></li>
+									</ul>
+								</li>
+	                <li><a href="https://github.com/sitna/api-sitna">Ver en Github</a></li>
+				</ul>
+					<!-- start:lunr-search-navbar.hbs -->
+					<form class="navbar-form navbar-right" role="search">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Buscar" id="lunr-search-input">
+							<div class="input-group-btn">
+								<button class="btn btn-default" id="lunr-search-submit">
+									<i class="glyphicon glyphicon-search"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+					<!-- start:lunr-search-navbar.hbs -->		</div>
+		</div>
+	</header>
+	<!-- end:navbar.hbs -->		<div class="page-header">
+			<div class="container">
+				<span class="kind">source</span>
+				<h1><span class="name">TC/control/Coordinates.js</span></h1>
+			</div>
+		</div>
+	<div class="container content">
+		<div class="row">
+			<div class="col-md-12 main-content">
+		<section class="source-section">
+			<article></article>
+			<pre class="prettyprint source language-javascript line-numbers"><code class="language-javascript">﻿/**
+  * Opciones de control de coordenadas.
+  * @typedef CoordinatesOptions
+  * @memberof SITNA.control
+  * @property {HTMLElement|string} [div] - Elemento del DOM en el que crear el control o valor de atributo id de dicho elemento.
+  * @property {boolean} [showGeo] - Determina si se muestran coordenadas geográficas (en EPSG:4326) además de las del mapa, que por defecto son UTM (EPSG:25830).
+  * @example &lt;caption>[Ver en vivo](../examples/cfg.CoordinatesOptions.html)&lt;/caption> {@lang html} 
+  * &lt;div id="mapa"/>
+  * &lt;script>
+  *     // Hacemos que el control que muestra las coordenadas en pantalla
+  *     // muestre también las coordenadas geográficas
+  *     SITNA.Cfg.controls.coordinates = {
+  *         showGeo: true
+  *     };
+  *     var map = new SITNA.Map('map');
+  * &lt;/script>
+  */
+
+import TC from '../../TC';
+import Consts from '../Consts';
+import Cfg from '../Cfg';
+import Util from '../Util';
+import ProjectionSelector from './ProjectionSelector';
+
+TC.control = TC.control || {};
+
+class Coordinates extends ProjectionSelector {
+    #cssClasses;
+
+    constructor() {
+        super(...arguments);
+        const self = this;
+        self.div.classList.remove(super.CLASS);
+        self.div.classList.add(self.CLASS);
+
+        self.crs = '';
+        self.xy = [0, 0, 0];
+        self.latLon = [0, 0, 0];
+        self.x = 0;
+        self.y = 0;
+        self.lat = 0;
+        self.lon = 0;
+        self.units = Consts.units.METERS;
+        self.isGeo = false;
+        self.allowReprojection = Object.prototype.hasOwnProperty.call(self.options, 'allowReprojection') ? self.options.allowReprojection : true;
+
+        self.#cssClasses = {
+            CRS: self.CLASS + '-crs',
+            GEOCRS: self.CLASS + '-geocrs',
+            MAIN: self.CLASS + '-main',
+            ALTERNATE: self.CLASS + '-alt',
+            XY: self.CLASS + '-xy',
+            X: self.CLASS + '-x',
+            Y: self.CLASS + '-y',
+            LATLON: self.CLASS + '-latlon',
+            LAT: self.CLASS + '-lat',
+            LON: self.CLASS + '-lon',
+            ELEVATION: self.CLASS + '-elevation',
+            ELEVATION_CONTAINER: self.CLASS + '-elev-container',
+            THREEDMARKER: self.CLASS + '-threed'
+        };
+
+        self.geoCrs = self.options.geoCrs || Cfg.geoCrs;
+        self.wrap = new TC.wrap.control.Coordinates(self);
+    }
+
+    getClassName() {
+        return 'tc-ctl-coords';
+    }
+
+    async register(map) {
+        const self = this;
+        await super.register.call(self, map);
+
+        self.crs = self.map.crs;
+
+        self.clear();
+
+        map.on(Consts.event.VIEWCHANGE, function (e) {
+            const view = e.view;
+            if (view === Consts.view.PRINTING) {
+                return;
+            }
+
+            const _3dContainerListener = function (e) {
+                if (!self.isPointerOver(e)) {
+                    self.clear();
+                }
+            };
+
+            if (view === Consts.view.THREED) {
+                self.isGeo = true;
+                self.units = Consts.units.DEGREES;
+                self.crs = self.map.view3D.crs;
+
+                self.map.view3D.container.addEventListener('mouseout', _3dContainerListener);
+
+                /* provisional: faltaría el off cuando pasemos a default*/
+                self.map.view3D.on(Consts.event.MOUSEMOVE, function (coords) {
+                    if (coords) {
+                        if (Util.detectMobile()) { // si estamos en móvil añadimos marcador al mapa 3D                            
+
+                            self.clear();
+
+                            self.coordsToClick({ coordinate: [coords.lon, coords.lat, coords.ele], cssClass: self._cssClasses.THREEDMARKER });
+                        }
+
+                        self.latLon = [coords.lat, coords.lon];
+                        if (coords.ele > 0) {
+                            var locale = Util.getMapLocale(self.map);
+                            self.latLon.push(coords.ele.toLocaleString(locale) + "m");
+                        }
+
+                        self.update();
+                    } else {
+                        self.clear();
+                    }
+                });
+
+            } else if (view === Consts.view.DEFAULT) {
+                self.isGeo = self.map.wrap.isGeo();
+                self.units = Consts.units.METERS;
+                self.crs = self.map.crs;
+
+                if (self.map.view3D) {
+                    self.map.view3D.container.removeEventListener('mouseout', _3dContainerListener);
+                }
+            }
+
+            if (self.map.view3D) {
+                self.geoCrs = self.map.view3D.crs;
+                self.render();
+            }
+        });
+
+        map.loaded(function () {
+            // Se espera antes de registrar el control a que se cargue el mapa para evitar que muestre valores extraños
+            self.wrap.register(map).then(function () {
+                self.render(function () {
+                    //self.update();
+                    self.clear();
+                });
+            });
+
+            if (Util.detectMobile()) {
+                self.renderPromise().then(function () {
+                    self.getLayer();
+                    self.activateCoords();
+                });
+            }
+
+            map.on(Consts.event.PROJECTIONCHANGE, function (e) {
+                if (!map.on3DView) {
+                    self.isGeo = map.wrap.isGeo();
+                    self.crs = e.newCrs;
+                    self.render();
+                }
+            });
+
+            self.map.wrap.getViewport().then(function (viewport) {
+                self.renderPromise().then(function () {
+                    viewport.addEventListener(Consts.event.MOUSEMOVE, function (e) {
+                        if (self.map.on3DView) {
+                            return;
+                        }
+
+                        self.onMouseMove(e);
+                    });
+                    viewport.addEventListener(Consts.event.MOUSELEAVE, function (e) {
+                        self.onMouseLeave(e);
+                    });
+                });
+            });
+        });
+
+        return self;
+    }
+
+    async loadTemplates() {
+        const self = this;
+        const mainTemplatePromise = import('../templates/tc-ctl-coords.mjs');
+        const dialogTemplatePromise = import('../templates/tc-ctl-coords-dialog.mjs');
+
+        const template = {};
+        template[self.CLASS] = (await mainTemplatePromise).default;
+        template[self.CLASS + '-dialog'] = (await dialogTemplatePromise).default;
+        self.template = template;
+    }
+
+    async render(callback) {
+        const self = this;
+
+        const renderPromise = self.getRenderedHtml(self.CLASS + '-dialog', null);
+        self._set1stRenderPromise(renderPromise);
+        const html = await renderPromise;
+        self._dialogDiv.innerHTML = html;
+        await TC.Control.prototype.renderData.call(self, {
+            x: self.x,
+            y: self.y,
+            lat: self.lat,
+            lon: self.lon,
+            ele: self.isGeo &amp;&amp; self.latLon.length > 2 ? self.latLon[2] : !self.isGeo &amp;&amp; self.xy.length > 2 ? self.xy[2] : null,
+            crs: self.crs,
+            geoCrs: self.geoCrs,
+            isGeo: self.isGeo,
+            showGeo: !self.isGeo &amp;&amp; self.options.showGeo,
+            allowReprojection: self.allowReprojection
+        });
+        const crsButton = self.div.querySelector('button.' + self.#cssClasses.CRS);
+        if (crsButton) {
+            crsButton.addEventListener(Consts.event.CLICK, function (_e) {
+                self.showProjectionChangeDialog();
+            }, { passive: true });
+        }
+
+        const closeBtn = self.div.querySelector('sitna-button[icon="close"]');
+        if (Util.detectMobile()) {
+            closeBtn.addEventListener('click', function () {
+                self.div.classList.add(Consts.classes.HIDDEN);
+                self.clear();
+            });
+
+            closeBtn.style.display = '';
+        }
+        else {
+            self.div.classList.remove(Consts.classes.HIDDEN);
+            self.div.style.visibility = 'visible';
+            closeBtn.style.display = 'none';
+        }
+
+        if (Util.isFunction(callback)) {
+            callback();
+        }
+    }
+
+    onMouseMove(e) {
+        this.wrap.onMouseMove(e);
+    }
+
+    onMouseLeave(e) {
+        const self = this;
+        setTimeout(function () {
+            if (!self.isPointerOver(e)) {
+                self.div.style.visibility = 'hidden';
+                self.clear();
+            }
+        }, 200);
+    }
+
+    isPointerOver(e) {
+        const self = this;
+
+        const clientRect = self.div.getBoundingClientRect();
+        return clientRect.left &lt;= e.clientX &amp;&amp;
+            clientRect.left + clientRect.width >= e.clientX &amp;&amp;
+            clientRect.top &lt;= e.clientY &amp;&amp;
+            clientRect.top + clientRect.height >= e.clientY;
+    }
+
+    update() {
+        const self = this;
+
+        self.renderPromise().then(function () {
+            if (!self.isGeo &amp;&amp; self.options.showGeo) {
+                self.latLon = Util.reproject(self.xy, self.crs, self.geoCrs).reverse();
+            }
+
+            const mainElement = self.div.querySelector(`.${self.#cssClasses.MAIN}`);
+            const xyElement = mainElement.querySelector(`.${self.#cssClasses.XY}`);
+            const latLonElement = mainElement.querySelector(`.${self.#cssClasses.LATLON}`);
+            xyElement.classList.toggle(Consts.classes.HIDDEN, self.isGeo);
+            latLonElement.classList.toggle(Consts.classes.HIDDEN, !self.isGeo);
+
+            if (self.isGeo || self.options.showGeo) {
+                self.lat = Util.formatCoord(self.latLon[0], Consts.DEGREE_PRECISION);
+                self.lon = Util.formatCoord(self.latLon[1], Consts.DEGREE_PRECISION);
+            }
+            if (self.isGeo) {
+                latLonElement.querySelector(`.${self.#cssClasses.LAT}`).innerHTML = self.lat;
+                latLonElement.querySelector(`.${self.#cssClasses.LON}`).innerHTML = self.lon;
+                if (!latLonElement.querySelector(`.${self.#cssClasses.ELEVATION_CONTAINER}`)
+                    .classList.toggle(Consts.classes.HIDDEN, self.latLon.length &lt;= 2)) {
+                    self.ele = self.latLon[2];
+                    latLonElement.querySelector(`.${self.#cssClasses.ELEVATION}`).innerHTML = self.ele;
+                }
+            }
+            else {
+                self.x = Util.formatCoord(self.xy[0], Consts.METER_PRECISION);
+                self.y = Util.formatCoord(self.xy[1], Consts.METER_PRECISION);
+                self.div.querySelector(`.${self.#cssClasses.X}`).innerHTML = self.x;
+                self.div.querySelector(`.${self.#cssClasses.Y}`).innerHTML = self.y;
+                if (!xyElement.querySelector(`.${self.#cssClasses.ELEVATION_CONTAINER}`)
+                    .classList.toggle(Consts.classes.HIDDEN, self.xy.length &lt;= 2)) {
+                    self.ele = self.xy[2];
+                    xyElement.querySelector(`.${self.#cssClasses.ELEVATION}`).innerHTML = self.ele;
+                }
+            }
+
+            if (!self.isGeo &amp;&amp; self.options.showGeo) {
+                const altElement = self.div.querySelector(`.${self.#cssClasses.ALTERNATE}`);
+                altElement.querySelector(`.${self.#cssClasses.LAT}`).innerHTML = self.lat;
+                altElement.querySelector(`.${self.#cssClasses.LON}`).innerHTML = self.lon;
+            }
+
+            if (!Util.detectMobile()) {
+                self.div.classList.remove(Consts.classes.HIDDEN);
+                self.div.style.visibility = 'visible';
+            }
+        });
+    }
+
+    clear() {
+        const self = this;
+
+        self.div.classList.add(Consts.classes.HIDDEN);
+        self.div.style.visibility = 'hidden';
+
+        delete self.currentCoordsMarker;
+        self.getLayer().then(function (layer) {
+            if (layer.features.length) {
+                layer.clearFeatures();
+            }
+        });
+    }
+
+    deactivateCoords() {
+        const self = this;
+
+        self.div.classList.add(Consts.classes.HIDDEN);
+        self.clear();
+
+        self.wrap.coordsDeactivate();
+    }
+
+    activateCoords() {
+        const self = this;
+
+        self.wrap.coordsActivate();
+    }
+
+    getCoords() {
+        const self = this;
+        // si hay visible un popup, establecemos la posición de la cruz en el punto en el cual se ha abierto el popup
+        const popups = self.map.getControlsByClass('TC.control.Popup');
+        if (popups?.length > 0 &amp;&amp; popups[0].isVisible()) {
+            self.coordsToPopup(popups[0]);
+        }
+        else { // si no hay popup, calculamos el centro del mapa                
+            self.updateCoordsCtrl([(self.map.getExtent()[0] + self.map.getExtent()[2]) / 2, (self.map.getExtent()[1] + self.map.getExtent()[3]) / 2]);
+
+            self.coordsToClick.call(self, { coordinate: self.xy });
+        }
+    }
+
+    coordsToPopup(popup) {
+        const self = this;
+
+        if (popup) {
+            self.updateCoordsCtrl(popup.wrap.popup.getPosition());
+        }
+    }
+
+    updateCoordsCtrl(position) {
+        const self = this;
+
+        if (position) {
+            if (!self.isGeo) {
+                self.x = position[0];
+                self.y = position[1];
+                self.xy = [self.x, self.y];
+
+                if (position.length > 2) {
+                    self.xy.push(position[2]);
+                }
+            }
+            if (self.isGeo || self.options.showGeo) {
+                self.lat = position[0];
+                self.lon = position[1];
+                self.latLon = [self.lat, self.lon];
+
+                if (position.length > 2) {
+                    self.latLon.push(position[2]);
+                }
+            }
+
+            self.update();
+        }
+    }
+
+    // Establece la posición de la cruz en la posición recibida
+    //var animationTimeout;
+    coordsToClick(e) {
+        const self = this;
+
+        // Si streetView está activo, no responde al click
+        if (!self.map.div.classList.contains('tc-ctl-sv-active') || !self.map.div.classList.contains(Consts.classes.COLLAPSED)) {
+
+            var coordsBounding = self.div.getBoundingClientRect();
+            if (coordsBounding.left &lt;= e.clientX &amp;&amp; e.clientX &lt;= coordsBounding.right &amp;&amp; coordsBounding.top &lt;= e.clientY &amp;&amp; e.clientY &lt;= coordsBounding.bottom) {
+                self.div.classList.add(Consts.classes.HIDDEN);
+                self.clear();
+
+                return;
+            }
+
+            self.div.classList.remove('tc-fading');
+            setTimeout(function () {
+                self.div.classList.add('tc-fading');
+                // El siguiente código es para quitar el marcador al mismo tiempo que desaparece
+                // el indicador de coordenadas
+                const durationValue = getComputedStyle(self.div).getPropertyValue('animation-duration');
+                let duration = 0;
+                let match = durationValue.match(/^(\d+)(m?s)$/i);
+                if (match) {
+                    duration = parseInt(match[1]);
+                    if (match[2] === 's')
+                        duration = duration * 1000;
+                }
+                if (duration !== 0) {
+                    clearTimeout(self._markerRemoveTimeout);
+                    self._markerRemoveTimeout = setTimeout(() => {
+                        if (self.currentCoordsMarker) {
+                            self.getLayer().then(layer => {
+                                layer.removeFeature(self.currentCoordsMarker);
+                                self.currentCoordsMarker = null;
+                            });
+                        }
+                    }, duration);
+                }
+            }, 10);
+
+            self.updateCoordsCtrl(e.coordinate);
+
+            if (!self.map.on3DView) {
+                self.coordsMarkerAdd(e.coordinate, e.cssClass);
+            }
+
+            self.div.classList.remove(Consts.classes.HIDDEN);
+            //self.div.style.visibility = 'visible';
+
+            //self.div.style.opacity = '0.7';
+
+            //animationTimeout = setTimeout(function () {
+            //    $(self.div).animate({ opacity: 0 }, 3000, "linear",
+            //        function () {
+            //            self.clear();
+            //        });
+            //}, 5000);
+        }
+    }
+
+    coordsMarkerAdd(position, cssClass) {
+        const self = this;
+
+        if (!self.currentCoordsMarker) {
+            self.getLayer().then(function (layer) {
+                layer.addMarker(position, { title: 'Coord', showsPopup: false, cssClass: cssClass || Consts.classes.POINT, anchor: [0.5, 0.5] })
+                    .then(function (marker) {
+                        self.currentCoordsMarker = marker;
+                    });
+            });
+        } else {
+            self.currentCoordsMarker.setCoords(position);
+        }
+    }
+
+    async getLayer() {
+        const self = this;
+        if (self.layer == undefined) {
+            self.layer = await self.map.addLayer({
+                id: self.getUID(),
+                type: Consts.layerType.VECTOR,
+                stealth: true,
+                owner: self,
+                title: 'Coordenadas'
+            });
+            self.layer.map.putLayerOnTop(self.layer);
+        }
+        return self.layer;
+    }
+}
+
+TC.control.Coordinates = Coordinates;
+export default Coordinates;</code></pre>
+		</section>
+			</div>
+		</div>
+	</div>
+	<footer>
+				<div class="copyright">© 2019 Gobierno de Navarra. <a href="https://github.com/sitna/api-sitna/blob/master/LICENSE.md">Licencia BSD-2-Clause</a>.</div>
+			<div class="generated-by">Documentación generada por <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a> a 20/07/2023 usando la <a href="https://github.com/steveush/foodoc">plantilla FooDoc</a>.</div>
+	</footer>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/clipboard.min.js"></script>
+	<script src="js/prism.min.js"></script>
+	<script src="js/template.min.js"></script>
+		<!-- start:lunr-search-modal.hbs -->
+		<div class="modal fade" id="lunr-search-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Resultados de la búsqueda</h4>
+					</div>
+					<div class="modal-body" id="lunr-search-body">
+					</div>
+					<div class="modal-footer" id="lunr-search-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div>
+		<!-- end:lunr-search-modal.hbs -->		<script src="js/lunr.min.js"></script>
+	
+</body>
+</html>
+<!-- end:source.tmpl.hbs -->

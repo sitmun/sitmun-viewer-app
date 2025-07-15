@@ -1,0 +1,997 @@
+<!-- start:source.tmpl.hbs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+		<title>SITNA/feature/Feature.js</title>
+		<!--[if lt IE 9]>
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+		<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+		<link type="text/css" rel="stylesheet" href="css/prism.min.css">
+		<link type="text/css" rel="stylesheet" href="css/template.min.css">
+			<link type="text/css" rel="stylesheet" href="css/sitnaCSS.css">
+			<style>
+				.page-header,
+				pre.code-toolbar > .toolbar:hover {
+					background-color: #cc0000;
+				}
+				.callout-primary,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus,
+				pre.code-toolbar > .toolbar:hover {
+					border-left-color: #cc0000;
+				}
+				pre.code-toolbar > .toolbar:hover {
+					border-bottom-color: #cc0000;
+				}
+				.callout-primary h5,
+				.symbol-title.collapsible-symbol .toggle-icon,
+				.breadcrumb li a,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus {
+					color: #cc0000;
+				}
+			</style>
+		<script type="text/javascript">
+			window.TEMPLATE_OPTIONS = {"includeDate":true,"dateFormat":"DD/MM/YYYY","systemName":"API SITNA","systemSummary":"API JavaScript para la visualización de datos georreferenciados en aplicaciones web","systemLogo":"img/sitna-logo.png","systemColor":"#cc0000","navMembers":[{"kind":"class","title":"Clases"},{"kind":"external","title":"Externals","summary":"All documented external members."},{"kind":"global","title":"Tipos globales"},{"kind":"mixin_","title":"Mixins","summary":"All documented mixins."},{"kind":"interface","title":"Interfaces","summary":"All documented interfaces."},{"kind":"module","title":"Modules","summary":"All documented modules."},{"kind":"namespace","title":"Espacios de nombres"},{"kind":"tutorial","title":"Documentación"}],"footer":"","copyright":"© 2019 Gobierno de Navarra. <a href=\"https://github.com/sitna/api-sitna/blob/master/LICENSE.md\">Licencia BSD-2-Clause</a>.","linenums":true,"collapseSymbols":false,"inverseNav":false,"inlineNav":false,"outputSourceFiles":false,"sourceRootPath":null,"disablePackagePath":true,"outputSourcePath":false,"showTableOfContents":true,"showAccessFilter":false,"analytics":null,"methodHeadingReturns":true,"sort":"longname, version, since","search":true,"favicon":null,"stylesheets":["css/sitnaCSS.css"],"scripts":[],"monospaceLinks":false,"cleverLinks":true,"systemVersion":"v4.1.0"};
+			window.DOCLET_TOC_ENABLED = false;
+			window.DOCLET_AFILTER_ENABLED = false;
+		</script>
+</head>
+<body>
+	<!-- start:navbar.hbs -->
+	<header class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand branding-logo" href="index.html" style="background-image: url(img/sitna-logo.png);">
+					API SITNA
+				</a>
+	            <a href="tutorial-4-changes.html" class="navbar-version">v4.1.0</a>
+				<!-- displayed on small devices -->
+				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="topNavigation">
+				<ul class="nav navbar-nav">
+								<li class="dropdown">
+									<a href="list_class.html" class="dropdown-toggle" data-toggle="dropdown">Clases<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.feature.Circle.html">SITNA.feature.Circle</a></li>
+											<li><a href="SITNA.feature.Feature.html">SITNA.feature.Feature</a></li>
+											<li><a href="SITNA.feature.Marker.html">SITNA.feature.Marker</a></li>
+											<li><a href="SITNA.feature.MultiMarker.html">SITNA.feature.MultiMarker</a></li>
+											<li><a href="SITNA.feature.MultiPoint.html">SITNA.feature.MultiPoint</a></li>
+											<li><a href="SITNA.feature.MultiPolygon.html">SITNA.feature.MultiPolygon</a></li>
+											<li><a href="SITNA.feature.MultiPolyline.html">SITNA.feature.MultiPolyline</a></li>
+											<li><a href="SITNA.feature.Point.html">SITNA.feature.Point</a></li>
+											<li><a href="SITNA.feature.Polygon.html">SITNA.feature.Polygon</a></li>
+											<li><a href="SITNA.feature.Polyline.html">SITNA.feature.Polyline</a></li>
+											<li><a href="SITNA.layer.Layer.html">SITNA.layer.Layer</a></li>
+											<li><a href="SITNA.layer.Raster.html">SITNA.layer.Raster</a></li>
+											<li><a href="SITNA.layer.Vector.html">SITNA.layer.Vector</a></li>
+											<li><a href="SITNA.Map.html">SITNA.Map</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_namespace.html" class="dropdown-toggle" data-toggle="dropdown">Espacios de nombres<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.html">SITNA</a></li>
+											<li><a href="SITNA.control.html">SITNA.control</a></li>
+											<li><a href="SITNA.feature.html">SITNA.feature</a></li>
+											<li><a href="SITNA.layer.html">SITNA.layer</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_tutorial.html" class="dropdown-toggle" data-toggle="dropdown">Documentación<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="tutorial-1-configuration.html">Cómo configurar un mapa</a></li>
+											<li><a href="tutorial-2-css.html">Clases CSS para identificar elementos de la API</a></li>
+											<li><a href="tutorial-3-embedding.html">Cómo añadir multimedia y páginas web incrustadas</a></li>
+											<li><a href="tutorial-4-changes.html">Historial de cambios</a></li>
+									</ul>
+								</li>
+	                <li><a href="https://github.com/sitna/api-sitna">Ver en Github</a></li>
+				</ul>
+					<!-- start:lunr-search-navbar.hbs -->
+					<form class="navbar-form navbar-right" role="search">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Buscar" id="lunr-search-input">
+							<div class="input-group-btn">
+								<button class="btn btn-default" id="lunr-search-submit">
+									<i class="glyphicon glyphicon-search"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+					<!-- start:lunr-search-navbar.hbs -->		</div>
+		</div>
+	</header>
+	<!-- end:navbar.hbs -->		<div class="page-header">
+			<div class="container">
+				<span class="kind">source</span>
+				<h1><span class="name">SITNA/feature/Feature.js</span></h1>
+			</div>
+		</div>
+	<div class="container content">
+		<div class="row">
+			<div class="col-md-12 main-content">
+		<section class="source-section">
+			<article></article>
+			<pre class="prettyprint source language-javascript line-numbers"><code class="language-javascript">import TC from '../../TC';
+import Consts from '../../TC/Consts';
+import Util from '../../TC/Util';
+import Cfg from '../../TC/Cfg';
+import Control from '../../TC/Control';
+//import Popup from '../../TC/control/Popup';
+//import ResultsPanel from '../../TC/control/ResultsPanel';
+import ControlContainer from '../../TC/control/ControlContainer';
+
+/**
+ * Espacio de nombres de las entidades geográficas del mapa.
+ * @namespace SITNA.feature
+ */
+
+/**
+ * Entidad geográfica genérica (sin especificar geometría) del mapa. Normalmente no se instancia directamente
+ * esta clase, sino objetos de clases que heredan de esta.
+ * @class Feature
+ * @memberof SITNA.feature
+ * @param {Array} coordinates - Coordenadas de la geometría expresadas en las unidades del CRS del mapa.
+ * @param {SITNA.feature.FeatureOptions} [options] Objeto de opciones de la entidad geográfica.
+ * @see SITNA.layer.Vector#addFeature
+ * @see SITNA.layer.Vector#addFeatures
+ * @example &lt;caption>[Ver en vivo](../examples/feature.methods.html)&lt;/caption> {@lang html}
+&lt;div id="mapa">&lt;/div>
+&lt;script>
+    SITNA.Cfg.workLayers = [
+        {
+            id: "entidades",
+            title: "Demostración de setCoordinates",
+            type: SITNA.Consts.layerType.VECTOR
+        }
+    ];
+    var map = new SITNA.Map("mapa");
+    map.loaded(async () => {
+        // Obtenemos la instancia de la capa vectorial
+        const vectorLayer = map.getLayer("entidades");
+        let step = 0;
+        const stepAngle = Math.PI / 200;
+        const stepLength = 1;
+
+        const iconUrlBase = '//sitna.navarra.es/api/TC/css/img/pegman';
+        const iconUrls = [
+            iconUrlBase + '0.png',
+            iconUrlBase + '23.png',
+            iconUrlBase + '45.png',
+            iconUrlBase + '68.png',
+            iconUrlBase + '90.png',
+            iconUrlBase + '113.png',
+            iconUrlBase + '135.png',
+            iconUrlBase + '158.png',
+            iconUrlBase + '180.png',
+            iconUrlBase + '203.png',
+            iconUrlBase + '225.png',
+            iconUrlBase + '248.png',
+            iconUrlBase + '270.png',
+            iconUrlBase + '293.png',
+            iconUrlBase + '315.png',
+            iconUrlBase + '338.png'
+        ];
+        const updateMarker = function (marker) {
+            const coords = marker.getCoordinates();
+            const style = marker.getStyle();
+
+            const dx = stepLength * Math.cos(step * stepAngle);
+            const dy = stepLength * Math.sin(step * stepAngle / 2);
+
+            let direction = Math.atan(dx / dy);
+            if (dy &lt; 0) {
+                direction = (direction + Math.PI) % (2 * Math.PI);
+            }
+
+            const iconIndex = Math.round(iconUrls.length * direction / Math.PI / 2);
+
+            // Asignamos nuevas coordenadas y nuevo icono
+            style.url = iconUrls[iconIndex];
+            marker
+                .setCoordinates([coords[0] + dx, coords[1] + dy])
+                .setStyle(style);
+
+            step++;
+        };
+
+        vectorLayer.addMarker([610431, 4740837], {
+            url: iconUrls[0]
+        }).then(marker => {
+            // Nos centramos en el marcador recién creado
+            map.zoomToFeatures([marker]);
+            setInterval(() => {
+                updateMarker(marker);
+            }, 50);
+        });
+    });
+&lt;/script>
+ */
+
+class Feature {
+    STYLETYPE = Consts.geom.POLYGON;
+    #hasSelectedStyle = false;
+    #selected = false;
+    #visibilityState = Consts.visibility.VISIBLE;
+
+    constructor(coords, options) {
+        const self = this;
+
+        let olFeatureId;
+        self.wrap = new TC.wrap.Feature();
+        self.wrap.parent = self;
+        if (self.wrap.isNative(coords)) {
+            self.wrap.feature = coords;
+            coords._wrap = self.wrap;
+            olFeatureId = self.wrap.getId();
+            self.geometry = self.wrap.getGeometry();
+            if (coords._folders) {
+                self.folders = coords._folders;
+            }
+            self.setData(self.wrap.getData());
+        }
+
+        var opts = self.options = Util.extend(true, {}, options);
+
+        self.id = olFeatureId || opts.id || TC.getUID();
+        if (self.wrap.feature &amp;&amp; !olFeatureId) {
+            self.wrap.feature.setId(self.id);
+        }
+        self.data = opts.data || self.data || null;
+        if (opts.showsPopup === undefined) {
+            self.showsPopup = true;
+        }
+        else {
+            self.showsPopup = opts.showsPopup;
+        }
+        if (opts.showPopup) {
+            self.autoPopup = true;
+        }
+        self.layer = opts.layer || null;
+
+        if (opts.selected) {
+            self.select();
+        }
+    }
+
+    getPath() {
+        const self = this;
+        let result = [];
+
+        if (self.folders) {
+            result = self.folders;
+        }
+        else if (self.options.group) {
+            result = [self.options.group];
+        }
+        return result;
+    }
+
+    setVisibility(visible) {
+        const self = this;
+
+        // Ocultamos el posible popup
+        if (!visible &amp;&amp; self.showsPopup &amp;&amp; self.layer) {
+            var popup = self.layer.map.getControlsByClass('TC.control.Popup').filter(function (popup) {
+                return popup.currentFeature === self;
+            });
+
+            if (popup.length > 0) {
+                const p = popup[0];
+                if (p.isVisible()) {
+                    p.hide();
+                }
+            }
+        }
+
+        if (visible &amp;&amp; self.#visibilityState === Consts.visibility.NOT_VISIBLE ||
+            !visible &amp;&amp; self.#visibilityState === Consts.visibility.VISIBLE) {
+            self.#visibilityState = visible ? Consts.visibility.VISIBLE : Consts.visibility.NOT_VISIBLE;
+            self.layer.wrap.setFeatureVisibility(self, visible);
+        }
+
+        return self;
+    }
+
+    getVisibilityState() {
+        return this.#visibilityState;
+    }
+
+    /**
+     * Obtiene el identificador de la entidad geográfica dentro de su capa.
+     * @method getId
+     * @memberof SITNA.feature.Feature
+     * @instance
+     * @returns {string} Identificador de la entidad geográfica.
+     */
+    getId() {
+        return this.wrap.getId();
+    }
+
+    setId(id) {
+        const self = this;
+        self.id = id;
+        self.wrap.setId(id);
+        return self;
+    }
+
+    getBounds() {
+        return this.wrap.getBounds();
+    }
+
+    setStyle(style) {
+        const self = this;
+        let newStyle;
+        if (style === null) {
+            newStyle = null;
+        }
+        else {
+            const mergedStyles = [self.getStyle(), style];
+            if (self.layer?.styles?.[self.STYLETYPE]) {
+                mergedStyles.unshift(self.layer.styles[self.STYLETYPE]);
+            }
+            if (self.layer?.map.options.styles?.[self.STYLETYPE]) {
+                mergedStyles.unshift(self.layer.map.options.styles[self.STYLETYPE]);
+            }
+            if (Cfg?.styles?.[self.STYLETYPE]) {
+                mergedStyles.unshift(Cfg.styles[self.STYLETYPE]);
+            }
+            newStyle = Util.mergeStyles(...mergedStyles);
+        }
+        self.wrap.setStyle(newStyle);
+        return self;
+    }
+
+    toggleSelectedStyle = function (condition) {
+        const self = this;
+        if (self.#hasSelectedStyle !== condition) {
+            self.#hasSelectedStyle = condition;
+            self.wrap.toggleSelectedStyle(condition);
+        }
+        return self;
+    }
+
+    getLegend = function () {
+        const self = this;
+        if (!self._legend) {
+            self._legend = self.wrap.getLegend();
+        }
+        return self._legend;
+    }
+
+    /**
+     * Obtiene las coordenadas de la entidad geográfica en el CRS actual del mapa.
+     * @method getCoordinates
+     * @memberof SITNA.feature.Feature
+     * @instance
+     * @returns {Array} Coordenadas en el CRS actual del mapa de la geometría de la entidad geográfica.
+     */
+    getCoordinates(options) {
+        const self = this;
+        const sourceCrs = options?.geometryCrs || (self.layer?.map?.on3DView ? self.layer.map.view3D.crs:self.layer?.map?.crs);
+        const destCrs = options?.crs || self.layer?.map?.getCRS() || Cfg.utmCrs;
+        self.geometry = self.wrap.getGeometry();
+        if (sourceCrs &amp;&amp; destCrs) {
+            return TC.Util.reproject(self.geometry, sourceCrs, destCrs);
+        }
+        return self.geometry;
+    }
+
+    /**
+     * Establece las coordenadas de la entidad geográfica.
+     * @method setCoordinates
+     * @memberof SITNA.feature.Feature
+     * @instance
+     * @param {Array} coordinates - Coordenadas de la entidad geográfica en el CRS actual del mapa.
+     * @returns {SITNA.feature.Feature} La propia entidad geográfica.
+     */
+    setCoordinates(coords) {
+        const self = this;
+
+        const toNumberCoords = function (arr) {
+            arr.forEach(function (elm, idx) {
+                if (Array.isArray(elm)) {
+                    toNumberCoords(elm);
+                }
+                else {
+                    if (elm === null) {
+                        arr[idx] = 0;
+                    }
+                    else if (typeof elm !== 'number') {
+                        console.log('Warning: coordinate does not have number type');
+                        arr[idx] = parseFloat(elm);
+                    }
+                }
+            });
+        };
+
+        if (Array.isArray(coords)) {
+            toNumberCoords(coords);
+        }
+
+        self.geometry = coords;
+        self.wrap.setGeometry(coords);
+        return self;
+    }
+
+    getCoords() {
+        return this.getCoordinates();
+    }
+
+    setCoords(coords) {
+        return this.setCoordinates(coords);
+    }
+
+    getCoordsArray() {
+        const self = this;
+        const isPoint = function (elm) {
+            return Array.isArray(elm) &amp;&amp; elm.length >= 2 &amp;&amp; typeof elm[0] === 'number' &amp;&amp; typeof elm[1] === 'number';
+        };
+        const flattenFn = function (val) {
+            return isPoint(val) ? [val] : val.reduce(reduceFn, []);
+        };
+        const reduceFn = function (acc, elm) {
+            if (isPoint(elm)) {
+                acc.push(elm);
+            }
+            else {
+                acc = acc.concat(flattenFn(elm));
+            }
+            return acc;
+        };
+        return flattenFn(self.getCoordinates());
+    }
+
+    getGeometryStride = function () {
+        const self = this;
+        const coordsArray = self.getCoordsArray();
+        const firstCoord = coordsArray[0];
+        if (firstCoord) {
+            return firstCoord.length;
+        }
+        return 0;
+    }
+
+    removeZ() {
+        const self = this;
+        const coords = self.getCoordsArray();
+        if (coords[0]?.length > 2) {
+            coords.forEach(c => c.length = 2);
+            self.setCoordinates(self.geometry);
+        }
+        return self;
+    }
+
+    /**
+     * Obtiene los atributos de la entidad geográfica.
+     * @method getData
+     * @memberof SITNA.feature.Feature
+     * @instance
+     * @returns {Object} Diccionario de pares clave/valor con los atributos de la entidad geográfica.
+     */
+    getData() {
+        const self = this;
+        let result = null;
+        if (self.data) {
+            result = self.data;
+        }
+        else {
+            result = self.wrap.getData();
+        }
+        return result;
+    }
+
+    /**
+     * Establece los atributos de la entidad geográfica.
+     * @method setData
+     * @memberof SITNA.feature.Feature
+     * @instance
+     * @param {Object} data - Diccionario de pares clave/valor con los atributos a establecer.
+     * @returns {SITNA.feature.Feature} La propia entidad geográfica.
+     */
+    setData(data) {
+        const self = this;
+        if (typeof data === 'string') {
+            self.data = data;
+        }
+        else {
+            self.data = Util.extend(self.data, data);
+            self.attributes = self.attributes || [];
+            for (var key in data) {
+                let attr = self.attributes.find(attr => attr.name === key);
+                if (attr) {
+                    attr.value = data[key];
+                }
+                else {
+                    self.attributes.push({ name: key, value: data[key] });
+                }
+            }
+            self.wrap.setData(data);
+        }
+        return self;
+    }
+
+    unsetData(key) {
+        const self = this;
+        delete self.data[key];
+        const attr = (self.attributes || []).find(attr => attr.name === key);
+        if (attr) {
+            self.attributes.splice(self.attributes.indexOf(attr), 1);
+        }
+        self.wrap.unsetData(key);
+        return self;
+    }
+
+    clearData() {
+        const self = this;
+        self.data = {};
+        self.attributes = [];
+        self.wrap.clearData();
+        return self;
+    }
+
+    getInfo(options) {
+        const self = this;
+        let result = null;
+        const locale = options?.locale || self.layer?.map &amp;&amp; Util.getMapLocale(self.layer.map);
+        const data = self.getData();
+        if (typeof data === 'object') {
+            var template = self.wrap.getTemplate();
+            if (template) {
+                // GLS: Contemplo en la expresión regular la opción de que el nombre del campo se componga de $[aaa/abc/loQueMeInteresa] 
+                // (la expresión no está limitada a 2 niveles), hasta ahora se manejaba $[loQueMeInteresa]
+                result = template.replace(/\$\[?(?:\w+\/)*([^>&lt;]+)\]/g, function (match, p1) {
+                    //esto es por si la feature viene de un KML con este formato de datos
+                    /*
+                     * &lt;Data name="nombre del atributo">
+                            &lt;value>valor del atributo&lt;/value>
+                            &lt;displayName>Texto a mostrar como clave&lt;/displayName>
+                        &lt;/Data>
+                     */
+                    if (data[p1] instanceof Object &amp;&amp; Object.prototype.hasOwnProperty.call(data[p1], "value")) {
+                        return data[p1]["value"];
+                    }
+                    return data[p1];
+                });
+            }
+            else {
+                var html = [];
+                const hSlots = [];
+                const openText = Util.getLocaleString(locale, 'open');
+                const titleText = Util.getLocaleString(locale, 'linkInNewWindow');
+                const formatValue = function (value) {
+                    let result;
+                    var isUrl = Util.isURL(value);
+                    if (isUrl) {
+                        result = `&lt;a href="${value}" target="_blank" title="${titleText}">${openText}&lt;/a>`;
+                    }
+                    else {
+                        result = value !== undefined ?
+                            typeof value === "number" ? TC.Util.formatNumber(value, locale) : value
+                            : '&amp;mdash;';
+                    }
+                    return result;
+                };
+                const recursiveFn = function (data) {
+                    var html = [];
+                    if (data instanceof Array) {
+                        const id = 'complexAttr_' + TC.getUID();
+                        html.push(`&lt;div class="tc-complex-attr">&lt;input type="checkbox" id="${id}" />&lt;div>&lt;label for="${id}" title="" class="tc-plus">&lt;/label>`);
+                        html.push(`&lt;label for="${id}" title="" class="tc-title">${data.length} ${Util.getLocaleString(locale, 'featureInfo.complexData.array')}&lt;/label>&lt;br/>`);
+                        html.push('&lt;table class="tc-complex-attr">&lt;tbody>');
+                        data.forEach(item => {
+                            html.push('&lt;tr>&lt;td>');
+                            html = html.concat(recursiveFn(item));
+                            html.push('&lt;/td>&lt;/tr>');
+                        });
+                        html.push('&lt;/tbody>&lt;/table>&lt;/div>&lt;/div>');
+                    } else if (data instanceof Object) {
+                        if (data.getType) {
+                            const tttt = {
+                                type: data.getType(),
+                                coordinates: data.getCoordinates()
+                            };
+                            html = html.concat(recursiveFn(tttt));
+                        }
+                        else {
+                            html.push('&lt;table class="tc-complex-attr">&lt;tbody>');
+                            for (var i in data) {
+                                html.push('&lt;tr>');
+                                if (data[i] &amp;&amp; data[i] instanceof Array) {
+                                    const id = 'complexAttr_' + TC.getUID();
+                                    html.push(`&lt;th style="display:none">${i}&lt;/th>
+                                           &lt;td>&lt;label for="${id}" class="tc-title">${i}&lt;/label>&lt;br/>`);
+                                    html = html.concat(recursiveFn(data[i]));
+                                    html.push('&lt;/div>&lt;/td>');
+                                }
+                                else if (data[i] &amp;&amp; data[i] instanceof Object) {
+                                    const id = 'complexAttr_' + TC.getUID();
+                                    //if(data[i] &amp;&amp; Object.entries(data[i]).some((item)=>{return item[1] instanceof Object})){						
+                                    html.push(`&lt;th style="display:none">${i}&lt;/th>
+                                           &lt;td>&lt;input type="checkbox" id="${id}" />&lt;div>&lt;label for="${id}" title="" class="tc-plus">&lt;/label>`);
+                                    html.push(`&lt;label for="${id}" title="" class="tc-title">${i}&lt;/label>&lt;br/>`);
+                                    html = html.concat(recursiveFn(data[i]));
+                                    html.push('&lt;/div>&lt;/td>');
+                                }
+                                else {
+                                    html.push(`&lt;th class="key">${i}&lt;/th>
+                                           &lt;td class="value">`);
+                                    html = html.concat(recursiveFn(data[i]));
+                                    html.push('&lt;/td>');
+                                }
+                                html.push('&lt;/tr>');
+                            }
+                            html.push('&lt;/tbody>&lt;/table>');
+                        }
+                    } else {
+                        html.push(formatValue(data));
+                    }
+                    return html;
+                };
+                for (var key in data) {
+                    const value = data[key];
+                    const match = key.match(/^h(\d)_/i);
+                    if (match) {
+                        hSlots[match[1]] = value;
+                    }
+                    else {
+                        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'undefined') {
+                            html.push(`&lt;tr>&lt;th>${key}&lt;/th>&lt;td>${formatValue(value)}&lt;/td>&lt;/tr>`);
+                        }
+                        else {
+                            html.push(`&lt;tr>&lt;th>${key}&lt;/th>&lt;td>`);
+                            html = html.concat(recursiveFn(value));
+                            html.push('&lt;/td>&lt;/tr>');
+
+                        }
+                    }
+                }
+                const headers = hSlots
+                    .map(function (val, idx) {
+                        if (val) {
+                            return `&lt;h${idx}>${val}&lt;/h${idx}>`;
+                        }
+                    })
+                    .filter(function (val) {
+                        return val;
+                    });
+                if (headers.length) {
+                    html = headers.concat(html);
+                }
+                if (html.length > 0) {
+                    html.unshift('&lt;table class="tc-attr">');
+                    html.push('&lt;/table>');
+                    result = html.join('');
+                }
+            }
+        }
+        else if (typeof data === 'string') {
+            result = data;
+        }
+        if (!result) {
+            result = self.title;
+            if (self.group) {
+                result += ' ' + self.group;
+            }
+        }
+        if (!result) {
+            result = Util.getLocaleString(locale, 'noData');
+        }
+        return result;
+    }
+
+    getTemplate() {
+        const self = this;
+        let result = self.wrap.getTemplate();
+        if (result) {
+            return result;
+        }
+        return null;
+    }
+
+    clone() {
+        const self = this;
+        const nativeClone = self.wrap.cloneFeature();
+        nativeClone._wrap = self.wrap;
+        const result = new self.constructor(nativeClone, self.options);
+        if (self.folders) {
+            result.folders = self.folders.slice();
+        }
+        return result;
+    }
+
+    getStyle() {
+        return this.wrap.getStyle();
+    }
+
+    async showPopup(options) {
+        const self = this;
+        options = options || {};
+        const control = options instanceof Control ? options : options.control;
+        const map = self.layer?.map || control?.map;
+        if (map) {
+            let popup = control || self.popup;
+            if (!popup) {
+                // Buscamos un popup existente que no esté asociado a un control.
+                var popups = map.getControlsByClass('TC.control.Popup');
+                for (var i = 0, len = popups.length; i &lt; len; i++) {
+                    var p = popups[i];
+                    if (!p.caller) {
+                        popup = p;
+                        break;
+                    }
+                }
+            }
+            if (!popup) {
+                popup = await map.addControl('popup');
+            }
+            popup.currentFeature = self;
+            map.getControlsByClass('TC.control.Popup')
+                .filter(p => p !== popup &amp;&amp; p.isVisible())
+                .forEach(p => p.hide());
+            if (!popup.getContainerElement()) await popup.renderPromise();            
+            popup.setDragged(false);
+            self.wrap.showPopup(Object.assign({}, options, { control: popup }));
+            map.trigger(Consts.event.POPUP, { control: popup });
+            popup.fitToView(true);
+            popup.contentDiv.querySelectorAll('img').forEach(img => img.addEventListener('load', () => popup.fitToView()));
+            return popup;
+        }
+        return null;
+    }
+
+    async showResultsPanel(options) {
+        const self = this;
+        options = options || {};
+        const control = options instanceof Control ? options : options.control;
+        const map = self.layer?.map || control?.map;
+        if (map) {
+            let panel;
+
+            var resultsPanelOptions = {
+                content: "table",
+                titles: {
+                    main: TC.Util.getLocaleString(map.options.locale, "rsp.title"),
+                    max: TC.Util.getLocaleString(map.options.locale, "rsp.title")
+                }
+            };
+            var controlContainer = map.getControlsByClass(ControlContainer)[0];
+            if (controlContainer) {
+                resultsPanelOptions.position = controlContainer.POSITION.RIGHT;
+                //URI 24/01/2022 comprobar que ya existe un resultpanel para la feature en cuestión, sino se crea uno nuevo
+                panel = map.getControlsByClass('TC.control.ResultsPanel').find(resultPanel => resultPanel.currentFeature === self);
+                if (!panel) panel = await controlContainer.addControl('resultsPanel', resultsPanelOptions);
+            } else {
+                resultsPanelOptions.div = document.createElement('div');
+                map.div.appendChild(resultsPanelOptions.div);
+                //URI 24/01/2022 comprobar que ya existe un resultpanel para la feature en cuestión, sino se crea uno nuevo
+                panel = map.getControlsByClass('TC.control.ResultsPanel').find(resultsPanel => resultsPanel.currentFeature === self);
+                if (!panel) panel = await map.addControl('resultsPanel', resultsPanelOptions);
+            }
+
+            panel.currentFeature = self;
+
+            // GLS: si contamos con el contenedor de controles no es necesario cerra el resto de paneles ya que no habrá solape excepto los paneles
+            if (map.getControlsByClass(ControlContainer).length === 0) {
+                map.getControlsByClass('TC.control.ResultsPanel').filter(ctrl => ctrl.options.content === "table").forEach(function (p) {
+                    p.close();
+                });
+            }
+
+            // cerramos los paneles con feature asociada que no sean gráfico
+            const panels = map.getControlsByClass('TC.control.ResultsPanel');
+            panels.filter(ctrl => panel !== ctrl).forEach(function (p) {
+                if (p.currentFeature &amp;&amp; !p.chart) {
+                    p.close();
+                }
+            });
+
+            panel.menuDiv.innerHTML = '';
+            panel.open(options.html || self.getInfo({ locale: map.options.locale }), panel.getInfoContainer());
+
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    entry.target.querySelectorAll('h3, h4').forEach(function (hx) {
+                        hx.addEventListener("mouseenter", function (_e) {
+                            if (this.offsetWidth &lt; this.scrollWidth) {
+                                this.title = this.childNodes.item(0).textContent;
+                            }
+                            else {
+                                this.title = "";
+                            }
+                        }, { passive: true });
+                    });
+                }
+            });
+            resizeObserver.observe(panel.infoDiv);
+
+            var onViewChange = function (_e) {
+                map.off(Consts.event.VIEWCHANGE, onViewChange);
+
+                panel.close();
+            };
+            map.on(Consts.event.VIEWCHANGE, onViewChange);
+            return panel;
+        }
+        return null;
+    }
+
+    async showInfo(options) {
+        const self = this;
+        options = options || {};
+
+        if (!TC.control || !TC.control.FeatureInfoCommons) {
+            const module = await import('../../TC/control/FeatureInfoCommons');
+            TC.control = TC.control || {};
+            TC.control.FeatureInfoCommons = module.default;
+        }
+
+        let html;
+        if (self.getTemplate()) {
+            html = self.getInfo();
+        }
+        else {
+            if (typeof self.data === 'string') {
+                html = self.data;
+            }
+            else {
+                html = await TC.control.FeatureInfoCommons.renderFeatureAttributeTable({ attributes: self.attributes, singleFeature: true });
+            }
+        }
+        const opts = Util.extend({}, options, { html: html });
+        let control;
+        if (options.control &amp;&amp; TC.control) {
+            const optionsControl = options.control;
+            const Popup = (await import('../../TC/control/Popup')).default;
+            const ResultsPanel = (await import('../../TC/control/ResultsPanel')).default;
+            if (optionsControl instanceof Popup) {
+                control = await self.showPopup(opts);
+            }
+            else if (optionsControl instanceof ResultsPanel) {
+                control = await self.showResultsPanel(opts);
+            }
+        }
+        else {
+            if (self.layer.map.on3DView || self.layer.map.defaultInfoContainer === Consts.infoContainer.RESULTS_PANEL) {
+                control = await self.showResultsPanel(opts);
+            }
+            else {
+                control = await self.showPopup(opts);
+            }
+        }
+        self.infoControl = control;
+        self.layer.features.filter((f) => f !== self).forEach((f) => f.toggleSelectedStyle(false));
+        self.toggleSelectedStyle(true);
+        TC.control.FeatureInfoCommons.addSpecialAttributeEventListeners(control.getContainerElement());
+    }
+
+    select() {
+        const self = this;
+        self.#selected = true;
+        if (self.layer) {
+            self.layer.selectedFeatures.push(self);
+        }
+        var selectionOptions = self.options.selection || {};
+        self.setStyle(Util.extend({}, Cfg.styles.selection[self.STYLETYPE], selectionOptions[self.STYLETYPE]));
+        //URI:Traer al frente
+
+        return self;
+    }
+
+    unselect() {
+        const self = this;
+        self.#selected = false;
+        // Volvemos al estilo por defecto
+        self.setStyle(self.options);
+        //self.setStyle(Object.assign({}, self.options, Cfg.styles[self.STYLETYPE]));
+
+        if (self.layer) {
+            const idx = self.layer.selectedFeatures.indexOf(self);
+            if (idx >= 0) {
+                self.layer.selectedFeatures.splice(idx, 1);
+            }
+        }
+        return self;
+    }
+
+    isSelected() {
+        return this.#selected;
+    }
+
+    toGML(version, srsName) {
+        return this.wrap.toGML(version, srsName);
+    }
+}
+
+export default Feature;
+
+/**
+ * Opciones de entidad. Hay que tener en cuenta que el archivo `config.json` de una maquetación 
+ * puede sobreescribir los valores por defecto de esta propiedad
+ * (para ver instrucciones de uso de maquetaciones, consultar {@tutorial layout_cfg}).
+ * @typedef FeatureOptions
+ * @memberof SITNA.feature
+ * @property {object|string} [data] - Diccionario de pares clave-valor que representa los atributos 
+ * alfanuméricos de la entidad geográfica o bien cadena de caracteres con el código HTML asociado a la misma. 
+ * Al pulsar sobre la entidad geográfica, bien una tabla con los atributos o bien el HTML especificado 
+ * se mostrarán en un bocadillo.
+ * @property {string} [group] - Nombre de grupo en el que incluir la entidad geográfica. 
+ * Los grupos se muestran en la tabla de contenidos y en la leyenda.
+ * @property {string} [layer] - Identificador de una capa de tipo [SITNA.Consts.layerType.VECTOR]{@link SITNA.Consts} en la
+ * que se añadirá la entidad geográfica.
+ * Cuando un objeto de este tipo se pasa como parámetro a {@link SITNA.Map#addMarker} y no se especifica 
+ * esta propiedad, se creará una capa específica para las entidades geográficas que se añadan.
+ * @property {boolean} [showPopup] - Si se establece a `true`, la entidad geográfica se añade al mapa con el bocadillo de información asociada visible por defecto.
+ */
+
+/**
+ * Opciones para la obtención de una medida. Cuando queremos obtener la longitud o el área de la geometría 
+ * de una entidad geográfica hay que tener en cuenta que el resultado depende de en qué unidades están definidas 
+ * sus coordenadas y sobre qué CRS se proyecta la entidad.
+ * @typedef MeasurementOptions
+ * @memberof SITNA.feature
+ * @property {string} [crs=["EPSG:25830"]{@link https://epsg.io/25830}] - Cadena con el código identificador del CRS sobre la que se proyecta la geometría de la entidad geográfica.
+ * Dado que al proyectar una entidad geográfica sobre un plano se puede alterar su forma o tamaño, la medida es 
+ * dependiente del CRS utilizado.
+ * @property {string} [geometryCrs] - Cadena con el código identificador del CRS en que están las coordenadas 
+ * de la geometría de la entidad geográfica. Si no se especifica se tomará el CRS del mapa en que 
+ * se encuentra la entidad.
+ * @see SITNA.feature.Polyline#getLength
+ * @see SITNA.feature.MultiPolyline#getLength
+ * @see SITNA.feature.Polygon#getArea
+ * @see SITNA.feature.Polygon#getLength
+ * @see SITNA.feature.MultiPolygon#getArea
+ * @see SITNA.feature.MultiPolygon#getLength
+ * @see SITNA.feature.Circle#getRadius
+ */</code></pre>
+		</section>
+			</div>
+		</div>
+	</div>
+	<footer>
+				<div class="copyright">© 2019 Gobierno de Navarra. <a href="https://github.com/sitna/api-sitna/blob/master/LICENSE.md">Licencia BSD-2-Clause</a>.</div>
+			<div class="generated-by">Documentación generada por <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a> a 20/07/2023 usando la <a href="https://github.com/steveush/foodoc">plantilla FooDoc</a>.</div>
+	</footer>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/clipboard.min.js"></script>
+	<script src="js/prism.min.js"></script>
+	<script src="js/template.min.js"></script>
+		<!-- start:lunr-search-modal.hbs -->
+		<div class="modal fade" id="lunr-search-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Resultados de la búsqueda</h4>
+					</div>
+					<div class="modal-body" id="lunr-search-body">
+					</div>
+					<div class="modal-footer" id="lunr-search-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div>
+		<!-- end:lunr-search-modal.hbs -->		<script src="js/lunr.min.js"></script>
+	
+</body>
+</html>
+<!-- end:source.tmpl.hbs -->

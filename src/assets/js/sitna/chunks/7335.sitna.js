@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkSITNA=self.webpackChunkSITNA||[]).push([[7335],{7335:(e,n,l)=>{l.r(n),l.d(n,{default:()=>t});const t={compiler:[8,">= 4.3.0"],main:function(e,n,l,t,a){var r=e.lookupProperty||function(e,n){if(Object.prototype.hasOwnProperty.call(e,n))return e[n]};return e.escapeExpression(r(l,"i18n").call(null!=n?n:e.nullContext||{},"singleLayer",{name:"i18n",hash:{},data:a,loc:{start:{line:1,column:0},end:{line:1,column:22}}}))},useData:!0}}}]);
+//# sourceMappingURL=../maps/chunks/7335.sitna.js.map

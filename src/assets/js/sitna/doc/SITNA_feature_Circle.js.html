@@ -1,0 +1,413 @@
+<!-- start:source.tmpl.hbs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+		<title>SITNA/feature/Circle.js</title>
+		<!--[if lt IE 9]>
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+		<link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+		<link type="text/css" rel="stylesheet" href="css/prism.min.css">
+		<link type="text/css" rel="stylesheet" href="css/template.min.css">
+			<link type="text/css" rel="stylesheet" href="css/sitnaCSS.css">
+			<style>
+				.page-header,
+				pre.code-toolbar > .toolbar:hover {
+					background-color: #cc0000;
+				}
+				.callout-primary,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus,
+				pre.code-toolbar > .toolbar:hover {
+					border-left-color: #cc0000;
+				}
+				pre.code-toolbar > .toolbar:hover {
+					border-bottom-color: #cc0000;
+				}
+				.callout-primary h5,
+				.symbol-title.collapsible-symbol .toggle-icon,
+				.breadcrumb li a,
+				.toc .nav > li > a:hover,
+				.toc .nav > li > a:focus,
+				.toc .nav > li.active > a,
+				.toc .nav > li.active > a:hover,
+				.toc .nav > li.active > a:focus {
+					color: #cc0000;
+				}
+			</style>
+		<script type="text/javascript">
+			window.TEMPLATE_OPTIONS = {"includeDate":true,"dateFormat":"DD/MM/YYYY","systemName":"API SITNA","systemSummary":"API JavaScript para la visualización de datos georreferenciados en aplicaciones web","systemLogo":"img/sitna-logo.png","systemColor":"#cc0000","navMembers":[{"kind":"class","title":"Clases"},{"kind":"external","title":"Externals","summary":"All documented external members."},{"kind":"global","title":"Tipos globales"},{"kind":"mixin_","title":"Mixins","summary":"All documented mixins."},{"kind":"interface","title":"Interfaces","summary":"All documented interfaces."},{"kind":"module","title":"Modules","summary":"All documented modules."},{"kind":"namespace","title":"Espacios de nombres"},{"kind":"tutorial","title":"Documentación"}],"footer":"","copyright":"© 2019 Gobierno de Navarra. <a href=\"https://github.com/sitna/api-sitna/blob/master/LICENSE.md\">Licencia BSD-2-Clause</a>.","linenums":true,"collapseSymbols":false,"inverseNav":false,"inlineNav":false,"outputSourceFiles":false,"sourceRootPath":null,"disablePackagePath":true,"outputSourcePath":false,"showTableOfContents":true,"showAccessFilter":false,"analytics":null,"methodHeadingReturns":true,"sort":"longname, version, since","search":true,"favicon":null,"stylesheets":["css/sitnaCSS.css"],"scripts":[],"monospaceLinks":false,"cleverLinks":true,"systemVersion":"v4.1.0"};
+			window.DOCLET_TOC_ENABLED = false;
+			window.DOCLET_AFILTER_ENABLED = false;
+		</script>
+</head>
+<body>
+	<!-- start:navbar.hbs -->
+	<header class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand branding-logo" href="index.html" style="background-image: url(img/sitna-logo.png);">
+					API SITNA
+				</a>
+	            <a href="tutorial-4-changes.html" class="navbar-version">v4.1.0</a>
+				<!-- displayed on small devices -->
+				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+			</div>
+			<div class="navbar-collapse collapse" id="topNavigation">
+				<ul class="nav navbar-nav">
+								<li class="dropdown">
+									<a href="list_class.html" class="dropdown-toggle" data-toggle="dropdown">Clases<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.feature.Circle.html">SITNA.feature.Circle</a></li>
+											<li><a href="SITNA.feature.Feature.html">SITNA.feature.Feature</a></li>
+											<li><a href="SITNA.feature.Marker.html">SITNA.feature.Marker</a></li>
+											<li><a href="SITNA.feature.MultiMarker.html">SITNA.feature.MultiMarker</a></li>
+											<li><a href="SITNA.feature.MultiPoint.html">SITNA.feature.MultiPoint</a></li>
+											<li><a href="SITNA.feature.MultiPolygon.html">SITNA.feature.MultiPolygon</a></li>
+											<li><a href="SITNA.feature.MultiPolyline.html">SITNA.feature.MultiPolyline</a></li>
+											<li><a href="SITNA.feature.Point.html">SITNA.feature.Point</a></li>
+											<li><a href="SITNA.feature.Polygon.html">SITNA.feature.Polygon</a></li>
+											<li><a href="SITNA.feature.Polyline.html">SITNA.feature.Polyline</a></li>
+											<li><a href="SITNA.layer.Layer.html">SITNA.layer.Layer</a></li>
+											<li><a href="SITNA.layer.Raster.html">SITNA.layer.Raster</a></li>
+											<li><a href="SITNA.layer.Vector.html">SITNA.layer.Vector</a></li>
+											<li><a href="SITNA.Map.html">SITNA.Map</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_namespace.html" class="dropdown-toggle" data-toggle="dropdown">Espacios de nombres<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="SITNA.html">SITNA</a></li>
+											<li><a href="SITNA.control.html">SITNA.control</a></li>
+											<li><a href="SITNA.feature.html">SITNA.feature</a></li>
+											<li><a href="SITNA.layer.html">SITNA.layer</a></li>
+									</ul>
+								</li>
+								<li class="dropdown">
+									<a href="list_tutorial.html" class="dropdown-toggle" data-toggle="dropdown">Documentación<b class="caret"></b></a>
+									<ul class="dropdown-menu">
+											<li><a href="tutorial-1-configuration.html">Cómo configurar un mapa</a></li>
+											<li><a href="tutorial-2-css.html">Clases CSS para identificar elementos de la API</a></li>
+											<li><a href="tutorial-3-embedding.html">Cómo añadir multimedia y páginas web incrustadas</a></li>
+											<li><a href="tutorial-4-changes.html">Historial de cambios</a></li>
+									</ul>
+								</li>
+	                <li><a href="https://github.com/sitna/api-sitna">Ver en Github</a></li>
+				</ul>
+					<!-- start:lunr-search-navbar.hbs -->
+					<form class="navbar-form navbar-right" role="search">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="Buscar" id="lunr-search-input">
+							<div class="input-group-btn">
+								<button class="btn btn-default" id="lunr-search-submit">
+									<i class="glyphicon glyphicon-search"></i>
+								</button>
+							</div>
+						</div>
+					</form>
+					<!-- start:lunr-search-navbar.hbs -->		</div>
+		</div>
+	</header>
+	<!-- end:navbar.hbs -->		<div class="page-header">
+			<div class="container">
+				<span class="kind">source</span>
+				<h1><span class="name">SITNA/feature/Circle.js</span></h1>
+			</div>
+		</div>
+	<div class="container content">
+		<div class="row">
+			<div class="col-md-12 main-content">
+		<section class="source-section">
+			<article></article>
+			<pre class="prettyprint source language-javascript line-numbers"><code class="language-javascript">﻿import Consts from '../../TC/Consts';
+import Feature from './Feature';
+import Polygon from './Polygon';
+
+/**
+ * Entidad geográfica que representa un círculo en el mapa.
+ * @class Circle
+ * @memberof SITNA.feature
+ * @extends SITNA.feature.Feature
+ * @param {SITNA.feature.CircleGeometry|Array.&lt;number[]>} geometry - Si el parámetro es un array, las coordenadas
+ * del círculo expresadas como un array de dos elementos, el primero son las coordenadas del centro 
+ * en las unidades del CRS del mapa y el segundo son las coordenadas de un punto de su circunferencia, 
+ * en las unidades del CRS actual del mapa (metros por defecto).
+ * @param {SITNA.feature.PolygonOptions} [options] Objeto de opciones de la entidad geográfica.
+ * @see SITNA.layer.Vector#addCircle
+ * @see SITNA.layer.Vector#addFeature
+ * @see SITNA.layer.Vector#addFeatures
+ * @see [Ejemplo de uso de métodos de entidad geográfica](../examples/feature.methods.html)
+ * @example &lt;caption>[Ver en vivo](../examples/feature.Circle.html)&lt;/caption> {@lang html}
+&lt;div id="mapa">&lt;/div>
+&lt;script>
+    SITNA.Cfg.workLayers = [
+        {
+            id: "entidades",
+            title: "Demostración de círculos",
+            type: SITNA.Consts.layerType.VECTOR
+        }
+    ];
+    var map = new SITNA.Map("mapa");
+    map.loaded(() => {
+        // Obtenemos la instancia de la capa vectorial
+        const vectorLayer = map.getLayer("entidades");
+
+        // Creamos una instancia de la clase SITNA.feature.Circle pasándole un objeto de definición de geometría
+        const circle1 = new SITNA.feature.Circle({
+            center: [612175, 4717775],
+            radius: 10000
+        }, {
+            strokeColor: '#522852', // violeta
+            strokeWidth: 6,
+            fillColor: '#285228', // verde
+            fillOpacity: 0.5,
+            data: {
+                'Color': 'Violeta/verde'
+            }
+        });
+
+        // Creamos una instancia de la clase SITNA.feature.Circle pasándole un array de coordenadas
+        const circle2 = new SITNA.feature.Circle([
+            [642175, 4717775], // coordenadas del centro
+            [647175, 4717775], // coordenadas de un punto de la circunferencia
+        ], {
+            strokeColor: '#b97f24', // dorado
+            strokeWidth: 8,
+            fillColor: '#282852', // azul
+            fillOpacity: 0.2,
+            data: {
+                'Color': 'Dorado/azul'
+            }
+        });
+
+        // Añadimos una instancia de la clase SITNA.feature.Circle a la capa pasándole un objeto de definición de geometría
+        vectorLayer.addCircle({
+            center: [612175, 4687775],
+            radius: 12000
+        }, {
+            strokeColor: '#880000', // granate
+            strokeWidth: 10,
+            fillColor: '#000000', // negro
+            fillOpacity: 0, // Completamente transparente
+            data: {
+                'Color': 'Granate/transparente'
+            }
+        });
+
+        // Añadimos una instancia de la clase SITNA.feature.Circle a la capa pasándole un array de coordenadas
+        vectorLayer.addCircle([
+            [642175, 4687775], // coordenadas del centro
+            [644175, 4687775], // coordenadas de un punto de la circunferencia
+        ], {
+            strokeColor: '#000000', // negro
+            strokeWidth: 6,
+            fillColor: '#cccccc', // gris
+            fillOpacity: 1, // Completamente opaco
+            data: {
+                'Color': 'Negro/gris'
+            }
+        });
+
+        // Añadimos las dos entidades geográficas de una vez
+        vectorLayer.addCircles([
+            circle1,
+            circle2
+        ])
+            .then(circleArray => {
+                // Añadimos atributos a las nuevas entidades.
+                // Estos datos se pueden consultar al pulsar sobre ellas.
+                circleArray.forEach(circle => {
+                    const newData = circle.getData();
+                    newData["Centro"] = circle.getCenter().toString();
+                    newData["Radio en metros"] = circle.getRadius();
+                    circle.setData(newData);
+                })
+                map.zoomToFeatures(vectorLayer.features);
+            });
+    });
+&lt;/script>
+ */
+
+/**
+ * Obtiene el estilo de la entidad.
+ * @method getStyle
+ * @memberof SITNA.feature.Circle
+ * @instance
+ * @returns {SITNA.feature.PolygonStyleOptions}
+ */
+
+/**
+ * Asigna estilos al círculo.
+ * @method setStyle
+ * @memberof SITNA.feature.Circle
+ * @instance
+ * @param {SITNA.feature.PolygonStyleOptions} style - Objeto de opciones de estilo de polígono.
+ * @returns {SITNA.feature.Circle} La propia entidad geográfica.
+ */
+
+class Circle extends Feature {
+    STYLETYPE = Consts.geom.POLYGON;
+
+    constructor(coords, options) {
+        super(coords, options);
+        const self = this;
+
+        if (!self.wrap.isNative(coords)) {
+            self.wrap.createCircle(Circle.parseGeometry(coords), options);
+        }
+    }
+
+    static parseGeometry(geometry) {
+        // Adoptamos la convención de introducir las coordenadas de dos puntos:
+        // El primero es el centro, el segundo es cualquiera de la circunferencia.
+        let geom = geometry;
+        if (Object.prototype.hasOwnProperty.call(geometry, 'center') &amp;&amp;
+            Object.prototype.hasOwnProperty.call(geometry, 'radius')) {
+            geom = [geometry.center, [geometry.center[0] + geometry.radius, geometry.center[1]]];
+        }
+        const center = geom[0];
+        const circunferencePoint = geom[1];
+        if (Array.isArray(geom) &amp;&amp;
+            Array.isArray(center) &amp;&amp;
+            !isNaN(center[0]) &amp;&amp; !isNaN(center[1]) &amp;&amp;
+            Array.isArray(circunferencePoint) &amp;&amp;
+            !isNaN(circunferencePoint[0]) &amp;&amp; !isNaN(circunferencePoint[1])) {
+            return geom;
+        }
+        throw new Error('Coordinates not valid for circle');
+    }
+
+    /**
+     * Obtiene las coordenadas de la geometría del círculo en el CRS actual del mapa.
+     * @method getCoordinates
+     * @memberof SITNA.feature.Circle
+     * @instance
+     * @returns {Array.&lt;number[]>} Array cuyo primer elemento son las coordenadas 
+     * del centro del círculo en el CRS del mapa y el segundo elemento es el punto 
+     * de la circunferencia con el mayor valor de x.
+     */
+
+    /**
+     * Establece la geometría del círculo en el CRS actual del mapa.
+     * @method setCoordinates
+     * @memberof SITNA.feature.Circle
+     * @instance
+     * @param {SITNA.feature.CircleGeometry|Array.&lt;number[]>} geometry - Si el parámetro es un array, las coordenadas
+     * del círculo expresadas como un array de dos elementos, el primero son las coordenadas del centro
+     * en las unidades del CRS del mapa y el segundo son las coordenadas de un punto de su circunferencia,
+     * en las unidades del CRS actual del mapa (metros por defecto).
+     * @returns {SITNA.feature.Circle} La propia entidad geográfica.
+     */
+    setCoordinates(coords) {
+        const self = this;
+        if (coords) {
+            coords = Circle.parseGeometry(coords);
+        }
+        return super.setCoordinates.call(self, coords);
+    }
+
+    /**
+     * Obtiene las coordenadas del centro del círculo en el CRS actual del mapa.
+     * @method getCenter
+     * @memberof SITNA.feature.Circle
+     * @instance
+     * @returns {number[]} Array con las coordenadas del centro del círculo en el CRS del mapa. 
+     */
+    getCenter() {
+        return this.wrap.getGeometry()[0];
+    }
+
+    /**
+     * Obtiene el radio del círculo en metros.
+     * @method getRadius
+     * @memberof SITNA.feature.Circle
+     * @instance
+     * @param {SITNA.feature.MeasurementOptions} [options] - Parámetros referentes al CRS que hay que considerar para la medida.
+     * @returns {number} Longitud del radio en metros.
+     */
+    getRadius(options) {
+        const self = this;
+        const [center, circonferencePoint] = self.getCoordinates(options);
+        return Math.hypot(circonferencePoint[0] - center[0], circonferencePoint[1] - center[1]);
+    }
+
+    getCoords() {
+        return this.getCoordinates();
+    }
+
+    setCoords(coords) {
+        return this.setCoordinates(coords);
+    }
+
+    getCoordsArray() {
+        return this.getCoordinates();
+    }
+
+    toPolygon(numPoints = 72) {
+        const self = this;
+        const radius = self.getRadius();
+        const center = self.getCenter();
+        const points = new Array(numPoints);
+        const dAngle = 2 * Math.PI / numPoints;
+        let angle = 0;
+        for (var i = 0; i &lt; numPoints; i++) {
+            points[i] = [center[0] + radius * Math.cos(angle), center[1] + radius * Math.sin(angle)];
+            angle += dAngle;
+        }
+        return new Polygon([points], Object.assign({}, self.options));
+    }
+}
+
+export default Circle;
+
+/**
+ * Objeto de descripción de la geometría de un círculo.
+ * @typedef CircleGeometry
+ * @memberof SITNA.feature
+ * @property {number[]} center - Coordenadas del centro del círculo en el CRS del mapa.
+ * @property {number} radius - Radio del círculo en la unidad de longitud del CRS actual del mapa (metros por defecto).
+ */</code></pre>
+		</section>
+			</div>
+		</div>
+	</div>
+	<footer>
+				<div class="copyright">© 2019 Gobierno de Navarra. <a href="https://github.com/sitna/api-sitna/blob/master/LICENSE.md">Licencia BSD-2-Clause</a>.</div>
+			<div class="generated-by">Documentación generada por <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a> a 20/07/2023 usando la <a href="https://github.com/steveush/foodoc">plantilla FooDoc</a>.</div>
+	</footer>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/clipboard.min.js"></script>
+	<script src="js/prism.min.js"></script>
+	<script src="js/template.min.js"></script>
+		<!-- start:lunr-search-modal.hbs -->
+		<div class="modal fade" id="lunr-search-modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Resultados de la búsqueda</h4>
+					</div>
+					<div class="modal-body" id="lunr-search-body">
+					</div>
+					<div class="modal-footer" id="lunr-search-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div>
+		<!-- end:lunr-search-modal.hbs -->		<script src="js/lunr.min.js"></script>
+	
+</body>
+</html>
+<!-- end:source.tmpl.hbs -->
