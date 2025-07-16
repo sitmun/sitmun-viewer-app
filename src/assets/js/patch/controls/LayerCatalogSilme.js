@@ -1,4 +1,6 @@
-﻿var ret = false;
+﻿
+// Variables globales
+var ret = false;
 var info = null;
 var selfClass = null;
 
@@ -8,25 +10,395 @@ if (!TC.control.LayerCatalog) {
   TC.syncLoadJS(TC.apiLocation + 'TC/control/LayerCatalog');
 }
 
+// =============================================================================
+// Constructor
+// =============================================================================
+
+TC.control.LayerCatalogSilme = function() {
+  const _ctl = this;
+  TC.control.LayerCatalog.apply(_ctl, arguments);
+
+  _ctl._selectors = {
+    LAYER_ROOT: 'div.' + _ctl.CLASS + '-tree > ul.' + _ctl.CLASS + '-branch > li.' + _ctl.CLASS + '-node > ul.' + _ctl.CLASS + '-branch > li.' + _ctl.CLASS + '-node'
+  };
+};
+
+TC.inherit(TC.control.LayerCatalogSilme, TC.control.LayerCatalog);
+
+// =============================================================================
+// Definición de métodos para la clase
+// =============================================================================
+
 (function() {
-  const cacheCapabilities = {};
+  const ctlProto = TC.control.LayerCatalogSilme.prototype;
 
+  // Constantes
+  const SEARCH_MIN_LENGTH = 3;
+
+  // Variables auxiliares
   const realTree = new Object();
-  var SEARCH_MIN_LENGTH = 3;
 
-  TC.control.LayerCatalogSilme = function() {
-    var _ctl = this;
+  // Atributos
+  ctlProto.CLASS = 'tc-ctl-lcat';
 
-    TC.control.LayerCatalog.apply(_ctl, arguments);
+  // ===========================================================================
+  // Función de renderizado
+  // ===========================================================================
 
-    _ctl._selectors = {
-      LAYER_ROOT: 'div.' + _ctl.CLASS + '-tree > ul.' + _ctl.CLASS + '-branch > li.' + _ctl.CLASS + '-node > ul.' + _ctl.CLASS + '-branch > li.' + _ctl.CLASS + '-node'
-    };
+  ctlProto.render = function(callback) {
+    const self = this;
+
+    return self._set1stRenderPromise(new Promise(function(resolve, reject) {
+      const promises = self.layers.map(function(layer) {
+        return layer.wrap.getLayer();
+      })
+      Promise.all(promises).then(function() { //SILME 20210419
+        //Tot ok, no fem res
+      }, function(reject) {
+        //si entram aquí és perque un servei (o més d'un) han fallat.
+
+        //lo que fem és treure les capes que no tenen capabilities associat, o sigui,
+        //que la promesa no s'ha complert
+
+        //la resa de codi es igual que si no hagués fallat cap promise
+        //hauriem de veure si es pot eliminar codi redundant o fer una funció que s'executi després, hagi fallat o no (HERE)
+        for (var i = 0; i < self.layers.length; i++) {
+          if (self.layers[i].capabilities == undefined) {
+            // self.map.toast(self.getLocaleString('errorCarregarCapa') + self.layers[i].title, {
+            //   type: TC.Consts.msgType.ERROR
+            // });
+            console.log("Cannot load layer: " + self.layers[i].title);
+            self.layers.splice(i, 1);
+            i--;
+          }
+
+        }
+      }).then(function() {
+        //Si totes les capes estan OK passem aquí directament, sino eliminem les que no estàn bé de l'arbre de capes i després passem aquí
+        var layerTrees = self.layers.map(function(layer) {
+          var result = layer.getTree();
+          layer.tree = result; //mv
+          var makeNodeVisible = function makeNodeVisible(node) {
+            var result = false;
+            var childrenVisible = false;
+            for (var i = 0; i < node.children.length; i++) {
+              if (makeNodeVisible(node.children[i])) {
+                childrenVisible = true;
+              }
+            }
+            if (node.hasOwnProperty('isVisible')) {
+              node.isVisible = (!layer.names || !layer.names.length) || childrenVisible || node.isVisible;
+            }
+            return node.isVisible;
+          };
+          makeNodeVisible(result);
+          return result;
+        });
+
+        layerTrees.forEach(function(item) {
+          var layer = self.layers.find(function(layer) {
+            return item.title === layer.title
+          });
+        });
+
+        realTree.children = new Array();
+
+        //TC.control.LayerCatalog.prototype.render.call(self, function () {
+        renderParent.call(self, function() {
+
+          const getLayerTree = function(layer) {
+            if (layer.tree == null) {
+              for (var i = 0; i < layer.children.length; i++) {
+                if (layer.children[i].tree == null) {
+                  layer.children[i] = getLayerTree(layer.children[i])
+                } else {
+                  var resultChild = layer.children[i].getTree();
+                  resultChild.id = layer.children[i].id;
+                  var makeNodeVisible = function makeNodeVisible(node) {
+                    var result = false;
+                    var childrenVisible = false;
+                    for (var k = 0; k < node.children.length; k++) {
+                      if (makeNodeVisible(node.children[k])) {
+                        childrenVisible = true;
+                      }
+                      //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
+                    }
+                    if (node.hasOwnProperty('isVisible')) {
+                      node.isVisible = (!layer.children[i].names || !layer.children[i].names.length) || childrenVisible || node.isVisible;
+                    }
+                    return node.isVisible;
+                  };
+                  makeNodeVisible(resultChild)
+                  layer.children[i] = resultChild;
+                }
+              }
+              return layer;
+            } else {
+              var result = layer.getTree();
+              var makeNodeVisible = function makeNodeVisible(node) {
+                var result = false;
+                var childrenVisible = false;
+                for (var i = 0; i < node.children.length; i++) {
+                  if (makeNodeVisible(node.children[i])) {
+                    childrenVisible = true;
+                  }
+                  //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
+                }
+                if (node.hasOwnProperty('isVisible')) {
+                  node.isVisible = (!layer.names || !layer.names.length) || childrenVisible || node.isVisible;
+                }
+                return node.isVisible;
+              };
+              makeNodeVisible(result);
+            }
+            //result.parentGroupNode = layer.parentGroupNode;
+            return result;
+          };
+
+          if (!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-loading-node') && !!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-node')) {
+            //if ($('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-loading-node').length == 0 && $('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-node').length != 0) {
+            var catalog = SITNA.Cfg.controls.layerCatalogSilme;
+            // TODO - REFACTORITZAR ⬇️
+            // - Mirar d'agrupar funcions
+            // - Posar breaks allà on es puguin posar
+            // Per a cada capa...
+            for (var i = 0; i < treeLayers.length; i++) {
+              AfageixTotsElsParesQueNoShaginAfegit(treeLayers[i].parentGroupNode, treeLayers[i]);
+            }
+
+            self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-branch').innerHTML = "";
+
+            for (var i = 0; i < realTree.children.length; i++) {
+              //Hem d'agafar lo mateix que al LayerCatalog self.getLayerTree(self.layers[0])
+              selfClass.getRenderedHtml(self.CLASS + '-node', getLayerTree(realTree.children[i]), function(html) {
+                var template = document.createElement('template');
+                template.innerHTML = html;
+
+                var newChild = template.content ? template.content.firstChild : template.firstChild;
+
+                if (self.div.querySelector('#' + newChild.id) == null) //no existeix
+                {
+                  self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
+                }
+
+                //for (var i = 0; i < newChild.children[2].children.length; i++) {
+                //    //var layer = self.getLayer(newChild.children[2].children[i].id);
+                //    var layer = self.getLayer(newChild.children[2].children[i].id);
+                //    addLogicToNode.call(self, newChild.children[2].children[i], layer);
+                //}
+
+                addLogicToAllLayersOfNode(newChild.children[2].children, self);
+
+                addLogicToTreeGroup.call(self, newChild);
+              });
+            }
+
+            //self.div.querySelector('.tc-ctl-lcat-branch').children[0].classList.remove(TC.Consts.classes.COLLAPSED);//Desplegam el primer node
+            //self.div.querySelector('.tc-ctl-lcat-branch').querySelector('.tc-ctl-lcat-branch').classList.remove(TC.Consts.classes.COLLAPSED);
+
+            callback(self.sourceLayers[self.sourceLayers.map(function(l) {
+              return l.id
+            }).indexOf(this.id)]);
+          }
+
+          resolve();
+        });
+
+        const AfageixTotsElsParesQueNoShaginAfegit = function(capaActualPare, capaActual) {
+          var catalog = silmeLayerCatalog.options;
+
+          // Miram dins cada node...
+          for (var k = 0; k < catalog.layerTreeGroups.length; k++) {
+            var nodeActual = catalog.layerTreeGroups[k];
+            var nodePare = nodeActual.parentNode;
+
+            if (nodeActual.id == capaActualPare) {
+              // Si el nodeActual depen d'un nodePare
+              if (nodePare != "" &&
+                nodePare != null &&
+                nodeActual.id != nodePare) {
+
+                // Si el nodePare no és dins el realTree
+                if (!cercaIdDinsArray(realTree.children, nodePare)) {
+
+                  //// Busquem el nodePare dins l'array de nodes
+                  nodePareAAfegir = AfageixTotsElsParesQueNoShaginAfegit(nodeActual.parentNode);
+
+                  if (nodePareAAfegir) {
+                    realTree.children.push(nodePareAAfegir);
+                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children = new Array();
+                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children.push(nodeActual);
+                  } else {
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
+                    if (!realNodeActual.children) realNodeActual.children = [];
+                    realNodeActual.children.push(nodeActual);
+                  }
+                } else {
+                  // Si el nodePare ja és dins el realTree
+                  // Si el nodeActual ja és dins el realTree, no fem res
+                  // Si el nodeActual NO ES dins el realTree, afegim el nodeActual al nodePare
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
+                    realNodeActual.children.push(nodeActual);
+                  }
+                }
+
+                // Si el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
+                if (capaActual) {
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id) &&
+                    nodeActual.id != nodePare) {
+                    capaActual.children = capaActual.getTree().children;
+                    // Per cercar el nodeActual hem de cercar dins els nodesFills de tots els nodes
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
+                    realNodeActual.children = [];
+                    realNodeActual.children.push(capaActual);
+                  } else {
+                    // Quan el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
+                    capaActual.children = capaActual.getTree().children;
+                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
+                    if (!realNodeActual.children) realNodeActual.children = [];
+                    realNodeActual.children.push(capaActual);
+                  }
+                }
+              } else {
+                // Si el nodeActual NO depen d'un nodePare
+                if (capaActual) {
+                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
+                    realTree.children.push(nodeActual);
+                    capaActual.children = capaActual.getTree().children;
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children = [];
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
+                  } else {
+                    capaActual.children = capaActual.getTree().children;
+                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
+                  }
+                } else {
+                  return nodeActual;
+                }
+              }
+            }
+          }
+        }
+
+        // Event botó projectes
+        self.div.addEventListener('click', TC.EventTarget.listenerBySelector('#canvi-projecte-silme', function(e) {
+          const projPane = self.div.querySelector('#projects');
+
+          if (window.innerWidth < 760) {
+            document.querySelector('#tools-panel').classList.toggle('right-collapsed');
+            document.querySelector('#silme-panel').classList.remove('left-opacity');
+            document.querySelector('.tc-ctl-nav-home').classList.remove(TC.Consts.classes.HIDDEN);
+            document.querySelector('.tc-ctl-sv-btn').classList.remove(TC.Consts.classes.HIDDEN);
+            if (document.querySelector('.tc-ctl-sb'))
+              document.querySelector('.tc-ctl-sb').style.visibility = 'visible';
+            if (document.querySelector('.tc-ctl-scl'))
+              document.querySelector('.tc-ctl-scl').style.visibility = 'visible';
+          }
+
+          projPane.classList.toggle(TC.Consts.classes.HIDDEN);
+          projPane.querySelector('.' + self.CLASS + '-proj-close').addEventListener(TC.Consts.event.CLICK, function() {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
+              item.classList.remove(self.CLASS + '-proj-selected');
+            });
+          });
+
+          projPane.querySelector('.' + self.CLASS + '-proj-accept').addEventListener('click', function() {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            const selectedProject = projPane.querySelector('.' + self.CLASS + '-proj-selected');
+            if (selectedProject) {
+              const id = parseInt(selectedProject.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
+              if (id !== window.layerCatalogsSilmeForModal.currentCatalog) {
+                window.layerCatalogsSilmeForModal.currentCatalog = id;
+                window.abstractMapObject.updateCatalog();
+              }
+            }
+          });
+
+          projPane.querySelector('.' + self.CLASS + '-proj-cancel').addEventListener('click', function() {
+            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
+            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
+              item.classList.remove(self.CLASS + '-proj-selected');
+            });
+          });
+
+          // Extreure tots els elements de catàlegs dins de tc-ctl-lcat-proj-child i afegir un listener a cadascun
+          var catalogsList = projPane.querySelectorAll('.' + self.CLASS + '-proj-catalog');
+          catalogsList.forEach(catalogElement => {
+            const id = parseInt(catalogElement.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
+            if (id === window.layerCatalogsSilmeForModal.currentCatalog)
+              catalogElement.classList.add(self.CLASS + '-proj-selected');
+
+            // Afegir listener als catàlegs
+            catalogElement.addEventListener('click', function() {
+              projPane.querySelector('.' + self.CLASS + '-proj-selected').classList.remove(self.CLASS + '-proj-selected');
+              catalogElement.classList.add(self.CLASS + '-proj-selected');
+            });
+          });
+        }));
+
+        // Renderitzar l'html de la modal amb la llista de catàlegs
+        selfClass = self;
+        self.getRenderedHtml(self.CLASS + '-proj', ({
+          "catalogs": window.layerCatalogsSilmeForModal.catalogs
+        })).then(function(out) {
+          var template = document.createElement('template');
+          template.innerHTML = out;
+          if (self.div.querySelector('.tc-ctl-lcat-proj') != null)
+            self.div.querySelector('.tc-ctl-lcat-proj').innerHTML = template.innerHTML;
+        }).catch(function(err) {
+          TC.error(err);
+        });
+
+        // 2 Capes de fons
+        // if (true) { // SILME - posam fals perque no volem dos mapes de fons
+        //   if (treeLayers.length > 0) {
+        //     if (typeof secondBaseLayer != 'undefined') {
+        //       if (secondBaseLayer == false) {
+        //         addSecondBaseLayer();
+        //         setSpan1();
+        //         setSpan2();
+        //         selectB1();
+        //         document.querySelector('#rangeTransparency').addEventListener('input', function() {
+        //           silmeMap.map.getLayers().array_[1].setOpacity(this.value / 100);
+        //           silmeMap.map.render();
+        //         });
+        //       }
+        //     }
+        //   }
+        // }
+      }, function() {
+
+      }).then(function() {
+
+        if (treeLayers.length > 0)
+          layerCatalogCarregat();
+
+      });
+
+
+      treeLayers = self.layers;
+    }));
   };
 
-  TC.inherit(TC.control.LayerCatalogSilme, TC.control.LayerCatalog);
 
-  TC.control.LayerCatalogSilme.prototype.register = function(map) {
+  ctlProto.loadTemplates = function () {
+    const _this = this;
+    _this.template = {};
+
+    _this.template[_this.CLASS] = "assets/js/patch/templates/LayerCatalogSilme.hbs";
+    _this.template[_this.CLASS + "-node"] = "assets/js/patch/templates/LayerCatalogNodeSilme.hbs";
+    _this.template[_this.CLASS + "-branch"] = "assets/js/patch/templates/LayerCatalogBranchSilme.hbs";
+    _this.template[_this.CLASS + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
+    _this.template[_this.CLASS + '-results'] = "assets/js/patch/templates/LayerCatalogResultsSilme.hbs";
+    _this.template[_this.CLASS + '-proj'] = "assets/js/patch/templates/LayerCatalogProjSilme.hbs";
+  };
+
+  // ===========================================================================
+  // Función de registro del componente
+  // ===========================================================================
+
+  ctlProto.register = function(map) {
     var _ctl = this;
 
     _ctl.template[_ctl.CLASS] = "assets/js/patch/templates/LayerCatalogSilme.hbs";
@@ -100,10 +472,205 @@ if (!TC.control.LayerCatalog) {
     return result;
   };
 
-  /*TC.control.LayerCatalogSilme.prototype.getRenderedHtml = function (templateId, data, callback) {
-      var _ctl = this;
-      const result = TC.control.LayerCatalog.prototype.getRenderedHtml.call(_ctl, templateId, data, callback);
-  };*/
+  // ===========================================================================
+  // Métodos públicos de la clase
+  // ===========================================================================
+
+  ctlProto.renderBranch = function(layer, callback, promiseRenderResolve) {
+    const self = this;
+
+    self.sourceLayers.unshift(layer);
+    layer.getCapabilitiesPromise()
+      .then(function(result) {
+
+        //self.sourceLayers.push(layer);
+
+        self.getRenderedHtml(self.CLASS + '-branch', getLayerTree(this), function(html) {
+          var template = document.createElement('template');
+          template.innerHTML = html;
+
+          var newChild = template.content ? template.content.firstChild : template.firstChild;
+          var oldChild = self.div.querySelector('.' + self.CLASS + '-branch').querySelector('li.' + self.CLASS + '-loading-node[data-layer-id="' + this.id + '"]');
+
+          if (oldChild) {
+            self.div.querySelector('.' + self.CLASS + '-branch').replaceChild(newChild, oldChild);
+          } else {
+            self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
+          }
+
+          addLogicToNode.call(self, newChild, this, self);
+
+          if (self.div.querySelector('.' + self.CLASS + '-branch').childElementCount === 1) {
+            promiseRenderResolve();
+          }
+
+          if (TC.Util.isFunction(callback)) {
+            // pasamos el callback el item
+            callback(self.sourceLayers[self.sourceLayers.map(function(l) {
+              return l.id
+            }).indexOf(this.id)]);
+          }
+
+        }.bind(this));
+
+      }.bind(layer))
+      .catch(function(error) {
+        /*
+        var index = self.layers.map(function (l) { return l.id }).indexOf(this.id);
+        self.layers.splice(index, 1);
+
+        var errorMessage = self.getLocaleString("lyrCtlg.errorLoadingNode", { serviceName: this.title });
+        var liError = self.div.querySelector('.' + self.CLASS + '-branch').querySelector('li.' + self.CLASS + '-loading-node[data-layer-id="' + this.id + '"]');
+        liError.classList.add('error');
+        liError.setAttribute('title', errorMessage);
+
+        self.map.toast(errorMessage, { type: TC.Consts.msgType.ERROR });
+        */
+      }.bind(layer));
+  };
+
+  ctlProto.addLayer = function(layer) {
+    const self = this;
+    return new Promise(function(resolve, reject) {
+      var fromLayerCatalog = [];
+
+      if (self.options.layers && self.options.layers.length) {
+        fromLayerCatalog = self.options.layers.filter(function(l) {
+          var getMap = TC.Util.reqGetMapOnCapabilities(l.url);
+          return getMap && getMap.replace(TC.Util.regex.PROTOCOL) == layer.url.replace(TC.Util.regex.PROTOCOL);
+        });
+      }
+
+      if (fromLayerCatalog.length == 0)
+        fromLayerCatalog = self.layers.filter(function(l) {
+          return l.url.replace(TC.Util.regex.PROTOCOL) == layer.url.replace(TC.Util.regex.PROTOCOL);
+        });
+
+      if (fromLayerCatalog.length == 0) {
+        self.layers.push(layer);
+        layer.getCapabilitiesPromise().then(function() {
+          layer.compatibleLayers = layer.wrap.getCompatibleLayers(self.map.crs);
+          layer.title = layer.title || layer.wrap.getServiceTitle();
+
+          if (!(SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children)) {
+            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children = new Array();
+            layer.children = layer.getTree().children
+            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer)
+          } else {
+            layer.children = layer.getTree().children
+            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer);
+          }
+
+
+
+          //self.renderBranch(layer, function () {
+          //    resolve(); //ver linea 55 y por ahí
+          //});
+          TC.control.LayerCatalog.prototype.getRenderedHtml.call(self, 'tc-ctl-lcat-node', SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0], function(html) {
+            var template = document.createElement('template');
+            template.innerHTML = html;
+
+            var newChild = template.content ? template.content.firstChild : template.firstChild;
+
+            if (self.div.querySelector('#' + newChild.id) != null) //Silme
+            {
+              self.div.querySelector('#' + newChild.id).remove() //Silme - eliminem l'arbre anterior
+            }
+
+            //silme if (self.div.querySelector('#' + newChild.id) == null)//no existeix
+            //{
+            self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
+            //}
+
+            //for (var i = 0; i < newChild.children[2].children.length; i++) {
+            //    //var layer = self.getLayer(newChild.children[2].children[i].id);
+            //    var layer = self.getLayer(newChild.children[2].children[i].id);
+            //    addLogicToNode.call(self, newChild.children[2].children[i], layer);
+            //}
+
+            addLogicToAllLayersOfNode(newChild.children[2].children, self);
+
+            addLogicToTreeGroup.call(self, newChild);
+          });
+        });
+      } else {
+        resolve();
+      }
+    }).then(function() {
+      //mv 20210527 açò ho hem afegit per que carregui la capa corresponent després d'afegir un nou servei
+      //a l'arbre de capes des del control localitzar (trams i fites de camí de cavalls, però podrien ser altres)
+      if (pendingLayer) {
+        silmeAddLayer(pendingLayer)
+        pendingLayer = null;
+      }
+    });
+  };
+
+  ctlProto.loaded = function() {
+    return this._readyPromise;
+  };
+
+  ctlProto.hideLayerInfo = function() {
+    var self = this;
+    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
+      btn.classList.remove(TC.Consts.classes.CHECKED);
+    });
+    const infoPanel = self.div.querySelector('.' + self.CLASS + '-info');
+    delete infoPanel.dataset.serviceId;
+    delete infoPanel.dataset.layerName;
+    infoPanel.classList.add(TC.Consts.classes.HIDDEN);
+  };
+
+  ctlProto.hideSearchLayerInfo = function() {
+    var self = this;
+    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
+      btn.checked = false;
+    });
+    const infoPanel = self.div.querySelector('.' + self.CLASS + '-info');
+    delete infoPanel.dataset.serviceId;
+    delete infoPanel.dataset.layerName;
+    infoPanel.classList.add(TC.Consts.classes.HIDDEN);
+  };
+
+  ctlProto.getLayerNodes = function(layer) {
+    const self = this;
+    const result = [];
+    const rootNode = self.getLayerRootNode(layer);
+    if (rootNode) {
+      for (var i = 0; i < layer.names.length; i++) {
+        const liLayer = rootNode.querySelector('li[data-layer-name="' + layer.names[i] + '"]');
+        if (!liLayer) {
+          continue;
+        }
+        result.push(liLayer);
+        liLayer.querySelectorAll('li').forEach(function(li) {
+          result.push(li);
+        });
+      }
+    }
+    return result;
+  };
+
+  ctlProto.getLayerRootNode = function(layer) {
+    const self = this;
+    var result = null;
+    if (!layer.isBase) {
+      var url = layer.options.url;
+      if (self._roots) {
+        self._roots.forEach(function (li) {
+          const lyr = self.getLayer(li.dataset.layerId);
+          if (lyr && lyr.type === layer.type && lyr.options.url.toLowerCase() === url.toLowerCase()) {
+            if (layer.names.every((name) => li.querySelector(`li[data-layer-name="${name}"]`))) result = li;
+          }
+        });
+      }
+    }
+    return result;
+  };
+
+  // ===========================================================================
+  // Funciones auxiliares
+  // ===========================================================================
 
   const addLogicToTreeGroup = function(node) {
     const self = this;
@@ -123,6 +690,7 @@ if (!TC.control.LayerCatalog) {
     });
   };
 
+
   const onCollapseButtonClick = function (e) {
     e.target.blur();
     e.stopPropagation();
@@ -133,6 +701,7 @@ if (!TC.control.LayerCatalog) {
       ul.classList.toggle(TC.Consts.classes.COLLAPSED);
     }
   };
+
 
   const onSpanClick = function(e, ctl) {
     if (e.target.classList.contains(SITNA.Consts.classes.SELECTABLE)) {
@@ -215,6 +784,7 @@ if (!TC.control.LayerCatalog) {
     }
   };
 
+
   const getLayer = function(id) {
     const self = this;
     for (var i = 0, len = self.layers.length; i < len; i++) {
@@ -233,6 +803,7 @@ if (!TC.control.LayerCatalog) {
     }
     return null;
   };
+
 
   const createSearchAutocomplete = function() {
     const self = this;
@@ -495,6 +1066,7 @@ if (!TC.control.LayerCatalog) {
     }
   };
 
+
   const getLayerTree = function(layer) {
     var result = layer.getTree();
     var makeNodeVisible = function makeNodeVisible(node) {
@@ -518,6 +1090,7 @@ if (!TC.control.LayerCatalog) {
     //checkIfFolder(result);
     return result;
   };
+
 
   const getInfo = function(name, layer) {
     var self = layer;
@@ -651,6 +1224,7 @@ if (!TC.control.LayerCatalog) {
     return result;
   };
 
+
   const showLayerInfo = function(layer, name, uid, li) {
     const self = this;
     var result = null;
@@ -735,6 +1309,7 @@ if (!TC.control.LayerCatalog) {
 
     return result;
   };
+
 
   const showSearchLayerInfo = function(layer, name, uid, li) {
     const self = this;
@@ -837,6 +1412,7 @@ if (!TC.control.LayerCatalog) {
     return result;
   };
 
+
   const addLayerToMap = function(layer, layerName) {
     const self = this;
     const layerOptions = TC.Util.extend({}, layer.options);
@@ -861,6 +1437,7 @@ if (!TC.control.LayerCatalog) {
     }
   };
 
+
   const _refreshResultList = function() {
     const self = this;
 
@@ -877,6 +1454,7 @@ if (!TC.control.LayerCatalog) {
     }
   };
 
+
   const updateControl = function(layer) {
     const self = this;
 
@@ -887,6 +1465,7 @@ if (!TC.control.LayerCatalog) {
     });
     _refreshResultList.call(self);
   };
+
 
   const addLogicToNode = function(node, layer, control) {
     //const self = this;
@@ -989,443 +1568,6 @@ if (!TC.control.LayerCatalog) {
     });
   };
 
-  TC.control.LayerCatalogSilme.prototype.renderBranch = function(layer, callback, promiseRenderResolve) {
-    const self = this;
-
-    self.sourceLayers.unshift(layer);
-    layer.getCapabilitiesPromise()
-      .then(function(result) {
-
-        //self.sourceLayers.push(layer);
-
-        self.getRenderedHtml(self.CLASS + '-branch', getLayerTree(this), function(html) {
-          var template = document.createElement('template');
-          template.innerHTML = html;
-
-          var newChild = template.content ? template.content.firstChild : template.firstChild;
-          var oldChild = self.div.querySelector('.' + self.CLASS + '-branch').querySelector('li.' + self.CLASS + '-loading-node[data-layer-id="' + this.id + '"]');
-
-          if (oldChild) {
-            self.div.querySelector('.' + self.CLASS + '-branch').replaceChild(newChild, oldChild);
-          } else {
-            self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
-          }
-
-          addLogicToNode.call(self, newChild, this, self);
-
-          if (self.div.querySelector('.' + self.CLASS + '-branch').childElementCount === 1) {
-            promiseRenderResolve();
-          }
-
-          if (TC.Util.isFunction(callback)) {
-            // pasamos el callback el item
-            callback(self.sourceLayers[self.sourceLayers.map(function(l) {
-              return l.id
-            }).indexOf(this.id)]);
-          }
-
-        }.bind(this));
-
-      }.bind(layer))
-      .catch(function(error) {
-        /*
-        var index = self.layers.map(function (l) { return l.id }).indexOf(this.id);
-        self.layers.splice(index, 1);
-
-        var errorMessage = self.getLocaleString("lyrCtlg.errorLoadingNode", { serviceName: this.title });
-        var liError = self.div.querySelector('.' + self.CLASS + '-branch').querySelector('li.' + self.CLASS + '-loading-node[data-layer-id="' + this.id + '"]');
-        liError.classList.add('error');
-        liError.setAttribute('title', errorMessage);
-
-        self.map.toast(errorMessage, { type: TC.Consts.msgType.ERROR });
-        */
-      }.bind(layer));
-  };
-
-  TC.control.LayerCatalogSilme.prototype.render = function(callback) {
-    const self = this;
-
-    return self._set1stRenderPromise(new Promise(function(resolve, reject) {
-      const promises = self.layers.map(function(layer) {
-        return layer.wrap.getLayer();
-      })
-      Promise.all(promises).then(function() { //SILME 20210419
-        //Tot ok, no fem res
-      }, function(reject) {
-        //si entram aquí és perque un servei (o més d'un) han fallat.
-
-        //lo que fem és treure les capes que no tenen capabilities associat, o sigui,
-        //que la promesa no s'ha complert
-
-        //la resa de codi es igual que si no hagués fallat cap promise
-        //hauriem de veure si es pot eliminar codi redundant o fer una funció que s'executi després, hagi fallat o no (HERE)
-        for (var i = 0; i < self.layers.length; i++) {
-          if (self.layers[i].capabilities == undefined) {
-            // self.map.toast(self.getLocaleString('errorCarregarCapa') + self.layers[i].title, {
-            //   type: TC.Consts.msgType.ERROR
-            // });
-            console.log("Cannot load layer: " + self.layers[i].title);
-            self.layers.splice(i, 1);
-            i--;
-          }
-
-        }
-      }).then(function() {
-        //Si totes les capes estan OK passem aquí directament, sino eliminem les que no estàn bé de l'arbre de capes i després passem aquí
-        var layerTrees = self.layers.map(function(layer) {
-          var result = layer.getTree();
-          layer.tree = result; //mv
-          var makeNodeVisible = function makeNodeVisible(node) {
-            var result = false;
-            var childrenVisible = false;
-            for (var i = 0; i < node.children.length; i++) {
-              if (makeNodeVisible(node.children[i])) {
-                childrenVisible = true;
-              }
-            }
-            if (node.hasOwnProperty('isVisible')) {
-              node.isVisible = (!layer.names || !layer.names.length) || childrenVisible || node.isVisible;
-            }
-            return node.isVisible;
-          };
-          makeNodeVisible(result);
-          return result;
-        });
-
-        layerTrees.forEach(function(item) {
-          var layer = self.layers.find(function(layer) {
-            return item.title === layer.title
-          });
-        });
-
-        realTree.children = new Array();
-
-        //TC.control.LayerCatalog.prototype.render.call(self, function () {
-        renderParent.call(self, function() {
-
-          const getLayerTree = function(layer) {
-            if (layer.tree == null) {
-              for (var i = 0; i < layer.children.length; i++) {
-                if (layer.children[i].tree == null) {
-                  layer.children[i] = getLayerTree(layer.children[i])
-                } else {
-                  var resultChild = layer.children[i].getTree();
-                  resultChild.id = layer.children[i].id;
-                  var makeNodeVisible = function makeNodeVisible(node) {
-                    var result = false;
-                    var childrenVisible = false;
-                    for (var k = 0; k < node.children.length; k++) {
-                      if (makeNodeVisible(node.children[k])) {
-                        childrenVisible = true;
-                      }
-                      //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
-                    }
-                    if (node.hasOwnProperty('isVisible')) {
-                      node.isVisible = (!layer.children[i].names || !layer.children[i].names.length) || childrenVisible || node.isVisible;
-                    }
-                    return node.isVisible;
-                  };
-                  makeNodeVisible(resultChild)
-                  layer.children[i] = resultChild;
-                }
-              }
-              return layer;
-            } else {
-              var result = layer.getTree();
-              var makeNodeVisible = function makeNodeVisible(node) {
-                var result = false;
-                var childrenVisible = false;
-                for (var i = 0; i < node.children.length; i++) {
-                  if (makeNodeVisible(node.children[i])) {
-                    childrenVisible = true;
-                  }
-                  //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
-                }
-                if (node.hasOwnProperty('isVisible')) {
-                  node.isVisible = (!layer.names || !layer.names.length) || childrenVisible || node.isVisible;
-                }
-                return node.isVisible;
-              };
-              makeNodeVisible(result);
-            }
-            //result.parentGroupNode = layer.parentGroupNode;
-            return result;
-          };
-
-          // TODO DELETE si sa funció modificada dia 20231017 funciona
-          //           //const getLayerTree = function (layer) {
-          //           //    if (layer.tree == null) {
-          //        for (var i = 0; i < layer.children.length; i++) {
-          //            var resultChild = layer.children[i].getTree();
-          //            resultChild.id = layer.children[i].id;
-          //            var makeNodeVisible = function makeNodeVisible(node) {
-          //                var result = false;
-          //                var childrenVisible = false;
-          //                for (var k = 0; k < node.children.length; k++) {
-          //                    if (makeNodeVisible(node.children[k])) {
-          //                        childrenVisible = true;
-          //                    }
-          //                    //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
-          //                }
-          //                if (node.hasOwnProperty('isVisible')) {
-          //                    node.isVisible = (!layer.children[i].names || !layer.children[i].names.length) || childrenVisible || node.isVisible;
-          //                }
-          //                return node.isVisible;
-          //            };
-          //            makeNodeVisible(resultChild)
-          //            layer.children[i] = resultChild;
-          //        }
-          //        return layer;
-          //    } else {
-          //        var result = layer.getTree();
-          //        var makeNodeVisible = function makeNodeVisible(node) {
-          //            var result = false;
-          //            var childrenVisible = false;
-          //            for (var i = 0; i < node.children.length; i++) {
-          //                if (makeNodeVisible(node.children[i])) {
-          //                    childrenVisible = true;
-          //                }
-          //                //node.children[i].parentGroupNode = layer.parentGroupNode;//Silme
-          //            }
-          //            if (node.hasOwnProperty('isVisible')) {
-          //                node.isVisible = (!layer.names || !layer.names.length) || childrenVisible || node.isVisible;
-          //            }
-          //            return node.isVisible;
-          //        };
-          //        makeNodeVisible(result);
-          //    }
-          //    //result.parentGroupNode = layer.parentGroupNode;
-          //    return result;
-          //};
-
-          //Passa per aquí cada vegada que renderitza un control, i volem que carregui el nostre arbre quan tots hagin acabat de carregar
-          //if ($('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-loading-node').length == 0 && $('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-node-silme').length != 0) {
-
-          if (!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-loading-node') && !!self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-node')) {
-            //if ($('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-loading-node').length == 0 && $('.tc-ctl-lcat-tree').find('.tc-ctl-lcat-node').length != 0) {
-            var catalog = SITNA.Cfg.controls.layerCatalogSilme;
-            // TODO - REFACTORITZAR ⬇️
-            // - Mirar d'agrupar funcions
-            // - Posar breaks allà on es puguin posar
-            // Per a cada capa...
-            for (var i = 0; i < treeLayers.length; i++) {
-              AfageixTotsElsParesQueNoShaginAfegit(treeLayers[i].parentGroupNode, treeLayers[i]);
-            }
-
-            self.div.querySelector('.tc-ctl-lcat-tree').querySelector('.tc-ctl-lcat-branch').innerHTML = "";
-
-            for (var i = 0; i < realTree.children.length; i++) {
-              //Hem d'agafar lo mateix que al LayerCatalog self.getLayerTree(self.layers[0])
-              selfClass.getRenderedHtml(self.CLASS + '-node', getLayerTree(realTree.children[i]), function(html) {
-                var template = document.createElement('template');
-                template.innerHTML = html;
-
-                var newChild = template.content ? template.content.firstChild : template.firstChild;
-
-                if (self.div.querySelector('#' + newChild.id) == null) //no existeix
-                {
-                  self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
-                }
-
-                //for (var i = 0; i < newChild.children[2].children.length; i++) {
-                //    //var layer = self.getLayer(newChild.children[2].children[i].id);
-                //    var layer = self.getLayer(newChild.children[2].children[i].id);
-                //    addLogicToNode.call(self, newChild.children[2].children[i], layer);
-                //}
-
-                addLogicToAllLayersOfNode(newChild.children[2].children, self);
-
-                addLogicToTreeGroup.call(self, newChild);
-              });
-            }
-
-            //self.div.querySelector('.tc-ctl-lcat-branch').children[0].classList.remove(TC.Consts.classes.COLLAPSED);//Desplegam el primer node
-            //self.div.querySelector('.tc-ctl-lcat-branch').querySelector('.tc-ctl-lcat-branch').classList.remove(TC.Consts.classes.COLLAPSED);
-
-            callback(self.sourceLayers[self.sourceLayers.map(function(l) {
-              return l.id
-            }).indexOf(this.id)]);
-          }
-
-          resolve();
-        });
-
-        const AfageixTotsElsParesQueNoShaginAfegit = function(capaActualPare, capaActual) {
-          var catalog = silmeLayerCatalog.options;
-
-          // Miram dins cada node...
-          for (var k = 0; k < catalog.layerTreeGroups.length; k++) {
-            var nodeActual = catalog.layerTreeGroups[k];
-            var nodePare = nodeActual.parentNode;
-
-            if (nodeActual.id == capaActualPare) {
-              // Si el nodeActual depen d'un nodePare
-              if (nodePare != "" &&
-                nodePare != null &&
-                nodeActual.id != nodePare) {
-
-                // Si el nodePare no és dins el realTree
-                if (!cercaIdDinsArray(realTree.children, nodePare)) {
-
-                  //// Busquem el nodePare dins l'array de nodes
-                  nodePareAAfegir = AfageixTotsElsParesQueNoShaginAfegit(nodeActual.parentNode);
-
-                  if (nodePareAAfegir) {
-                    realTree.children.push(nodePareAAfegir);
-                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children = new Array();
-                    realTree.children.filter(e => e.id === nodePareAAfegir.id)[0].children.push(nodeActual);
-                  } else {
-                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
-                    if (!realNodeActual.children) realNodeActual.children = [];
-                    realNodeActual.children.push(nodeActual);
-                  }
-                } else {
-                  // Si el nodePare ja és dins el realTree
-                  // Si el nodeActual ja és dins el realTree, no fem res
-                  // Si el nodeActual NO ES dins el realTree, afegim el nodeActual al nodePare
-                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
-                    var realNodeActual = cercaIdDinsArray(realTree.children, nodePare);
-                    realNodeActual.children.push(nodeActual);
-                  }
-                }
-
-                // Si el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
-                if (capaActual) {
-                  if (!cercaIdDinsArray(realTree.children, nodeActual.id) &&
-                    nodeActual.id != nodePare) {
-                    capaActual.children = capaActual.getTree().children;
-                    // Per cercar el nodeActual hem de cercar dins els nodesFills de tots els nodes
-                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
-                    realNodeActual.children = [];
-                    realNodeActual.children.push(capaActual);
-                  } else {
-                    // Quan el nodeActual ja és dins el nodePare, afegim el contingut de la capaActual dins el nodeActual
-                    capaActual.children = capaActual.getTree().children;
-                    var realNodeActual = cercaIdDinsArray(realTree.children, nodeActual.id);
-                    if (!realNodeActual.children) realNodeActual.children = [];
-                    realNodeActual.children.push(capaActual);
-                  }
-                }
-              } else {
-                // Si el nodeActual NO depen d'un nodePare
-                if (capaActual) {
-                  if (!cercaIdDinsArray(realTree.children, nodeActual.id)) {
-                    realTree.children.push(nodeActual);
-                    capaActual.children = capaActual.getTree().children;
-                    realTree.children.filter(e => e.id === nodeActual.id)[0].children = [];
-                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
-                  } else {
-                    capaActual.children = capaActual.getTree().children;
-                    realTree.children.filter(e => e.id === nodeActual.id)[0].children.push(capaActual);
-                  }
-                } else {
-                  return nodeActual;
-                }
-              }
-            }
-          }
-        }
-
-        // Event botó projectes
-        self.div.addEventListener('click', TC.EventTarget.listenerBySelector('#canvi-projecte-silme', function(e) {
-          const projPane = self.div.querySelector('#projects');
-
-          if (window.innerWidth < 760) {
-            document.querySelector('#tools-panel').classList.toggle('right-collapsed');
-            document.querySelector('#silme-panel').classList.remove('left-opacity');
-            document.querySelector('.tc-ctl-nav-home').classList.remove(TC.Consts.classes.HIDDEN);
-            document.querySelector('.tc-ctl-sv-btn').classList.remove(TC.Consts.classes.HIDDEN);
-            if (document.querySelector('.tc-ctl-sb'))
-              document.querySelector('.tc-ctl-sb').style.visibility = 'visible';
-            if (document.querySelector('.tc-ctl-scl'))
-              document.querySelector('.tc-ctl-scl').style.visibility = 'visible';
-          }
-
-          projPane.classList.toggle(TC.Consts.classes.HIDDEN);
-          projPane.querySelector('.' + self.CLASS + '-proj-close').addEventListener(TC.Consts.event.CLICK, function() {
-            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
-            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
-              item.classList.remove(self.CLASS + '-proj-selected');
-            });
-          });
-
-          projPane.querySelector('.' + self.CLASS + '-proj-accept').addEventListener('click', function() {
-            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
-            const selectedProject = projPane.querySelector('.' + self.CLASS + '-proj-selected');
-            if (selectedProject) {
-              const id = parseInt(selectedProject.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
-              if (id !== window.layerCatalogsSilmeForModal.currentCatalog) {
-                window.layerCatalogsSilmeForModal.currentCatalog = id;
-                window.abstractMapObject.updateCatalog();
-              }
-            }
-          });
-
-          projPane.querySelector('.' + self.CLASS + '-proj-cancel').addEventListener('click', function() {
-            self.div.querySelector('#projects').classList.add(TC.Consts.classes.HIDDEN);
-            projPane.querySelectorAll('.' + self.CLASS + '-proj-selected').forEach(item => {
-              item.classList.remove(self.CLASS + '-proj-selected');
-            });
-          });
-
-          // Extreure tots els elements de catàlegs dins de tc-ctl-lcat-proj-child i afegir un listener a cadascun
-          var catalogsList = projPane.querySelectorAll('.' + self.CLASS + '-proj-catalog');
-          catalogsList.forEach(catalogElement => {
-            const id = parseInt(catalogElement.querySelector('.' + self.CLASS + '-proj-catalog-id').value);
-            if (id === window.layerCatalogsSilmeForModal.currentCatalog)
-              catalogElement.classList.add(self.CLASS + '-proj-selected');
-
-            // Afegir listener als catàlegs
-            catalogElement.addEventListener('click', function() {
-              projPane.querySelector('.' + self.CLASS + '-proj-selected').classList.remove(self.CLASS + '-proj-selected');
-              catalogElement.classList.add(self.CLASS + '-proj-selected');
-            });
-          });
-        }));
-
-        // Renderitzar l'html de la modal amb la llista de catàlegs
-        selfClass = self;
-        self.getRenderedHtml(self.CLASS + '-proj', ({
-          "catalogs": window.layerCatalogsSilmeForModal.catalogs
-        })).then(function(out) {
-          var template = document.createElement('template');
-          template.innerHTML = out;
-          if (self.div.querySelector('.tc-ctl-lcat-proj') != null)
-            self.div.querySelector('.tc-ctl-lcat-proj').innerHTML = template.innerHTML;
-        }).catch(function(err) {
-          TC.error(err);
-        });
-
-        // 2 Capes de fons
-        // if (true) { // SILME - posam fals perque no volem dos mapes de fons
-        //   if (treeLayers.length > 0) {
-        //     if (typeof secondBaseLayer != 'undefined') {
-        //       if (secondBaseLayer == false) {
-        //         addSecondBaseLayer();
-        //         setSpan1();
-        //         setSpan2();
-        //         selectB1();
-        //         document.querySelector('#rangeTransparency').addEventListener('input', function() {
-        //           silmeMap.map.getLayers().array_[1].setOpacity(this.value / 100);
-        //           silmeMap.map.render();
-        //         });
-        //       }
-        //     }
-        //   }
-        // }
-      }, function() {
-
-      }).then(function() {
-
-        if (treeLayers.length > 0)
-          layerCatalogCarregat();
-
-      });
-
-
-      treeLayers = self.layers;
-    }));
-  };
 
   const renderParent = function(callback) {
     const self = this;
@@ -1463,144 +1605,9 @@ if (!TC.control.LayerCatalog) {
     }));
   };
 
-  TC.control.LayerCatalogSilme.prototype.addLayer = function(layer) {
-    const self = this;
-    return new Promise(function(resolve, reject) {
-      var fromLayerCatalog = [];
-
-      if (self.options.layers && self.options.layers.length) {
-        fromLayerCatalog = self.options.layers.filter(function(l) {
-          var getMap = TC.Util.reqGetMapOnCapabilities(l.url);
-          return getMap && getMap.replace(TC.Util.regex.PROTOCOL) == layer.url.replace(TC.Util.regex.PROTOCOL);
-        });
-      }
-
-      if (fromLayerCatalog.length == 0)
-        fromLayerCatalog = self.layers.filter(function(l) {
-          return l.url.replace(TC.Util.regex.PROTOCOL) == layer.url.replace(TC.Util.regex.PROTOCOL);
-        });
-
-      if (fromLayerCatalog.length == 0) {
-        self.layers.push(layer);
-        layer.getCapabilitiesPromise().then(function() {
-          layer.compatibleLayers = layer.wrap.getCompatibleLayers(self.map.crs);
-          layer.title = layer.title || layer.wrap.getServiceTitle();
-
-          if (!(SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children)) {
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children = new Array();
-            layer.children = layer.getTree().children
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer)
-          } else {
-            layer.children = layer.getTree().children
-            SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0].children.push(layer);
-          }
-
-
-
-          //self.renderBranch(layer, function () {
-          //    resolve(); //ver linea 55 y por ahí
-          //});
-          TC.control.LayerCatalog.prototype.getRenderedHtml.call(self, 'tc-ctl-lcat-node', SITNA.Cfg.controls.layerCatalogSilme.layerTreeGroups.filter(e => e.id === "node99")[0], function(html) {
-            var template = document.createElement('template');
-            template.innerHTML = html;
-
-            var newChild = template.content ? template.content.firstChild : template.firstChild;
-
-            if (self.div.querySelector('#' + newChild.id) != null) //Silme
-            {
-              self.div.querySelector('#' + newChild.id).remove() //Silme - eliminem l'arbre anterior
-            }
-
-            //silme if (self.div.querySelector('#' + newChild.id) == null)//no existeix
-            //{
-            self.div.querySelector('.' + self.CLASS + '-branch').appendChild(newChild);
-            //}
-
-            //for (var i = 0; i < newChild.children[2].children.length; i++) {
-            //    //var layer = self.getLayer(newChild.children[2].children[i].id);
-            //    var layer = self.getLayer(newChild.children[2].children[i].id);
-            //    addLogicToNode.call(self, newChild.children[2].children[i], layer);
-            //}
-
-            addLogicToAllLayersOfNode(newChild.children[2].children, self);
-
-            addLogicToTreeGroup.call(self, newChild);
-          });
-        });
-      } else {
-        resolve();
-      }
-    }).then(function() {
-      //mv 20210527 açò ho hem afegit per que carregui la capa corresponent després d'afegir un nou servei
-      //a l'arbre de capes des del control localitzar (trams i fites de camí de cavalls, però podrien ser altres)
-      if (pendingLayer) {
-        silmeAddLayer(pendingLayer)
-        pendingLayer = null;
-      }
-    });
-  };
-
-  TC.control.LayerCatalogSilme.prototype.loaded = function() {
-    return this._readyPromise;
-  };
-
-  TC.control.LayerCatalogSilme.prototype.hideLayerInfo = function() {
-    var self = this;
-    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
-      btn.classList.remove(TC.Consts.classes.CHECKED);
-    });
-    const infoPanel = self.div.querySelector('.' + self.CLASS + '-info');
-    delete infoPanel.dataset.serviceId;
-    delete infoPanel.dataset.layerName;
-    infoPanel.classList.add(TC.Consts.classes.HIDDEN);
-  };
-
-  TC.control.LayerCatalogSilme.prototype.hideSearchLayerInfo = function() {
-    var self = this;
-    self.div.querySelectorAll('.' + self.CLASS + '-btn-info, .' + self.CLASS + '-search-btn-info').forEach(function(btn) {
-      btn.checked = false;
-    });
-    const infoPanel = self.div.querySelector('.' + self.CLASS + '-info');
-    delete infoPanel.dataset.serviceId;
-    delete infoPanel.dataset.layerName;
-    infoPanel.classList.add(TC.Consts.classes.HIDDEN);
-  };
-
-  TC.control.LayerCatalogSilme.prototype.getLayerNodes = function(layer) {
-    const self = this;
-    const result = [];
-    const rootNode = self.getLayerRootNode(layer);
-    if (rootNode) {
-      for (var i = 0; i < layer.names.length; i++) {
-        const liLayer = rootNode.querySelector('li[data-layer-name="' + layer.names[i] + '"]');
-        if (!liLayer) {
-          continue;
-        }
-        result.push(liLayer);
-        liLayer.querySelectorAll('li').forEach(function(li) {
-          result.push(li);
-        });
-      }
-    }
-    return result;
-  };
-
-  TC.control.LayerCatalogSilme.prototype.getLayerRootNode = function(layer) {
-    const self = this;
-    var result = null;
-    if (!layer.isBase) {
-      var url = layer.options.url;
-      if (self._roots) {
-        self._roots.forEach(function (li) {
-          const lyr = self.getLayer(li.dataset.layerId);
-          if (lyr && lyr.type === layer.type && lyr.options.url.toLowerCase() === url.toLowerCase()) {
-            if (layer.names.every((name) => li.querySelector(`li[data-layer-name="${name}"]`))) result = li;
-          }
-        });
-      }
-    }
-    return result;
-  };
+  // ===========================================================================
+  // Silme
+  // ===========================================================================
 
   function CercaLayerDinsCapabilities(e) {
     // quan arrencam visor el capabilites està buit
@@ -1611,6 +1618,7 @@ if (!TC.control.LayerCatalog) {
     }
 
   }
+
 
   function cercaDinsAquestNode(node, nomCerca) {
     if (node.Name != null) {
@@ -1630,6 +1638,7 @@ if (!TC.control.LayerCatalog) {
     return false;
   }
 
+
   function agafaKeywords(node) {
     // Toastr
     var keywordList = node.KeywordList;
@@ -1648,6 +1657,7 @@ if (!TC.control.LayerCatalog) {
     }
   }
 
+
   function cercaIdDinsArray(array, id) {
     for (var a = 0; a < array.length; a++) {
       // Si l'array té fills mirem si el node que buscam està dins els fills
@@ -1661,6 +1671,7 @@ if (!TC.control.LayerCatalog) {
     return null;
   }
 
+
   function addLogicToAllLayersOfNode(node, control) {
     for (var i = 0; i < node.length; i++) {
       if (node[i].id.includes('node')) {
@@ -1671,4 +1682,5 @@ if (!TC.control.LayerCatalog) {
       }
     }
   }
+
 })();

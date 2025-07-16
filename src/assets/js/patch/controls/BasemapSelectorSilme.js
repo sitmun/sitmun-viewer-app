@@ -4,17 +4,108 @@ if (!TC.control.BasemapSelector) {
   TC.syncLoadJS(TC.apiLocation + 'TC/control/BasemapSelector');
 }
 
-TC.control.BasemapSelectorSilme = function () {
-  var _ctl = this;
+// =============================================================================
+// Constructor
+// =============================================================================
 
+TC.control.BasemapSelectorSilme = function () {
+  const _ctl = this;
   TC.control.BasemapSelector.apply(_ctl, arguments);
 }
 
 TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
 
+// =============================================================================
+// Definición de métodos para esta clase
+// =============================================================================
 
 (function () {
-  var ctlProto = TC.control.BasemapSelectorSilme.prototype;
+  const ctlProto = TC.control.BasemapSelectorSilme.prototype;
+
+  // Atributos
+  ctlProto.CLASS = 'tc-ctl-bms';
+
+  // ===========================================================================
+  // Función de renderizado
+  // ===========================================================================
+
+  ctlProto.render = async function (callback) {
+    const _this = this;
+    const result = await TC.control.BasemapSelector.prototype.render.call(_this, callback, _this.options);
+
+    _this.getRenderedHtml(_this.CLASS + '-dialog', null, function (html) {
+      _this._dialogDiv.innerHTML = html;
+
+      if (_this.options.dialogMore) {
+        const dialog = _this._dialogDiv.querySelector('.' + _this.CLASS + '-more-dialog');
+
+        dialog.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=radio]', function (e) {
+          changeInputRadioBaseMap.call(_this, e, function (close) {
+            if (close) {
+              TC.Util.closeModal();
+            }
+          });
+
+          e.stopPropagation();
+        }));
+      }
+    });
+
+    return result;
+  };
+
+
+  ctlProto.loadTemplates = async function () {
+    const _this = this;
+    const result = await TC.control.BasemapSelector.prototype.loadTemplates.call(_this);
+    _this.template[_this.CLASS] = "assets/js/patch/templates/BasemapSelectorSilme.hbs";
+  };
+
+  // ===========================================================================
+  // Función de registro del componente
+  // ===========================================================================
+
+  ctlProto.register = async function (map) {
+    const _this = this;
+    const result = await TC.control.BasemapSelector.prototype.register.call(_this, map);
+
+    if (_this.options.dialogMore) {
+      map.on(TC.Consts.event.VIEWCHANGE, function () {
+        _this._getMoreBaseLayers();
+      });
+    }
+
+    map.on(TC.Consts.event.BASELAYERCHANGE + ' ' + TC.Consts.event.PROJECTIONCHANGE + ' ' + TC.Consts.event.VIEWCHANGE, function (e) {
+      _this.update(_this.div, e.layer);
+    });
+
+    _this.div.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=radio]', function (e) {
+
+      // Start Silme
+      if (document.querySelector('#tools-panel').classList.contains('right-collapsed')) {
+        document.querySelector('#silme-panel').classList.remove('left-opacity');
+        document.querySelector('.tc-ctl-nav-home').classList.remove('left-opacity');
+        document.querySelector('.tc-ctl-nav-home').classList.remove('tc-hidden');
+        document.querySelector('.tc-ctl-sv-btn').classList.remove('left-opacity');
+        document.querySelector('.tc-ctl-sv-btn').classList.remove('tc-hidden');
+      }
+      // End Silme
+
+      if (e.target.value === "moreLayers") {
+        _this.showMoreLayersDialog();
+      } else {
+        changeInputRadioBaseMap.call(_this, e);
+      }
+
+      e.stopPropagation();
+    }));
+
+    return result;
+  };
+
+  // ===========================================================================
+  // Funciones públicas sobreescritas
+  // ===========================================================================
 
   const getClosestParent = function (elm, selector) {
     while (elm && !elm.matches(selector)) {
@@ -85,9 +176,10 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
             });
           }
           else {
-            //=========================================================================
-            //Silme: Canvi de capa de fons automàtic si només hi ha un SRS disponible
-            //=========================================================================
+
+            // Start Silme
+            // - Canvi de capa de fons automàtic si només hi ha un SRS disponible
+
             self.map.loadProjections({
               crsList: self.map.getCompatibleCRS({
                 layers: self.map.workLayers.concat(dialogOptions.layer),
@@ -95,7 +187,6 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
               }),
               orderBy: 'name'
             }).then(function (projList) {
-              //alert(projList.length);
               if (projList.length == 1) {
                 layer = dialogOptions.layer;
                 if (layer) {
@@ -122,13 +213,8 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
                 self.showProjectionChangeDialog(dialogOptions);
               }
             });
-            //===============================
-
-
-            //self.showProjectionChangeDialog(dialogOptions);
+            // End Silme
           }
-
-          //layer.getCompatibleCRS({ normalized: true });
           flagToCallback = false;
         }
 
@@ -151,103 +237,4 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
       callback(flagToCallback);
     }
   };
-
-  ctlProto.register = function (map) {
-    const self = this;
-
-
-    self.template[self.CLASS] = "assets/js/patch/templates/BasemapSelectorSilme.hbs";
-    //self.template[self.CLASS] = "templates/BasemapSelectorSilme.hbs";
-
-    const result = TC.control.MapContents.prototype.register.call(self, map);
-
-    if (self.options.dialogMore) {
-      map.on(TC.Consts.event.VIEWCHANGE, function () {
-        self._getMoreBaseLayers();
-      });
-    }
-
-    map.on(TC.Consts.event.BASELAYERCHANGE + ' ' + TC.Consts.event.PROJECTIONCHANGE + ' ' + TC.Consts.event.VIEWCHANGE, function (e) {
-      self.update(self.div, e.layer);
-    });
-
-
-    self.div.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=radio]', function (e) {
-
-      //Silme
-      if (document.querySelector('#tools-panel').classList.contains('right-collapsed')) {
-        document.querySelector('#silme-panel').classList.remove('left-opacity');
-        document.querySelector('.tc-ctl-nav-home').classList.remove('left-opacity');
-        document.querySelector('.tc-ctl-nav-home').classList.remove('tc-hidden');
-        document.querySelector('.tc-ctl-sv-btn').classList.remove('left-opacity');
-        document.querySelector('.tc-ctl-sv-btn').classList.remove('tc-hidden');
-      }
-
-      //if ($("#tools-panel").hasClass("right-collapsed")) {
-      //    $('#silme-panel').removeClass("left-opacity");
-      //    $('.tc-ctl-nav-home').removeClass("left-opacity");
-      //    $('.tc-ctl-nav-home').removeClass("tc-hidden");
-      //    $('.tc-ctl-sv-btn').removeClass("left-opacity");
-      //    $('.tc-ctl-sv-btn').removeClass("tc-hidden");
-      //}
-      //End Silme
-
-      if (e.target.value === "moreLayers") {
-        self.showMoreLayersDialog();
-      } else {
-        changeInputRadioBaseMap.call(self, e);
-      }
-
-      e.stopPropagation();
-    }));
-
-    return result;
-  }
-
-  ctlProto.render = function (callback) {
-    const self = this;
-    const result = TC.control.MapContents.prototype.render.call(self, callback, self.options);
-
-    self.getRenderedHtml(self.CLASS + '-dialog', null, function (html) {
-      self._dialogDiv.innerHTML = html;
-
-      if (self.options.dialogMore) {
-        const dialog = self._dialogDiv.querySelector('.' + self.CLASS + '-more-dialog');
-
-        dialog.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=radio]', function (e) {
-          changeInputRadioBaseMap.call(self, e, function (close) {
-            if (close) {
-              TC.Util.closeModal();
-            }
-          });
-
-          e.stopPropagation();
-        }));
-      }
-    });
-
-    //var parser = new ol.format.WMTSCapabilities();
-    //var urlWMTS = "https://api.mapbox.com/styles/v1/mvinent/ckpo1dj8r10yn17qxju1ud1s2/wmts?access_token=pk.eyJ1IjoibXZpbmVudCIsImEiOiJja3BvMTl2cmowM3A0MndsbTlnams4ZzcwIn0.fhPEw76erq0T3Z_p8frQFw";
-    //fetch(urlWMTS).then(function (response) {
-    //    return response.text();
-    //}).then(function (text) {
-    //    var result = parser.read(text);
-    //    var options = ol.source.WMTS.optionsFromCapabilities(result, {
-    //        layer: 'ckpo1dj8r10yn17qxju1ud1s2',
-    //        matrixSet: 'GoogleMapsCompatible'
-    //    });
-
-    //    layerMapBox_Navigation = new ol.layer.Tile({
-    //        opacity: 1,
-    //        type: 'base',
-    //        title: 'Navigation',
-    //        name: 'layerMapBox_Navigation',
-    //        visible: true,
-    //        source: new ol.source.WMTS(options)
-    //    });
-    //});
-
-    return result;
-  }
-
 })();

@@ -1,19 +1,31 @@
 const originalFnc = TC.UI.autocomplete
 
+// =============================================================================
+// Funciones UI
+// =============================================================================
+
+/**
+ * TODO: Documentar
+ * @param method
+ */
 TC.UI.autocomplete = function (method) {
-
     if (typeof method === 'object' && method.target.classList.contains("tc-ctl-wfsquery-list")) {
-
         method.minLength = 1;
-
     }
-
     originalFnc.call(this, method);
-
 };
 
-//Devuelve un array de subLayers cuyo nombre o descripción contenga el texto indicado
-//case insensitive
+// =============================================================================
+// Capas y Rasters
+// =============================================================================
+
+/**
+ * TODO: Documentar
+ * Devuelve un array de subLayers cuyo nombre o descripción contenga el texto indicado
+ * (case insensitive).
+ * @param text
+ * @returns {*|*[]}
+ */
 TC.layer.Raster.prototype.searchSubLayers = function (text) {
     if (!this.patternFn) {
         this.patternFn = function (t) {
@@ -42,7 +54,7 @@ TC.layer.Raster.prototype.searchSubLayers = function (text) {
             layers = this.lastMatches;
         }
         else {
-            /*si se ha definido el parámetro layers de esta capa en configuraci\u00f3n filtro las capas del capability para que busque solo en las capas que est\u00e9n en 
+            /*si se ha definido el parámetro layers de esta capa en configuraci\u00f3n filtro las capas del capability para que busque solo en las capas que est\u00e9n en
             configuraci\u00f3n y sus hijas*/
             if (self.availableNames && self.availableNames.length > 0) {
                 layers = [];
@@ -158,6 +170,12 @@ TC.layer.Raster.prototype.searchSubLayers = function (text) {
     }
 };
 
+
+/**
+ * TODO: Documentar
+ * @param name
+ * @returns {{}}
+ */
 TC.wrap.layer.Raster.prototype.getInfo = function (name) {
     var self = this;
     var result = {};
@@ -301,7 +319,26 @@ TC.wrap.layer.Raster.prototype.getInfo = function (name) {
     return result;
 };
 
-// Second base map
+// =============================================================================
+// Control de Dibujo y Medición
+// =============================================================================
+
+/**
+ * Desde la versión 4.0, ya no podemos acceder al _textBtn porque ahora es un
+ * atributo privado, por lo que se implementa este método para hacer un 'by-pass'.
+ * @param active Valor booleano que indica si el botón de añadir texto sobre una
+ *               feature debería estar activo o no.
+ */
+TC.control.Modify.prototype.setLabelableState = function (active) {
+  const _this = this;
+  const textBtn = _this.querySelector('.' + _this.CLASS + '-btn-text');
+  textBtn.disabled = !active;
+};
+
+// =============================================================================
+// Selector de capas base
+// =============================================================================
+
 var basemapSelectorSilme = true;
 if (basemapSelectorSilme) {
     /*
@@ -319,7 +356,7 @@ if (basemapSelectorSilme) {
             }
         }
 
-        //Silme: secondBaseLayer 
+        //Silme: secondBaseLayer
         //Incrementen idx en 1 per a tenir en compte la segona capa de fons;
         if (secondBaseLayer == true) {
             try {
@@ -404,7 +441,7 @@ if (basemapSelectorSilme) {
         var workingMap = TC.Map.get(document.querySelector('.tc-map'));
         return new Promise(function (resolve, _reject) {
             var setLayer = async function (curBl) {
-                // GLS: si se llega después de una animación el valor de self.parent.getBaseLayer() ya es el definitivo y no el actual lo que provoca efectos indeseados. 
+                // GLS: si se llega después de una animación el valor de self.parent.getBaseLayer() ya es el definitivo y no el actual lo que provoca efectos indeseados.
                 // ir a línea 1313: paso como parámetro el baseLayer actual en el caso de animación.
                 curBl = curBl || self.parent.getBaseLayer();
                 if (curBl) {
@@ -453,7 +490,7 @@ if (basemapSelectorSilme) {
                           if (element._wrap.parent.isRaster()) {
                             firstLayer = element;
                             break;
-                          } 
+                          }
                         }
 
                         if (firstLayer._wrap.parent.isRaster() && TC.Map.get(document.querySelector('.tc-map')).getLayer("second-1").wrap.layer._wrap.parent.isRaster()) {
@@ -774,80 +811,93 @@ if (basemapSelectorSilme) {
     }
 }
 
-// END Second base map
+// =============================================================================
+// Utils
+// =============================================================================
 
-const hasOwn = {}.hasOwnProperty;
+/**
+ * TODO: Documentar
+ * @param canvases
+ * @returns {HTMLCanvasElement}
+ */
+TC.Util.mergeCanvases = function (canvases) {
+  const rects = canvases.map(c => c.getBoundingClientRect());
+  const bbox = rects.reduce(function (prev, rect) {
 
-TC.Util.isPlainObject = function (obj) {
-    // Not plain objects:
-    // - Any object or value whose internal [[Class]] property is not "[object Object]"
-    // - DOM nodes
-    // - window
-    try {//Silme
-        if (typeof obj !== 'object' || obj.nodeType || obj.window === obj) {
-            return false;
-        }
+    return [
+      Math.min(prev[0], rect.left),
+      Math.min(prev[1], rect.top),
+      Math.max(prev[2], rect.right),
+      Math.max(prev[3], rect.bottom)
+    ];
 
-        if (obj.constructor &&
-            !hasOwn.call(obj.constructor.prototype, 'isPrototypeOf')) {
-            return false;
-        }
+  }, [
+    Number.POSITIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    Number.NEGATIVE_INFINITY
+  ]);
 
-        // If the function hasn't returned already, we're confident that
-        // |obj| is a plain object, created by {} or constructed with new Object
-        return true;
-    } catch (ex)//Silme
-    {
-        return false;
-    }//Silme
+  const left = bbox[0];
+  const top = bbox[1];
+
+  //create a new canvas
+  const newCanvas = document.createElement('canvas');
+  const context = newCanvas.getContext('2d');
+
+
+  // Set dimensions
+  newCanvas.width = bbox[2] - left;
+  newCanvas.height = bbox[3] - top;
+
+  //apply the old canvases to the new one
+  canvases.forEach(function (canvas, idx) {
+    const rect = rects[idx];
+    const opacity = parseFloat(getComputedStyle(canvas.parentElement).opacity);
+    const translucent = opacity < 1;
+    if (translucent) {
+      context.globalAlpha = opacity;
+    }
+
+    context.drawImage(canvas, rect.left - left, rect.top - top, rect.right - rect.left, rect.bottom - rect.top);
+
+    if (translucent) {
+      context.globalAlpha = 1;
+    }
+  });
+
+  // Return the new canvas
+  return newCanvas;
 };
 
-TC.Util.mergeCanvases = function (canvases) {
-    const rects = canvases.map(c => c.getBoundingClientRect());
-    const bbox = rects.reduce(function (prev, rect) {
 
-        return [
-            Math.min(prev[0], rect.left),
-            Math.min(prev[1], rect.top),
-            Math.max(prev[2], rect.right),
-            Math.max(prev[3], rect.bottom)
-        ];
+/**
+ * TODO: Documentar
+ * @param obj
+ * @returns {boolean}
+ */
+TC.Util.isPlainObject = function (obj) {
+  // Not plain objects:
+  // - Any object or value whose internal [[Class]] property is not "[object Object]"
+  // - DOM nodes
+  // - window
+  try {//Silme
+    if (typeof obj !== 'object' || obj.nodeType || obj.window === obj) {
+      return false;
+    }
 
-    }, [
-        Number.POSITIVE_INFINITY,
-        Number.POSITIVE_INFINITY,
-        Number.NEGATIVE_INFINITY,
-        Number.NEGATIVE_INFINITY
-    ]);
+    const hasOwn = {}.hasOwnProperty;
 
-    const left = bbox[0];
-    const top = bbox[1];
+    if (obj.constructor &&
+      !hasOwn.call(obj.constructor.prototype, 'isPrototypeOf')) {
+      return false;
+    }
 
-    //create a new canvas
-    const newCanvas = document.createElement('canvas');
-    const context = newCanvas.getContext('2d');
-
-
-    //set dimensions
-    newCanvas.width = bbox[2] - left;
-    newCanvas.height = bbox[3] - top;
-
-    //apply the old canvases to the new one
-    canvases.forEach(function (canvas, idx) {
-        const rect = rects[idx];
-        const opacity = parseFloat(getComputedStyle(canvas.parentElement).opacity);
-        const translucent = opacity < 1;
-        if (translucent) {
-            context.globalAlpha = opacity;
-        }
-
-        context.drawImage(canvas, rect.left - left, rect.top - top, rect.right - rect.left, rect.bottom - rect.top);
-
-        if (translucent) {
-            context.globalAlpha = 1;
-        }
-    });
-
-    //return the new canvas
-    return newCanvas;
+    // If the function hasn't returned already, we're confident that
+    // |obj| is a plain object, created by {} or constructed with new Object
+    return true;
+  } catch (ex)//Silme
+  {
+    return false;
+  }//Silme
 };

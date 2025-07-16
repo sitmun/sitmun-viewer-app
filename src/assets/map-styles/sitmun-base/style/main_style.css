@@ -208,10 +208,10 @@ button.tc-ctl-fscreen-btn {
     right: 125px;
 }
 
-    .tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
-        border: solid 2px #333;
-        border-top: 0;
-    }
+.tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
+    border: solid 2px #333;
+    border-top: 0;
+}
 
 .tc-ctl-scl input, .tc-ctl-ss input {
     border: 1px #333 solid;
@@ -224,6 +224,24 @@ button.tc-ctl-fscreen-btn {
     padding: 2px;
     margin-right: 2px;
 }
+
+/* TABS Y RADIOS --------------------------------------*/
+
+sitna-tab:first-of-type {
+  border-top-left-radius: 0.3em;
+  border-bottom-left-radius: 0.3em;
+}
+
+sitna-tab:last-of-type {
+  border-top-right-radius: 0.3em;
+  border-bottom-right-radius: 0.3em;
+}
+
+sitna-tab {
+  border-radius: 0px;
+  border: 1px solid #ccc;
+}
+
 /*-----------------------------------------------------*/
 .slide-panel > h1 {
     background-color: rgba(0, 0, 0, 0.8);
@@ -627,6 +645,7 @@ input.tc-btn-reports {
     border-bottom: 1px solid #eee;
     max-height: 240px;
     overflow: auto;
+    width: auto;
 }
 
 #legend > div {
@@ -688,7 +707,7 @@ span.tc-beta {
     position: inherit;
 }
 
-.tc-ctl-dmm .tc-ctl-mod > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
+.tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
     width: 33%;
     border: 0px;
     margin-left: 1px;
@@ -697,9 +716,17 @@ span.tc-beta {
     margin: 0;
 }
 
-    .tc-ctl-dmm .tc-ctl-mod > button.tc-active {
-        border: 1px solid var(--ide-main-color);
-    }
+.tc-ctl-mod-btn > button {
+  border: 0px;
+  margin-left: 1px;
+  text-indent: -1000vw;
+  border: 1px solid #ccc;
+  margin: 0;
+}
+
+.tc-ctl-dmm .tc-ctl-mod > button.tc-active {
+    border: 1px solid var(--ide-main-color);
+}
 
 .tc-ctl-dmm .tc-ctl-mod-btn-delete {
     border-top-right-radius: 0em;
@@ -732,6 +759,7 @@ span.tc-beta {
 
 .tc-ctl-dmm .tc-ctl-dmm-tool {
     display: block;
+    overflow: unset !important;
 }
 
 .tc-ctl-mod .tc-ctl-btn.tc-ctl-mod-btn-text.tc-active {
@@ -779,6 +807,10 @@ span.tc-beta {
 
 .tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-share-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
     border: 1px solid #ccc;
+}
+
+.tc-ctl-tctr-select sitna-tab {
+    width: calc(50% - 2px); <!-- Para salvar el tamaño del borde en los laterales -->
 }
 
 .tc-ctl-meas-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-share-select label:first-child input[type=radio]:checked ~ span, .tc-ctl-tctr-select label.tc-ctl-tctr-tab:first-child input[type=radio]:checked ~ span {
@@ -1227,7 +1259,7 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
     top: 0.2em
 }
 
-.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:before, 
+.tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:before,
 .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:before {
     color: black;
     font-size: 0.6em;

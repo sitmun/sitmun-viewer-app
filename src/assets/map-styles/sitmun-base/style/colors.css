@@ -167,12 +167,12 @@ li.tc-ctl-legend-node, .tc-ctl-lcat-info, .tc-ctl-lcat-proj {
     color: #000000;
 }
 
-.tc-ctl-dmm .tc-ctl-mod > button, .tc-ctl-dmm-cmd > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
+.tc-ctl-dmm .tc-ctl-mod-btn > button, .tc-ctl-dmm-cmd > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
     background-color: #ffffff;
     color: #666666;
 }
 
-    .tc-ctl-dmm .tc-ctl-mod > button:disabled, .tc-ctl-dmm .tc-ctl-dmm-cmd button:disabled, .tc-ctl-draw .tc-ctl-draw-tools > button:disabled {
+.tc-ctl-dmm .tc-ctl-mod-btn > button:disabled, .tc-ctl-dmm .tc-ctl-dmm-cmd button:disabled, .tc-ctl-draw .tc-ctl-draw-tools > button:disabled {
     background-color: #eeeeee;
     color: #cccccc;
 }
@@ -264,7 +264,7 @@ li.tc-ctl-lcat-search-group button.tc-ctl-lcat-search-btn-info.tc-checked::after
 }
 
 /* .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:hover NOT USING ANYMORE */
-li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, 
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover,
 .tc-ctl-wlm-btn-info:hover {
     background-color: #660000;
 }
@@ -291,4 +291,15 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover,
 .tc-ctl-m-finfo-select input[type=radio]:disabled ~ span {
   background-color: #cccccc;
   border-color: #cccccc;
+}
+
+sitna-tab {
+  color: #666666;
+  background: #f5f5f5;
+}
+
+sitna-tab[selected] {
+  background-color: #ffffff;
+  border-color: var(--ide-main-color);
+  color: var(--ide-main-color);
 }
