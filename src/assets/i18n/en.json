@@ -1,7 +1,6 @@
 {
   "genericPrivateHeader.hi": "Hello",
-  "genericPrivateHeader.logout": "Log out",
-  "genericPrivateHeaders.changeAppOrTerritory": "Change the application or the territory",
+  "loginPage.logoutText": "Log out",
   "loginPage.title": "Log in",
   "loginPage.publicDashboardButton": "Public access",
   "loginPage.usernameText": "User",
@@ -13,6 +12,7 @@
   "loginPage.DNIE": "Access with electronic certificate or national identification system",
   "loginPage.passwordForgotten" : "Forgot password?",
   "loginPage.incorrectLogin": "Incorrect access data",
+  "loginPage.profile": "profile",
   "forgotPasswordPage.title": "Forgot your password ?",
   "forgotPasswordPage.description": "To reset your password, submit your username or your email adress below. An email will be sent to your email address, with instructions how to get access again.",
   "forgotPasswordPage.mailText": "User",
@@ -134,5 +134,6 @@
   "territory.filterSearchResult": "Filter search results",
   "territory.information": "Information",
   "territory.description": "Description",
-  "territory.descriptionMissing": "No description"
+  "territory.descriptionMissing": "No description",
+  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
 }
