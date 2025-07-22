@@ -1,4 +1,4 @@
-import { map, Observable, of, switchMap, tap } from 'rxjs';
+import { map, Observable, of, switchMap } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthenticationService } from '@auth/services/authentication.service';
@@ -8,12 +8,15 @@ import {
   URL_API_I18N_LANGUAGE,
   URL_API_I18N_MESSAGES_LIST
 } from '@api/api-config';
+import { environment } from 'src/environments/environment';
+import { LanguageDTO } from '@ui/util/LanguageHelper';
 
 @Injectable({
   providedIn: 'root'
 })
 export class I18nService {
   messages: any = messages;
+
   private cachedLanguages?: string[];
 
   constructor(
@@ -21,27 +24,22 @@ export class I18nService {
     private authenticationService: AuthenticationService<CustomDetails>
   ) {}
 
-  availableLanguageCodes(): Observable<string[]> {
-    if (this.cachedLanguages != null) {
-      // const clonadoSimple = this.cachedLanguages.map(c => Object.assign({}, c));
-      // return of(clonadoSimple);
-      return of([...this.cachedLanguages]);
-    } else {
-      return this.http
-        .get<string[]>(URL_API_I18N_MESSAGES_LIST)
-        .pipe(tap((languages) => (this.cachedLanguages = languages)));
-    }
+  availableLanguageCodes(): Observable<LanguageDTO[]> {
+    return this.http.get<LanguageDTO[]>(
+      environment.apiUrl + URL_API_I18N_MESSAGES_LIST
+    );
   }
 
   getUserLanguage(): Observable<string> {
     const defaultLanguage$ = this.availableLanguageCodes().pipe(
-      map((languageCodes) => languageCodes[0])
+      map((languages) => languages[0]?.name ?? 'en')
     );
+
     if (this.authenticationService.isLoggedIn()) {
       return this.http.get<LanguageDTO>(URL_API_I18N_LANGUAGE).pipe(
         switchMap((languageDto) => {
-          if (languageDto && languageDto.language) {
-            return of(languageDto.language);
+          if (languageDto && languageDto.name) {
+            return of(languageDto.name);
           } else {
             return defaultLanguage$;
           }
@@ -60,21 +58,16 @@ export class I18nService {
     return !!this.messages[code];
   }
 
-  getMessage(code: string, args?: any[]) {
+  getMessage(code: string, args?: any[]): string {
     if (this.hasMessage(code)) {
-      var translated = this.messages[code];
+      let translated = this.messages[code];
       if (args) {
         args.forEach((arg, index) => {
           translated = translated.replace(`{${index}}`, arg);
         });
       }
-
       return translated;
     }
     return `???${code}???`;
   }
-}
-
-export interface LanguageDTO {
-  language: string;
 }

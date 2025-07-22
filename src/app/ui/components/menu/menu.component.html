@@ -1,25 +1,52 @@
-<div class='{{TamanyMenu()}}'>
-  <div class="menu-show">
-    <div class="menu-options">
-      <div class="lang-buttons">
-        <button type="button" (click)="useLanguage('ca')">CA</button>
-        <button type="button" (click)="useLanguage('en')">EN</button>
-        <button type="button" (click)="useLanguage('es')">ES</button>
-      </div>
-      <div class="logged-in-options" *ngIf="isLoggedIn">
-        <h4>{{'menu.hi' | translate}}{{username}}!</h4>
-        <div class="logout">
-          <button class="logout" (click)="logout()">
-            <img src="assets/img/logout.svg" alt='Logout'>
-          </button>
-          <h5>{{'menu.logout' | translate}}</h5>
-        </div>
-      </div>
-      <button type="button" class="menu-button" *ngIf="!isLoggedIn && !isInLogin" (click)="openLoginModal()">{{'menu.login' | translate}}</button>
-      <div *ngIf="isInMap">
-        <button *ngIf="shouldShowChangeApplication" type="button" class="menu-button" (click)="changeApplication()">{{'menu.changeApplication' | translate}}</button>
-        <button *ngIf="shouldShowChangeTerritory" type="button" class="menu-button" (click)="changeTerritory()">{{'menu.changeTerritory' | translate}}</button>
-      </div>
+<div class="auth-popup">
+  <div class="popup-close">
+    <img src="assets/img/Icona-marxar.svg" alt="close-icon" (click)="sendHideEvent()"/>
+  </div>
+
+  <!-- Welcome section-->
+  <div class="popup-welcome">
+    <p *ngIf="isConnected"> {{ 'genericPrivateHeader.hi' | translate }} {{ username }} !</p>
+    <p *ngIf="!isConnected"> {{ 'genericPrivateHeader.hi' | translate }} !</p>
+  </div>
+
+  <!-- Options section -->
+  <div class="popup-options">
+    <div
+      class="lang-select"
+      *ngIf="showSwitchLanguageButton"
+      [ngClass]="showLogoutButton ? 'lang-select-radius' : 'full-radius'">
+
+      <mat-select [ngModel]="currentLang" (selectionChange)="sendLanguageEvent($event)" *ngIf="languages != null">
+        <mat-option *ngFor="let language of languages" [value]="language.shortName">
+          {{ language.name }}
+        </mat-option>
+      </mat-select>
+
+      <span class="lang-arrow"></span>
     </div>
+
+    <button *ngIf="!isConnected" class="login-btn popup-btn btn-wide" (click)="sendLoginEvent()">
+      {{ 'loginPage.title' | translate }}
+    </button>
+
+    <button
+      *ngIf="isConnected && showLogoutButton"
+      class="logout-btn popup-btn btn-wide"
+      [ngClass]="showSwitchLanguageButton || !isConnected ? '' : 'full-radius'"
+      (click)="sendLogoutEvent()">
+      <img class="btn-icon" src="assets/img/logout.svg" alt="logout-icon" />
+      {{ 'loginPage.logoutText' | translate }}
+    </button>
+  </div>
+
+  <!-- Profile section -->
+  <div class="popup-profile" *ngIf="isConnected && showProfileButton">
+    <button
+      (click)="sendProfileEvent()"
+      class="profile-btn popup-btn"
+      [ngClass]="{ 'profile-btn-full': !showLogoutButton && !showSwitchLanguageButton }">
+      <img src="assets/img/Icona-usuari-blanco.svg" alt="profile-icon" />
+       {{ 'loginPage.profile' | translate }}
+    </button>
   </div>
 </div>

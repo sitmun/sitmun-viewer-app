@@ -27,14 +27,25 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { ApplicationDetailsComponent } from './components/application-details/application-details.component';
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
+import { MatSelectModule } from '@angular/material/select';
 import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
 @NgModule({
-  imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    NgxPaginationModule,
+    CommonModule,
+    FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    MatExpansionModule, SharedPipesModule],
+    MatSelectModule,
+    MatIconModule,
+    MatExpansionModule,
+    SharedPipesModule
+  ],
   declarations: [
     DashboardItemsComponent,
     DashboardButtonsComponent,

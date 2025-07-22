@@ -1,7 +1,11 @@
 import { Location } from '@angular/common';
 import { Component, HostListener, Injectable, OnInit } from '@angular/core';
 import { NavigationStart, Router, NavigationEnd } from '@angular/router';
-import { CommonService, DashboardItemsResponse, DashboardTypes } from '@api/services/common.service';
+import {
+  CommonService,
+  DashboardItemsResponse,
+  DashboardTypes
+} from '@api/services/common.service';
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
@@ -12,28 +16,27 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './navigation-bar.component.html',
   styleUrls: ['./navigation-bar.component.scss']
 })
-
 export class NavigationBarComponent implements OnInit {
   showMenu: boolean;
-  styleBackground: string = "#000000FF";
-  username : string = "";
-  currentLang : string;
+  styleBackground: string = '#000000FF';
+  username: string = '';
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
-  isResponsive : boolean = false;
+  isResponsive: boolean = false;
   mediaQueryListener: any;
-  navigationBarIsHidden : boolean = false;
-  displayTerritoriesAppList : boolean = false;
-  showChangeAppOrTerritoryButton : boolean = true;
+  showPopup: boolean = false;
+  navigationBarIsHidden: boolean = false;
+  displayTerritoriesAppList: boolean = false;
+  showChangeAppOrTerritoryButton: boolean = true;
 
   headerLeftSection: any;
-  headerRightSection : any;
-  headerBase : any;
+  headerRightSection: any;
+  headerBase: any;
 
   constructor(
     private router: Router,
     private commonService: CommonService,
     private translate: TranslateService,
-    private authenticationService : AuthenticationService<CustomDetails>,
+    private authenticationService: AuthenticationService<CustomDetails>,
     private location: Location
   ) {
     this.showMenu = false;
@@ -42,33 +45,25 @@ export class NavigationBarComponent implements OnInit {
         this.showMenu = false;
       }
     });
-
-    this.currentLang = localStorage.getItem('language') || 'es';
-    this.shouldShowChangeButton();
   }
 
   ngOnInit() {
-    this.CheckIfResponsive();
-
-    this.commonService.message$.subscribe(msg => {
+    this.commonService.message$.subscribe((msg) => {
       if (msg.theme === 'sitmun-base') {
-        this.styleBackground = "#d79922";
+        this.styleBackground = '#d79922';
       }
     });
 
-    if(this.IsConnected() && !this.isPublicDashboard()) {
+    if (this.isConnected() && !this.isPublicDashboard()) {
       this.username = this.authenticationService.getLoggedUsername();
     }
-
     this.CheckWichClassIsActive();
-    this.router.events.subscribe(event => {
+    this.OverideNavbar(this.router.url);
+    this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.CheckWichClassIsActive();
+        this.OverideNavbar(this.router.url);
       }
-    });
-
-    this.router.events.subscribe(event => {
-      this.OverideNavbar(this.router.url)
     });
   }
 
@@ -79,54 +74,71 @@ export class NavigationBarComponent implements OnInit {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event : any) {
+  onResize(event: any) {
     this.CheckIfResponsive();
   }
 
-  OverideNavbar(url : string) {
-    if(url.startsWith("/public/map") || url.startsWith("/user/map")){
+  OverideNavbar(url: string) {
+    if (url.startsWith('/public/map') || url.startsWith('/user/map')) {
       // We get the application headers params of the app selected in the map
-      this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS).subscribe({
-        next: (res: DashboardItemsResponse) => {
-          let applicationSelectedId = this.router.url.split('/')[3];
-          let application = res.content.find((app) => app.id.toString() == applicationSelectedId);
-          if(application?.headerParams) {
-            this.headerBase = {};
-            this.headerLeftSection = [];
-            this.headerRightSection = [];
-            let headerParams = application.headerParams;
-            const leftBaseKeys = [NavigationBarSection.LOGO_SITMUN];
-            const rightBaseKeys = [NavigationBarSection.SWITCH_APP_BUTTON, NavigationBarSection.HOME_MENU_BUTTON, NavigationBarSection.SWITCH_LANGUAGE_BUTTON, NavigationBarSection.PROFILE_BUTTON, NavigationBarSection.LOGOUT_BUTTON];
+      this.commonService
+        .fetchDashboardItems(DashboardTypes.APPLICATIONS)
+        .subscribe({
+          next: (res: DashboardItemsResponse) => {
+            let applicationSelectedId = this.router.url.split('/')[3];
+            let application = res.content.find(
+              (app) => app.id.toString() == applicationSelectedId
+            );
+            if (application?.headerParams) {
+              this.headerBase = {};
+              this.headerLeftSection = [];
+              this.headerRightSection = [];
+              let headerParams = application.headerParams;
+              const leftBaseKeys = [NavigationBarSection.LOGO_SITMUN];
+              const rightBaseKeys = [
+                NavigationBarSection.SWITCH_APP_BUTTON,
+                NavigationBarSection.HOME_MENU_BUTTON,
+                NavigationBarSection.SWITCH_LANGUAGE_BUTTON,
+                NavigationBarSection.PROFILE_BUTTON,
+                NavigationBarSection.LOGOUT_BUTTON
+              ];
 
-            const toIconSection = (key : any, obj: any): IconSection => ({
-              name: key ?? '',
-              url: obj?.url ?? '',
-              alt: obj?.alt ?? '',
-              visible: obj?.visible ?? false
-            });
+              const toIconSection = (key: any, obj: any): IconSection => ({
+                name: key ?? '',
+                url: obj?.url ?? '',
+                alt: obj?.alt ?? '',
+                visible: obj?.visible ?? false
+              });
 
-            // We overide the left side
-            let headerLeftSection = headerParams.headerLeftSection;
-            for (let key of leftBaseKeys) {
-              if (headerLeftSection[key]) this.headerBase[key] = headerLeftSection[key]; // BaseKeys already presents in HTML
-            }
-            for (let key in headerLeftSection) {
-              if (!leftBaseKeys.includes(key as NavigationBarSection)) this.headerLeftSection.push(toIconSection(key, headerLeftSection[key])); // Future logo in header in the left section
-            }
+              // We overide the left side
+              let headerLeftSection = headerParams.headerLeftSection;
+              for (let key of leftBaseKeys) {
+                if (headerLeftSection[key])
+                  this.headerBase[key] = headerLeftSection[key]; // BaseKeys already presents in HTML
+              }
+              for (let key in headerLeftSection) {
+                if (!leftBaseKeys.includes(key as NavigationBarSection))
+                  this.headerLeftSection.push(
+                    toIconSection(key, headerLeftSection[key])
+                  ); // Future logo in header in the left section
+              }
 
-            // We look each button on the right side and dot not show if visible param is false
-            let headerRightSection = headerParams.headerRightSection;
-            for (let key of rightBaseKeys) {
-              if (headerRightSection[key]) this.headerBase[key] = headerRightSection[key]; // BaseKeys already presents in HTML
-            }
-            for (let key in headerRightSection) {
-              if (!rightBaseKeys.includes(key as NavigationBarSection)) this.headerRightSection.push(toIconSection(key, headerRightSection[key])); // Future logo in header in the right section
+              // We look each button on the right side and dot not show if visible param is false
+              let headerRightSection = headerParams.headerRightSection;
+              for (let key of rightBaseKeys) {
+                if (headerRightSection[key])
+                  this.headerBase[key] = headerRightSection[key]; // BaseKeys already presents in HTML
+              }
+              for (let key in headerRightSection) {
+                if (!rightBaseKeys.includes(key as NavigationBarSection))
+                  this.headerRightSection.push(
+                    toIconSection(key, headerRightSection[key])
+                  ); // Future logo in header in the right section
+              }
             }
           }
-        },
-      });
-    }
-    else {
+        });
+    } else {
       this.headerLeftSection = null;
       this.headerRightSection = null;
       this.headerBase = null;
@@ -134,65 +146,75 @@ export class NavigationBarComponent implements OnInit {
   }
 
   CheckWichClassIsActive() {
-    if(this.router.url.includes("profile"))
+    if (this.router.url.includes('profile'))
       this.navigationClassActive = NavigationButtonActive.PROFILE;
-    else if(this.router.url.includes("dashboard"))
+    else if (this.router.url.includes('dashboard'))
       this.navigationClassActive = NavigationButtonActive.HOME;
-    else
-      this.navigationClassActive = NavigationButtonActive.OTHER;
+    else this.navigationClassActive = NavigationButtonActive.OTHER;
   }
 
   homeRedirect() {
     this.navigationClassActive = NavigationButtonActive.HOME;
-    if(this.router.url.startsWith("/public")){
-      this.router.navigateByUrl(
-        NavigationPath.Section.Public.Dashboard
-      );
-    }
-    else{
-      this.router.navigateByUrl(
-        NavigationPath.Section.User.Dashboard
-      );
+    if (this.router.url.startsWith('/public')) {
+      this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
+    } else {
+      this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
     }
   }
 
   loginRedirect() {
-    this.router.navigate(['/auth/login']);  }
+    this.router.navigate([NavigationPath.Auth.Login]);
+  }
 
   profileRedirect() {
     this.navigationClassActive = NavigationButtonActive.PROFILE;
-    this.router.navigate(['/user/profile']);
+    this.router.navigate([NavigationPath.Section.User.Profile]);
   }
 
-  logout() {
+  logoutRedirect() {
     this.authenticationService.logout();
   }
 
-  onShowMenu() {
-    this.showMenu = !this.showMenu;
-  }
-
-  TamanyMenu() {
-    if (this.router.url.startsWith("/auth/login") || this.router.url.startsWith("/auth/forgot-password")) {
+  tamanyMenu() {
+    if (
+      this.router.url.startsWith('/auth/login') ||
+      this.router.url.startsWith('/auth/forgot-password')
+    ) {
       return 'nav-bar login';
-    }else if (this.router.url.startsWith("/map/")){
+    } else if (this.router.url.startsWith('/map/')) {
       return 'nav-bar pet';
-    }
-    else{
+    } else {
       return 'nav-bar';
     }
   }
 
-  IsConnected() {
+  changeLanguage(language: string) {
+    this.translate.use(language);
+    localStorage.setItem('language', language);
+  }
+
+  isConnected() {
     let isConnected = true;
-    if(this.router.url.startsWith("/auth/login") || this.router.url.startsWith("/auth/forgot-password")){
+    if (
+      this.router.url.startsWith('/public') ||
+      this.router.url.startsWith('/auth/login') ||
+      this.router.url.startsWith('/auth/forgot-password')
+    ) {
       isConnected = false;
     }
     return isConnected;
   }
 
+  notInAuth() {
+    let notInAuth = true;
+    if (this.router.url.startsWith(NavigationPath.Auth.Base)) {
+      notInAuth = false;
+    }
+    return notInAuth;
+  }
+
   isPublicDashboard() {
-    return this.router.url.startsWith("/public");
+    return this.router.url.startsWith('/public');
   }
 
   useLanguage(event: Event) {
@@ -203,26 +225,32 @@ export class NavigationBarComponent implements OnInit {
 
   CheckIfResponsive(): void {
     const breakpoint = 640;
-    this.isResponsive =  window.innerWidth <= breakpoint;
+    this.isResponsive = window.innerWidth <= breakpoint;
   }
 
   isOnMap() {
-    return this.router.url.startsWith("/user/map") || this.router.url.startsWith("/public/map");
+    return (
+      this.router.url.startsWith('/user/map') ||
+      this.router.url.startsWith('/public/map')
+    );
   }
 
   shouldShowChangeButton(): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS)
+      this.commonService
+        .fetchDashboardItems(DashboardTypes.APPLICATIONS)
         .subscribe({
           next: (applications: DashboardItemsResponse) => {
-            if(applications.totalElements == 1) {
+            if (applications.totalElements == 1) {
               let app = applications.content[0];
-              this.commonService.fetchTerritoriesByApplication(app.id).subscribe({
-                next: (territories: any) => {
-                  if(territories.numberOfElements == 1)
-                    this.showChangeAppOrTerritoryButton = false;
-                }
-              });
+              this.commonService
+                .fetchTerritoriesByApplication(app.id)
+                .subscribe({
+                  next: (territories: any) => {
+                    if (territories.numberOfElements == 1)
+                      this.showChangeAppOrTerritoryButton = false;
+                  }
+                });
             }
           },
           error: (err) => {
@@ -232,27 +260,30 @@ export class NavigationBarComponent implements OnInit {
     });
   }
 
+  showAuthenticationPopup(): void {
+    this.showPopup = !this.showPopup;
+  }
 }
 
 enum NavigationButtonActive {
-  HOME = "home",
-  NEWS = "news",
-  PROFILE = "profile",
-  OTHER = "other"
+  HOME = 'home',
+  NEWS = 'news',
+  PROFILE = 'profile',
+  OTHER = 'other'
 }
 
 enum NavigationBarSection {
-  LOGO_SITMUN = "logoSitmun",
-  SWITCH_APP_BUTTON = "switchApplication",
-  HOME_MENU_BUTTON = "homeMenu",
-  SWITCH_LANGUAGE_BUTTON = "switchLanguage",
-  PROFILE_BUTTON = "profileButton",
-  LOGOUT_BUTTON = "logoutButton"
+  LOGO_SITMUN = 'logoSitmun',
+  SWITCH_APP_BUTTON = 'switchApplication',
+  HOME_MENU_BUTTON = 'homeMenu',
+  SWITCH_LANGUAGE_BUTTON = 'switchLanguage',
+  PROFILE_BUTTON = 'profileButton',
+  LOGOUT_BUTTON = 'logoutButton'
 }
 
 interface IconSection {
-  name : string,
-  url : string,
-  alt : string,
-  visible : boolean
+  name: string;
+  url: string;
+  alt: string;
+  visible: boolean;
 }

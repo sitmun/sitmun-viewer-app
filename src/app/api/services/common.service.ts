@@ -99,7 +99,6 @@ export class CommonService {
     if (keywords) {
       path += '?keywords=' + keywords;
     }
-
     return this.http.get<DashboardItemsResponse>(environment.apiUrl + path);
   }
 

@@ -11,9 +11,8 @@ import { FooterComponent } from './layout/footer/footer.component';
 import { AuthenticationModule } from '@auth/auth.module';
 import { UiModule } from '@ui/ui.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import {
-  AUTH_CONFIG_DI,
-} from '@auth/authentication.options';
+import { AUTH_CONFIG_DI } from '@auth/authentication.options';
+import { UserService } from '@api/services/user.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -27,6 +26,7 @@ import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
+
 
 registerLocaleData(localeEs);
 
@@ -59,6 +59,7 @@ registerLocaleData(localeEs);
     }),
     FormsModule,
     NgxPaginationModule,
+    BrowserAnimationsModule,
     BrowserAnimationsModule,
     SharedPipesModule
   ],
