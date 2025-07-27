@@ -12,7 +12,6 @@ import { UiModule } from '@ui/ui.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {
   AUTH_CONFIG_DI,
-  AUTH_DETAILS_SERVICE_DI
 } from '@auth/authentication.options';
 import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
@@ -70,7 +69,6 @@ registerLocaleData(localeEs);
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
     { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
-    { provide: AUTH_DETAILS_SERVICE_DI, useClass: UserService }
   ],
   bootstrap: [AppComponent]
 })
