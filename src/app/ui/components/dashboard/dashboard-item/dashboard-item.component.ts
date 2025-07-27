@@ -1,6 +1,6 @@
 import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
-import { CommonService, DashboardItem } from '@api/services/common.service';
 import { Router } from '@angular/router';
+import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 
 
@@ -13,7 +13,7 @@ export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER : number = 75;
+  DESCRIPTION_MAX_CHARACTER : number = 100;
   nbTerritory : number = 0;
   applicationId : number = 0;
   listOfTerritories : any;
@@ -59,6 +59,31 @@ export class DashboardItemComponent {
     });
   }
 
+  /**
+   * If the nb of territories > 1, navigate to applicationDetails. If nb of territories <= 1, navigate directly to the map of the territory
+   */
+  navigateToApplicationDetailsOrMap(idApp: number) {
+    if(this.nbTerritory > 1) {
+      this.navigateToApplicationDetails(idApp);
+    }
+    else if(this.nbTerritory == 1){
+      this.navigateToMap(idApp, this.listOfTerritories[0].id);
+    }
+  }
+
+  navigateToApplicationDetails(idApp: number) {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Application(idApp)
+      );
+    }
+    else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Application(idApp)
+      );
+    }
+  }
+
   displayTerritoriesTag(application : any) {
     let object = {
       'application': application,
@@ -73,12 +98,11 @@ export class DashboardItemComponent {
       navigationPath = NavigationPath.Section.User.Map(applicationId, territoryId);
     }
     else if(this.router.url.startsWith("/public")){
-      navigationPath = NavigationPath.Section.Public.Map(applicationId, territoryId);
+      NavigationPath.Section.Public.Territory(territoryId)
     }
 
     this.router.navigateByUrl(
-      navigationPath
+      NavigationPath.Section.User.Territory(territoryId)
     );
   }
-
 }

@@ -6,9 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MapComponent } from './map/map.component';
 import { FormsModule } from '@angular/forms';
 import { UiModule } from '@ui/ui.module';
+import { ApplicationComponent } from '../common/pages/application/application.component';
+import { TerritoryComponent } from '../common/pages/territory/territory.component';
 
 @NgModule({
-  declarations: [DashboardComponent, MapComponent],
+  declarations: [DashboardComponent, MapComponent, ApplicationComponent, TerritoryComponent],
   imports: [
     CommonModule,
     UserRoutingModule,

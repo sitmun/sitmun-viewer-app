@@ -25,19 +25,35 @@ export class DashboardTerritoriesTagComponent {
     this.hide.emit(false);
   }
 
-  navigateToMap(applicationId : number, territoryId: number) {
-    let navigationPath = "";
-    if(this.router.url.startsWith("/user")){
-      navigationPath = NavigationPath.Section.User.Map(applicationId, territoryId);
+  navigateToTerritoryDetails(territoryId: number) {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Territory(territoryId)
+      );
     }
-    else if(this.router.url.startsWith("/public")){
-      navigationPath = NavigationPath.Section.Public.Map(applicationId, territoryId);
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Territory(territoryId)
+      );
     }
 
-    this.router.navigateByUrl(
-      navigationPath
-    );
+
+    this.hide.emit(false);
   }
+
+  navigateToMap(applicationId : number, territoryId: number) {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(applicationId, territoryId)
+      );
+    }
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(applicationId, territoryId)
+      );
+    }
+  }
+
 
   /**
    * Filter the displayed territories.

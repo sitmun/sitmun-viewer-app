@@ -2,6 +2,8 @@ import { Component, EventEmitter, Output, Input, ElementRef, HostListener, ViewC
 import { CommonService, ResponseDto } from '@api/services/common.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { NavigationPath } from '@config/app.config';
 
 @Component({
   selector: 'app-dashboard-searchbox',
@@ -16,8 +18,6 @@ export class DashboardSearchboxComponent {
   @Input() applications : any;
 
   @Output() keywords = new EventEmitter<string>();
-  @Output() territory = new EventEmitter<any>();
-  @Output() application = new EventEmitter<any>();
 
   input: string;
   territories : any = [];
@@ -25,7 +25,7 @@ export class DashboardSearchboxComponent {
   filteredSuggestions: string[] = [];
   showDetailedSuggestions : boolean = false;
 
-  constructor(private commonService : CommonService, private sanitizer: DomSanitizer, private translate: TranslateService) {
+  constructor(private commonService : CommonService, private sanitizer: DomSanitizer, private translate: TranslateService, private router : Router) {
     this.input = '';
   }
 
@@ -92,13 +92,31 @@ export class DashboardSearchboxComponent {
     }
   }
 
-  navigateToTerritoryPresentation(suggestion: any): void {
-    this.territory.emit(suggestion);
+  navigateToTerritoryPresentation(territoryId : number): void {
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Territory(territoryId)
+      );
+    }
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Territory(territoryId)
+      );
+    }
   }
 
-  navigateToApplicationPresentation(application : any): void {
+  navigateToApplicationPresentation(applicationId : number): void {
     this.showSuggestions = false;
-    this.application.emit(application);
+    if(this.router.url.startsWith("/public")){
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Application(applicationId)
+      );
+    }
+    else{
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Application(applicationId)
+      );
+    }
   }
 
   onKeywordsChange() {
