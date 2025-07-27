@@ -8,9 +8,10 @@ import { FormsModule } from '@angular/forms';
 import { UiModule } from '@ui/ui.module';
 import { ApplicationComponent } from '../common/pages/application/application.component';
 import { TerritoryComponent } from '../common/pages/territory/territory.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
-  declarations: [DashboardComponent, MapComponent, ApplicationComponent, TerritoryComponent],
+  declarations: [DashboardComponent, MapComponent, ApplicationComponent, TerritoryComponent, ProfileComponent],
   imports: [
     CommonModule,
     UserRoutingModule,

@@ -22,13 +22,13 @@
         </button>
       </div>
       <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard()">
-        <div class="icon"></div>
+        <img src="assets/img/Icona-desconnexió.svg"/>
         <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
       </button>
       <primary-button
-        *ngIf="IsConnected() && isPublicDashboard() && !isResponsive"
+        *ngIf="IsConnected() && !isResponsive && isPublicDashboard()"
         [button_text]="'loginPage.title' | translate"
-        (click)="loginRedirect()"
+        (click)="homeRedirect()"
         />
     </div>
   </div>
@@ -41,12 +41,10 @@
     </button>
   </div>
 
-  <div class="login-button" *ngIf="isPublicDashboard()">
-    <primary-button
-    [button_text]="'loginPage.title' | translate"
-    [img_src]="'assets/img/Icona-connexió.svg'"
-    (click)="loginRedirect()"
-    />
+  <div class="profile-button" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
+    <button (click)="profileRedirect()">
+      <div class="icon"></div>
+    </button>
   </div>
 
   <div class="logout-button" *ngIf="!isPublicDashboard()">
