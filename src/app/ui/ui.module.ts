@@ -26,6 +26,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { ApplicationDetailsComponent } from './components/application-details/application-details.component';
+import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule,
@@ -53,7 +55,10 @@ import { MatIconModule } from '@angular/material/icon';
     NotificationComponent,
     DashboardItemComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent
+    DashboardTerritoriesTagComponent,
+    ApplicationDetailsComponent,
+    TerritoryDetailsComponent,
+    DashboardItemComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -68,7 +73,10 @@ import { MatIconModule } from '@angular/material/icon';
     FormFieldInputComponent,
     NotificationComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent
+    DashboardTerritoriesTagComponent,
+    ApplicationDetailsComponent,
+    TerritoryDetailsComponent,
+    DashboardItemComponent
   ],
   providers: []
 })

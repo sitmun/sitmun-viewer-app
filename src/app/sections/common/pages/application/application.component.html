@@ -1,0 +1,21 @@
+<div id="content">
+  <div id="application" *ngIf="application">
+    <button (click)="navigateToPreviousPage()"> < {{ 'application.back' | translate }} </button>
+    <div id="application-title">
+      <h1> {{ application.title }} </h1>
+    </div>
+    <div id="application-details">
+      <div id="left-side">
+        <app-application-details
+        [application]="application"/>
+      </div>
+      <div id="right-side">
+        <div id="associated-territories">
+          <app-dashboard-territories-tag
+          [application]="application"
+          [territories]="territories"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
