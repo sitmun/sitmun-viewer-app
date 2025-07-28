@@ -1,24 +1,44 @@
 @use 'colors';
 @use 'dimensions';
 
-.secondary-button{
-    background-color: #3A455A;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: large;
-    border-radius: 10px;
-    padding: 15px;
-    margin-top: 5px;
-}
+.secondary-button {
+  background-color: #3A455A;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 0 10px;
+  margin-top: 5px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-.secondary-button:hover{
+  .button-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    img {
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+    }
+
+    span {
+      font-size: clamp(10px, 1.5vh, 14px);
+      line-height: 1;
+      white-space: nowrap;
+    }
+  }
+
+  &:hover {
     background-color: #2b3a57;
+  }
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
-    .secondary-button {
-        margin-left: 0px;
-        width: 75%;
-    }
+  .secondary-button {
+    width: 75%;
+  }
 }

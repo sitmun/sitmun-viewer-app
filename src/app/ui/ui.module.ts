@@ -14,6 +14,7 @@ import { PrimaryButtonComponent } from './components/primary-button/primary-butt
 import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
 import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
 import { NotificationComponent } from './components/notification/notification.component';
+import { TerritoriesListComponent } from './components/territories-list/territories-list.component';
 import { ProfileInformationComponent } from './components/profile-information/profile-information.component';
 import { DashboardItemComponent } from './components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
@@ -60,7 +61,8 @@ import { TerritoryDetailsComponent } from './components/territory-details/territ
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
     DashboardItemComponent,
-    ProfileInformationComponent
+    ProfileInformationComponent,
+    TerritoriesListComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -78,6 +80,7 @@ import { TerritoryDetailsComponent } from './components/territory-details/territ
     DashboardTerritoriesTagComponent,
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
+    TerritoriesListComponent,
     DashboardItemComponent,
     ProfileInformationComponent
   ],

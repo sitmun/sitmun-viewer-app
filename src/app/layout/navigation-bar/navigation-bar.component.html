@@ -1,12 +1,24 @@
-<div class='{{TamanyMenu()}}'>
+<div class='{{TamanyMenu()}}' *ngIf="!navigationBarIsHidden">
   <div class="dashboard-container">
     <div class="left">
-      <img (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="IsConnected()"/>
+      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="IsConnected()"/>
+      <div *ngFor="let item of headerLeftSection">
+        <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
+      </div>
     </div>
 
     <div class="right">
-      <button (click)="homeRedirect()" [class.active]="navigationClassActive == 'home'" class="home-menu button-menu" *ngIf="IsConnected()"> </button>
-      <div class="select-language">
+      <div *ngFor="let item of headerRightSection">
+        <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
+      </div>
+      <secondary-button
+        *ngIf="isOnMap() && totalApplicationLength > 1 && (headerBase?.switchApplication?.visible !== false)"
+        (click)="displayTerritoriesAppList = !displayTerritoriesAppList"
+        [button_text]="'genericPrivateHeaders.changeAppOrTerritory' | translate"
+        [button_img_url]="'assets/img/Icona-canviar.svg'"
+        />
+      <button (click)="homeRedirect()" [class.active]="navigationClassActive == 'home'" class="home-menu button-menu" *ngIf="IsConnected() && (headerBase?.homeMenu?.visible !== false)"> </button>
+      <div class="select-language" *ngIf="(headerBase?.switchLanguage?.visible !== false)">
         <select [ngModel]="currentLang" (change)="useLanguage($event)">
           <option value="ca"> Català </option>
           <option value="en"> English </option>
@@ -14,14 +26,14 @@
           <option value="fr"> Français </option>
         </select>
       </div>
-      <div class="profile-page" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
+      <div class="profile-page" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard() && (headerBase?.profileButton?.visible !== false)">
         <p> {{ 'genericPrivateHeader.hi' | translate }},</p>
         <button (click)="profileRedirect()" class="button-menu">
           <div class="icon"></div>
           <p id="username"> {{ username | titlecase}} </p>
         </button>
       </div>
-      <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard()">
+      <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard() && (headerBase?.logoutButton?.visible !== false)">
         <img src="assets/img/Icona-desconnexió.svg"/>
         <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
       </button>
@@ -32,6 +44,9 @@
         />
     </div>
   </div>
+  <button class="hide-navigationbar" (click)="navigationBarIsHidden = true" *ngIf="isOnMap()">
+    <img src="assets/img/Icona-fletxa-cap-avall.svg"/>
+  </button>
 </div>
 
 <div class="navbar-responsive" *ngIf="IsConnected()">
@@ -52,4 +67,15 @@
       <div class="icon"></div>
     </button>
   </div>
+</div>
+
+<div class="navbar-map-hidden" *ngIf="isOnMap() && navigationBarIsHidden">
+  <button (click)="navigationBarIsHidden = false">
+    <img src="assets/img/Icona-menu.svg" />
+  </button>
+</div>
+
+<div id="changeDisplayedMap" *ngIf="displayTerritoriesAppList && isOnMap()">
+  <app-territories-list
+  (close)="displayTerritoriesAppList = !displayTerritoriesAppList"/>
 </div>

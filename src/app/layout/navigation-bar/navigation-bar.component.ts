@@ -1,6 +1,7 @@
+import { Location } from '@angular/common';
 import { Component, HostListener, Injectable, OnInit } from '@angular/core';
 import { NavigationStart, Router, NavigationEnd } from '@angular/router';
-import { CommonService } from '@api/services/common.service';
+import { CommonService, DashboardItemsResponse, DashboardTypes } from '@api/services/common.service';
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
@@ -20,12 +21,20 @@ export class NavigationBarComponent implements OnInit {
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
   isResponsive : boolean = false;
   mediaQueryListener: any;
+  navigationBarIsHidden : boolean = false;
+  displayTerritoriesAppList : boolean = false;
+  totalApplicationLength! : number;
+
+  headerLeftSection: any;
+  headerRightSection : any;
+  headerBase : any;
 
   constructor(
     private router: Router,
     private commonService: CommonService,
     private translate: TranslateService,
-    private authenticationService : AuthenticationService<CustomDetails>
+    private authenticationService : AuthenticationService<CustomDetails>,
+    private location: Location
   ) {
     this.showMenu = false;
     router.events.forEach((event) => {
@@ -35,6 +44,7 @@ export class NavigationBarComponent implements OnInit {
     });
 
     this.currentLang = localStorage.getItem('language') || 'es';
+    this.getTotalApplicationLength();
   }
 
   ngOnInit() {
@@ -56,6 +66,8 @@ export class NavigationBarComponent implements OnInit {
         this.CheckWichClassIsActive();
       }
     });
+
+    this.location.onUrlChange(url => {this.OverideNavbar(url)});
   }
 
   ngOnDestroy() {
@@ -67,6 +79,57 @@ export class NavigationBarComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event : any) {
     this.CheckIfResponsive();
+  }
+
+  OverideNavbar(url : string) {
+    if(url.startsWith("/public/map") || url.startsWith("/user/map")){
+      // We get the application headers params of the app selected in the map
+      this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS).subscribe({
+        next: (res: DashboardItemsResponse) => {
+          let applicationSelectedId = this.router.url.split('/')[3];
+          let application = res.content.find((app) => app.id.toString() == applicationSelectedId);
+          if(application?.headerParams) {
+            console.log(application.headerParams);
+            this.headerBase = {};
+            this.headerLeftSection = [];
+            this.headerRightSection = [];
+            let headerParams = application.headerParams;
+            const leftBaseKeys = [NavigationBarSection.LOGO_SITMUN];
+            const rightBaseKeys = [NavigationBarSection.SWITCH_APP_BUTTON, NavigationBarSection.HOME_MENU_BUTTON, NavigationBarSection.SWITCH_LANGUAGE_BUTTON, NavigationBarSection.PROFILE_BUTTON, NavigationBarSection.LOGOUT_BUTTON];
+
+            const toIconSection = (key : any, obj: any): IconSection => ({
+              name: key ?? '',
+              url: obj?.url ?? '',
+              alt: obj?.alt ?? '',
+              visible: obj?.visible ?? false
+            });
+
+            // We overide the left side
+            let headerLeftSection = headerParams.headerLeftSection;
+            for (let key of leftBaseKeys) {
+              if (headerLeftSection[key]) this.headerBase[key] = headerLeftSection[key]; // BaseKeys already presents in HTML
+            }
+            for (let key in headerLeftSection) {
+              if (!leftBaseKeys.includes(key as NavigationBarSection)) this.headerLeftSection.push(toIconSection(key, headerLeftSection[key])); // Future logo in header in the left section
+            }
+
+            // We look each button on the right side and dot not show if visible param is false
+            let headerRightSection = headerParams.headerRightSection;
+            for (let key of rightBaseKeys) {
+              if (headerRightSection[key]) this.headerBase[key] = headerRightSection[key]; // BaseKeys already presents in HTML
+            }
+            for (let key in headerRightSection) {
+              if (!rightBaseKeys.includes(key as NavigationBarSection)) this.headerRightSection.push(toIconSection(key, headerRightSection[key])); // Future logo in header in the right section
+            }
+          }
+        },
+      });
+    }
+    else {
+      this.headerLeftSection = null;
+      this.headerRightSection = null;
+      this.headerBase = null;
+    }
   }
 
   CheckWichClassIsActive() {
@@ -141,6 +204,25 @@ export class NavigationBarComponent implements OnInit {
     const breakpoint = 640;
     this.isResponsive =  window.innerWidth <= breakpoint;
   }
+
+  isOnMap() {
+    return this.router.url.startsWith("/user/map") || this.router.url.startsWith("/public/map");
+  }
+
+  getTotalApplicationLength(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS)
+        .subscribe({
+          next: (res: DashboardItemsResponse) => {
+            this.totalApplicationLength = res.content.length;
+          },
+          error: (err) => {
+            reject(err);
+          }
+        });
+    });
+  }
+
 }
 
 enum NavigationButtonActive {
@@ -148,4 +230,20 @@ enum NavigationButtonActive {
   NEWS = "news",
   PROFILE = "profile",
   OTHER = "other"
+}
+
+enum NavigationBarSection {
+  LOGO_SITMUN = "logoSitmun",
+  SWITCH_APP_BUTTON = "switchApplication",
+  HOME_MENU_BUTTON = "homeMenu",
+  SWITCH_LANGUAGE_BUTTON = "switchLanguage",
+  PROFILE_BUTTON = "profileButton",
+  LOGOUT_BUTTON = "logoutButton"
+}
+
+interface IconSection {
+  name : string,
+  url : string,
+  alt : string,
+  visible : boolean
 }
