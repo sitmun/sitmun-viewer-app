@@ -7,6 +7,9 @@
     <h2 *ngIf="IsInDashboard()"> {{ applicationName }} </h2>
     <h2 *ngIf="!IsInDashboard()"> {{ 'application.territoriesAssociated' | translate }} </h2>
   </div>
+  <button class="dashboard-item-nbTerritories">
+    {{ territories.length }} {{ 'dashboardPage.nbTerritoriesTitle' | translate }}
+  </button>
   <div class="territories-tag-content">
     <p *ngIf="territories.length > 1 && IsInDashboard()"> {{ 'dashboardPage.filterTerritories' | translate }} :</p>
     <p *ngIf="territories.length <= 1 && IsInDashboard()"> {{ 'dashboardPage.choiceTag' | translate }} :</p>

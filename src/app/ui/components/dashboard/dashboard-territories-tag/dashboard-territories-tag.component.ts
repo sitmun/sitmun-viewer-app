@@ -86,7 +86,7 @@ export class DashboardTerritoriesTagComponent {
 
       if (rightImage) {
         if (isHovered) {
-          rightImage.src = 'assets/img/Icona-document-azul.svg';
+          rightImage.src = 'assets/img/Icona-document-naranja.svg';
         } else {
           rightImage.src = 'assets/img/Icona-document.svg';
         }
@@ -107,7 +107,7 @@ export class DashboardTerritoriesTagComponent {
 
       if (leftImage) {
         if (isHovered) {
-          leftImage.src = 'assets/img/Icona-mapa-azul.svg';
+          leftImage.src = 'assets/img/Icona-mapa-naranja.svg';
         }
         else {
           leftImage.src = 'assets/img/Icona-mapa.svg';
