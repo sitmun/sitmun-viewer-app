@@ -52,7 +52,7 @@
   "publicDashboardPage.applicationsTitle": "Applications Publiques",
   "publicDashboardPage.territoriesTitle": "Territoires Publics",
   "dashboardPage.applicationsTitle": "Applications",
-  "dashboardPage.applicationPrivate": "Applications privées",
+  "dashboardPage.applicationPrivate": "Applications à accès restreint",
   "dashboardPage.applicationPublic": "Applications publiques",
   "dashboardPage.showAll": "Afficher tout",
   "dashboardPage.showLess": "Afficher moins",
