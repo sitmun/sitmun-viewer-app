@@ -70,7 +70,7 @@
   "publicDashboardPage.applicationsTitle": "Public Applications",
   "publicDashboardPage.territoriesTitle": "Public Territories",
   "dashboardPage.applicationsTitle": "Applications",
-  "dashboardPage.applicationPrivate": "Private applications",
+  "dashboardPage.applicationPrivate": "Limited access applications",
   "dashboardPage.applicationPublic": "Public applications",
   "dashboardPage.showAll": "Show all",
   "dashboardPage.showLess": "Show less",
