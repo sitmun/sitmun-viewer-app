@@ -198,7 +198,7 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
     // Obtener la capa que se establecerá como mapa base.
     let layer = _this.getLayer(getClosestParent(e.target, 'li').dataset.layerId);
 
-    // Revisar si el mapa se ha cargado desde el dialogo de más capas base.
+    // Revisar si el mapa se ha cargado desde el dialogo de 'más capas base'.
     if (_this.options.dialogMore && getClosestParent(e.target, '.' + _this.CLASS + '-more-dialog')) {
       const radios = _this.div.querySelectorAll('input[type=radio]');
       for (let i = 0, len = radios.length; i < len; i++) {
@@ -218,6 +218,100 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
     if (_this._selectedBaseMapMiniatureId === BASEMAP_1_ID && _this._baseMap1Layer === layer) return;
     if (_this._selectedBaseMapMiniatureId === BASEMAP_2_ID && _this._baseMap2Layer === layer) return;
 
+    // TODO: Código para reproyectar.
+    //       Queda comentado hasta que se actualice a una versión más actual de
+    //       la API SITNA que solucione el problema de reproyección de capas.
+
+    //   if (layer.mustReproject) {
+    //
+    //     if (_this.map.on3DView) {
+    //       if (!layer.getFallbackLayer()) {
+    //         _this._currentSelection.checked = true;
+    //         e.stopPropagation();
+    //         return;
+    //       } else if (layer.getFallbackLayer()) {
+    //         const fallbackLayer = layer.getFallbackLayer();
+    //         if (fallbackLayer) {
+    //           fallbackLayer._capabilitiesPromise.then(function () {
+    //             if (fallbackLayer.isCompatible(_this.map.getCRS())) {
+    //               _this.map.setBaseLayer(layer);
+    //             }
+    //           });
+    //         }
+    //
+    //         flagToCallback = true;
+    //       }
+    //     } else {
+    //       if (_this._currentSelection) {
+    //         _this._currentSelection.checked = true;
+    //       }
+    //
+    //       // Buscamos alternativa
+    //       const dialogOptions = {
+    //         layer: layer
+    //       };
+    //
+    //       const fallbackLayer = layer.getFallbackLayer();
+    //       if (fallbackLayer) {
+    //         fallbackLayer._capabilitiesPromise.then(function () {
+    //           if (fallbackLayer.isCompatible(_this.map.getCRS())) {
+    //             dialogOptions.fallbackLayer = fallbackLayer;
+    //           }
+    //           _this.showProjectionChangeDialog(dialogOptions);
+    //         });
+    //       } else {
+    //
+    //         // --- Start Silme
+    //         // Canvi de capa de fons automàtic si només hi ha un SRS disponible.
+    //
+    //         _this.map.loadProjections({
+    //           crsList: _this.map.getCompatibleCRS({
+    //             layers: _this.map.workLayers.concat(dialogOptions.layer),
+    //             includeFallbacks: true
+    //           }),
+    //           orderBy: 'name'
+    //         }).then(function (projList) {
+    //           if (projList.length == 1) {
+    //             layer = dialogOptions.layer;
+    //             if (layer) {
+    //               if (projList[0].code) {
+    //                 TC.loadProjDef({
+    //                   crs: projList[0].code,
+    //                   callback: function () {
+    //                     _this.map.setProjection({
+    //                       crs: projList[0].code,
+    //                       baseLayer: layer
+    //                     });
+    //                   }
+    //                 });
+    //               }
+    //               else {
+    //                 const fallbackLayer = _this.getFallbackLayer(btn.dataset.fallbackLayerId);
+    //                 if (fallbackLayer) {
+    //                   _this.map.setBaseLayer(fallbackLayer);
+    //                 }
+    //               }
+    //             }
+    //           }
+    //           else {
+    //             _this.showProjectionChangeDialog(dialogOptions);
+    //           }
+    //         });
+    //         // --- End Silme
+    //       }
+    //       flagToCallback = false;
+    //     }
+    //
+    //   }
+    //   else {
+    //
+    //     if (layer.type === TC.Consts.layerType.WMS || layer.type === TC.Consts.layerType.WMTS && layer.getProjection() !== _this.map.crs) {
+    //       layer.setProjection({ crs: _this.map.crs });
+    //     }
+    //
+    //     _this.map.setBaseLayer(layer);
+    //   }
+
     // Actualizar la capa base correspondiente.
     _updateBaseLayer.call(_this, layer);
 
@@ -231,130 +325,6 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
       callback(flagToCallback);
     }
 
-
-
-
-    // const self = this;
-    // var flagToCallback = true;
-    //
-    // var radio = e.target;
-    //
-    // var layer = self.getLayer(getClosestParent(radio, 'li').dataset.layerId);
-    //
-    // if (self.options.dialogMore && getClosestParent(radio, '.' + self.CLASS + '-more-dialog')) {
-    //   const radios = self.div.querySelectorAll('input[type=radio]');
-    //   for (var i = 0, len = radios.length; i < len; i++) {
-    //     const bmsLayer = self.getLayer(getClosestParent(radios[i], 'li').dataset.layerId);
-    //     if (bmsLayer) {
-    //       switch (true) {
-    //         case bmsLayer.id === layer.id:
-    //           layer = bmsLayer;
-    //           break;
-    //       }
-    //     }
-    //   }
-    // }
-    //
-    // if (layer != self.map.getBaseLayer()) {
-    //   if (layer.mustReproject) {
-    //
-    //     if (self.map.on3DView) {
-    //       if (!layer.getFallbackLayer()) {
-    //         self._currentSelection.checked = true;
-    //         e.stopPropagation();
-    //         return;
-    //       } else if (layer.getFallbackLayer()) {
-    //         const fallbackLayer = layer.getFallbackLayer();
-    //         if (fallbackLayer) {
-    //           fallbackLayer._capabilitiesPromise.then(function () {
-    //             if (fallbackLayer.isCompatible(self.map.getCRS())) {
-    //               self.map.setBaseLayer(layer);
-    //             }
-    //           });
-    //         }
-    //
-    //         flagToCallback = true;
-    //       }
-    //     } else {
-    //       // provisonal
-    //       if (self._currentSelection) {
-    //         self._currentSelection.checked = true;
-    //       }
-    //
-    //       // Buscamos alternativa
-    //       const dialogOptions = {
-    //         layer: layer
-    //       };
-    //       const fallbackLayer = layer.getFallbackLayer();
-    //       if (fallbackLayer) {
-    //         fallbackLayer._capabilitiesPromise.then(function () {
-    //           if (fallbackLayer.isCompatible(self.map.getCRS())) {
-    //             dialogOptions.fallbackLayer = fallbackLayer;
-    //           }
-    //           self.showProjectionChangeDialog(dialogOptions);
-    //         });
-    //       }
-    //       else {
-    //
-    //         // Start Silme
-    //         // - Canvi de capa de fons automàtic si només hi ha un SRS disponible
-    //
-    //         self.map.loadProjections({
-    //           crsList: self.map.getCompatibleCRS({
-    //             layers: self.map.workLayers.concat(dialogOptions.layer),
-    //             includeFallbacks: true
-    //           }),
-    //           orderBy: 'name'
-    //         }).then(function (projList) {
-    //           if (projList.length == 1) {
-    //             layer = dialogOptions.layer;
-    //             if (layer) {
-    //               if (projList[0].code) {
-    //                 TC.loadProjDef({
-    //                   crs: projList[0].code,
-    //                   callback: function () {
-    //                     self.map.setProjection({
-    //                       crs: projList[0].code,
-    //                       baseLayer: layer
-    //                     });
-    //                   }
-    //                 });
-    //               }
-    //               else {
-    //                 const fallbackLayer = self.getFallbackLayer(btn.dataset.fallbackLayerId);
-    //                 if (fallbackLayer) {
-    //                   self.map.setBaseLayer(fallbackLayer);
-    //                 }
-    //               }
-    //             }
-    //           }
-    //           else {
-    //             self.showProjectionChangeDialog(dialogOptions);
-    //           }
-    //         });
-    //         // End Silme
-    //       }
-    //       flagToCallback = false;
-    //     }
-    //
-    //   }
-    //   else {
-    //
-    //     if (layer.type === TC.Consts.layerType.WMS || layer.type === TC.Consts.layerType.WMTS && layer.getProjection() !== self.map.crs) {
-    //       layer.setProjection({ crs: self.map.crs });
-    //     }
-    //
-    //     self.map.setBaseLayer(layer);
-    //   }
-    // }
-    //
-    // if (this._currentSelection) {
-    //   this._currentSelection.checked = true;
-    // }
-    //
-    // if (callback) {
-    //   callback(flagToCallback);
-    // }
   };
 
   // ===========================================================================
