@@ -17,7 +17,7 @@ import { Location } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
 
-declare const SITNA: any;
+import SitnaMap, { Cfg as SitnaCfg } from 'api-sitna';
 
 @Directive()
 export abstract class AbstractMapComponent implements OnInit, OnDestroy {
@@ -159,7 +159,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       tree.catalog.layers = this.orderLayers(layersAux, groupAux);
     });
 
-
     // Parse the catalogs, so we can use them in the LayerCatalogSilme.js
     let idx = -1;
     (window as any).layerCatalogsSilmeForModal = new Object({
@@ -170,7 +169,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         })
     });
 
-    SITNA.Cfg.controls.layerCatalogSilmeFolders =
+    SitnaCfg.controls.layerCatalogSilmeFolders =
       this.layerCatalogsSilme.length > 0
         ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
         : {};
@@ -187,7 +186,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.currentCatalogIdx = (
       window as any
     ).layerCatalogsSilmeForModal.currentCatalog;
-    SITNA.Cfg.controls.layerCatalogSilmeFolders =
+    SitnaCfg.controls.layerCatalogSilmeFolders =
       this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
     this.clearMap();
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
@@ -262,7 +261,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
-    const map = new SITNA.Map('mapa', cfg);
+    const map = new SitnaMap('mapa', cfg);
     map.loaded(function () {
       SitnaHelper.toWelcome(appCfg);
       SitnaHelper.toHelp(appCfg);

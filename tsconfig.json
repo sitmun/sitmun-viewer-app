@@ -30,7 +30,8 @@
       "@shared/*": ["src/app/shared/*"],
       "@ui/*": ["src/app/ui/*"]
     },
-      "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "typeRoots": ["./src/app/api", "./node_modules/@types"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

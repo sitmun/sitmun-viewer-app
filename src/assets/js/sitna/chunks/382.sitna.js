@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkSITNA=self.webpackChunkSITNA||[]).push([[382],{382:(e,t,n)=>{n.r(t),n.d(t,{default:()=>l});const l={compiler:[8,">= 4.3.0"],main:function(e,t,n,l,c){var s=e.lookupProperty||function(e,t){if(Object.prototype.hasOwnProperty.call(e,t))return e[t]};return'<div class="tc-ctl-sv-btn-close" title="'+e.escapeExpression(s(n,"i18n").call(null!=t?t:e.nullContext||{},"closeStreetView",{name:"i18n",hash:{},data:c,loc:{start:{line:1,column:40},end:{line:1,column:66}}}))+'"></div>'},useData:!0}}}]);
-//# sourceMappingURL=../maps/chunks/382.sitna.js.map

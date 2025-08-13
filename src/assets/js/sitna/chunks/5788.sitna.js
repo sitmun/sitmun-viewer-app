@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkSITNA=self.webpackChunkSITNA||[]).push([[5788],{5788:(t,c,n)=>{n.r(c),n.d(c,{default:()=>i});const i={compiler:[8,">= 4.3.0"],main:function(t,c,n,i,r){return'<div class="tc-ctl-prnmap-view tc-ctl-prnmap-view-left">    \r\n</div>\r\n<div class="tc-ctl-prnmap-view tc-ctl-prnmap-view-right">    \r\n</div>\r\n<div class="tc-ctl-prnmap-view tc-ctl-prnmap-view-bottom">    \r\n</div>'},useData:!0}}}]);
-//# sourceMappingURL=../maps/chunks/5788.sitna.js.map

@@ -24,6 +24,7 @@
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
     "angular-cli-ghpages": "^1.0.6",
+    "api-sitna": "^4.1.0",
     "jwt-decode": "^3.1.2",
     "ngx-pagination": "^6.0.3",
     "rxjs": "~7.5.0",
@@ -31,6 +32,7 @@
     "zone.js": "~0.13.0"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^16.0.0",
     "@angular-devkit/build-angular": "^16.0.0",
     "@angular-eslint/builder": "16.0.0-alpha.1",
     "@angular-eslint/eslint-plugin": "16.0.0-alpha.1",
@@ -53,6 +55,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "2.8.6",
-    "typescript": "~4.9.5"
+    "process": "^0.11.10",
+    "typescript": "~4.9.5",
+    "util": "^0.12.5"
   }
 }
