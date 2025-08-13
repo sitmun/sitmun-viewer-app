@@ -1,10 +1,11 @@
 @use 'colors';
 @use 'dimensions';
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
 
 /* You can add global styles to this file, and also import other style files */
 
 body {
   margin: 0;
   font-family: system-ui;
-  background-color: #f5f5f5; /* ORANGE */
+  background-color: white;
 }

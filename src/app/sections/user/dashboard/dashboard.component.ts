@@ -21,10 +21,11 @@ export class DashboardComponent
   ) {
     super(router, commonService, modal);
   }
+  application : any;
+  territories : any;
+}
 
-  override navigateToMap(applicationId: number, territoryId: number) {
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Map(applicationId, territoryId)
-    );
-  }
+export interface MapTerritory {
+  appId : number;
+  territoryId : number;
 }

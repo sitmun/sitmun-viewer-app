@@ -1,27 +1,46 @@
 <div class="login-page">
   <div class="container">
-    <div class="title">
-      <!--<h1>{{'loginPage.title' | translate | uppercase}}</h1>--> <!-- MV SILME -->
-      <h1></h1>
-      <div class="public-dashboard-button">
-        <button type="button" (click)="publicDashboard()">{{'loginPage.publicDashboardButton' | translate}}</button>
+
+    <div class="title-section">
+      <div class="logo-sitmun"></div>
+      <h1> {{'loginPage.title' | translate }} </h1>
+      <div class="public-dashboard">
+        <p> {{'loginPage.noConnexionDetails' | translate }} </p>
+        <primary-button
+          [button_text]="'loginPage.publicDashboardButton' | translate"
+          [img_src]="'assets/img/Icona-enllaç-extern.svg'"
+          (click)="publicDashboard()"
+          />
       </div>
     </div>
-    <div class="form">
-      <form (submit)="login()">
-        <input
-          type="text"
-          placeholder="{{'loginPage.usernamePlaceholder' | translate}}"
-          name="username"
-          [(ngModel)]="authenticationRequest.username" />
-        <input
-          type="password"
-          placeholder="{{'loginPage.passwordPlaceholder' | translate}}"
-          name="password"
-          [(ngModel)]="authenticationRequest.password" />
-        <button>{{'loginPage.submit' | translate | uppercase}}</button>
-      </form>
-    </div>
 
+    <div class="form-section">
+      <form (submit)="login()">
+        <form-field-input
+          [input_type]="'text'"
+          [input_title]="'loginPage.usernameText' | translate"
+          [input_placeholder]="'loginPage.usernamePlaceholder' | translate"
+          [input_name]="'username'"
+          [input_model]="authenticationRequest.username"
+          (output_model)="authenticationRequest.username = $event" />
+        <form-field-input
+          [input_type]="displayPassword"
+          [input_title]="'loginPage.passwordText' | translate"
+          [input_placeholder]="'loginPage.passwordPlaceholder' | translate"
+          [input_name]="'password'"
+          [input_image]="passwordImage"
+          [input_model]="authenticationRequest.password"
+          (output_model)="authenticationRequest.password = $event"
+          (input_button_click)="showOrHidePassword()"/>
+        <p>
+          <a href="auth/forgot-password"> {{'loginPage.passwordForgotten' | translate }} </a>
+        </p>
+        <primary-button
+          class="login-button"
+          [button_text]="'loginPage.submit' | translate"
+          [img_src]="'assets/img/Icona-connexió.svg'" />
+      </form>
+      <secondary-button [button_text]="'loginPage.DNIE' | translate" />
+    </div>
   </div>
 </div>

@@ -11,6 +11,8 @@ export class FormFieldInputComponent {
   @Input() input_name: string = '';
   @Input() input_type: string = '';
   @Input() input_title: string = '';
+  @Input() input_image: string = '';
+  @Output() input_button_click = new EventEmitter();
 
   @Output() output_model = new EventEmitter<string>();
 
@@ -20,5 +22,9 @@ export class FormFieldInputComponent {
 
   onInputChange(): void {
     this.output_model.emit(this.input_model);
+  }
+
+  onButtonClicked(): void {
+    this.input_button_click.emit()
   }
 }

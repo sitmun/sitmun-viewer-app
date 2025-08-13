@@ -22,11 +22,11 @@ export class DateUtils {
 
 export class StringUtils {
   static isEmpty(field?: string | null): boolean {
-    return field == null || field.trim() === '';
+    return field?.trim() === '';
   }
 
   static isNotEmpty(field?: string | null): boolean {
-    return !StringUtils.isEmpty(field);
+    return !!field && field.trim().length > 0;
   }
 
   static ellipsis(input: string, limit: number, placeholder = '...'): string {

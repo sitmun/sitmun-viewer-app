@@ -21,6 +21,14 @@ export interface DashboardItem {
   name?: string;
   type?: string;
   logo?: string;
+  description? : string;
+  isUnavailable: boolean;
+  lastUpdate?: Date;
+  maintenanceInformation?: string;
+  appPrivate: boolean;
+  updateDate: Date;
+  createdDate: Date;
+  creator: string;
 }
 
 export interface DashboardItemsResponse {
@@ -76,8 +84,6 @@ export class CommonService {
 
   fetchDashboardItems(
     dashboardType: DashboardTypes,
-    page?: number,
-    size?: number,
     keywords?: string
   ) {
     let path;
@@ -88,12 +94,6 @@ export class CommonService {
       case DashboardTypes.TERRITORIES:
         path = URL_API_TERRITORIES;
         break;
-    }
-    if (page != undefined && page >= 0) {
-      path += '?page=' + page;
-    }
-    if (size) {
-      path += '&size=' + size;
     }
     if (keywords) {
       path += '?keywords=' + keywords;

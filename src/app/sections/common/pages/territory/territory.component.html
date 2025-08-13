@@ -1,0 +1,21 @@
+<div id="content">
+  <div id="territory" *ngIf="territory">
+    <button (click)="navigateToPreviousPage()"> < {{ 'application.back' | translate }} </button>
+    <h1> {{ territory.name }}</h1>
+    <div id="territory-details">
+      <div id="left-side" *ngIf="applications">
+        <div id="research">
+          <app-dashboard-searchbox [applications]="applications"/>
+        </div>
+        <app-dashboard-items [items]="applications"/>
+      </div>
+      <div id="right-side">
+        <div id="territory-information">
+          <h2> {{ 'territory.information' | translate }} </h2>
+          <h3> {{ 'territory.description' | translate }} </h3>
+          <p [ngClass]="{ 'no-description': !territory.description }">   {{ territory.description ? territory.description : ('territory.descriptionMissing' | translate) }} </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

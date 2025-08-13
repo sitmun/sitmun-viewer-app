@@ -1,0 +1,73 @@
+@use 'colors';
+@use 'dimensions';
+
+#content {
+  background-color: colors.$blue-light;
+
+  #application {
+    padding-top: 5%;
+    margin: 0 auto;
+    width: 80%;
+    min-height: 100vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    #application-title {
+      padding-left: 20px;
+    }
+
+    #application-details {
+      display: flex;
+      gap: 24px;
+
+      #left-side {
+        flex: 2;
+        max-width: 70%;
+      }
+
+      #right-side {
+        flex: 1;
+
+        #associated-territories {
+          box-sizing: border-box;
+          height: 500px;
+        }
+      }
+    }
+
+    button {
+      all: unset;
+      padding-left: 20px;
+    }
+
+    button:hover {
+      cursor: pointer;
+      color: colors.$primary-orange
+    }
+  }
+}
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  #application {
+    width: 100% !important;
+    margin-top: 20px;
+    padding: 0px;
+  }
+
+  #application-details {
+    flex-direction: column;
+    padding-left: 0px;
+
+    #left-side,
+    #right-side {
+      flex: unset;
+      flex-wrap: nowrap;
+    }
+
+    #right-side {
+      width: 100vw;
+      margin-bottom: 150px;
+    }
+  }
+}
