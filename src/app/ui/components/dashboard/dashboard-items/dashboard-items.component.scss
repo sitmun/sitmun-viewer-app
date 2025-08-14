@@ -45,6 +45,18 @@ h3 {
   box-sizing: border-box;
 }
 
+.cards-container-territory {
+  display: grid;
+  grid-gap: 20px;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 1500px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card {
   border-radius: 8px;
   display: flex;
@@ -60,13 +72,12 @@ h3 {
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   .cards-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 20px;
     justify-content: flex-start;
 
     .card {
-      flex: 1 1 calc(50% - 10px);
-      max-width: calc(50% - 10px);
+      width: 100%;
       box-sizing: border-box;
       min-width: 100px;
     }
