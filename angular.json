@@ -37,9 +37,7 @@
                 "node_modules"
               ]
             },
-            "scripts": [
-              "./node_modules/hammerjs/hammer.min.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -161,9 +159,7 @@
                 "node_modules"
               ]
             },
-            "scripts": [
-              "./node_modules/hammerjs/hammer.min.js"
-            ]
+            "scripts": []
           }
         },
         "lint": {

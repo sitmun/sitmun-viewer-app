@@ -18,11 +18,7 @@ import { ProfileInformationComponent } from './components/profile-information/pr
 import { DashboardItemComponent } from './components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
 import { DashboardTerritoriesTagComponent } from './components/dashboard/dashboard-territories-tag/dashboard-territories-tag.component';
-import {
-  IgxAutocompleteModule,
-  IgxDropDownModule,
-  IgxInputGroupModule
-} from 'igniteui-angular';
+
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -32,11 +28,6 @@ import { TerritoryDetailsComponent } from './components/territory-details/territ
 
 @NgModule({
   imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule,
-        IgxAutocompleteModule,
-        IgxDropDownModule,
-        IgxInputGroupModule,
-        CommonModule,
-    FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,

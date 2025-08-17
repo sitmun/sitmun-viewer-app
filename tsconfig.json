@@ -19,8 +19,8 @@
     "target": "ES2022",
     "module": "es2020",
     "lib": [
-      "es2020",
-      "dom"
+            "es2020",
+            "dom"
     ],
     "paths": {
       "@auth/*": ["src/app/auth/*"],
@@ -30,7 +30,8 @@
       "@shared/*": ["src/app/shared/*"],
       "@ui/*": ["src/app/ui/*"]
     },
-      "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
