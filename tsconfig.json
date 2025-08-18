@@ -19,8 +19,8 @@
     "target": "ES2022",
     "module": "es2020",
     "lib": [
-      "es2020",
-      "dom"
+            "es2020",
+            "dom"
     ],
     "paths": {
       "@auth/*": ["src/app/auth/*"],
@@ -31,6 +31,7 @@
       "@ui/*": ["src/app/ui/*"]
     },
     "useDefineForClassFields": false,
+    "skipLibCheck": true,
     "typeRoots": ["./src/app/api", "./node_modules/@types"]
   },
   "angularCompilerOptions": {

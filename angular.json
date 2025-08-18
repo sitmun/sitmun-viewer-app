@@ -46,9 +46,7 @@
                 "node_modules"
               ]
             },
-            "scripts": [
-              "./node_modules/hammerjs/hammer.min.js"
-            ],
+            "scripts": [],
             "customWebpackConfig": {
               "path": "./webpack.config.js"
             }
@@ -183,9 +181,7 @@
                 "node_modules"
               ]
             },
-            "scripts": [
-              "./node_modules/hammerjs/hammer.min.js"
-            ]
+            "scripts": []
           }
         },
         "lint": {

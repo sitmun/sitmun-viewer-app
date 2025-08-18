@@ -13,7 +13,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {
   AUTH_CONFIG_DI,
 } from '@auth/authentication.options';
-import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -24,13 +23,9 @@ import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-m
 import { NgxPaginationModule } from 'ngx-pagination';
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
-import { ErrorModalComponent } from './sections/common/modals/error-modal/error-modal.component';
-import { WarningModalComponent } from './sections/common/modals/warning-modal/warning-modal.component';
-import {
-  IgxAutocompleteModule,
-  IgxDropDownModule,
-  IgxInputGroupModule
-} from 'igniteui-angular';
+import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
+import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
+
 
 registerLocaleData(localeEs);
 
@@ -53,9 +48,7 @@ registerLocaleData(localeEs);
     AuthenticationModule,
     UiModule,
     HttpClientModule,
-    IgxAutocompleteModule,
-    IgxDropDownModule,
-    IgxInputGroupModule,
+
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
