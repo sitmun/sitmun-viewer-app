@@ -12,9 +12,7 @@ import { UiModule } from '@ui/ui.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import {
   AUTH_CONFIG_DI,
-  AUTH_DETAILS_SERVICE_DI
 } from '@auth/authentication.options';
-import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -25,8 +23,10 @@ import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-m
 import { NgxPaginationModule } from 'ngx-pagination';
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
-import { ErrorModalComponent } from './sections/common/modals/error-modal/error-modal.component';
-import { WarningModalComponent } from './sections/common/modals/warning-modal/warning-modal.component';
+import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
+import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
+
+
 registerLocaleData(localeEs);
 
 @NgModule({
@@ -48,6 +48,7 @@ registerLocaleData(localeEs);
     AuthenticationModule,
     UiModule,
     HttpClientModule,
+
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -61,7 +62,6 @@ registerLocaleData(localeEs);
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
     { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
-    { provide: AUTH_DETAILS_SERVICE_DI, useClass: UserService }
   ],
   bootstrap: [AppComponent]
 })

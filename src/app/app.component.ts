@@ -10,7 +10,8 @@ export class AppComponent {
   title = 'sitmun-viewer-app';
 
   constructor(private translate: TranslateService) {
-    translate.setDefaultLang('es');
-    translate.use('es');
+    const savedLang = localStorage.getItem('language') || 'es';
+    translate.setDefaultLang(savedLang);
+    translate.use(savedLang);
   }
 }

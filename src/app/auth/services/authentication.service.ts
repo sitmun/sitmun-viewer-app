@@ -3,9 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {
   AUTH_CONFIG_DI,
-  AUTH_DETAILS_SERVICE_DI,
   AuthConfig,
-  AuthDetailsService,
   AuthenticationRequest,
   AuthenticationResponse
 } from '@auth/authentication.options';
@@ -25,8 +23,6 @@ export class AuthenticationService<T> {
     private http: HttpClient,
     private router: Router,
     @Inject(AUTH_CONFIG_DI) private config: AuthConfig<T>,
-    @Inject(AUTH_DETAILS_SERVICE_DI)
-    private detailsService: AuthDetailsService<T>
   ) {
     // TODO
     this.AUTH_TOKEN = this.config.localStoragePrefix + '_auth_token';

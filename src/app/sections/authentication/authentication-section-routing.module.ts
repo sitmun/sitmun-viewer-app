@@ -3,10 +3,14 @@ import { RoutingDefault } from '@config/app.config';
 import { LoginComponent } from '@sections/authentication/login/login.component';
 import { NgModule } from '@angular/core';
 import { MapComponent } from '@sections/user/map/map.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'forgot-password/:token', component: ResetPasswordComponent},
   { path: 'map', component: MapComponent }
 ];
 

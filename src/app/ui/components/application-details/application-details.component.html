@@ -1,0 +1,24 @@
+<div id="application-details" *ngIf="application">
+  <div id="application-informations">
+    <div id="application-information-logo">
+      <img [src]="application.logo ? application.logo : 'assets/img/card-no-image.svg'" alt=""/>
+    </div>
+    <div id="application-information-details">
+      <p [ngClass]="{ 'value-missing': !application.updateDate }">
+        <span>{{ 'application.lastUpdateDate' | translate }} :</span>
+        {{ application.lastUpdate ? (application.lastUpdate | date:'dd/MM/yyyy') : ('application.valueMissing' | translate) }}
+      </p>
+      <p [ngClass]="{ 'value-missing': !application.createdDate }">
+        <span>{{ 'application.creationDate' | translate }} :</span>
+        {{ application.createdDate ? (application.createdDate | date:'dd/MM/yyyy') : ('application.valueMissing' | translate) }}
+      </p>
+      <p [ngClass]="{ 'value-missing': !application.creator }">
+        <span>{{ 'application.contact' | translate }} :</span>
+        {{ application.creator ? application.creator : ('application.valueMissing' | translate) }}      </p>
+    </div>
+  </div>
+  <div id="application-description">
+    <p id="application-description-title"> {{ 'application.description' | translate }} </p>
+    <p id="application-description-content" [ngClass]="{ 'value-missing': !application.description }"> {{ application.description ? application.description : ('application.descriptionMissing' | translate)}} </p>
+  </div>
+</div>

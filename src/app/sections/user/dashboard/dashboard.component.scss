@@ -2,25 +2,22 @@
 @use 'dimensions';
 
 .dashboard-container {
-  max-width: 1630px;
+  max-width: 93%;
   margin-left: auto;
   margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: auto;
 }
 
-@media all and (max-width: 1623px) and (min-width: 1234px) {
-  .dashboard-container {
-    max-width: 1220px;
-  }
+#research {
+  width: 600px;
+  margin-bottom: 20px;
 }
 
-@media all and (max-width: 1233px) and (min-width: 828px) {
-  .dashboard-container {
-    max-width: 812px;
-  }
-}
-
-@media all and (max-width: 827px) {
-  .dashboard-container {
-    max-width: 420px;
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  #research {
+    width: 100%;
   }
 }

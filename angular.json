@@ -32,7 +32,10 @@
               "src/styles/main.scss"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/styles"]
+              "includePaths": [
+                "src/styles",
+                "node_modules"
+              ]
             },
             "scripts": []
           },
@@ -151,7 +154,10 @@
               "src/styles/main.scss"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/styles"]
+              "includePaths": [
+                "src/styles",
+                "node_modules"
+              ]
             },
             "scripts": []
           }

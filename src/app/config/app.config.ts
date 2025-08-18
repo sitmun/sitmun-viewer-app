@@ -16,13 +16,17 @@ export const NavigationPath = {
       Dashboard: '/user/dashboard',
       Map: (applicationId: number, territoryId: number) =>
         `/user/map/${applicationId}/${territoryId}`,
+      Territory: (territoryId: number) => `/user/territory/${territoryId}`,
+      Application: (applicationId: number) => `/user/application/${applicationId}`,
       Help: '/user/help'
     },
     Public: {
       Base: '/public',
       Dashboard: '/public/dashboard',
       Map: (applicationId: number, territoryId: number) =>
-        `/public/map/${applicationId}/${territoryId}`
+        `/public/map/${applicationId}/${territoryId}`,
+      Territory: (territoryId: number) => `/public/territory/${territoryId}`,
+      Application: (applicationId: number) => `/public/application/${applicationId}`,
     }
   }
 };

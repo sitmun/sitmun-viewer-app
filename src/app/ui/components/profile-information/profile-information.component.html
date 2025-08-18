@@ -1,0 +1,22 @@
+<div class="profile-information">
+    <img class="profile-icon" [src]="profile_icon_url" />
+
+    <p class="profile-description"> {{ profile_description}} </p>
+
+    <p class="profile-value" *ngIf="!editionActive">
+      {{ (profile_value ? (profile_value.length > PROFILE_VALUE_MAX_CHARACTER ? (profile_value | slice:0:PROFILE_VALUE_MAX_CHARACTER) + '...' : profile_value) : '') }}
+    </p>
+    <input
+      *ngIf="editionActive"
+      [type]="input_type"
+      [(ngModel)]="newProfileValue"
+      (keydown.enter)="editInformation()"
+      (keydown.escape)="setEditionNotActive()" />
+
+    <button *ngIf="!editionActive && is_profile_editable" class="profile-editable-icon" (click)="setEditionToActive()">
+      <img [src]="ICONE_MODIFICATION"/>
+    </button>
+    <button *ngIf="editionActive && is_profile_editable" class="profile-editable-icon" (click)="editInformation()">
+      <img [src]="ICONE_VALIDATION"/>
+    </button>
+</div>

@@ -1,0 +1,88 @@
+@use 'colors';
+@use 'dimensions';
+
+.form-section-input:focus-within {
+  border: 1px solid;
+  border-color: colors.$login-page-button-login-background;
+
+  p {
+    color : colors.$login-page-button-login-background;
+  }
+}
+
+.form-section-input {
+  margin: dimensions.$base-margin-1-5 0;
+  width: dimensions.$login-page-input-width + 90px;
+  height: dimensions.$login-page-input-height + 10px;
+  padding: 0 dimensions.$base-margin-3;
+  border-radius: 5px;
+  outline: 0;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(170, 170, 170, 0.1);
+  background-color: rgba(255, 255, 255, 0.192);
+  color: white;
+
+  p {
+    font-size: small;
+    height: 10px;
+    padding-top: 3px;
+    color: #B7B6BE;
+    margin: 0px;
+  }
+
+  div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80%;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+
+
+    input {
+      all: unset;
+      flex: 1;
+      color: white;
+      height: 60%;
+      margin-top: 5px;
+    }
+
+    button {
+      all: unset;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+
+      img {
+        width: 25px;
+        height: 25px;
+        padding-right: 5px;
+        background: none;
+        filter: none;
+      }
+
+      img:hover {
+        cursor: pointer;
+        filter: opacity(75%);
+      }
+    }
+  }
+}
+
+input,
+input::placeholder {
+  font: 1em sans-serif;
+  color: colors.$login-page-input-font;
+}
+
+input:focus-visible {
+  color: #000;
+}
+
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  .form-section-input {
+    width: 80%;
+  }
+}
