@@ -90,7 +90,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
     background-color: #00546a;
 }
 
-.left-collapsed-legend #legend-tab, .left-collapsed-silme #silme-tab,
+.left-collapsed-legend #legend-tab, .left-collapsed-silme.slide-panel > h1#silme-tab,
 .left-collapsed-ovmap #ovmap-tab {
     background-color: #b51818;
 }
@@ -116,7 +116,7 @@ button.tc-ctl-fscreen-btn.tc-active:hover {
 }
 
 .tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-share-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
-    background-color: #f5f5f5;
+    background-color: white;
 }
 
 .tc-ctl-coords, .tc-ctl-coords-x, .tc-ctl-coords-y, .tc-ctl-coords-crs, .tc-ctl-sb,
@@ -264,7 +264,7 @@ li.tc-ctl-lcat-search-group button.tc-ctl-lcat-search-btn-info.tc-checked::after
 }
 
 /* .tc-ctl-lcat-tree ul input[type="checkbox"].tc-ctl-lcat-btn-info:hover, .tc-ctl-lcat-search ul input[type="checkbox"].tc-ctl-lcat-search-btn-info:hover NOT USING ANYMORE */
-li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover, 
+li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover,
 .tc-ctl-wlm-btn-info:hover {
     background-color: #660000;
 }

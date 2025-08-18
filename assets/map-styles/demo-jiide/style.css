@@ -975,7 +975,7 @@ span.tc-beta {
 
 .tc-ctl-meas-select input[type=radio] ~ span, .tc-ctl-shared-select input[type=radio] ~ span, .tc-ctl-tctr-select input[type=radio] ~ span {
   border: 1px solid #ccc;
-  background-color: #f5f5f5;
+  background-color: white;
 }
 
 .tc-ctl-meas-select input[type=radio]:checked ~ span, .tc-ctl-shared-select input[type=radio]:checked ~ span, .tc-ctl-tctr-select input[type=radio]:checked ~ span {
@@ -3680,7 +3680,7 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
   #arbol, .tc-ctl-lcat-search {
     height: calc(100vh - 249px);
   }
-  
+
   #search.tc-ctl.tc-ctl-search.search-left-collapsed {
     left: 450px;
   }

@@ -426,3 +426,13 @@ function guardaFeaturesDibuix() {
   catch (Err) {
   }
 }
+
+function getLastBaseMapIndex(){
+  var idx = 0;
+  var workingMap = TC.Map.get(document.querySelector('.tc-map'));
+  for (var i = 0; i < workingMap.layers.length; i++) {
+      if (!workingMap.layers[i].isBase) break;
+      else idx++;
+  }
+  return idx;
+}
