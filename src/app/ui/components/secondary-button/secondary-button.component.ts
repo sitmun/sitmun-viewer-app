@@ -7,4 +7,5 @@ import { Component, Input} from '@angular/core';
 })
 export class SecondaryButtonComponent {
   @Input() button_text: string = "";
+  @Input() button_img_url: string = "";
 }
