@@ -1,0 +1,48 @@
+<div class="applicationAndTerritoriesList">
+    <button id="closeButton" (click)="closeEvent()">
+      <img [src]="'assets/img/fi_2732657.svg'" />
+    </button>
+    <h2> {{ 'map.territoriesApplication.mainTitle' | translate }} </h2>
+
+    <div id="main-content">
+      <div class="applications">
+        <p class="description"> {{ 'map.territoriesApplication.applicationsTitle' | translate }} :</p>
+        <div class="content">
+          <div class="search">
+            <img src="assets/img/search.svg" />
+            <input  [(ngModel)]="researchInputApplication" [placeholder]="('map.applicationsListFilter' | translate) + '...'"/>
+          </div>
+          <div class="applications-list" *ngIf="listApplications.length > 0">
+            <button class="application-item" *ngFor="let application of getListApplications()" [ngClass]="{ 'selected': application.id.toString() === applicationSelectedId }" (click)="selectApplication(application.id.toString())">
+              <img *ngIf="application.id.toString() === applicationSelectedId" src="assets/img/Icona-comprovar-azul.svg"/>
+              <p> {{ application.title }} </p>
+              <img id="app-logo" [src]="application.logo" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="territories">
+        <p class="description"> {{ 'map.territoriesApplication.territoriesTitle' | translate }} :</p>
+        <div class="content">
+          <div class="search">
+            <img src="assets/img/search.svg" />
+            <input [(ngModel)]="researchInputTerritory" [placeholder]="('map.territoriesListFilter' | translate) + '...'" />
+          </div>
+          <div class="territories-list" *ngIf="listTerritories.length > 0">
+            <button class="territory-item" *ngFor="let territory of getListTerritories()" [ngClass]="{ 'selected': territory.id.toString() === territorySelectedId }" (click)="territorySelectedId = territory.id.toString()">
+              <img *ngIf="territory.id.toString() === territorySelectedId" src="assets/img/Icona-comprovar-azul.svg"/>
+              <p> {{ territory.name }} </p>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <secondary-button
+      (click)="switchMap()"
+      id="saveButton"
+      [button_text]="'map.territoriesApplication.save' | translate"
+      [button_img_url]="'assets/img/Icona-comprovar.svg'"
+    />
+</div>
