@@ -4,17 +4,26 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-08-28
+
 ### Added
-- Future enhancements and improvements planned for upcoming releases
+- New territories list component for better territory management
+- Enhanced navigation bar with app/territory switching functionality
+- New UI icons for improved user interface (change, check, menu, dropdown)
+- Map section navigation controls with show/hide navbar functionality
+- Additional internationalization strings for new features
+- GitHub workflow for managing stale issues and pull requests
 
 ### Changed
-- Planned updates and modifications
+- Enhanced navigation bar component with improved functionality
+- Updated secondary button component styling and behavior
+- Improved notification component styling
+- Enhanced map styles with updated CSS configurations
 
 ### Fixed
-- Planned bug fixes and issue resolutions
-
-### Removed
-- Planned cleanup and removal of deprecated features
+- Fixed navbar not updating on in-app navigation
+- Resolved navbar override issues on page refresh
+- Fixed ChangeAppTerritory button visibility logic (now shows when there's one app and one territory)
 
 ## [1.1.0] - 2025-08-17
 
@@ -97,6 +106,7 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.1.0...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.1.1...HEAD
+[1.1.1]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.1.0...sitmun-viewer-app/1.1.1
 [1.1.0]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.0.0...sitmun-viewer-app/1.1.0
 [1.0.0]: https://github.com/sitmun/sitmun-application-stack/releases/tag/sitmun-viewer-app/1.0.0

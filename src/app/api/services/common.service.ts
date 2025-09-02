@@ -21,6 +21,7 @@ export interface DashboardItem {
   name?: string;
   type?: string;
   logo?: string;
+  headerParams: any; // JSON OBJECT
   description? : string;
   isUnavailable: boolean;
   lastUpdate?: Date;
