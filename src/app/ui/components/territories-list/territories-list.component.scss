@@ -1,0 +1,131 @@
+@use 'colors';
+@use 'dimensions';
+
+.applicationAndTerritoriesList {
+  box-sizing: border-box;
+  height: auto;
+  width: 800px;
+  background-color: white;
+  position: relative;
+  padding: 20px;
+
+
+  #closeButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  #main-content {
+    display: flex;
+    gap: 30px;
+
+    .applications,
+    .territories {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+
+      .description {
+        color: rgb(78, 78, 78);
+      }
+
+      .content {
+        background-color: colors.$blue-light;
+        height: 300px;
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+        padding: 10px;
+
+        .search {
+          display: flex;
+          align-items: center;
+          background-color: white;
+          border: 1px solid gray;
+          padding: 4px;
+          gap: 8px;
+          height: 40px;
+          width: 70%;
+          border-radius: 5px;
+
+          img {
+            margin-left: 10px;
+            height: 20px;
+            width: 20px;
+          }
+
+          input {
+            flex: 1;
+            border: none;
+            outline: none;
+          }
+        }
+
+        .applications-list,
+        .territories-list {
+          .application-item,
+          .territory-item {
+            all: unset;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+            padding: 0 8px;
+            gap: 10px;
+            background-color: white;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            width: 100%;
+            box-sizing: border-box;
+
+            #selected {
+              height: 15px;
+              width: 15px;
+              flex-shrink: 0;
+            }
+
+            p {
+              flex-grow: 1;
+              margin: 0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            #app-logo {
+              height: 80%;
+              width: 80%;
+              max-width: 40px;
+              aspect-ratio: 1 / 1;
+              object-fit: cover;
+              border-radius: 10px;
+              flex-shrink: 0;
+            }
+
+            &.selected {
+              border: 2px solid colors.$blue;
+            }
+
+            &:hover {
+              cursor: pointer;
+              border: 2px solid colors.$blue;
+            }
+          }
+        }
+
+      }
+    }
+  }
+
+  #saveButton {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+  }
+}

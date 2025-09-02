@@ -830,14 +830,11 @@ li.tc-ctl-legend-node {
 }
 
 #search {
-    position: fixed;
-    top: 20px;
-    left: 20px;
+    position: absolute;
+    padding-left: 20px;
     width: 300px;
     z-index: 9998;
     transition: left 200ms;
-    padding: 1px;
-    padding-left: 160px;
     font-size: 0.9em;
 }
 
