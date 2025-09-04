@@ -88,6 +88,7 @@
   "dashboardPage.coveredTerritories":"Territoris coberts",
   "dashboardPage.territoryHover": "Territori",
   "dashboardPage.mapHover": "Mapa",
+  "dashboardPage.noTerritoriesInApplication": "Cap territori a l'aplicació",
   "mapPage.title": "Mapa d'exemple",
   "dashboardDialog.inputPlaceholder": "Cerca",
   "menu.login": "Accedir",
