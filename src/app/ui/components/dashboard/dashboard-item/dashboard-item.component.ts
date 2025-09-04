@@ -88,8 +88,8 @@ export class DashboardItemComponent {
 
   displayTerritoriesTag(application : any) {
     let object = {
-      'application': application,
-      'territories': this.listOfTerritories
+      application: application,
+      territories: this.listOfTerritories
     };
     this.tag.emit(object);
   }

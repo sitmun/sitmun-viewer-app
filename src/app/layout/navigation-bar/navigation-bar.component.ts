@@ -163,7 +163,7 @@ export class NavigationBarComponent implements OnInit {
   }
 
   loginRedirect() {
-    this.router.navigate([NavigationPath.Auth.Login]);
+    this.router.navigateByUrl(NavigationPath.Auth.Login);
   }
 
   profileRedirect() {
