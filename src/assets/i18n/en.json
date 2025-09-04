@@ -88,6 +88,7 @@
   "dashboardPage.coveredTerritories":"Covered territories",
   "dashboardPage.territoryHover": "Territory",
   "dashboardPage.mapHover": "Map",
+  "dashboardPage.noTerritoriesInApplication": "No territory in the application",
   "mapPage.title": "Sample map",
   "dashboardDialog.inputPlaceholder": "Search",
   "menu.login": "Log in",
