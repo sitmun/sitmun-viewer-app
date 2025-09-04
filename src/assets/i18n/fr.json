@@ -70,6 +70,7 @@
   "dashboardPage.coveredTerritories":"Territoires couverts",
   "dashboardPage.territoryHover": "Territoire",
   "dashboardPage.mapHover": "Carte",
+  "dashboardPage.noTerritoriesInApplication": "Aucun territoire dans l'application",
   "mapPage.title": "Carte d'exemple",
   "dashboardDialog.inputPlaceholder": "Rechercher",
   "menu.login": "Accéder",

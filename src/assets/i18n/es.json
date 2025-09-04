@@ -53,6 +53,7 @@
   "dashboardPage.coveredTerritories":"Territorios cubiertos",
   "dashboardPage.territoryHover": "Territorio",
   "dashboardPage.mapHover": "Mapa",
+  "dashboardPage.noTerritoriesInApplication": "Ningún territorio en la aplicación",
   "mapPage.title": "Mapa de ejemplo",
   "dashboardDialog.inputPlaceholder": "Buscar",
   "menu.login": "Entrar",
