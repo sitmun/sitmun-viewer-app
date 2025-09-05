@@ -29,20 +29,22 @@ export interface RecoveryRequest {
   /**
    * Login (mail or username) of the account to recover the password
    */
-  login : string;
+  login: string;
 }
 
 export interface AuthenticationResponse {
   id_token: string;
 }
 
-export interface UserRequest {
+export interface ResetPasswordRequest {
+  newPassword: string;
+  email: string;
+  codeOTP: string;
+}
+
+export interface RequestNewPassword {
   /**
-   * New password of the account
+   * mail of the user to reset password
    */
-  password: string | null;
-  /**
-   * Token for password recovery
-   */
-  token: string | null;
+  email: string;
 }

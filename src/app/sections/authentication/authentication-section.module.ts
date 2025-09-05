@@ -6,10 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { UiModule } from '@ui/ui.module';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 @NgModule({
-  declarations: [LoginComponent, ForgotPasswordComponent, ResetPasswordComponent],
+  declarations: [LoginComponent, ForgotPasswordComponent],
   imports: [
     CommonModule,
     AuthenticationRoutingModule,
