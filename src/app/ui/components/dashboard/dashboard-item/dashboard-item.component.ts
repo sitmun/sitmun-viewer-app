@@ -99,23 +99,21 @@ export class DashboardItemComponent {
     let object = {
       application: application,
       territories: this.listOfTerritories
-    }
+    };
     this.tag.emit(object);
   }
 
   navigateToMap(applicationId: number, territoryId: number) {
-    let navigationPath = "";
-    if (this.router.url.startsWith("/user")) {
+    let navigationPath = '';
+    if (this.router.url.startsWith('/user')) {
       navigationPath = NavigationPath.Section.User.Map(
         applicationId,
         territoryId
       );
-    } else if (this.router.url.startsWith("/public")){
-      NavigationPath.Section.Public.Territory(territoryId);
+    } else if (this.router.url.startsWith('/public')) {
+      navigationPath = NavigationPath.Section.Public.Territory(territoryId);
     }
 
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Territory(territoryId)
-    );
+    this.router.navigateByUrl(navigationPath);
   }
 }

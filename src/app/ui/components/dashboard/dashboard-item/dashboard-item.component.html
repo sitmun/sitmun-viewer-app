@@ -13,9 +13,9 @@
 
     <button class="dashboard-item-nbTerritories"
     [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }"
-    (click)="navigateToMap(applicationId, this.listOfTerritories.content[0].id)"
+    (click)="navigateToMap(applicationId, listOfTerritories[0].id)"
     *ngIf="nbTerritory === 1" >
-      {{ this.listOfTerritories[0].name }}
+      {{ listOfTerritories[0].name }}
     </button>
     <button class="dashboard-item-nbTerritories" [disabled]="item.isUnavailable" *ngIf="nbTerritory > 1" (click)="displayTerritoriesTag(item)">
       {{ nbTerritory }} {{ 'dashboardPage.nbTerritoriesTitle' | translate }}
