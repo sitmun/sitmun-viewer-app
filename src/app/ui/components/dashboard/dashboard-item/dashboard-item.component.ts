@@ -6,9 +6,18 @@ import {
   Input,
   Output
 } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
@@ -31,6 +40,10 @@ export class DashboardItemComponent {
     private router: Router,
     private notificatioNService: NotificationService,
     private translateService: TranslateService
+    private commonService: CommonService,
+    private router: Router,
+    private notificatioNService: NotificationService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit() {
@@ -46,6 +59,7 @@ export class DashboardItemComponent {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
+  onResize(event: any) {
     this.checkWindowSize();
   }
 
@@ -59,10 +73,12 @@ export class DashboardItemComponent {
   }
 
   fillTerritory(appId: number) {
+  fillTerritory(appId: number) {
     this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
+        this.nbTerritory = res.content.length;
         this.nbTerritory = res.content.length;
       }
     });
@@ -73,9 +89,17 @@ export class DashboardItemComponent {
    */
   navigateToApplicationDetailsOrMap(idApp: number) {
     if (this.nbTerritory > 1) {
+    if (this.nbTerritory > 1) {
       this.navigateToApplicationDetails(idApp);
     } else if (this.nbTerritory == 1) {
+    } else if (this.nbTerritory == 1) {
       this.navigateToMap(idApp, this.listOfTerritories[0].id);
+    } else {
+      this.translateService
+        .get('dashboardPage.noTerritoriesInApplication')
+        .subscribe((trad) => {
+          this.notificatioNService.warning(trad);
+        });
     } else {
       this.translateService
         .get('dashboardPage.noTerritoriesInApplication')
@@ -87,9 +111,12 @@ export class DashboardItemComponent {
 
   navigateToApplicationDetails(idApp: number) {
     if (this.router.url.startsWith('/public')) {
+    if (this.router.url.startsWith('/public')) {
       this.router.navigateByUrl(
         NavigationPath.Section.Public.Application(idApp)
       );
+    } else {
+      this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
     } else {
       this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
     }
@@ -99,19 +126,21 @@ export class DashboardItemComponent {
     let object = {
       application: application,
       territories: this.listOfTerritories
+      application: application,
+      territories: this.listOfTerritories
     }
     this.tag.emit(object);
   }
 
   navigateToMap(applicationId: number, territoryId: number) {
-    let navigationPath = '';
-    if (this.router.url.startsWith('/user')) {
+    let navigationPath = "";
+    if (this.router.url.startsWith("/user")) {
       navigationPath = NavigationPath.Section.User.Map(
         applicationId,
         territoryId
       );
-    } else if (this.router.url.startsWith('/public')) {
-      NavigationPath.Section.Public.Territory(territoryId)
+    } else if (this.router.url.startsWith("/public")) {
+      NavigationPath.Section.Public.Territory(territoryId);
     }
 
     this.router.navigateByUrl(
