@@ -29,10 +29,10 @@ export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER: number = 100;
-  nbTerritory: number = 0;
-  applicationId: number = 0;
-  listOfTerritories: any;
+  DESCRIPTION_MAX_CHARACTER : number = 100;
+  nbTerritory : number = 0;
+  applicationId : number = 0;
+  listOfTerritories : any;
   mediaQueryListener: any;
 
   constructor(
