@@ -1,4 +1,3 @@
-import { SitnaHelper } from '@ui/util/sitna-helpers';
 import {
   SitnaBaseLayer,
   SitnaControls,
