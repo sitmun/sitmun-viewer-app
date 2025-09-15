@@ -111,11 +111,12 @@ export class DashboardItemComponent {
         territoryId
       );
     } else if (this.router.url.startsWith('/public')) {
-      NavigationPath.Section.Public.Territory(territoryId)
+      navigationPath = NavigationPath.Section.Public.Map(
+        applicationId,
+        territoryId
+      );
     }
 
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Territory(territoryId)
-    );
+    this.router.navigateByUrl(navigationPath);
   }
 }
