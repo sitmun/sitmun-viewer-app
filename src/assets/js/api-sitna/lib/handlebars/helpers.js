@@ -37,24 +37,21 @@ Handlebars.registerHelper("startsWith", function (str, value) {
     return str && str.toString().startsWith(value);
 });
 
-Handlebars.registerHelper("isPlainObject", function (obj) {
-    return obj && obj instanceof Object && !Array.isArray(obj) && !(obj instanceof Date);
+Handlebars.registerHelper("isObject", function (obj) {
+    return obj instanceof Object && !Array.isArray(obj);
 });
 
 Handlebars.registerHelper("isEmpty", function (obj) {
-    return !!obj && Object.keys(obj).length === 0;
+    for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            return false;
+        }
+    }
+    return true;
 });
 
 Handlebars.registerHelper("isArray", function (obj) {
     return Array.isArray(obj);
-});
-
-Handlebars.registerHelper("isNumber", function (obj) {
-    return typeof obj === 'number';
-});
-
-Handlebars.registerHelper("isBoolean", function (obj) {
-    return typeof obj === 'boolean';
 });
 
 Handlebars.registerHelper("isUrl", function (str) {
@@ -192,91 +189,21 @@ Handlebars.registerHelper("countif", function (obj, excludedKeys) {
     return _count > 0;
 });
 
-const dateTimeRegEx = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])[T\s](2[0-3]|[01][0-9]):[0-5][0-9](:[0-5][0-9])?(\.[0-9]{0,3}){0,1}Z?$/;
-const dateRegEx = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])Z?$/;
-const timeRegEx = /^(2[0-3]|[01][0-9]):([0-5][0-9])(?:(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)){0,1}Z?$/;
-
-Handlebars.registerHelper("formatDateNumberOrBoolean", function (obj) {
-    if (obj && (obj instanceof Date || dateTimeRegEx.test(obj))) {
+Handlebars.registerHelper("formatDateOrNumber", function (obj) {
+    if (obj && /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9](\.[0-9]{0,3}){0,1}Z$/.test(obj)) {
         return new Date(obj).toLocaleString(TC.i18n.currentLocaleKey && TC.i18n.currentLocaleKey.length > 2 ? TC.i18n.currentLocaleKey.substr(0, 2) : TC.i18n.currentLocaleKey, { hour12: false });
     }
-    if (obj && dateRegEx.test(obj)) {
-        if (Number.isNaN(Date.parse(obj)))
+    if (obj && /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])Z$/.test(obj)) {
+        if (isNaN(Date.parse(obj)))
             obj = obj.replace('Z', '');
         return new Date(obj).toLocaleDateString(TC.i18n.currentLocaleKey && TC.i18n.currentLocaleKey.length > 2 ? TC.i18n.currentLocaleKey.substr(0, 2) : TC.i18n.currentLocaleKey);
 
     }
-    if (typeof obj === 'number') {
+    if (typeof obj === 'number' || (typeof (obj) === 'string') && !isNaN(obj)) {
         return TC.Util.formatNumber(obj, TC.i18n.currentLocaleKey);
-    }
-    if (typeof obj === 'string') {
-        const value = obj.toLowerCase();
-        if (value === 'true') {
-            return TC.i18n.currentLocale.yes;
-        }
-        if (value === 'false') {
-            return TC.i18n.currentLocale.no;
-        }
-    }
-    if (obj === true) {
-        return TC.i18n.currentLocale.yes;
-    }
-    if (obj === false) {
-        return TC.i18n.currentLocale.no;
-    }
+    } 
     return obj;
 })
-
-const getDate = function (obj) {
-    if (obj instanceof Date) {
-        return obj;
-    }
-    if (dateRegEx.test(obj) || dateTimeRegEx.test(obj)) {
-        return new Date(obj);
-    }
-}
-
-const getTime = function (obj) {
-    if (typeof obj === 'string') {
-        const match = obj.match(timeRegEx);
-        if (match) {
-            const [, hours, minutes, seconds, milliseconds] = match;
-            return { hours, minutes, seconds, milliseconds };
-        }
-    }
-};
-
-const inputDate = function (obj) {
-    const date = getDate(obj);
-    if (date) {
-        return `${date.getFullYear().toString().padStart(4, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    }
-    return ''
-};
-Handlebars.registerHelper("inputDate", inputDate);
-
-const inputTime = function (obj) {
-    const time = getTime(obj);
-    if (time) {
-        return `${time.hours}:${time.minutes}:${time.seconds ?? '00'}.${time.milliseconds ?? '000'}`;
-    }
-    return ''
-};
-Handlebars.registerHelper("inputTime", inputTime);
-
-Handlebars.registerHelper("inputDatetime", function (obj) {
-    const date = inputDate(obj);
-    if (date) {
-        let tIndex = obj.indexOf('T');
-        let sIndex = obj.indexOf(' ');
-        const index = tIndex < 0 ? sIndex : tIndex;
-        const time = inputTime(obj.substring(index + 1));
-        if (time) return `${date}T${time}`;
-        return date;
-    }
-    return '';
-});
-
 Handlebars.registerHelper("formatNumber", function (value, locale) {
     return value.toLocaleString(locale);
 });    

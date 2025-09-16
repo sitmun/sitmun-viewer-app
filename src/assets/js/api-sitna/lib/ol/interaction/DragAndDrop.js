@@ -1,9 +1,8 @@
 
-import DragAndDrop, { DragAndDropEvent } from 'ol/interaction/DragAndDrop.js';
-import EventType from 'ol/events/EventType.js';
-import { getUserProjection } from 'ol/proj.js';
+import DragAndDrop, { DragAndDropEvent } from 'ol/interaction/DragAndDrop';
+import EventType from 'ol/events/EventType';
+import JSZip from 'jszip';
 
-const currentFiles = new Set();
 
 var DragAndDropEventType = {
     /**
@@ -14,118 +13,89 @@ var DragAndDropEventType = {
     ADD_FEATURES: 'addfeatures'
 };
 
-const getFileNameWithoutExtension = function (name) {
-    const pointIndex = name.lastIndexOf('.');
-    if (pointIndex >= 0) {
-        return name.substr(0, pointIndex);
-    }
-    return name;
-};
-
 const getFeatureGroupName = function (feature, file) {
     if (Object.prototype.hasOwnProperty.call(feature.getProperties(), "h4_Capa")) {
         return feature.getProperties()["h4_Capa"];
     }
     // Si el id es del tipo: tipo_Geom.n, dividimos por tipo_geom.
-    // En caso contrario, dividimos por archivo.
+    // En caso contrario, dividimos por geometría, salvo en el caso de gpx, 
+    // porque ese formato no debe hacer grupos por geometría.
     const groups = /(?<layer>[-_\p{Letter}.]+[\p{Letter}])?\.*(?<id>[\d]*)?/iu.exec(feature.getId() || feature.ol_uid).groups;
-    return groups["layer"] ? groups["layer"] : getFileNameWithoutExtension(file.name);
+    return groups["layer"] ?
+        groups["layer"] :
+        !file.name.toLowerCase().endsWith('.gpx') && feature.getGeometry() ?
+            Object.keys(ol.geom).find(type => feature.getGeometry() instanceof ol.geom[type]) :
+            file.name;    
 }
 
-DragAndDrop.prototype.handleResult_ = async function (file, event) {
-    const result = event.target.result;
-    const map = this.getMap();
-    let projection = this.projection_;
+DragAndDrop.prototype.handleResult_ = function (file, event) {
+    var result = event.target.result;
+    var map = this.getMap();
+    var projection = this.projection_;
     if (!projection) {
-        projection = getUserProjection();
-        if (!projection) {
-            const view = map.getView();
-            projection = view.getProjection();
-        }
+        var view = map.getView();
+        projection = view.getProjection();
     }
 
-    ///////////
-    let groups = {};
-    let features = [];
-    const fileName = file.name;
-    let currentFormat;
-    ///////////
+    var features = [];
+    var groups = {};
+    var formats = this.formats_;
+    var fileName = file.name;
 
-    let text;
-    const formats = this.formats_;
-    for (let i = 0, ii = formats.length; i < ii; ++i) {
-        currentFormat = formats[i];
-        let input = result;
-        if (this.readAsBuffer_ && currentFormat.getType() !== 'arraybuffer') {
-            if (text === undefined) {
-                text = new TextDecoder().decode(result);
-            }
-            input = text;
-        }
-        features = await this.tryReadFeatures_(currentFormat, input, {
-            featureProjection: projection,
-            fileName: file.name,
-            fileNames: [...currentFiles.values()]
-        });
-        /////
-        if (features === true) {
-            const counterContainer = map?._wrap.parent || window;
-            counterContainer.dropFilesCounter--;
-            return;
-        } 
-        else if (features?.length > 0) {
-            break;
-        }
-        /////
-    }
 
-    ////////
-    if (features && features.length > 0) {
-        // si es un array de arrays
-        if (features.every(a => Array.isArray(a))) {
-            groups = features.reduce(function (rv, x) {
-                if (x.length === 0) return rv;
-                const id = getFeatureGroupName(x[0], file);
-                rv[id] ??= [];
-                rv[id] = rv[id].concat(x);
-                return rv;
-            }, {});
-        }
-        else if (currentFormat.groupFeatures) {
-            groups = currentFormat.groupFeatures(features, function (feat) {
-                return getFeatureGroupName(feat, file);
+
+    if (typeof result === "string") {
+        for (var i = 0, ii = formats.length; i < ii; ++i) {
+            var format = formats[i];
+            features = this.tryReadFeatures_(format, result, {
+                featureProjection: projection
             });
+            if (features && features.length > 0) {
+                break;
+            }
         }
+
+        if (features && features.length > 0)
+            //si es un array de arrays
+            if (features.every(a => Array.isArray(a))) {
+                groups = features.reduce(function (rv, x) {
+                    if (x.length === 0) return rv;
+                    const id = getFeatureGroupName(x[0], file);
+                    rv[id] = (rv[id] = rv[id] || []).concat(x);
+                    return rv;
+                }, {});
+            }
+            else
+                groups = features.reduce(function (rv, x) {
+                    var id = x._folders && x._folders.length ? x._folders[x._folders.length - 1] : null;
+                    if (!id) {
+                        id = getFeatureGroupName(x, file)
+                    }
+                    (rv[id] = rv[id] || []).push(x);
+                    return rv;
+                }, {});
         else {
-            groups = features.reduce(function (rv, feat) {
-                var id = feat._folders?.length ? feat._folders[feat._folders.length - 1] : null;
-                if (!id) {
-                    id = getFeatureGroupName(feat, file)
-                }
-                rv[id] ??= [];
-                rv[id].push(feat);
-                return rv;
-            }, {});
+            groups[file.name] = features;
         }
     }
     else {
-        groups[getFileNameWithoutExtension(file.name)] = features;
+        features = result ? new ol.format.GeoJSON().readFeaturesFromObject(result, {
+            featureProjection: projection,
+            dataProjection: new ol.format.GeoJSON().readProjectionFromObject(result)
+        }) : null;
+        groups[file.name] = features;
     }
-
     const timeStamp = Date.now();
     const groupKeys = Object.keys(groups);
     if (groupKeys.length > 1) {
-        const counterContainer = this.getMap()?._wrap.parent || window;
-        counterContainer.dropFilesCounter = counterContainer.dropFilesCounter + groupKeys.length - 1;
+        window.dropFilesCounter = window.dropFilesCounter + groupKeys.length - 1;
     }
-    for (var j = 0; j < groupKeys.length; j++) {
+    for (var i = 0; i < groupKeys.length; i++) {
         //for (var group in groups) {
-        const group = groupKeys[j];
+        const group = groupKeys[i];
         const groupFeatures = groups[group];
         if (group !== "undefined" && groupFeatures)
-            groupFeatures.forEach((f) => {
-                if (groupKeys.length > 1) f._group = group;
-            });
+            groupFeatures.forEach((f) => { if (!f._folders) f._folders = [group]; });
         if (this.source_) {
             this.source_.clear();
             this.source_.addFeatures(groupFeatures);
@@ -139,71 +109,33 @@ DragAndDrop.prototype.handleResult_ = async function (file, event) {
         if (file._fileSystemFile) {
             newFile._fileSystemFile = file._fileSystemFile;
         }
-        const fileHandle = file._fileHandle;
+        const fileHandle = this.getFileHandle(file);
         if (fileHandle) {
-            newFile._fileHandle = fileHandle;
+            fileHandles.set(newFile, fileHandle);
         }
-        ////////
 
-        const ddEvent = new DragAndDropEvent(
-            DragAndDropEventType.ADD_FEATURES,
-            newFile,
-            groupFeatures,
-            projection
-        );
-
-        ///////////
-        ddEvent._groupIndex = j;
+        const ddEvent = new DragAndDropEvent(DragAndDropEventType.ADD_FEATURES, newFile, groups[group], projection);
+        ddEvent._groupIndex = i;
         ddEvent._groupCount = groupKeys.length;
-        ddEvent._groupName = group;
-        const getFeatureTypeMetadata = (metadata, features) => currentFormat.getFeatureTypeMetadata ?
-            currentFormat.getFeatureTypeMetadata(metadata, features) : metadata;
-        if (groupFeatures) {
-            const featureMetadata = groupFeatures
-                .map((feat) => currentFormat.featureMetadata.get(feat))
-                .filter((feat) => !!feat);
-            if (featureMetadata.length) {
-                const firstMetadata = featureMetadata[0];
-                if (featureMetadata.every((md) => md == firstMetadata)) {
-                    ddEvent._metadata = getFeatureTypeMetadata(firstMetadata, groupFeatures);
-                }
-            }
-        }
-        ///////////
-
         this.dispatchEvent(ddEvent);
-    ////////
+        //////////////
     }
-    ////////
 };
 
-DragAndDrop.prototype.handleDrop = async function (event) {
-    const files = event.dataTransfer.items;
+DragAndDrop.prototype.handleDrop = function (event) {
+    const _self = this;
+    var files = event.dataTransfer.items;
 
     if (DataTransferItem.prototype.getAsFileSystemHandle) {
-        const fileHandles = [];
         // Rama de File System Access API
-        const processHandle = async function (fsHandle) {
-
-            if (fsHandle instanceof window.FileSystemDirectoryHandle) {
-                for await (const child of fsHandle.values()) {
-                    await processHandle(child);
-                }
-            }
-            else if (fsHandle) {
-                fileHandles.push(fsHandle);
+        const processHandle = function (fsHandle) {
+            if (fsHandle) {
+                _self.processFile(fsHandle);
             }
         };
-        for await (const fsHandle of [...files].map((f) => f.getAsFileSystemHandle())) {
-            await processHandle(fsHandle);
+        for (var i = 0, ii = files.length; i < ii; ++i) {
+            files[i].getAsFileSystemHandle().then(processHandle);
         }
-
-        fileHandles.forEach((fh, idx, arr) => {
-            const siblings = arr.slice();
-            siblings.splice(idx, 1);
-            fh._siblings = siblings;
-        });
-        fileHandles.forEach((fh) => this.processFile(fh));
     }
     else {
         // Rama de File System API
@@ -216,104 +148,115 @@ DragAndDrop.prototype.handleDrop = async function (event) {
                 });
             }
             else {
-                this.processFile(fileOrDir);
+                if (fileOrDir instanceof File) {
+                    _self.processFile(fileOrDir);
+                }
+                else {
+                    fileOrDir.file(async function (file) {
+                        _self.processFile(file);
+                    });
+                }
             }
         };
         for (var j = 0, jj = files.length; j < jj; ++j) {
             const item = files[j];
             if (item.kind === "file") {
-                processFileOrDir(item.getAsFile());
+                processFileOrDir(item.webkitGetAsEntry() || item.getAsFile());
             }
         }
     }
-    currentFiles.clear();
+
+};
+
+const fileHandles = new Map();
+
+DragAndDrop.prototype.getFileHandle = function (file) {
+    return fileHandles.get(file);
+};
+
+DragAndDrop.prototype.getFileHandleByName = function (name) {
+    const lcName = name.toLowerCase();
+    for (const file of fileHandles.keys()) {
+        if (file.name.toLowerCase() === lcName) {
+            return fileHandles.get(file);
+        }
+    }
+    return null;
+};
+
+DragAndDrop.prototype.setFileHandle = function (file, handle) {
+    return fileHandles.set(file, handle);
 };
 
 DragAndDrop.prototype.processFile = async function (file) {
+    const _self = this;
     let fileHandle;
 
-    currentFiles.add(file.name);
-
-    if (globalThis.FileSystemFileHandle && file instanceof globalThis.FileSystemFileHandle) {
+    if (window.FileSystemFileHandle && file instanceof window.FileSystemFileHandle) {
         fileHandle = file;
         try {
             file = await fileHandle.getFile();
         }
         catch (err) {
             console.warn(err);
-            this.dispatchEvent(new DragAndDropEvent('error', fileHandle));
+            _self.dispatchEvent(new DragAndDropEvent('error', fileHandle));
             return;
         }
-        file._fileHandle = fileHandle;
+        _self.setFileHandle(file, fileHandle);
     }
-
-    const counterContainer = this.getMap()?._wrap.parent || globalThis;
-    counterContainer.dropFilesCounter ??= 0;
-    counterContainer.dropFilesCounter++;
 
     if (file.type === "application/zip" ||
         file.type === "application/x-zip-compressed" ||
         file.type === "application/vnd.google-earth.kmz" ||
         (!file.type || file.type === "application/octet-stream") && file.name.match(/\.kmz|\.zip$/ig)) {
-        currentFiles.delete(file.name);
-        const { default: JSZip } = await import('jszip');
         var zip = new JSZip();
+        window.dropFilesCounter = window.dropFilesCounter ? window.dropFilesCounter + 1 : 1;
         const zipContent = await zip.loadAsync(file);
-        counterContainer.dropFilesCounter--;
-        const isKmz = (file.type === "application/vnd.google-earth.kmz" ||
-            (!file.type || file.type === "application/octet-stream") && file.name.match(/\.kmz$/ig));
+        window.dropFilesCounter--;
+        //URI: Si el fichero es un KMZ nos guardamos el nombre del fichero para remplazar el nombre interno que suele ser doc.kml
+        const zipContainerName = (file.type === "application/vnd.google-earth.kmz" ||
+            (!file.type || file.type === "application/octet-stream") && file.name.match(/\.kmz$/ig)) ? file.name : null;
 
-        const zippedFiles = [];
         zipContent.forEach(function (fileName, zippedFile) {
             if (zippedFile.dir) {
                 return;
             }
-            counterContainer.dropFilesCounter++;
-            zippedFiles.push({ name: fileName, file: zippedFile });
-        });
-        const newFiles = await Promise.all(zippedFiles.map(async (zippedFileObj) => {
+            window.dropFilesCounter++;
             //TODO: Desestimar fichero no geográficos
-            const data = await zippedFileObj.file.async("blob");
-            counterContainer.dropFilesCounter--;
-            const newFileOptions = {};
-            if (isKmz) newFileOptions.type = 'application/vnd.google-earth.kml+xml';
-            const newFile = new File([data], zippedFileObj.name, newFileOptions);
-            newFile._fileSystemFile = file._fileSystemFile || file;
-            if (fileHandle) {
-                newFile._fileHandle = fileHandle;
-            }
-            else {
-                // El archivo no es un fileHandle, puede que sea un archivo virtual dentro de un zip
-                // Buscamos el handle asociado al archivo
-                const parentFileHandle = file._fileHandle;
-                if (parentFileHandle) {
-                    newFile._fileHandle = parentFileHandle;
+            zippedFile.async("blob").then(function (data) {
+                window.dropFilesCounter--;
+                //URI: Si hay definido un nombre del zip contenedor (Se trata de un KMZ) lo uso en vez del nombre del KML interno
+                const newFile = zipContainerName ? new File([data], zipContainerName, { type: "application/vnd.google-earth.kml+xml" }) : new File([data], fileName);
+                newFile._fileSystemFile = file._fileSystemFile || file;
+                if (fileHandle) {
+                    _self.setFileHandle(newFile, fileHandle);
                 }
-            }
-            return newFile;
-        }));
-        newFiles.forEach((newFile) => this.processFile(newFile));
+                _self.processFile(newFile);
+            });
+        });
     } else {
-        var reader = new FileReader();
-        reader.addEventListener(EventType.LOAD, this.handleResult_.bind(this, file));
-        if (this.readAsBuffer_) {
-            reader.readAsArrayBuffer(file);
-        } else {
+        if (window.FileSystemDirectoryHandle && file instanceof window.FileSystemDirectoryHandle) {
+            for await (const child of file.values()) {
+                _self.processFile(child);
+            }
+        }
+        else {
+            window.dropFilesCounter = window.dropFilesCounter ? window.dropFilesCounter + 1 : 1;
+            var reader = new FileReader();
+            reader.addEventListener(EventType.LOAD, _self.handleResult_.bind(_self, file));
             reader.readAsText(file);
         }
     }
 };
 
-DragAndDrop.prototype.tryReadFeatures_ = async function (format, text, options) {
+DragAndDrop.prototype.tryReadFeatures_ = function tryReadFeatures_(format, text, options) {
     let features;
     try {
-        features = await format.readFeatures(text, options);
+        features = format.readFeatures(text, options);
     } catch (e) {
         return null;
     }
-    // Aceptamos booleanos por el formato Shapefile: varios archivos que se tienen que procesar, 
-    // y solamente uno devolverá entidades
-    if (features === true || (features?.length && features.some(f => Array.isArray(f) ? f.some(f2 => !!f2.getGeometry()) : !!f.getGeometry()))) {
+    if (features && features.length && features.some(f => Array.isArray(f) ? f.some(f2 => !!f2.getGeometry()) : !!f.getGeometry())) {
         return features;
     }
     return null;

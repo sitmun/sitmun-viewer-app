@@ -1,51 +1,37 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * @module ol/format/GPX
  */
 import Feature from 'ol/Feature.js';
+import GeometryLayout from 'ol/geom/GeometryLayout.js';
 import LineString from 'ol/geom/LineString.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
 import Point from 'ol/geom/Point.js';
 import XMLFeature from 'ol/format/XMLFeature.js';
-import {
-    OBJECT_PROPERTY_NODE_FACTORY,
-    XML_SCHEMA_INSTANCE_URI,
-    createElementNS,
-    makeArrayPusher,
-    makeArraySerializer,
-    makeChildAppender,
-    makeObjectPropertySetter,
-    makeSequence,
-    makeSimpleNodeFactory,
-    makeStructureNS,
-    parseNode,
-    pushParseAndPop,
-    pushSerializeAndPop,
-    parse,
-    isDocument,
-} from 'ol/xml.js';
+import { OBJECT_PROPERTY_NODE_FACTORY, XML_SCHEMA_INSTANCE_URI, createElementNS, makeArrayPusher, makeArraySerializer, makeChildAppender, makeObjectPropertySetter, makeSequence, makeSimpleNodeFactory, makeStructureNS, parseNode, pushParseAndPop, pushSerializeAndPop, } from 'ol/xml.js';
 import { get as getProjection } from 'ol/proj.js';
-import {
-    readDateTime,
-    readDecimal,
-    readPositiveInteger,
-    readString,
-    writeDateTimeTextNode,
-    writeDecimalTextNode,
-    writeNonNegativeIntegerTextNode,
-    writeStringTextNode,
-} from 'ol/format/xsd.js';
+import { includes } from 'ol/array.js';
+import { readDateTime, readDecimal, readPositiveInteger, readString, writeDateTimeTextNode, writeDecimalTextNode, writeNonNegativeIntegerTextNode, writeStringTextNode, } from 'ol/format/xsd.js';
 import { transformGeometryWithOptions } from 'ol/format/Feature.js';
-import Consts from '../../../TC/Consts.js'
-import FeatureTypeParser from '../../../TC/tool/FeatureTypeParser.js';
-import SitnaPoint from '../../../SITNA/feature/Point.js';
-import Polyline from '../../../SITNA/feature/Polyline.js';
-import MultiPolyline from '../../../SITNA/feature/MultiPolyline.js';
-
 /**
  * @const
  * @type {Array<null|string>}
  */
-let NAMESPACE_URIS = [
+var NAMESPACE_URIS = [
     null,
     'http://www.topografix.com/GPX/1/0',
     'http://www.topografix.com/GPX/1/1',
@@ -101,52 +87,46 @@ const readDateTime1000 = function (node) {
  * @const
  * @type {string}
  */
-const SCHEMA_LOCATION =
-    'http://www.topografix.com/GPX/1/1 ' +
+var SCHEMA_LOCATION = 'http://www.topografix.com/GPX/1/1 ' +
     'http://www.topografix.com/GPX/1/1/gpx.xsd';
-
 /**
  * @const
  * @type {Object<string, function(Node, Array<*>): (Feature|undefined)>}
  */
-const FEATURE_READER = {
+var FEATURE_READER = {
     'rte': readRte,
     'trk': readTrk,
     'wpt': readWpt,
 };
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const GPX_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var GPX_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'rte': makeArrayPusher(readRte),
     'trk': makeArrayPusher(readTrk),
     'wpt': makeArrayPusher(readWpt),
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const LINK_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var LINK_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'text': makeObjectPropertySetter(readString, 'linkText'),
     'type': makeObjectPropertySetter(readString, 'linkType'),
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const GPX_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var GPX_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'rte': makeChildAppender(writeRte),
     'trk': makeChildAppender(writeTrk),
     'wpt': makeChildAppender(writeWpt),
 });
-
 /**
  * @typedef {Object} Options
  * @property {function(Feature, Node):void} [readExtensions] Callback function
@@ -156,13 +136,11 @@ const GPX_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
  * nodes from `wpt`, `rte` and `trk` can be processed, as those are
  * directly mapped to a feature.
  */
-
 /**
  * @typedef {Object} LayoutOptions
  * @property {boolean} [hasZ] HasZ.
  * @property {boolean} [hasM] HasM.
  */
-
 /**
  * @classdesc
  * Feature format for reading and writing data in the GPX format.
@@ -179,245 +157,120 @@ const GPX_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
  *
  * @api
  */
-class GPX extends XMLFeature {
+var GPX = /** @class */ (function (_super) {
+    __extends(GPX, _super);
     /**
-   * @param {Options} [options] Options.
+     * @param {Options} [opt_options] Options.
      */
-    constructor(options) {
-        super();
-
-        options = options ? options : {};
-
+    function GPX(opt_options) {
+        var _this = _super.call(this) || this;
+        var options = opt_options ? opt_options : {};
         /**
          * @type {import("../proj/Projection.js").default}
          */
-        this.dataProjection = getProjection('EPSG:4326');
-
+        _this.dataProjection = getProjection('EPSG:4326');
         /**
          * @type {function(Feature, Node): void|undefined}
          * @private
          */
-        this.readExtensions_ = options.readExtensions;
+        _this.readExtensions_ = options.readExtensions;
+        return _this;
     }
-
     /**
      * @param {Array<Feature>} features List of features.
      * @private
      */
-    handleReadExtensions_(features) {
+    GPX.prototype.handleReadExtensions_ = function (features) {
         if (!features) {
             features = [];
         }
-        for (let i = 0, ii = features.length; i < ii; ++i) {
-            const feature = features[i];
+        for (var i = 0, ii = features.length; i < ii; ++i) {
+            var feature = features[i];
             if (this.readExtensions_) {
-                const extensionsNode = feature.get('extensionsNode_') || null;
+                var extensionsNode = feature.get('extensionsNode_') || null;
                 this.readExtensions_(feature, extensionsNode);
             }
             feature.set('extensionsNode_', undefined);
         }
-    }
-
+    };
     /**
      * @param {Element} node Node.
-   * @param {import("./Feature.js").ReadOptions} [options] Options.
+     * @param {import("./Feature.js").ReadOptions} [opt_options] Options.
      * @return {import("../Feature.js").default} Feature.
      */
-    readFeatureFromNode(node, options) {
-        if (!NAMESPACE_URIS.includes(node.namespaceURI)) {
+    GPX.prototype.readFeatureFromNode = function (node, opt_options) {
+        if (!includes(NAMESPACE_URIS, node.namespaceURI)) {
             return null;
         }
-        const featureReader = FEATURE_READER[node.localName];
+        var featureReader = FEATURE_READER[node.localName];
         if (!featureReader) {
             return null;
         }
-        const feature = featureReader(node, [this.getReadOptions(node, options)]);
+        var feature = featureReader(node, [
+            this.getReadOptions(node, opt_options),
+        ]);
         if (!feature) {
             return null;
         }
         this.handleReadExtensions_([feature]);
         return feature;
-    }
-
+    };
     /**
      * @param {Element} node Node.
-   * @param {import("./Feature.js").ReadOptions} [options] Options.
+     * @param {import("./Feature.js").ReadOptions} [opt_options] Options.
      * @return {Array<import("../Feature.js").default>} Features.
      */
-    readFeaturesFromNode(node, options) {
-        if (!NAMESPACE_URIS.includes(node.namespaceURI)) {
+    GPX.prototype.readFeaturesFromNode = function (node, opt_options) {
+        if (!includes(NAMESPACE_URIS, node.namespaceURI)) {
             return [];
         }
-        //////////
-        [...node.attributes].forEach((attr) => {
-            if (attr.name.startsWith('xmlns:')) {
-                this.featureTypeMetadata ??= {
-                    origin: Consts.format.GPX,
-                    originalMetadata: {
-                        namespaces: [],
-                        featureTypes: {
-                            gpx: {}
-                        }
-                    }
-                };
-                this.featureTypeMetadata.originalMetadata.namespaces.push({
-                    prefix: attr.name.substring(attr.name.indexOf(':') + 1),
-                    value: attr.value
-                });
-            }
-        });
-        //////////
         if (node.localName == 'gpx') {
             /** @type {Array<Feature>} */
-            const features = pushParseAndPop([], GPX_PARSERS, node, [
-                this.getReadOptions(node, options),
+            var features = pushParseAndPop([], GPX_PARSERS, node, [
+                this.getReadOptions(node, opt_options),
             ]);
             if (features) {
-                /////
-                if (this.featureTypeMetadata) {
-                    features.forEach((feat) => this.featureMetadata.set(feat, this.featureTypeMetadata));
-                }
-                /////
                 this.handleReadExtensions_(features);
                 return features;
             }
-            return [];
+            else {
+                return [];
+            }
         }
         return [];
-    }
-
-    async readFeatures(source, options) {
-        let features;
-        let node = source;
-
-        if (!source) {
-            return [];
-        }
-        if (typeof source === 'string') {
-            const doc = parse(source);
-            features = this.readFeaturesFromDocument(doc, options);
-            node = doc;
-        }
-        else if (isDocument(source)) {
-            features = this.readFeaturesFromDocument(
-        /** @type {Document} */(source),
-                options
-            );
-        }
-        else {
-            features = this.readFeaturesFromNode(/** @type {Element} */(source), options);
-        }
-
-        if (this.featureTypeMetadata) {
-            const originalMetadata = this.featureTypeMetadata.originalMetadata;
-            const featureTypeParser = new FeatureTypeParser();
-            const featureType = originalMetadata.featureTypes.gpx;
-            const schema = await featureTypeParser.parseSchemas(node, 'gpx');
-            Object.assign(featureType, Object.values(schema)[0]);
-        }
-
-        return features;
-    }
-
+    };
     /**
      * Encode an array of features in the GPX format as an XML node.
      * LineString geometries are output as routes (`<rte>`), and MultiLineString
      * as tracks (`<trk>`).
      *
      * @param {Array<Feature>} features Features.
-   * @param {import("./Feature.js").WriteOptions} [options] Options.
+     * @param {import("./Feature.js").WriteOptions} [opt_options] Options.
      * @return {Node} Node.
      * @api
      */
-    writeFeaturesNode(features, options) {
-        options = this.adaptOptions(options);
+    GPX.prototype.writeFeaturesNode = function (features, opt_options) {
+        opt_options = this.adaptOptions(opt_options);
         //FIXME Serialize metadata
-        const gpx = createElementNS('http://www.topografix.com/GPX/1/1', 'gpx');
-        const xmlnsUri = 'http://www.w3.org/2000/xmlns/';
+        var gpx = createElementNS('http://www.topografix.com/GPX/1/1', 'gpx');
+        var xmlnsUri = 'http://www.w3.org/2000/xmlns/';
         gpx.setAttributeNS(xmlnsUri, 'xmlns:xsi', XML_SCHEMA_INSTANCE_URI);
-        gpx.setAttributeNS(
-            XML_SCHEMA_INSTANCE_URI,
-            'xsi:schemaLocation',
-            SCHEMA_LOCATION
-        );
+        gpx.setAttributeNS(XML_SCHEMA_INSTANCE_URI, 'xsi:schemaLocation', SCHEMA_LOCATION);
         gpx.setAttribute('version', '1.1');
         gpx.setAttribute('creator', 'OpenLayers');
-
         pushSerializeAndPop(
-            /** @type {import("../xml.js").NodeStackItem} */
-            ({ node: gpx }),
-            GPX_SERIALIZERS,
-            GPX_NODE_FACTORY,
-            features,
-            [options]
-        );
+        /** @type {import("../xml.js").NodeStackItem} */
+        ({ node: gpx }), GPX_SERIALIZERS, GPX_NODE_FACTORY, features, [opt_options]);
         return gpx;
-    }
-
-    //////
-    writeFeatures(features, options) {
-        // Queremos exportar tracks en vez de routes. OpenLayers exporta LineStrings como routes y MultiLineStrings como tracks.
-        // Por otro lado, si los puntos tienen etiquetas, las exportamos como elemento name.
-        const processedFeatures = features.map((f) => {
-            const geom = f.getGeometry();
-            if (geom instanceof LineString) {
-                f = f.clone();
-                f.setGeometry(new MultiLineString([geom.getCoordinates()]));
-            }
-            else if (geom instanceof Point && !(f.getKeys().includes('name'))) {
-                let style = f.getStyle();
-                if (typeof style === 'function') {
-                    style = style(f);
-                }
-                if (Array.isArray(style)) {
-                    style = style.find((s) => s.getText());
-                }
-                const textStyle = style?.getText();
-                if (textStyle) {
-                    f = f.clone();
-                    f.set('name', textStyle.getText());
-                }
-            }
-            return f;
-        });
-        const node = this.writeFeaturesNode(processedFeatures, options);
-        // Este formato no procesa bien las elevaciones cuando son nulas. Hemos hecho un preproceso para transformarlas en NaN y ahora hay que eliminarlas.
-        return this.xmlSerializer_.serializeToString(node).replaceAll('<ele>NaN</ele>', '');
-    }
-
-    getFeatureTypeMetadata(metadata, features) {
-        const xmlMetadata = super.getFeatureTypeMetadata(metadata, features);
-        const getPredicatebyName = (name) => ((elm) => elm.name === name);
-        return function (feature) {
-            let attribute;
-            switch (true) {
-                case feature instanceof SitnaPoint:
-                    attribute = xmlMetadata.attributes.find(getPredicatebyName('wpt'));
-                    break;
-                case feature instanceof Polyline:
-                    attribute = xmlMetadata.attributes.find(getPredicatebyName('rte'));
-                    break;
-                case feature instanceof MultiPolyline:
-                    attribute = xmlMetadata.attributes.find(getPredicatebyName('trk'));
-                    break;
-            }
-            return {
-                origin: Consts.format.GPX,
-                sealed: true,
-                attributes: attribute?.value ?? [],
-                originalMetadata: xmlMetadata.originalMetadata,
-            };
-        }
-    }
-    //////
-}
-
+    };
+    return GPX;
+}(XMLFeature));
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const RTE_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var RTE_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'name': makeObjectPropertySetter(readString),
     'cmt': makeObjectPropertySetter(readString),
     'desc': makeObjectPropertySetter(readString),
@@ -428,23 +281,21 @@ const RTE_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'type': makeObjectPropertySetter(readString),
     'rtept': parseRtePt,
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const RTEPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var RTEPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'ele': makeObjectPropertySetter(readDecimal),
     'time': makeObjectPropertySetter(readDateTime1000),
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const TRK_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TRK_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'name': makeObjectPropertySetter(readString),
     'cmt': makeObjectPropertySetter(readString),
     'desc': makeObjectPropertySetter(readString),
@@ -455,32 +306,29 @@ const TRK_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'extensions': parseExtensions,
     'trkseg': parseTrkSeg,
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const TRKSEG_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TRKSEG_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'trkpt': parseTrkPt,
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const TRKPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var TRKPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'ele': makeObjectPropertySetter(readDecimal),
     'time': makeObjectPropertySetter(readDateTime1000),
 });
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Parser>>}
  */
 // @ts-ignore
-const WPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
+var WPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'ele': makeObjectPropertySetter(readDecimal),
     'time': makeObjectPropertySetter(readDateTime1000),
     'magvar': makeObjectPropertySetter(readDecimal),
@@ -501,29 +349,26 @@ const WPT_PARSERS = makeStructureNS(NAMESPACE_URIS, {
     'dgpsid': makeObjectPropertySetter(readPositiveInteger),
     'extensions': parseExtensions,
 });
-
 /**
  * @const
  * @type {Array<string>}
  */
-const LINK_SEQUENCE = ['text', 'type'];
-
+var LINK_SEQUENCE = ['text', 'type'];
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const LINK_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var LINK_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'text': makeChildAppender(writeStringTextNode),
     'type': makeChildAppender(writeStringTextNode),
 });
-
 /**
  * @const
  * @type {Object<string, Array<string>>}
  */
 // @ts-ignore
-const RTE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
+var RTE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'name',
     'cmt',
     'desc',
@@ -533,13 +378,12 @@ const RTE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'type',
     'rtept',
 ]);
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const RTE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var RTE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'name': makeChildAppender(writeStringTextNode),
     'cmt': makeChildAppender(writeStringTextNode),
     'desc': makeChildAppender(writeStringTextNode),
@@ -549,20 +393,18 @@ const RTE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'type': makeChildAppender(writeStringTextNode),
     'rtept': makeArraySerializer(makeChildAppender(writeWptType)),
 });
-
 /**
  * @const
  * @type {Object<string, Array<string>>}
  */
 // @ts-ignore
-const RTEPT_TYPE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, ['ele', 'time']);
-
+var RTEPT_TYPE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, ['ele', 'time']);
 /**
  * @const
  * @type {Object<string, Array<string>>}
  */
 // @ts-ignore
-const TRK_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
+var TRK_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'name',
     'cmt',
     'desc',
@@ -572,13 +414,12 @@ const TRK_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'type',
     'trkseg',
 ]);
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const TRK_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var TRK_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'name': makeChildAppender(writeStringTextNode),
     'cmt': makeChildAppender(writeStringTextNode),
     'desc': makeChildAppender(writeStringTextNode),
@@ -588,28 +429,25 @@ const TRK_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'type': makeChildAppender(writeStringTextNode),
     'trkseg': makeArraySerializer(makeChildAppender(writeTrkSeg)),
 });
-
 /**
  * @const
  * @type {function(*, Array<*>, string=): (Node|undefined)}
  */
-const TRKSEG_NODE_FACTORY = makeSimpleNodeFactory('trkpt');
-
+var TRKSEG_NODE_FACTORY = makeSimpleNodeFactory('trkpt');
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const TRKSEG_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var TRKSEG_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'trkpt': makeChildAppender(writeWptType),
 });
-
 /**
  * @const
  * @type {Object<string, Array<string>>}
  */
 // @ts-ignore
-const WPT_TYPE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
+var WPT_TYPE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'ele',
     'time',
     'magvar',
@@ -629,13 +467,12 @@ const WPT_TYPE_SEQUENCE = makeStructureNS(NAMESPACE_URIS, [
     'ageofdgpsdata',
     'dgpsid',
 ]);
-
 /**
  * @const
  * @type {Object<string, Object<string, import("../xml.js").Serializer>>}
  */
 // @ts-ignore
-const WPT_TYPE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
+var WPT_TYPE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'ele': makeChildAppender(writeDecimalTextNode),
     'time': makeChildAppender(writeDateTimeTextNode),
     'magvar': makeChildAppender(writeDecimalTextNode),
@@ -655,34 +492,31 @@ const WPT_TYPE_SERIALIZERS = makeStructureNS(NAMESPACE_URIS, {
     'ageofdgpsdata': makeChildAppender(writeDecimalTextNode),
     'dgpsid': makeChildAppender(writeNonNegativeIntegerTextNode),
 });
-
 /**
  * @const
  * @type {Object<string, string>}
  */
-const GEOMETRY_TYPE_TO_NODENAME = {
+var GEOMETRY_TYPE_TO_NODENAME = {
     'Point': 'wpt',
     'LineString': 'rte',
     'MultiLineString': 'trk',
 };
-
 /**
  * @param {*} value Value.
  * @param {Array<*>} objectStack Object stack.
- * @param {string} [nodeName] Node name.
+ * @param {string} [opt_nodeName] Node name.
  * @return {Node|undefined} Node.
  */
-function GPX_NODE_FACTORY(value, objectStack, nodeName) {
-    const geometry = /** @type {Feature} */ (value).getGeometry();
+function GPX_NODE_FACTORY(value, objectStack, opt_nodeName) {
+    var geometry = /** @type {Feature} */ (value).getGeometry();
     if (geometry) {
-        const nodeName = GEOMETRY_TYPE_TO_NODENAME[geometry.getType()];
+        var nodeName = GEOMETRY_TYPE_TO_NODENAME[geometry.getType()];
         if (nodeName) {
-            const parentNode = objectStack[objectStack.length - 1].node;
+            var parentNode = objectStack[objectStack.length - 1].node;
             return createElementNS(parentNode.namespaceURI, nodeName);
         }
     }
 }
-
 /**
  * @param {Array<number>} flatCoordinates Flat coordinates.
  * @param {LayoutOptions} layoutOptions Layout options.
@@ -691,27 +525,25 @@ function GPX_NODE_FACTORY(value, objectStack, nodeName) {
  * @return {Array<number>} Flat coordinates.
  */
 function appendCoordinate(flatCoordinates, layoutOptions, node, values) {
-    flatCoordinates.push(
-        parseFloat(node.getAttribute('lon')),
-        parseFloat(node.getAttribute('lat'))
-    );
+    flatCoordinates.push(parseFloat(node.getAttribute('lon')), parseFloat(node.getAttribute('lat')));
     if ('ele' in values) {
-        flatCoordinates.push(/** @type {number} */(values['ele']));
+        flatCoordinates.push(/** @type {number} */ (values['ele']));
         delete values['ele'];
         layoutOptions.hasZ = true;
-    } else {
+    }
+    else {
         flatCoordinates.push(0);
     }
     if ('time' in values) {
-        flatCoordinates.push(/** @type {number} */(values['time']));
+        flatCoordinates.push(/** @type {number} */ (values['time']));
         delete values['time'];
         layoutOptions.hasM = true;
-    } else {
+    }
+    else {
         flatCoordinates.push(0);
     }
     return flatCoordinates;
 }
-
 /**
  * Choose GeometryLayout based on flags in layoutOptions and adjust flatCoordinates
  * and ends arrays by shrinking them accordingly (removing unused zero entries).
@@ -719,24 +551,25 @@ function appendCoordinate(flatCoordinates, layoutOptions, node, values) {
  * @param {LayoutOptions} layoutOptions Layout options.
  * @param {Array<number>} flatCoordinates Flat coordinates.
  * @param {Array<number>} [ends] Ends.
- * @return {import("../geom/Geometry.js").GeometryLayout} Layout.
+ * @return {import("../geom/GeometryLayout.js").default} Layout.
  */
 function applyLayoutOptions(layoutOptions, flatCoordinates, ends) {
-    /** @type {import("../geom/Geometry.js").GeometryLayout} */
-    let layout = 'XY';
-    let stride = 2;
+    var layout = GeometryLayout.XY;
+    var stride = 2;
     if (layoutOptions.hasZ && layoutOptions.hasM) {
-        layout = 'XYZM';
+        layout = GeometryLayout.XYZM;
         stride = 4;
-    } else if (layoutOptions.hasZ) {
-        layout = 'XYZ';
+    }
+    else if (layoutOptions.hasZ) {
+        layout = GeometryLayout.XYZ;
         stride = 3;
-    } else if (layoutOptions.hasM) {
-        layout = 'XYM';
+    }
+    else if (layoutOptions.hasM) {
+        layout = GeometryLayout.XYM;
         stride = 3;
     }
     if (stride !== 4) {
-        for (let i = 0, ii = flatCoordinates.length / 4; i < ii; i++) {
+        for (var i = 0, ii = flatCoordinates.length / 4; i < ii; i++) {
             flatCoordinates[i * stride] = flatCoordinates[i * 4];
             flatCoordinates[i * stride + 1] = flatCoordinates[i * 4 + 1];
             if (layoutOptions.hasZ) {
@@ -748,186 +581,149 @@ function applyLayoutOptions(layoutOptions, flatCoordinates, ends) {
         }
         flatCoordinates.length = (flatCoordinates.length / 4) * stride;
         if (ends) {
-            for (let i = 0, ii = ends.length; i < ii; i++) {
+            for (var i = 0, ii = ends.length; i < ii; i++) {
                 ends[i] = (ends[i] / 4) * stride;
             }
         }
     }
     return layout;
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  */
 function parseLink(node, objectStack) {
-    const values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
-    const href = node.getAttribute('href');
+    var values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
+    var href = node.getAttribute('href');
     if (href !== null) {
         values['link'] = href;
     }
     parseNode(LINK_PARSERS, node, objectStack);
 }
-
 /**
  * @param {Node} node Node.
  * @param {Array<*>} objectStack Object stack.
  */
 function parseExtensions(node, objectStack) {
-    const values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
+    var values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
     values['extensionsNode_'] = node;
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  */
 function parseRtePt(node, objectStack) {
-    const values = pushParseAndPop({}, RTEPT_PARSERS, node, objectStack);
+    var values = pushParseAndPop({}, RTEPT_PARSERS, node, objectStack);
     if (values) {
-        const rteValues = /** @type {!Object} */ (
-            objectStack[objectStack.length - 1]
-        );
-        const flatCoordinates = /** @type {Array<number>} */ (
-            rteValues['flatCoordinates']
-        );
-        const layoutOptions = /** @type {LayoutOptions} */ (
-            rteValues['layoutOptions']
-        );
+        var rteValues = /** @type {!Object} */ (objectStack[objectStack.length - 1]);
+        var flatCoordinates = /** @type {Array<number>} */ (rteValues['flatCoordinates']);
+        var layoutOptions = /** @type {LayoutOptions} */ (rteValues['layoutOptions']);
         appendCoordinate(flatCoordinates, layoutOptions, node, values);
     }
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  */
 function parseTrkPt(node, objectStack) {
-    const values = pushParseAndPop({}, TRKPT_PARSERS, node, objectStack);
+    var values = pushParseAndPop({}, TRKPT_PARSERS, node, objectStack);
     if (values) {
-        const trkValues = /** @type {!Object} */ (
-            objectStack[objectStack.length - 1]
-        );
-        const flatCoordinates = /** @type {Array<number>} */ (
-            trkValues['flatCoordinates']
-        );
-        const layoutOptions = /** @type {LayoutOptions} */ (
-            trkValues['layoutOptions']
-        );
+        var trkValues = /** @type {!Object} */ (objectStack[objectStack.length - 1]);
+        var flatCoordinates = /** @type {Array<number>} */ (trkValues['flatCoordinates']);
+        var layoutOptions = /** @type {LayoutOptions} */ (trkValues['layoutOptions']);
         appendCoordinate(flatCoordinates, layoutOptions, node, values);
     }
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  */
 function parseTrkSeg(node, objectStack) {
-    const values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
+    var values = /** @type {Object} */ (objectStack[objectStack.length - 1]);
     parseNode(TRKSEG_PARSERS, node, objectStack);
-    const flatCoordinates =
-        /** @type {Array<number>} */
-        (values['flatCoordinates']);
-    const ends = /** @type {Array<number>} */ (values['ends']);
+    var flatCoordinates = 
+    /** @type {Array<number>} */
+    (values['flatCoordinates']);
+    var ends = /** @type {Array<number>} */ (values['ends']);
     ends.push(flatCoordinates.length);
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  * @return {Feature|undefined} Track.
  */
 function readRte(node, objectStack) {
-    const options = /** @type {import("./Feature.js").ReadOptions} */ (
-        objectStack[0]
-    );
-    const values = pushParseAndPop(
-        {
-            'flatCoordinates': [],
-            'layoutOptions': {},
-        },
-        RTE_PARSERS,
-        node,
-        objectStack
-    );
+    var options = /** @type {import("./Feature.js").ReadOptions} */ (objectStack[0]);
+    var values = pushParseAndPop({
+        'flatCoordinates': [],
+        'layoutOptions': {},
+    }, RTE_PARSERS, node, objectStack);
     if (!values) {
         return undefined;
     }
-    const flatCoordinates =
-        /** @type {Array<number>} */
-        (values['flatCoordinates']);
+    var flatCoordinates = 
+    /** @type {Array<number>} */
+    (values['flatCoordinates']);
     delete values['flatCoordinates'];
-    const layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
+    var layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
     delete values['layoutOptions'];
-    const layout = applyLayoutOptions(layoutOptions, flatCoordinates);
-    const geometry = new LineString(flatCoordinates, layout);
+    var layout = applyLayoutOptions(layoutOptions, flatCoordinates);
+    var geometry = new LineString(flatCoordinates, layout);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature(geometry);
+    var feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  * @return {Feature|undefined} Track.
  */
 function readTrk(node, objectStack) {
-    const options = /** @type {import("./Feature.js").ReadOptions} */ (
-        objectStack[0]
-    );
-    const values = pushParseAndPop(
-        {
-            'flatCoordinates': [],
-            'ends': [],
-            'layoutOptions': {},
-        },
-        TRK_PARSERS,
-        node,
-        objectStack
-    );
+    var options = /** @type {import("./Feature.js").ReadOptions} */ (objectStack[0]);
+    var values = pushParseAndPop({
+        'flatCoordinates': [],
+        'ends': [],
+        'layoutOptions': {},
+    }, TRK_PARSERS, node, objectStack);
     if (!values) {
         return undefined;
     }
-    const flatCoordinates =
-        /** @type {Array<number>} */
-        (values['flatCoordinates']);
+    var flatCoordinates = 
+    /** @type {Array<number>} */
+    (values['flatCoordinates']);
     delete values['flatCoordinates'];
-    const ends = /** @type {Array<number>} */ (values['ends']);
+    var ends = /** @type {Array<number>} */ (values['ends']);
     delete values['ends'];
-    const layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
+    var layoutOptions = /** @type {LayoutOptions} */ (values['layoutOptions']);
     delete values['layoutOptions'];
-    const layout = applyLayoutOptions(layoutOptions, flatCoordinates, ends);
-    const geometry = new MultiLineString(flatCoordinates, layout, ends);
+    var layout = applyLayoutOptions(layoutOptions, flatCoordinates, ends);
+    var geometry = new MultiLineString(flatCoordinates, layout, ends);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature(geometry);
+    var feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
 }
-
 /**
  * @param {Element} node Node.
  * @param {Array<*>} objectStack Object stack.
  * @return {Feature|undefined} Waypoint.
  */
 function readWpt(node, objectStack) {
-    const options = /** @type {import("./Feature.js").ReadOptions} */ (
-        objectStack[0]
-    );
-    const values = pushParseAndPop({}, WPT_PARSERS, node, objectStack);
+    var options = /** @type {import("./Feature.js").ReadOptions} */ (objectStack[0]);
+    var values = pushParseAndPop({}, WPT_PARSERS, node, objectStack);
     if (!values) {
         return undefined;
     }
-    const layoutOptions = /** @type {LayoutOptions} */ ({});
-    const coordinates = appendCoordinate([], layoutOptions, node, values);
-    const layout = applyLayoutOptions(layoutOptions, coordinates);
-    const geometry = new Point(coordinates, layout);
+    var layoutOptions = /** @type {LayoutOptions} */ ({});
+    var coordinates = appendCoordinate([], layoutOptions, node, values);
+    var layout = applyLayoutOptions(layoutOptions, coordinates);
+    var geometry = new Point(coordinates, layout);
     transformGeometryWithOptions(geometry, false, options);
-    const feature = new Feature(geometry);
+    var feature = new Feature(geometry);
     feature.setProperties(values, true);
     return feature;
 }
-
 /**
  * @param {Element} node Node.
  * @param {string} value Value for the link's `href` attribute.
@@ -935,45 +731,38 @@ function readWpt(node, objectStack) {
  */
 function writeLink(node, value, objectStack) {
     node.setAttribute('href', value);
-    const context = objectStack[objectStack.length - 1];
-    const properties = context['properties'];
-    const link = [properties['linkText'], properties['linkType']];
+    var context = objectStack[objectStack.length - 1];
+    var properties = context['properties'];
+    var link = [properties['linkText'], properties['linkType']];
     pushSerializeAndPop(
-    /** @type {import("../xml.js").NodeStackItem} */({ node: node }),
-        LINK_SERIALIZERS,
-        OBJECT_PROPERTY_NODE_FACTORY,
-        link,
-        objectStack,
-        LINK_SEQUENCE
-    );
+    /** @type {import("../xml.js").NodeStackItem} */ ({ node: node }), LINK_SERIALIZERS, OBJECT_PROPERTY_NODE_FACTORY, link, objectStack, LINK_SEQUENCE);
 }
-
 /**
  * @param {Element} node Node.
  * @param {import("../coordinate.js").Coordinate} coordinate Coordinate.
  * @param {Array<*>} objectStack Object stack.
  */
 function writeWptType(node, coordinate, objectStack) {
-    const context = objectStack[objectStack.length - 1];
-    const parentNode = context.node;
-    const namespaceURI = parentNode.namespaceURI;
-    const properties = context['properties'];
+    var context = objectStack[objectStack.length - 1];
+    var parentNode = context.node;
+    var namespaceURI = parentNode.namespaceURI;
+    var properties = context['properties'];
     //FIXME Projection handling
     node.setAttributeNS(null, 'lat', String(coordinate[1]));
     node.setAttributeNS(null, 'lon', String(coordinate[0]));
-    const geometryLayout = context['geometryLayout'];
+    var geometryLayout = context['geometryLayout'];
     switch (geometryLayout) {
-        case 'XYZM':
+        case GeometryLayout.XYZM:
             if (coordinate[3] !== 0) {
                 properties['time'] = coordinate[3];
             }
         // fall through
-        case 'XYZ':
-            if (coordinate[2] !== 0 && coordinate[2] !== null) {
+        case GeometryLayout.XYZ:
+            if (coordinate[2] !== 0) {
                 properties['ele'] = coordinate[2];
             }
             break;
-        case 'XYM':
+        case GeometryLayout.XYM:
             if (coordinate[2] !== 0) {
                 properties['time'] = coordinate[2];
             }
@@ -981,126 +770,82 @@ function writeWptType(node, coordinate, objectStack) {
         default:
         // pass
     }
-    const orderedKeys =
-        node.nodeName == 'rtept'
-            ? RTEPT_TYPE_SEQUENCE[namespaceURI]
-            : WPT_TYPE_SEQUENCE[namespaceURI];
-    const values = makeSequence(properties, orderedKeys);
+    var orderedKeys = node.nodeName == 'rtept'
+        ? RTEPT_TYPE_SEQUENCE[namespaceURI]
+        : WPT_TYPE_SEQUENCE[namespaceURI];
+    var values = makeSequence(properties, orderedKeys);
     pushSerializeAndPop(
-        /** @type {import("../xml.js").NodeStackItem} */
-        ({ node: node, 'properties': properties }),
-        WPT_TYPE_SERIALIZERS,
-        OBJECT_PROPERTY_NODE_FACTORY,
-        values,
-        objectStack,
-        orderedKeys
-    );
+    /** @type {import("../xml.js").NodeStackItem} */
+    ({ node: node, 'properties': properties }), WPT_TYPE_SERIALIZERS, OBJECT_PROPERTY_NODE_FACTORY, values, objectStack, orderedKeys);
 }
-
 /**
  * @param {Node} node Node.
  * @param {Feature} feature Feature.
  * @param {Array<*>} objectStack Object stack.
  */
 function writeRte(node, feature, objectStack) {
-    const options = /** @type {import("./Feature.js").WriteOptions} */ (
-        objectStack[0]
-    );
-    const properties = feature.getProperties();
-    const context = { node: node };
+    var options = /** @type {import("./Feature.js").WriteOptions} */ (objectStack[0]);
+    var properties = feature.getProperties();
+    var context = { node: node };
     context['properties'] = properties;
-    const geometry = feature.getGeometry();
+    var geometry = feature.getGeometry();
     if (geometry.getType() == 'LineString') {
-        const lineString = /** @type {LineString} */ (
-            transformGeometryWithOptions(geometry, true, options)
-        );
+        var lineString = /** @type {LineString} */ (transformGeometryWithOptions(geometry, true, options));
         context['geometryLayout'] = lineString.getLayout();
         properties['rtept'] = lineString.getCoordinates();
     }
-    const parentNode = objectStack[objectStack.length - 1].node;
-    const orderedKeys = RTE_SEQUENCE[parentNode.namespaceURI];
-    const values = makeSequence(properties, orderedKeys);
-    pushSerializeAndPop(
-        context,
-        RTE_SERIALIZERS,
-        OBJECT_PROPERTY_NODE_FACTORY,
-        values,
-        objectStack,
-        orderedKeys
-    );
+    var parentNode = objectStack[objectStack.length - 1].node;
+    var orderedKeys = RTE_SEQUENCE[parentNode.namespaceURI];
+    var values = makeSequence(properties, orderedKeys);
+    pushSerializeAndPop(context, RTE_SERIALIZERS, OBJECT_PROPERTY_NODE_FACTORY, values, objectStack, orderedKeys);
 }
-
 /**
- * @param {Element} node Node.
+ * @param {Node} node Node.
  * @param {Feature} feature Feature.
  * @param {Array<*>} objectStack Object stack.
  */
 function writeTrk(node, feature, objectStack) {
-    const options = /** @type {import("./Feature.js").WriteOptions} */ (
-        objectStack[0]
-    );
-    const properties = feature.getProperties();
+    var options = /** @type {import("./Feature.js").WriteOptions} */ (objectStack[0]);
+    var properties = feature.getProperties();
     /** @type {import("../xml.js").NodeStackItem} */
-    const context = { node: node };
+    var context = { node: node };
     context['properties'] = properties;
-    const geometry = feature.getGeometry();
+    var geometry = feature.getGeometry();
     if (geometry.getType() == 'MultiLineString') {
-        const multiLineString = /** @type {MultiLineString} */ (
-            transformGeometryWithOptions(geometry, true, options)
-        );
+        var multiLineString = /** @type {MultiLineString} */ (transformGeometryWithOptions(geometry, true, options));
         properties['trkseg'] = multiLineString.getLineStrings();
     }
-    const parentNode = objectStack[objectStack.length - 1].node;
-    const orderedKeys = TRK_SEQUENCE[parentNode.namespaceURI];
-    const values = makeSequence(properties, orderedKeys);
-    pushSerializeAndPop(
-        context,
-        TRK_SERIALIZERS,
-        OBJECT_PROPERTY_NODE_FACTORY,
-        values,
-        objectStack,
-        orderedKeys
-    );
+    var parentNode = objectStack[objectStack.length - 1].node;
+    var orderedKeys = TRK_SEQUENCE[parentNode.namespaceURI];
+    var values = makeSequence(properties, orderedKeys);
+    pushSerializeAndPop(context, TRK_SERIALIZERS, OBJECT_PROPERTY_NODE_FACTORY, values, objectStack, orderedKeys);
 }
-
 /**
- * @param {Element} node Node.
+ * @param {Node} node Node.
  * @param {LineString} lineString LineString.
  * @param {Array<*>} objectStack Object stack.
  */
 function writeTrkSeg(node, lineString, objectStack) {
     /** @type {import("../xml.js").NodeStackItem} */
-    const context = { node: node };
+    var context = { node: node };
     context['geometryLayout'] = lineString.getLayout();
     context['properties'] = {};
-    pushSerializeAndPop(
-        context,
-        TRKSEG_SERIALIZERS,
-        TRKSEG_NODE_FACTORY,
-        lineString.getCoordinates(),
-        objectStack
-    );
+    pushSerializeAndPop(context, TRKSEG_SERIALIZERS, TRKSEG_NODE_FACTORY, lineString.getCoordinates(), objectStack);
 }
-
 /**
  * @param {Element} node Node.
  * @param {Feature} feature Feature.
  * @param {Array<*>} objectStack Object stack.
  */
 function writeWpt(node, feature, objectStack) {
-    const options = /** @type {import("./Feature.js").WriteOptions} */ (
-        objectStack[0]
-    );
-    const context = objectStack[objectStack.length - 1];
+    var options = /** @type {import("./Feature.js").WriteOptions} */ (objectStack[0]);
+    var context = objectStack[objectStack.length - 1];
     context['properties'] = feature.getProperties();
-    const geometry = feature.getGeometry();
+    var geometry = feature.getGeometry();
     if (geometry.getType() == 'Point') {
-        const point = /** @type {Point} */ (
-            transformGeometryWithOptions(geometry, true, options)
-        );
+        var point = /** @type {Point} */ (transformGeometryWithOptions(geometry, true, options));
         context['geometryLayout'] = point.getLayout();
         writeWptType(node, point.getCoordinates(), objectStack);
     }
 }
-
 export default GPX;
