@@ -109,12 +109,12 @@
             }
 
             &.selected {
-              border: 2px solid colors.$blue;
+              border: 2px solid colors.$primary-orange;
             }
 
             &:hover {
               cursor: pointer;
-              border: 2px solid colors.$blue;
+              border: 2px solid colors.$primary-orange;
             }
           }
         }
