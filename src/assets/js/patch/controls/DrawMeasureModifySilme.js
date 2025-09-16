@@ -179,17 +179,17 @@ TC.inherit(TC.control.DrawMeasureModifySilme, TC.control.DrawMeasureModify);
     _this.map.div.querySelector('#silme-panel').classList.remove('left-collapsed-silme');
     _this.map.div.querySelector('#silme-panel').classList.add('left-collapsed');
     _this.map.div.querySelector('#silme-panel').classList.add('silme-control-visible');
-    _this.map.div.querySelector('.tc-ctl-nav-home').classList.remove('tc-ctl-nav-home-exp');
-    _this.map.div.querySelector('.tc-ctl-nav-home').classList.add('tc-ctl-nav-home-coll');
+    // _this.map.div.querySelector('.tc-ctl-nav-home').classList.remove('tc-ctl-nav-home-exp');
+    // _this.map.div.querySelector('.tc-ctl-nav-home').classList.add('tc-ctl-nav-home-coll');
     _this.map.div.querySelector('.tc-ctl-sv').classList.remove('tc-ctl-sv-exp');
     _this.map.div.querySelector('.tc-ctl-sv').classList.add('tc-ctl-sv-coll');
     _this.map.div.querySelector('.tc-ctl-search').classList.remove('search-left-collapsed');
     _this.map.div.querySelector('.tc-ctl-sv').style.left = _this.map.div.querySelector('#nav').style.left;
-    _this.map.div.querySelector('.tc-ctl-nav-home').style.left = _this.map.div.querySelector('#nav').style.left;
+    // _this.map.div.querySelector('.tc-ctl-nav-home').style.left = _this.map.div.querySelector('#nav').style.left;
     if (window.innerWidth < 760) {
       _this.map.div.querySelector('#silme-tab').style.visibility = 'collapse';
       _this.map.div.querySelector('.tc-ctl-sv').style.visibility = 'collapse';
-      _this.map.div.querySelector('.tc-ctl-nav-home').style.visibility = 'collapse';
+      // _this.map.div.querySelector('.tc-ctl-nav-home').style.visibility = 'collapse';
     }
   };
 
@@ -210,17 +210,17 @@ TC.inherit(TC.control.DrawMeasureModifySilme, TC.control.DrawMeasureModify);
     _this.map.div.querySelector('#silme-panel').classList.remove('left-collapsed');
     _this.map.div.querySelector('#silme-panel').classList.remove('silme-control-visible');
     _this.map.div.querySelector('#silme-panel').classList.add('left-collapsed-silme');
-    _this.map.div.querySelector('.tc-ctl-nav-home').classList.remove('tc-ctl-nav-home-coll');
-    _this.map.div.querySelector('.tc-ctl-nav-home').classList.add('tc-ctl-nav-home-exp');
+    // _this.map.div.querySelector('.tc-ctl-nav-home').classList.remove('tc-ctl-nav-home-coll');
+    // _this.map.div.querySelector('.tc-ctl-nav-home').classList.add('tc-ctl-nav-home-exp');
     _this.map.div.querySelector('.tc-ctl-sv').classList.remove('tc-ctl-sv-coll');
     _this.map.div.querySelector('.tc-ctl-sv').classList.add('tc-ctl-sv-exp');
     _this.map.div.querySelector('.tc-ctl-search').classList.add('search-left-collapsed');
     _this.map.div.querySelector('.tc-ctl-sv').style.left = _this.map.div.querySelector('#nav').style.left;
-    _this.map.div.querySelector('.tc-ctl-nav-home').style.left = _this.map.div.querySelector('#nav').style.left;
+    // _this.map.div.querySelector('.tc-ctl-nav-home').style.left = _this.map.div.querySelector('#nav').style.left;
     if (window.innerWidth < 760) {
       _this.map.div.querySelector('#silme-tab').style.visibility = 'unset';
       _this.map.div.querySelector('.tc-ctl-sv').style.visibility = 'unset';
-      _this.map.div.querySelector('.tc-ctl-nav-home').style.visibility = 'unset';
+      // _this.map.div.querySelector('.tc-ctl-nav-home').style.visibility = 'unset';
     }
   };
 
