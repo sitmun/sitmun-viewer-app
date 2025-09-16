@@ -157,7 +157,8 @@ export class NavigationBarComponent implements OnInit {
   }
 
   loginRedirect() {
-    this.router.navigate(['/auth/login']);  }
+    this.router.navigateByUrl(NavigationPath.Auth.Login);
+  }
 
   profileRedirect() {
     this.navigationClassActive = NavigationButtonActive.PROFILE;

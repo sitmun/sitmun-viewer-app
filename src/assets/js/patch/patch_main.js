@@ -14,6 +14,9 @@ var arrayJsFiles = [
 
   // Support
   "assets/js/patch/api_patches.js",
+  "assets/js/patch/patch.js",
+  "assets/js/patch/TCProjectionDataPatch.js",
+  //"assets/js/patch/SigSilmeOL.js",
   "assets/js/patch/SilmeMap.js",
   "assets/js/patch/SilmeModal.js",
   "assets/js/patch/SilmeSecondBaseLayer.js",
