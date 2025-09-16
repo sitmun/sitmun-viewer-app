@@ -6,7 +6,6 @@
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <script src="assets/js/patch/patch_main.js"></script>
     <script>
       window.SITNA_BASE_URL = '/assets/js/api-sitna/';
     </script>
@@ -30,6 +29,13 @@
         });
       } else {
         console.log("Service worker not supported");
+      }
+    </script>
+    <script>
+      window.onload = function() {
+        let script = document.createElement('script');
+        script.src = "assets/js/patch/patch_main.js";
+        document.head.appendChild(script)
       }
     </script>
     <link rel="stylesheet" href="assets/js/toastr/toastr.min.css" />

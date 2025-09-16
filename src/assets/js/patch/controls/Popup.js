@@ -63,7 +63,7 @@ TC.inherit(TC.control.Popup, TC.Control);
     const _this = this;
     const template = {}
 
-    template[_this.CLASS] = "assets/js/sitna/TC/templates/tc-ctl-popup.hbs";
+    template[_this.CLASS] = "assets/js/patch/templates/Popup.hbs";
     _this.template = template;
   };
 

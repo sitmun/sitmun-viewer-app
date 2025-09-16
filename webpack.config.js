@@ -12,7 +12,6 @@ module.exports = {
       util: false,
       process: require.resolve('process/browser')
     }
-
   },
 
   plugins: [
@@ -24,6 +23,6 @@ module.exports = {
     // Define la ruta base de la API SITNA para la carga de recursos
     new webpack.DefinePlugin({
       SITNA_BASE_URL: JSON.stringify(apiSitnaDestiny)
-    }),
+    })
   ],
 };
