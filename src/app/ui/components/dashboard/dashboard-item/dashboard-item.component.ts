@@ -1,8 +1,15 @@
-import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
   selector: 'app-dashboard-item',
@@ -19,7 +26,12 @@ export class DashboardItemComponent {
   listOfTerritories: any;
   mediaQueryListener: any;
 
-  constructor(private commonService: CommonService, private router: Router) {}
+  constructor(
+    private commonService: CommonService,
+    private router: Router,
+    private notificatioNService: NotificationService,
+    private translateService: TranslateService
+  ) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
@@ -32,8 +44,17 @@ export class DashboardItemComponent {
     }
   }
 
+  notInAuth() {
+    let notInAuth = true;
+    if (this.router.url.startsWith(NavigationPath.Auth.Base)) {
+      notInAuth = false;
+    }
+    return notInAuth;
+  }
+
+
   @HostListener('window:resize', ['$event'])
-  onResize(event : any) {
+  onResize(event: any) {
     this.checkWindowSize();
   }
 
@@ -51,64 +72,44 @@ export class DashboardItemComponent {
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
-        this.nbTerritory = res.numberOfElements;
+        this.nbTerritory = res.content.length;
       }
     });
   }
 
-  /**
-   * If the nb of territories > 1, navigate to applicationDetails. If nb of territories <= 1, navigate directly to the map of the territory
-   */
-  navigateToApplicationDetailsOrMap(idApp: number) {
-    if (this.nbTerritory > 1) {
-      this.navigateToApplicationDetails(idApp);
-    } else if (this.nbTerritory == 1) {
-      this.navigateToMap(idApp, this.listOfTerritories[0].id);
-    }
-  }
-
   navigateToApplicationDetails(idApp: number) {
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(
-        NavigationPath.Section.Public.Application(idApp)
-      );
-    } else {
+      this.router.navigateByUrl(NavigationPath.Section.Public.Application(idApp));
+    }
+    else {
       this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
     }
   }
 
   displayTerritoriesTag(application : any) {
     let object = {
-      application: application,
-      territories: this.listOfTerritories
-    }
+      'application': application,
+      'territories': this.listOfTerritories
+    };
     this.tag.emit(object);
   }
 
-  navigateToMap(applicationId : number, territoryId: number) {
-    let navigationPath = "";
-    if (this.router.url.startsWith('/user')) {
-      navigationPath = NavigationPath.Section.User.Map(
-        applicationId,
-        territoryId
-      );
-    } else if (this.router.url.startsWith('/public')) {
-      NavigationPath.Section.Public.Territory(territoryId);
+  navigateToMap(idApp : number) {
+    if(this.nbTerritory == 1) {
+      if(this.router.url.startsWith("/public")){
+        this.router.navigateByUrl(
+          NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
+        );
+      }
+      else {
+        this.router.navigateByUrl(
+          NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
+        );
+      }
     }
-
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Territory(territoryId)
-    );
+    else {
+      this.displayTerritoriesTag(this.item);
+    }
   }
 
-  renderDescription() {
-    let description = this.item.description;
-    if (
-      description != null &&
-      description.length > this.DESCRIPTION_MAX_CHARACTER
-    ) {
-      description = description.slice(0, this.DESCRIPTION_MAX_CHARACTER) + '...';
-    }
-    return description;
-  }
 }
