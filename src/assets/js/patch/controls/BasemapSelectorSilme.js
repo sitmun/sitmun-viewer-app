@@ -218,99 +218,95 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
     if (_this._selectedBaseMapMiniatureId === BASEMAP_1_ID && _this._baseMap1Layer === layer) return;
     if (_this._selectedBaseMapMiniatureId === BASEMAP_2_ID && _this._baseMap2Layer === layer) return;
 
-    // TODO: Código para reproyectar.
-    //       Queda comentado hasta que se actualice a una versión más actual de
-    //       la API SITNA que solucione el problema de reproyección de capas.
+    if (layer.mustReproject) {
 
-    //   if (layer.mustReproject) {
-    //
-    //     if (_this.map.on3DView) {
-    //       if (!layer.getFallbackLayer()) {
-    //         _this._currentSelection.checked = true;
-    //         e.stopPropagation();
-    //         return;
-    //       } else if (layer.getFallbackLayer()) {
-    //         const fallbackLayer = layer.getFallbackLayer();
-    //         if (fallbackLayer) {
-    //           fallbackLayer._capabilitiesPromise.then(function () {
-    //             if (fallbackLayer.isCompatible(_this.map.getCRS())) {
-    //               _this.map.setBaseLayer(layer);
-    //             }
-    //           });
-    //         }
-    //
-    //         flagToCallback = true;
-    //       }
-    //     } else {
-    //       if (_this._currentSelection) {
-    //         _this._currentSelection.checked = true;
-    //       }
-    //
-    //       // Buscamos alternativa
-    //       const dialogOptions = {
-    //         layer: layer
-    //       };
-    //
-    //       const fallbackLayer = layer.getFallbackLayer();
-    //       if (fallbackLayer) {
-    //         fallbackLayer._capabilitiesPromise.then(function () {
-    //           if (fallbackLayer.isCompatible(_this.map.getCRS())) {
-    //             dialogOptions.fallbackLayer = fallbackLayer;
-    //           }
-    //           _this.showProjectionChangeDialog(dialogOptions);
-    //         });
-    //       } else {
-    //
-    //         // --- Start Silme
-    //         // Canvi de capa de fons automàtic si només hi ha un SRS disponible.
-    //
-    //         _this.map.loadProjections({
-    //           crsList: _this.map.getCompatibleCRS({
-    //             layers: _this.map.workLayers.concat(dialogOptions.layer),
-    //             includeFallbacks: true
-    //           }),
-    //           orderBy: 'name'
-    //         }).then(function (projList) {
-    //           if (projList.length == 1) {
-    //             layer = dialogOptions.layer;
-    //             if (layer) {
-    //               if (projList[0].code) {
-    //                 TC.loadProjDef({
-    //                   crs: projList[0].code,
-    //                   callback: function () {
-    //                     _this.map.setProjection({
-    //                       crs: projList[0].code,
-    //                       baseLayer: layer
-    //                     });
-    //                   }
-    //                 });
-    //               }
-    //               else {
-    //                 const fallbackLayer = _this.getFallbackLayer(btn.dataset.fallbackLayerId);
-    //                 if (fallbackLayer) {
-    //                   _this.map.setBaseLayer(fallbackLayer);
-    //                 }
-    //               }
-    //             }
-    //           }
-    //           else {
-    //             _this.showProjectionChangeDialog(dialogOptions);
-    //           }
-    //         });
-    //         // --- End Silme
-    //       }
-    //       flagToCallback = false;
-    //     }
-    //
-    //   }
-    //   else {
-    //
-    //     if (layer.type === TC.Consts.layerType.WMS || layer.type === TC.Consts.layerType.WMTS && layer.getProjection() !== _this.map.crs) {
-    //       layer.setProjection({ crs: _this.map.crs });
-    //     }
-    //
-    //     _this.map.setBaseLayer(layer);
-    //   }
+      if (_this.map.on3DView) {
+        if (!layer.getFallbackLayer()) {
+          _this._currentSelection.checked = true;
+          e.stopPropagation();
+          return;
+        } else if (layer.getFallbackLayer()) {
+          const fallbackLayer = layer.getFallbackLayer();
+          if (fallbackLayer) {
+            fallbackLayer._capabilitiesPromise.then(function () {
+              if (fallbackLayer.isCompatible(_this.map.getCRS())) {
+                _this.map.setBaseLayer(layer);
+              }
+            });
+          }
+
+          flagToCallback = true;
+        }
+      } else {
+        if (_this._currentSelection) {
+          _this._currentSelection.checked = true;
+        }
+
+        // Buscamos alternativa
+        const dialogOptions = {
+          layer: layer
+        };
+
+        const fallbackLayer = layer.getFallbackLayer();
+        if (fallbackLayer) {
+          fallbackLayer._capabilitiesPromise.then(function () {
+            if (fallbackLayer.isCompatible(_this.map.getCRS())) {
+              dialogOptions.fallbackLayer = fallbackLayer;
+            }
+            _this.showProjectionChangeDialog(dialogOptions);
+          });
+        } else {
+
+          // --- Start Silme
+          // Canvi de capa de fons automàtic si només hi ha un SRS disponible.
+
+          _this.map.loadProjections({
+            crsList: _this.map.getCompatibleCRS({
+              layers: _this.map.workLayers.concat(dialogOptions.layer),
+              includeFallbacks: true
+            }),
+            orderBy: 'name'
+          }).then(function (projList) {
+            if (projList.length == 1) {
+              layer = dialogOptions.layer;
+              if (layer) {
+                if (projList[0].code) {
+                  TC.loadProjDef({
+                    crs: projList[0].code,
+                    callback: function () {
+                      _this.map.setProjection({
+                        crs: projList[0].code,
+                        baseLayer: layer
+                      });
+                    }
+                  });
+                }
+                else {
+                  const fallbackLayer = _this.getFallbackLayer(btn.dataset.fallbackLayerId);
+                  if (fallbackLayer) {
+                    _this.map.setBaseLayer(fallbackLayer);
+                  }
+                }
+              }
+            }
+            else {
+              _this.showProjectionChangeDialog(dialogOptions);
+            }
+          });
+          // --- End Silme
+        }
+        flagToCallback = false;
+      }
+
+    }
+    else {
+
+      if (layer.type === TC.Consts.layerType.WMS || layer.type === TC.Consts.layerType.WMTS && layer.getProjection() !== _this.map.crs) {
+        layer.setProjection({ crs: _this.map.crs });
+      }
+
+      _this.map.setBaseLayer(layer);
+    }
 
     // Actualizar la capa base correspondiente.
     _updateBaseLayer.call(_this, layer);
