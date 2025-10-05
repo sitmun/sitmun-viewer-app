@@ -68,55 +68,39 @@ export class DashboardItemComponent {
     });
   }
 
-  /**
-   * If the nb of territories > 1, navigate to applicationDetails. If nb of territories <= 1, navigate directly to the map of the territory
-   */
-  navigateToApplicationDetailsOrMap(idApp: number) {
-    if (this.nbTerritory > 1) {
-      this.navigateToApplicationDetails(idApp);
-    } else if (this.nbTerritory == 1) {
-      this.navigateToMap(idApp, this.listOfTerritories[0].id);
-    } else {
-      this.translateService
-        .get('dashboardPage.noTerritoriesInApplication')
-        .subscribe((trad) => {
-          this.notificatioNService.warning(trad);
-        });
-    }
-  }
-
   navigateToApplicationDetails(idApp: number) {
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(
-        NavigationPath.Section.Public.Application(idApp)
-      );
-    } else {
+      this.router.navigateByUrl(NavigationPath.Section.Public.Application(idApp));
+    }
+    else {
       this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
     }
   }
 
   displayTerritoriesTag(application : any) {
     let object = {
-      application: application,
-      territories: this.listOfTerritories
-    }
+      'application': application,
+      'territories': this.listOfTerritories
+    };
     this.tag.emit(object);
   }
 
-  navigateToMap(applicationId: number, territoryId: number) {
-    let navigationPath = '';
-    if (this.router.url.startsWith('/user')) {
-      navigationPath = NavigationPath.Section.User.Map(
-        applicationId,
-        territoryId
-      );
-    } else if (this.router.url.startsWith('/public')) {
-      navigationPath = NavigationPath.Section.Public.Map(
-        applicationId,
-        territoryId
-      );
+  navigateToMap(idApp : number) {
+    if(this.nbTerritory == 1) {
+      if(this.router.url.startsWith("/public")){
+        this.router.navigateByUrl(
+          NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
+        );
+      }
+      else {
+        this.router.navigateByUrl(
+          NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
+        );
+      }
     }
-
-    this.router.navigateByUrl(navigationPath);
+    else {
+      this.displayTerritoriesTag(this.item);
+    }
   }
+
 }
