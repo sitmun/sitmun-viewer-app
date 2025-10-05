@@ -22,7 +22,7 @@
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPrivateApplications($event)" *ngIf="privateItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllApplicationsPrivate($event, true)" *ngIf="privateItems.length > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 
   <hr class="separation-line"
@@ -37,7 +37,7 @@
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPublicApplications($event)" *ngIf="publicItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllApplicationsPrivate($event, false)" *ngIf="publicItems.length > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 </div>
 

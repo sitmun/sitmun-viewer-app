@@ -79,7 +79,7 @@
   "profile.territoryManagementUpdateError": "S'ha produït un error en actualitzar les dades dels territoris.",
   "publicDashboardPage.backToLoginButton": "Tornar a la pàgina de Login",
   "publicDashboardPage.applicationsTitle": "Aplicacions Públiques",
-  "dashboardPage.applicationPrivate": "Aplicacions privades",
+  "dashboardPage.applicationPrivate": "Aplicacions restringides",
   "dashboardPage.applicationPublic": "Aplicacions públiques",
   "dashboardPage.showAll": "Mostrar-ho tot",
   "dashboardPage.showLess": "Mostrar menys",

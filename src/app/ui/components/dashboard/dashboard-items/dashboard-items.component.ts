@@ -37,8 +37,8 @@ export class DashboardItemsComponent {
       if (this.isPublic()) {
         this.displayAllApplications(false);
       } else {
-        this.displayAllPrivateApplications(false);
-        this.displayAllPublicApplications(false);
+        this.displayAllApplicationsPrivate(false, true);
+        this.displayAllApplicationsPrivate(false, false);
       }
     }
   }
@@ -47,8 +47,8 @@ export class DashboardItemsComponent {
     if (this.isPublic()) {
       this.displayAllApplications(false);
     } else {
-      this.displayAllPrivateApplications(false);
-      this.displayAllPublicApplications(false);
+      this.displayAllApplicationsPrivate(false, true);
+      this.displayAllApplicationsPrivate(false, false);
     }
   }
 
@@ -68,16 +68,19 @@ export class DashboardItemsComponent {
     this.totalItems = this.items.length;
   }
 
-  displayAllPrivateApplications(displayAll : boolean) {
-    const filtered = this.items.filter(item => item.type == Codelist.INTERNAL);
-    this.totalPrivateItems = filtered.length;
-    this.privateItems = this.displayApplications(filtered, displayAll);
-  }
-
-  displayAllPublicApplications(displayAll : boolean) {
-    const filtered = this.items.filter(item => item.type == Codelist.EXTERNAL);
-    this.totalPublicItems = filtered.length;
-    this.publicItems = this.displayApplications(filtered, displayAll);
+  displayAllApplicationsPrivate(
+    displayAll: boolean,
+    isPrivate: boolean
+  ) {
+    const filtered = this.items.filter(item => item.appPrivate == isPrivate);
+    if(isPrivate) {
+      this.privateItems = this.displayApplications(filtered, displayAll);
+      this.totalPrivateItems = filtered.length;
+    }
+    else {
+      this.publicItems = this.displayApplications(filtered, displayAll);
+      this.totalPublicItems = filtered.length;
+    }
   }
 
   displayApplications(list: DashboardItem[], display: boolean): DashboardItem[] {
