@@ -1,6 +1,6 @@
-<div class="dashboard-item">
-  <div class="dashboard-item-image" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
-    <button (click)="navigateToApplicationDetailsOrMap(item.id)">
+<div class="dashboard-item" [ngClass]="{'dashboard-item-maintenance': item.isUnavailable}">
+  <div class="dashboard-item-image">
+    <button (click)="navigateToMap(item.id)">
       <img [src]="item.logo || 'assets/img/card-no-image.svg'" />
     </button>
   </div>

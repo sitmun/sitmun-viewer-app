@@ -29,7 +29,13 @@ import { ApplicationDetailsComponent } from './components/application-details/ap
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
 import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
 @NgModule({
-  imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    NgxPaginationModule,
+    CommonModule,
+    FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,

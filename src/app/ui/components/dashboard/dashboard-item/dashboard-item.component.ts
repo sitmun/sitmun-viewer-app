@@ -1,8 +1,15 @@
-import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
   selector: 'app-dashboard-item',
@@ -33,7 +40,7 @@ export class DashboardItemComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event : any) {
+  onResize(event: any) {
     this.checkWindowSize();
   }
 
@@ -51,7 +58,7 @@ export class DashboardItemComponent {
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
-        this.nbTerritory = res.numberOfElements;
+        this.nbTerritory = res.content.length;
       }
     });
   }
@@ -95,10 +102,18 @@ export class DashboardItemComponent {
     } else if (this.router.url.startsWith('/public')) {
       NavigationPath.Section.Public.Territory(territoryId);
     }
+  }
 
-    this.router.navigateByUrl(
-      NavigationPath.Section.User.Territory(territoryId)
-    );
+  navigateToMapWithTerritory(idApp: number, territoryId: number) {
+    if (this.router.url.startsWith('/public')) {
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(idApp, territoryId)
+      );
+    } else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(idApp, territoryId)
+      );
+    }
   }
 
   renderDescription() {
