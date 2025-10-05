@@ -1,7 +1,6 @@
 {
   "genericPrivateHeader.hi": "Hola",
-  "genericPrivateHeader.logout": "Desconexión",
-  "genericPrivateHeaders.changeAppOrTerritory": "Cambiar la aplicación o el territorio",
+  "loginPage.logoutText": "Desconexión",
   "loginPage.title": "Iniciar sesión",
   "loginPage.publicDashboardButton": "Acceso público",
   "loginPage.usernameText": "Usuario",
@@ -13,6 +12,7 @@
   "loginPage.DNIE": "Acceso mediante certificado digital o DNIE",
   "loginPage.incorrectLogin": "Datos de acceso incorrectos",
   "loginPage.passwordForgotten" : "¿Contraseña olvidada?",
+  "loginPage.profile": "perfil",
   "forgotPasswordPage.title": "¿ Contraseña olvidada ?",
   "forgotPasswordPage.description": "Para restablecer su contraseña, envíe su nombre de usuario o su dirección de correo electrónico. Le enviaremos un email con instrucciones para poder acceder de nuevo.",
   "forgotPasswordPage.mailText": "Usuario",
@@ -53,6 +53,7 @@
   "dashboardPage.coveredTerritories":"Territorios cubiertos",
   "dashboardPage.territoryHover": "Territorio",
   "dashboardPage.mapHover": "Mapa",
+  "dashboardPage.noTerritoriesInApplication": "Ningún territorio en la aplicación",
   "mapPage.title": "Mapa de ejemplo",
   "dashboardDialog.inputPlaceholder": "Buscar",
   "menu.login": "Entrar",
@@ -134,5 +135,6 @@
   "profile.noUpdate": "No se ha actualizado ningún dato",
   "profile.emailAlreadyExistError": "Este correo ya está en uso.",
   "profile.territoryManagementUpdateSucess": "Los datos asociados a los territorios se han actualizado correctamente.",
-  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios."
+  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios.",
+  "genericPrivateHeaders.changeAppOrTerritory": "Changer d'application ou de territoire"
 }

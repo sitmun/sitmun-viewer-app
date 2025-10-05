@@ -1,8 +1,15 @@
-import { Component , EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
   selector: 'app-dashboard-item',
@@ -13,15 +20,17 @@ export class DashboardItemComponent {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER : number = 100;
-  nbTerritory : number = 0;
-  applicationId : number = 0;
-  listOfTerritories : any;
+  DESCRIPTION_MAX_CHARACTER: number = 100;
+  nbTerritory: number = 0;
+  applicationId: number = 0;
+  listOfTerritories: any;
   mediaQueryListener: any;
 
   constructor(
-    private commonService : CommonService,
-    private router : Router
+    private commonService: CommonService,
+    private router: Router,
+    private notificatioNService: NotificationService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit() {
@@ -36,7 +45,7 @@ export class DashboardItemComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event : any) {
+  onResize(event: any) {
     this.checkWindowSize();
   }
 
@@ -49,12 +58,12 @@ export class DashboardItemComponent {
     }
   }
 
-  fillTerritory(appId : number) {
+  fillTerritory(appId: number) {
     this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
-        this.nbTerritory = res.numberOfElements;
+        this.nbTerritory = res.content.length;
       }
     });
   }

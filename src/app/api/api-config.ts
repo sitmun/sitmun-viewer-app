@@ -1,6 +1,4 @@
-export const URL_AUTH_VERIFY_PASSWORD = '/api/user-verification/verify-password'
-
-export const URL_AUTH_VERIFY_EMAIL = '/api/user-verification/verify-email'
+export const URL_AUTH_VERIFY_EMAIL = '/api/user-verification/verify-email';
 
 export const URL_AUTH_LOGIN = '/api/authenticate';
 
@@ -26,4 +24,4 @@ export const URL_API_I18N_MESSAGES_PREFIX = '';
 
 export const URL_API_I18N_LANGUAGE = '';
 
-export const URL_API_I18N_MESSAGES_LIST = '';
+export const URL_API_I18N_MESSAGES_LIST = '/api/languages';
