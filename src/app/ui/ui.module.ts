@@ -20,21 +20,27 @@ import { DashboardItemComponent } from './components/dashboard/dashboard-item/da
 import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
 import { DashboardTerritoriesTagComponent } from './components/dashboard/dashboard-territories-tag/dashboard-territories-tag.component';
 
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { ApplicationDetailsComponent } from './components/application-details/application-details.component';
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
-
+import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
 @NgModule({
-  imports: [CommonModule, TranslateModule, FormsModule, NgxPaginationModule,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    FormsModule,
+    NgxPaginationModule,
+    CommonModule,
+    FormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule
-
-  ],
+    MatIconModule,
+    MatExpansionModule, SharedPipesModule],
   declarations: [
     DashboardItemsComponent,
     DashboardButtonsComponent,

@@ -1,6 +1,6 @@
 <div  *ngIf="isPublic()" class="main-content">
   <div *ngIf="allItems.length > 0">
-    <div class="cards-container">
+    <div [class]="isDashboard() ? 'cards-container' : 'cards-container-territory'">
       <div class="card" *ngFor="let item of allItems">
         <app-dashboard-item
           [item]="item"
@@ -15,14 +15,14 @@
 <div *ngIf="!isPublic() && items.length > 0" class="main-content">
   <div *ngIf="privateItems.length > 0">
     <h3>{{ 'dashboardPage.applicationPrivate' | translate }}</h3>
-    <div class="cards-container">
+    <div [class]="isDashboard() ? 'cards-container' : 'cards-container-territory'">
       <div class="card" *ngFor="let item of privateItems">
         <app-dashboard-item
           [item]="item"
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPrivateApplications($event)" *ngIf="privateItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllApplicationsPrivate($event, true)" *ngIf="privateItems.length > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 
   <hr class="separation-line"
@@ -30,14 +30,14 @@
 
   <div *ngIf="publicItems.length > 0" >
     <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
-    <div class="cards-container">
+    <div [class]="isDashboard() ? 'cards-container' : 'cards-container-territory'">
       <div class="card" *ngFor="let item of publicItems">
         <app-dashboard-item
           [item]="item"
           (tag)="displayTerritoriesTag($event)"/>
       </div>
     </div>
-    <app-dashboard-expand-button (expandAll)="displayAllPublicApplications($event)" *ngIf="publicItems.length > MAX_HIDDEN_MODE_ITEMS"/>
+    <app-dashboard-expand-button (expandAll)="displayAllApplicationsPrivate($event, false)" *ngIf="publicItems.length > MAX_HIDDEN_MODE_ITEMS"/>
   </div>
 </div>
 
