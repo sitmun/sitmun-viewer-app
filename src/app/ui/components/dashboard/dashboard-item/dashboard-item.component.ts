@@ -26,12 +26,7 @@ export class DashboardItemComponent {
   listOfTerritories: any;
   mediaQueryListener: any;
 
-  constructor(
-    private commonService: CommonService,
-    private router: Router,
-    private notificatioNService: NotificationService,
-    private translateService: TranslateService
-  ) {}
+  constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
@@ -76,12 +71,6 @@ export class DashboardItemComponent {
       this.navigateToApplicationDetails(idApp);
     } else if (this.nbTerritory == 1) {
       this.navigateToMap(idApp, this.listOfTerritories[0].id);
-    } else {
-      this.translateService
-        .get('dashboardPage.noTerritoriesInApplication')
-        .subscribe((trad) => {
-          this.notificatioNService.warning(trad);
-        });
     }
   }
 
@@ -103,20 +92,38 @@ export class DashboardItemComponent {
     this.tag.emit(object);
   }
 
-  navigateToMap(applicationId: number, territoryId: number) {
-    let navigationPath = '';
+  navigateToMap(applicationId : number, territoryId: number) {
+    let navigationPath = "";
     if (this.router.url.startsWith('/user')) {
       navigationPath = NavigationPath.Section.User.Map(
         applicationId,
         territoryId
       );
     } else if (this.router.url.startsWith('/public')) {
-      navigationPath = NavigationPath.Section.Public.Map(
-        applicationId,
-        territoryId
+      NavigationPath.Section.Public.Territory(territoryId);
+    }
+  }
+
+  navigateToMapWithTerritory(idApp: number, territoryId: number) {
+    if (this.router.url.startsWith('/public')) {
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(idApp, territoryId)
+      );
+    } else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(idApp, territoryId)
       );
     }
+  }
 
-    this.router.navigateByUrl(navigationPath);
+  renderDescription() {
+    let description = this.item.description;
+    if (
+      description != null &&
+      description.length > this.DESCRIPTION_MAX_CHARACTER
+    ) {
+      description = description.slice(0, this.DESCRIPTION_MAX_CHARACTER) + '...';
+    }
+    return description;
   }
 }

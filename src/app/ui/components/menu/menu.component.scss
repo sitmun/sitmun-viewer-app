@@ -1,108 +1,198 @@
 @use 'colors';
 @use 'dimensions';
 
-.menu-show-div {
-  display: flex;
-  justify-content: right;
+$path_base: "/assets/img/";
+$font-size: 20px;
+$btn-height: 80px;
+$btn-width: 250px;
+$btn-width-full: 500px;
+$btn-radius: 75px;
+$icon-size: 30px;
+
+/* Close button */
+.popup-close {
   position: absolute;
+  top: 0;
   right: 0;
-  z-index: 10090;
-  height: auto;
-  width: dimensions.$navigation-bar-menu-width;
-  top: 60px;
+  z-index: 1000;
+  height: fit-content;
+  width: fit-content;
+  margin: 10px;
 
-  .menu-show {
-    font-size: dimensions.$navigation-bar-menu-font-size;
+  &:hover {
+    cursor: pointer;
+    filter: brightness(0.8);
+  }
+
+  img {
+    height: $icon-size;
+    width: $icon-size;
+  }
+}
+
+/* Welcome section */
+.popup-welcome {
+  padding-top: 1px;
+
+  p {
+    text-align: center;
+    font-size: 35px;
+  }
+}
+
+/* Options sections */
+.popup-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.lang-select-radius {
+  border-bottom-left-radius: $btn-radius;
+  border-top-left-radius: $btn-radius;
+  width: $btn-width;
+}
+
+.lang-select {
+  position: relative;
+  display: inline-block;
+  background-color: #212121;
+  height: $btn-height;
+
+  mat-select {
     width: 100%;
-    height: auto;
-    padding: dimensions.$navigation-bar-menu-padding;
-    color: colors.$navigation-bar-menu-color;
-    background: white;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 
-    .menu-options {
+    ::ng-deep .mat-mdc-select-trigger {
+      height: 100%;
+    }
 
-      .lang-buttons, .map-options {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin-right: dimensions.$navigation-bar-lang-margin;
+    ::ng-deep .mat-mdc-select-value {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+      color: white;
+      transition: color 0.3s;
+    }
 
-        button {
-          color: colors.$navigation-bar-menu-button-color;
-          background: colors.$common-color-font-button;
-          font-weight: bold;
-          height: dimensions.$navigation-bar-lang-button-height;
-          width: dimensions.$navigation-bar-lang-button-width;
-          border: none;
-          font-size: dimensions.$navigation-bar-lang-button-font-size;
-          padding: 0;
-        }
+    ::ng-deep .mat-mdc-select-arrow-wrapper {
+      display: none; // hide native arrow
+    }
+  }
 
-        button:hover {
-          transform: scale(1.25);
-        }
+  .lang-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: $icon-size;
+    height: $icon-size;
+    pointer-events: none;
+    background-image: url(#{$path_base}Icona-fletxa-cap-avall-gris.svg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s;
+  }
 
-      }
-
-      .logged-in-options {
-        margin-left: dimensions.$navigation-bar-menu-logged-options-margin-left;
-        margin-bottom: dimensions.$navigation-bar-menu-logged-options-margin-bottom;
-
-        h4 {
-          font-size: dimensions.$navigation-bar-menu-hi-title-font-size;
-          margin: dimensions.$navigation-bar-menu-hi-title-margin 0;
-        }
-
-        .logout {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-
-          h5 {
-            margin-left: dimensions.$navigation-bar-menu-logout-title-margin-left;
-          }
-
-          button {
-            height: auto;
-            width: dimensions.$navigation-bar-logout-width;
-            background: colors.$navigation-bar-menu-logout-button-background;
-            padding: dimensions.$navigation-bar-menu-logout-button-padding;
-            border: 0;
-            border-radius: dimensions.$navigation-bar-menu-logout-button-border-radius;
-
-            img {
-              padding: dimensions.$navigation-bar-menu-logout-img-padding;
-              width: auto;
-              height: 100%;
-            }
-          }
-          button:hover {
-            transform: scale(1.25);
-          }
-        }
-      }
-
-      .menu-button {
-        font-size: dimensions.$navigation-bar-menu-font-size;
-        font-weight: bold;
-        width: auto;
-        height: auto;
-        margin: dimensions.$navigation-bar-menu-button-margin;
-        padding: dimensions.$navigation-bar-menu-button-padding;
-        color: colors.$navigation-bar-menu-button-color;
-        background: colors.$common-color-font-button;
-        border: dimensions.$navigation-bar-menu-button-border solid colors.$navigation-bar-menu-button-border-color;
-        border-radius: dimensions.$navigation-bar-menu-button-border-radius;
-      }
-
-      .menu-button:hover {
-        transform: scale(1.25);
-      }
+  &:hover {
+    ::ng-deep .mat-mdc-select-value {
+      color: colors.$primary-orange !important;
     }
   }
 }
-.menu-show-div.pet {
-  top: 30px;
-  right: 10px;
+
+::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
+  color: white !important;
+}
+
+::ng-deep .mdc-menu-surface {
+  background-color: #212121 !important;
+}
+
+::ng-deep .mat-mdc-option-active {
+  background-color: rgba(colors.$primary-orange, 0.9) !important;
+}
+
+::ng-deep .mat-pseudo-checkbox.mat-pseudo-checkbox-checked::after {
+  border-color: white !important;
+}
+
+::ng-deep .mat-mdc-option:hover {
+  background-color: rgba(colors.$primary-orange, 0.9) !important;
+}
+
+.btn-wide {
+  width: $btn-width;
+  font-size: $font-size;
+}
+
+.login-btn,
+.logout-btn {
+  border-bottom-right-radius: $btn-radius;
+  border-top-right-radius: $btn-radius;
+}
+
+.full-radius {
+  border-radius: $btn-radius;
+  width: $btn-width-full;
+}
+
+.btn-icon {
+  height: 30%;
+}
+
+.popup-btn {
+  font-size: $font-size;
+  display: inline-block;
+  color: white;
+  background-color: #212121;
+  border: 0;
+  height: $btn-height;
+
+  &:hover {
+    cursor: pointer;
+    color: colors.$primary-orange;
+  }
+}
+
+.auth-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #2C2E30;
+  color: white;
+  padding: 20px;
+  z-index: 1;
+}
+
+/* Profile section */
+.popup-profile {
+  margin-top: 10px;
+}
+
+.profile-btn {
+  border-radius: $btn-radius;
+  width: 50%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  img {
+    height: 20px;
+    width: auto;
+  }
+}
+
+.profile-btn-full {
+  width: $btn-width-full;
 }

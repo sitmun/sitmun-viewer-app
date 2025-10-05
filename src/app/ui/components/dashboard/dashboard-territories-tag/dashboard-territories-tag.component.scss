@@ -16,6 +16,25 @@ $path_base: "./../../../assets/img/";
   overflow: visible;
 }
 
+.dashboard-item-nbTerritories {
+  text-align: left;
+  background-color: colors.$primary-orange;
+  color: white;
+  width: fit-content;
+  border-radius: 3px;
+  font-size: 16px;
+  padding: 6px;
+  border: 1px;
+  margin-top: 7px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+}
+
+.dashboard-item-nbTerritories:hover {
+  cursor: pointer;
+  background-color: colors.$secondary-orange;
+}
+
 .territories-tag {
   box-sizing: border-box;
   background-color: white;
@@ -173,7 +192,7 @@ $path_base: "./../../../assets/img/";
 }
 
 .left-side:hover .territory-text {
-  color: colors.$blue;
+  color: colors.$primary-orange;
 }
 
 .right-side {

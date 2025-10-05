@@ -109,6 +109,24 @@ $path_base: "./../../../assets/img/";
       justify-content: space-between;
       align-items: center;
 
+      .authentication-menu {
+        background-color: transparent;
+        border: none;
+        background-image: url($path_base + "menu.svg");
+        width: 40px;
+        height: 40px;
+        margin: 0;
+        padding: 0;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .authentication-menu:hover {
+        background-image: url($path_base + "menu-naranja.svg");
+        cursor: pointer;
+      }
+
       .home-menu {
         width: 40px;
         height: 40px;
@@ -126,112 +144,15 @@ $path_base: "./../../../assets/img/";
         background-image: url($path_base + "home-hover.svg");
       }
 
-      .home-menu,
-      .profile-page {
+      .home-menu {
         background-size: contain;
         background-repeat: no-repeat;
-      }
-
-      .select-language {
-        width: 140px;
-
-        select {
-          outline: 0;
-          height: 50px;
-          width: 150px;
-          color: black;
-          border-radius: 0.25em;
-          border: 1px solid lightgray;
-          background-color: transparent;
-          backdrop-filter: blur(2px);
-          cursor: pointer;
-          padding-left: 7px;
-        }
-
-        select::after {
-          content: '\25BC';
-          position: absolute;
-          top: 0;
-          right: 0;
-          padding: 1em;
-          background-color: #34495e;
-          transition: .25s all ease;
-          pointer-events: none;
-        }
-
-        select:hover::after {
-          color: #f39c12;
-        }
-      }
-
-    .profile-page {
-      button.button-menu {
-        all: unset;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-        cursor: pointer;
-        width: 100%;
-        padding: 8px;
-        background: none;
-        box-sizing: border-box;
-      }
-
-      button.button-menu .icon {
-        height: 24px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-image: url($path_base + "Icona-usuari.svg");
-      }
-
-      button.button-menu:hover {
-        cursor: pointer;
-
-        .icon {
-          background-image: url($path_base + "Icona-usuari-azul.svg");
-        }
-
-        #username {
-          color: colors.$blue;
-        }
-      }
-    }
-
-    .profile-page.active {
-      #username {
-        color: colors.$blue;
-      }
-
-      button.button-menu .icon {
-        background-image: url($path_base + "Icona-usuari-azul.svg");
-      }
-    }
-
-      .logout {
-        gap: 3px;
-
-        .icon {
-          height: 24px;
-          background-size: contain;
-          align-items: center;
-          justify-content: center;
-          background-repeat: no-repeat;
-          background-image: url($path_base + "Icona-desconnexió.svg");
-        }
-      }
-
-      .logout:hover {
-        color: colors.$blue;
-
-        .icon {
-          background-image: url($path_base + "Icona-desconnexió-azul.svg");
-
-        }
       }
     }
   }
 }
+
+/* navbar on map section */
 .nav-bar.pet{
   div {
     height: 40px;
@@ -258,26 +179,9 @@ $path_base: "./../../../assets/img/";
         }
       }
     }
-    .select-language {
-      margin: 5px 5px 0 0;
-    }
   }
 }
-.nav-bar.login{
-  color: white;
-  background-color: transparent;
-  div {
-    max-width: calc(100% - 20px);
 
-    .right {
-      .select-language {
-        select {
-          color: white;
-        }
-      }
-    }
-  }
-}
 .navbar-responsive{
   display: none;
 }
@@ -296,27 +200,9 @@ $path_base: "./../../../assets/img/";
 
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
-  .nav-bar {
-    .right {
-      .home-menu,
-      .profile-page,
-      .logout {
-        display: none;
-      }
-
-      .select-language {
-        margin-top: 10px !important;
-        margin-right: 5px !important;
-      }
-
-      .select-language::after {
-        border-left: var(--size) solid transparent;
-        border-right: var(--size) solid transparent;
-        border-top: var(--size) solid black;
-        top: 55%;
-        background-color: red;
-      }
-    }
+  .nav-bar .right .home-menu,
+  .nav-bar .right .authentication-menu {
+    display: none;
   }
 
   .navbar-responsive {
@@ -360,6 +246,7 @@ $path_base: "./../../../assets/img/";
         background-repeat: no-repeat;
       }
     }
+
 
     /* buttons */
     .home-button button .icon {

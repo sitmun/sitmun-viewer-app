@@ -1,7 +1,7 @@
-<div class='{{TamanyMenu()}}' *ngIf="!navigationBarIsHidden">
+<div class='{{tamanyMenu()}}' *ngIf="!navigationBarIsHidden">
   <div class="dashboard-container">
     <div class="left">
-      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="IsConnected() && (headerBase?.logoSitmun?.visible !== false)"/>
+      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="isConnected() && (headerBase?.logoSitmun?.visible !== false)"/>
       <div *ngFor="let item of headerLeftSection">
         <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
       </div>
@@ -16,32 +16,17 @@
         (click)="displayTerritoriesAppList = !displayTerritoriesAppList"
         [button_text]="'genericPrivateHeaders.changeAppOrTerritory' | translate"
         [button_img_url]="'assets/img/Icona-canviar.svg'"
-        />
-      <button (click)="homeRedirect()" [class.active]="navigationClassActive == 'home'" class="home-menu button-menu" *ngIf="IsConnected() && (headerBase?.homeMenu?.visible !== false)"> </button>
-      <div class="select-language" *ngIf="(headerBase?.switchLanguage?.visible !== false)">
-        <select [ngModel]="currentLang" (change)="useLanguage($event)">
-          <option value="ca"> Català </option>
-          <option value="en"> English </option>
-          <option value="es"> Español </option>
-          <option value="fr"> Français </option>
-        </select>
-      </div>
-      <div class="profile-page" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard() && (headerBase?.profileButton?.visible !== false)">
-        <p> {{ 'genericPrivateHeader.hi' | translate }},</p>
-        <button (click)="profileRedirect()" class="button-menu">
-          <div class="icon"></div>
-          <p id="username"> {{ username | titlecase}} </p>
-        </button>
-      </div>
-      <button class="logout button-menu" (click)="logout()" *ngIf="IsConnected() && !isPublicDashboard() && (headerBase?.logoutButton?.visible !== false)">
-        <img src="assets/img/Icona-desconnexió.svg"/>
-        <p> {{ 'genericPrivateHeader.logout' | translate }} </p>
+      />
+      <button
+        class="home-menu button-menu"
+        [class.active]="navigationClassActive === 'home'"
+        (click)="homeRedirect()"
+        *ngIf="notInAuth()">
       </button>
-      <primary-button
-        *ngIf="IsConnected() && !isResponsive && isPublicDashboard()"
-        [button_text]="'loginPage.title' | translate"
-        (click)="loginRedirect()"
-        />
+      <button
+        class="authentication-menu"
+        (click)="showAuthenticationPopup()">
+      </button>
     </div>
   </div>
   <button class="hide-navigationbar" (click)="navigationBarIsHidden = true" *ngIf="isOnMap()">
@@ -49,25 +34,39 @@
   </button>
 </div>
 
-<div class="navbar-responsive" *ngIf="IsConnected()">
-  <div class="home-button" [class.active]="navigationClassActive == 'home'">
+<div class="navbar-responsive" *ngIf="isConnected()">
+  <div class="home-button" [class.active]="navigationClassActive === 'home'">
     <button (click)="homeRedirect()">
       <div class="icon"></div>
     </button>
   </div>
 
-  <div class="profile-button" [class.active]="navigationClassActive == 'profile'" *ngIf="IsConnected() && !isPublicDashboard()">
+  <div class="profile-button" [class.active]="navigationClassActive === 'profile'" *ngIf="isConnected() && !isPublicDashboard()">
     <button (click)="profileRedirect()">
       <div class="icon"></div>
     </button>
   </div>
 
   <div class="logout-button" *ngIf="!isPublicDashboard()">
-    <button (click)="logout()">
+    <button (click)="logoutRedirect()">
       <div class="icon"></div>
     </button>
   </div>
 </div>
+
+<app-menu
+  *ngIf="showPopup"
+  [username]="username"
+  [isConnected]="isConnected()"
+  [showLogoutButton]="headerBase?.logoutButton?.visible && isOnMap()"
+  [showSwitchLanguageButton]="headerBase?.switchLanguageButton?.visible && isOnMap()"
+  [showProfileButton]="headerBase?.profileButton?.visible && isOnMap()"
+  (hideEvent)="showAuthenticationPopup()"
+  (loginEvent)="loginRedirect()"
+  (logoutEvent)="logoutRedirect()"
+  (profileEvent)="profileRedirect()"
+  (languageEvent)="changeLanguage($event)">
+</app-menu>
 
 <div class="navbar-map-hidden" *ngIf="isOnMap() && navigationBarIsHidden">
   <button (click)="navigationBarIsHidden = false">
