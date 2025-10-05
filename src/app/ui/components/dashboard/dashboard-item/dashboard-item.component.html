@@ -1,6 +1,6 @@
 <div class="dashboard-item" [ngClass]="{'dashboard-item-maintenance': item.isUnavailable}">
   <div class="dashboard-item-image">
-    <button (click)="navigateToMap(item.id)">
+    <button (click)="navigateToApplicationDetailsOrMap(item.id)">
       <img [src]="item.logo || 'assets/img/card-no-image.svg'" />
     </button>
   </div>
@@ -30,9 +30,9 @@
 <ng-template #cardContent>
   <button class="dashboard-item-nbTerritories"
     [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }"
-    (click)="navigateToMap(applicationId, this.listOfTerritories.content[0].id)"
+    (click)="navigateToMapWithTerritory(item.id, listOfTerritories[0].id)"
     *ngIf="nbTerritory === 1" >
-    {{ this.listOfTerritories[0].name }}
+    {{ listOfTerritories[0].name }}
   </button>
 
   <button class="dashboard-item-nbTerritories" [disabled]="item.isUnavailable" *ngIf="nbTerritory > 1" (click)="displayTerritoriesTag(item)">

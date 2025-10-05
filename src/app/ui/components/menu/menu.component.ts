@@ -50,8 +50,8 @@ export class MenuComponent implements OnInit {
     }
   }
 
-  sendLanguageEvent(event: MatSelectChange) {
-    this.languageEvent.emit(event.value);
+  sendLanguageEvent(value: string) {
+    this.languageEvent.emit(value);
   }
 
   sendLoginEvent() {
