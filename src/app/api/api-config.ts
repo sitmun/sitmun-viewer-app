@@ -1,6 +1,4 @@
-export const URL_AUTH_VERIFY_PASSWORD = '/api/user-verification/verify-password'
-
-export const URL_AUTH_VERIFY_EMAIL = '/api/user-verification/verify-email'
+export const URL_AUTH_VERIFY_EMAIL = '/api/user-verification/verify-email';
 
 export const URL_AUTH_LOGIN = '/api/authenticate';
 

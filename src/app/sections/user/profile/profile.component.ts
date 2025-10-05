@@ -137,37 +137,28 @@ export class ProfileComponent {
   }
 
   saveProfile() {
-    const req : AuthenticationRequest = {
-      username: this.userProfile.username,
-      password: this.passwordField
-    };
+    this.userProfile.password = this.passwordField;
 
-    // Verify password of the user
-    this.verificationAccountService.passwordVerification(req).subscribe(({
-      next:(res) => {
-        // Update user
-        this.userService.updateUserAccount(this.userProfile).subscribe(({
-          next: (res) => {
-            this.translateService.get('profile.informationsUpdated').subscribe((trad) => {
-              this.notificationService.success(trad);
-            });
-            this.copyUserProfile = this.userProfile;
-          },
-          error: () => {
-            this.translateService.get('profile.userUpdateError').subscribe((trad) => {
-              this.notificationService.error(trad);
-            });
-          }
-        }));
+    // Update user
+    this.userService.updateUserAccount(this.userProfile).subscribe({
+      next: () => {
+        this.translateService
+          .get('profile.informationsUpdated')
+          .subscribe((trad) => {
+            this.notificationService.success(trad);
+          });
+        this.copyUserProfile = this.userProfile;
       },
       error: () => {
-        this.translateService.get('profile.dataValidationError').subscribe((trad) => {
-          this.notificationService.error(trad);
-        });
+        this.translateService
+          .get('profile.userUpdateError')
+          .subscribe((trad) => {
+            this.notificationService.error(trad);
+          });
       }
-    }));
+    });
 
-    this.passwordField = "";
+    this.passwordField = '';
     this.HidePopupSaveProfile();
   }
 
