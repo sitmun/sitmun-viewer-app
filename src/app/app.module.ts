@@ -10,9 +10,8 @@ import { FooterComponent } from './layout/footer/footer.component';
 import { AuthenticationModule } from '@auth/auth.module';
 import { UiModule } from '@ui/ui.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import {
-  AUTH_CONFIG_DI,
-} from '@auth/authentication.options';
+import { AUTH_CONFIG_DI } from '@auth/authentication.options';
+import { UserService } from '@api/services/user.service';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -26,6 +25,7 @@ import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 registerLocaleData(localeEs);
 
@@ -57,7 +57,8 @@ registerLocaleData(localeEs);
       }
     }),
     FormsModule,
-    NgxPaginationModule
+    NgxPaginationModule,
+    BrowserAnimationsModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

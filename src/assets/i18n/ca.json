@@ -1,10 +1,10 @@
 {
   "genericPrivateHeader.hi": "Hola",
-  "genericPrivateHeader.logout": "Desconnexió",
+  "loginPage.logoutText": "Desconnexió",
+  "loginPage.title": "Iniciar sessió",
   "loginPage.publicDashboardButton": "Accés públic",
   "loginPage.usernameText": "Usuari",
   "genericPrivateHeaders.changeAppOrTerritory": "Canviar l'aplicació o el territori",
-  "loginPage.title": "Log in",
   "loginPage.usernamePlaceholder": "Nom d'usuari",
   "loginPage.passwordText": "Contrasenya",
   "loginPage.passwordPlaceholder": "Contrasenya",
@@ -13,6 +13,7 @@
   "loginPage.DNIE": "Accés amb certificat digital o DNIE",
   "loginPage.incorrectLogin": "Dades d'accés incorrectes",
   "loginPage.passwordForgotten" : "Has oblidat la teva contrasenya?",
+  "loginPage.profile": "perfil",
   "forgotPasswordPage.title": "Contrasenya oblidada ?",
   "forgotPasswordPage.description": "Si has oblidat la contrasenya, indica el teu nom d'usuari o la teva adreça de correu electrònic. T'enviarem un correu amb les instruccions i l'enllaç per generar una contrasenya nova.",
   "forgotPasswordPage.mailText": "Usuari",
@@ -135,5 +136,6 @@
   "territory.filterSearchResult": "Filtrar la llista",
   "territory.information": "Informació",
   "territory.description": "Descripció",
-  "territory.descriptionMissing": "Cap descripció"
+  "territory.descriptionMissing": "Cap descripció",
+  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
 }
