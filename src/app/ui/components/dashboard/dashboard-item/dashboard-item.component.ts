@@ -103,4 +103,16 @@ export class DashboardItemComponent {
     }
   }
 
+  navigateToMapWithTerritory(idApp: number, territoryId: number) {
+    if (this.router.url.startsWith('/public')) {
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Map(idApp, territoryId)
+      );
+    } else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.User.Map(idApp, territoryId)
+      );
+    }
+  }
+
 }
