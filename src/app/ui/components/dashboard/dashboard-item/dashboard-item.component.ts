@@ -26,12 +26,7 @@ export class DashboardItemComponent {
   listOfTerritories: any;
   mediaQueryListener: any;
 
-  constructor(
-    private commonService: CommonService,
-    private router: Router,
-    private notificatioNService: NotificationService,
-    private translateService: TranslateService
-  ) {}
+  constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
@@ -68,38 +63,44 @@ export class DashboardItemComponent {
     });
   }
 
+  /**
+   * If the nb of territories > 1, navigate to applicationDetails. If nb of territories <= 1, navigate directly to the map of the territory
+   */
+  navigateToApplicationDetailsOrMap(idApp: number) {
+    if (this.nbTerritory > 1) {
+      this.navigateToApplicationDetails(idApp);
+    } else if (this.nbTerritory == 1) {
+      this.navigateToMap(idApp, this.listOfTerritories[0].id);
+    }
+  }
+
   navigateToApplicationDetails(idApp: number) {
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(NavigationPath.Section.Public.Application(idApp));
-    }
-    else {
+      this.router.navigateByUrl(
+        NavigationPath.Section.Public.Application(idApp)
+      );
+    } else {
       this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
     }
   }
 
   displayTerritoriesTag(application : any) {
     let object = {
-      'application': application,
-      'territories': this.listOfTerritories
-    };
+      application: application,
+      territories: this.listOfTerritories
+    }
     this.tag.emit(object);
   }
 
-  navigateToMap(idApp : number) {
-    if(this.nbTerritory == 1) {
-      if(this.router.url.startsWith("/public")){
-        this.router.navigateByUrl(
-          NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
-        );
-      }
-      else {
-        this.router.navigateByUrl(
-          NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
-        );
-      }
-    }
-    else {
-      this.displayTerritoriesTag(this.item);
+  navigateToMap(applicationId : number, territoryId: number) {
+    let navigationPath = "";
+    if (this.router.url.startsWith('/user')) {
+      navigationPath = NavigationPath.Section.User.Map(
+        applicationId,
+        territoryId
+      );
+    } else if (this.router.url.startsWith('/public')) {
+      NavigationPath.Section.Public.Territory(territoryId);
     }
   }
 
@@ -115,4 +116,14 @@ export class DashboardItemComponent {
     }
   }
 
+  renderDescription() {
+    let description = this.item.description;
+    if (
+      description != null &&
+      description.length > this.DESCRIPTION_MAX_CHARACTER
+    ) {
+      description = description.slice(0, this.DESCRIPTION_MAX_CHARACTER) + '...';
+    }
+    return description;
+  }
 }
