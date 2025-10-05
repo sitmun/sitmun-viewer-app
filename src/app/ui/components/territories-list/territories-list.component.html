@@ -14,7 +14,7 @@
           </div>
           <div class="applications-list" *ngIf="listApplications.length > 0">
             <button class="application-item" *ngFor="let application of getListApplications()" [ngClass]="{ 'selected': application.id.toString() === applicationSelectedId }" (click)="selectApplication(application.id.toString())">
-              <img *ngIf="application.id.toString() === applicationSelectedId" src="assets/img/Icona-comprovar-azul.svg"/>
+              <img *ngIf="application.id.toString() === applicationSelectedId" src="assets/img/Icona-comprovar-naranja.svg"/>
               <p> {{ application.title }} </p>
               <img id="app-logo" [src]="application.logo" />
             </button>
@@ -31,7 +31,7 @@
           </div>
           <div class="territories-list" *ngIf="listTerritories.length > 0">
             <button class="territory-item" *ngFor="let territory of getListTerritories()" [ngClass]="{ 'selected': territory.id.toString() === territorySelectedId }" (click)="territorySelectedId = territory.id.toString()">
-              <img *ngIf="territory.id.toString() === territorySelectedId" src="assets/img/Icona-comprovar-azul.svg"/>
+              <img *ngIf="territory.id.toString() === territorySelectedId" src="assets/img/Icona-comprovar-naranja.svg"/>
               <p> {{ territory.name }} </p>
             </button>
           </div>
