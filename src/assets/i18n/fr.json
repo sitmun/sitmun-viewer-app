@@ -1,7 +1,6 @@
 {
   "genericPrivateHeader.hi": "Bonjour",
-  "genericPrivateHeader.logout": "Déconnexion",
-  "genericPrivateHeaders.changeAppOrTerritory": "Changer l'application ou le territoire",
+  "loginPage.logoutText": "Se déconnecter",
   "loginPage.title": "Connexion",
   "loginPage.publicDashboardButton": "Accès public",
   "loginPage.usernameText": "Nom d'utilisateur",
@@ -13,6 +12,7 @@
   "loginPage.DNIE": "Accès avec certificat électronique ou carte d'identité électronique ",
   "loginPage.passwordForgotten" : "Mot de passe oublié ?",
   "loginPage.incorrectLogin": "Informations de connexion incorrectes",
+  "loginPage.profile": "profil",
   "profile.back": "Retour",
   "profile.myAccount": "Mon profil",
   "profile.profileInformation": "Mes informations",
@@ -70,6 +70,7 @@
   "dashboardPage.coveredTerritories":"Territoires couverts",
   "dashboardPage.territoryHover": "Territoire",
   "dashboardPage.mapHover": "Carte",
+  "dashboardPage.noTerritoriesInApplication": "Aucun territoire dans l'application",
   "mapPage.title": "Carte d'exemple",
   "dashboardDialog.inputPlaceholder": "Rechercher",
   "menu.login": "Accéder",
@@ -144,5 +145,6 @@
   "territory.filterSearchResult": "Filter la liste des résultats",
   "territory.information": "Information",
   "territory.description": "Description",
-  "territory.descriptionMissing": "Aucune description"
+  "territory.descriptionMissing": "Aucune description",
+  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
 }

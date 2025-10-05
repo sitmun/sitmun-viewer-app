@@ -28,4 +28,4 @@ export const URL_API_I18N_MESSAGES_PREFIX = '';
 
 export const URL_API_I18N_LANGUAGE = '';
 
-export const URL_API_I18N_MESSAGES_LIST = '';
+export const URL_API_I18N_MESSAGES_LIST = '/api/languages';

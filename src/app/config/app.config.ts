@@ -18,6 +18,7 @@ export const NavigationPath = {
         `/user/map/${applicationId}/${territoryId}`,
       Territory: (territoryId: number) => `/user/territory/${territoryId}`,
       Application: (applicationId: number) => `/user/application/${applicationId}`,
+      Profile: 'user/profile',
       Help: '/user/help'
     },
     Public: {

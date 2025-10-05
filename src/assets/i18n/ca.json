@@ -1,10 +1,10 @@
 {
   "genericPrivateHeader.hi": "Hola",
-  "genericPrivateHeader.logout": "Desconnexió",
+  "loginPage.logoutText": "Desconnexió",
+  "loginPage.title": "Iniciar sessió",
   "loginPage.publicDashboardButton": "Accés públic",
   "loginPage.usernameText": "Usuari",
   "genericPrivateHeaders.changeAppOrTerritory": "Canviar l'aplicació o el territori",
-  "loginPage.title": "Log in",
   "loginPage.usernamePlaceholder": "Nom d'usuari",
   "loginPage.passwordText": "Contrasenya",
   "loginPage.passwordPlaceholder": "Contrasenya",
@@ -99,6 +99,7 @@
   "dashboardPage.coveredTerritories":"Territoris coberts",
   "dashboardPage.territoryHover": "Territori",
   "dashboardPage.mapHover": "Mapa",
+  "dashboardPage.noTerritoriesInApplication": "Cap territori a l'aplicació",
   "mapPage.title": "Mapa d'exemple",
   "dashboardDialog.inputPlaceholder": "Cerca",
   "menu.login": "Accedir",
@@ -145,5 +146,6 @@
   "territory.filterSearchResult": "Filtrar la llista",
   "territory.information": "Informació",
   "territory.description": "Descripció",
-  "territory.descriptionMissing": "Cap descripció"
+  "territory.descriptionMissing": "Cap descripció",
+  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
 }
