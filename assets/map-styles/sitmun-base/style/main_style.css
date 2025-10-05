@@ -32,7 +32,7 @@
 
 
 .tc-map {
-    position: absolute !important;
+    /*position: fixed;*/
     top: 0px;
     left: 0px;
     right: 0px;
@@ -954,6 +954,31 @@ li.tc-ctl-legend-node {
     background-image: url(../img/icoStar.png);
 }
 
+ul.tc-ctl-bms-branch {
+    list-style-type: none;
+    margin: 0.5em 0 0 0;
+    padding: 0;
+    text-align: center;
+}
+
+    ul.tc-ctl-bms-branch > li {
+        height: 75px;
+        width: 24%;
+        position: relative;
+    }
+
+.tc-ctl-bms-node label {
+    position: absolute;
+    width: auto;
+    height: auto;
+    border: 0px;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background-size: cover;
+}
+
 .tc-ctl-proj-node label {
     position: relative;
     width: 5rem;
@@ -971,6 +996,20 @@ li.tc-ctl-legend-node {
     width: 50px;
     -webkit-appearance: none;
     border: solid 2px grey;
+}
+
+.tc-ctl-bms-node label span {
+    width: auto;
+    height: auto;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    padding-top: unset;
+}
+
+#bms .tc-ctl-bms-node input[type=radio] ~ span {
+    width: auto;
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-content ul {
@@ -1455,6 +1494,13 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
     background-image: url(../img/mapaCheq3.png);
 }
 
+.tc-ctl-bms-tree > form > span {
+    display: inline-block;
+    width: 30%;
+    line-height: 20px;
+    vertical-align: text-top;
+}
+
 .tc-ctl-wlm-metadata, .tc-ctl-wlm-descarregadades, .tc-ctl-lcat-metadata, .tc-ctl-lcat-descarregadades {
     display: inline-block;
 }
@@ -1736,6 +1782,11 @@ ul.tc-ctl-lcat-proj-childs {
     margin: 1em 0;
 }
 
+.tc-ctl-bms-tree {
+    height: 300px;
+    overflow: auto;
+}
+
 .tc-ctl-lcat-name {
     display: inline-block;
     margin-right: 150px;
@@ -1755,6 +1806,14 @@ ul.tc-ctl-lcat-proj-childs {
 
 .tc-ctl-lcat-abstract > a {
     display: block;
+}
+
+ul.tc-ctl-bms-branch > li {
+    font-size: 0.75rem;
+}
+
+.tc-ctl-bms-node input[type=radio].tc-disabled ~ span:after {
+    font-size: 1em;
 }
 
 /*IMG BIG*/
@@ -1873,6 +1932,11 @@ div.tc-ctl-download .tc-ctl-download-btn:before {
     visibility: hidden !important
 }
 
+.tc-ctl-bms input[type="range"] {
+    width: 60% !important;
+    margin-bottom: 0px !important;
+    margin-left: 25px !important
+}
 /*End SilmeStyle.css*/
 
 .tc-map.tc-collapsed .tc-ctl-nav-home {
@@ -1948,6 +2012,12 @@ li.tc-ctl-lcat-node > span {
 
 span[data-tooltip] {
     top: 100% !important
+}
+
+.tc-ctl-bms input[type="range"] {
+    width: 60% !important;
+    margin-bottom: 0px !important;
+    margin-left: 25px !important
 }
 
 /*SilmeModal.css*/
@@ -2857,330 +2927,18 @@ i.fa-list-alt.fa, i.fa-area-chart.fa {
     width: 50%;
 }
 
+.tc-ctl-bms-node label {
+  background-image: url("https://ide.cime.es/test/thumbnails/dummy_map_thumbnail.jpg")
+}
+
 .tc-ctl-wlm .tc-ctl-m-finfo-select {
   margin: 5px;
 }
 
-/* --------------------------------------------------------------------------------------
- * New basemap selector component
- * ----------------------------------------------------------------------------------- */
-
-:root {
-  --bms-map-miniature-width: 30%;
-  --bms-gap-between-maps: 40%;
-  --bms-gap-between-inputs: 15px;
-  --bms-button-size: 20px;
+.tc-ctl-bms h2 button.tc-icon-btn.tc-details:before {
+  content: '';
 }
 
-#mapa-secundario {
-  position: absolute !important;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: transparent;
-  z-index: 1;
-}
-
-#mapa-secundario .ol-viewport {
-  background-color: transparent;
-}
-
-#mapa-secundario .tc-ctl {
-  display: none;
-}
-
-#mapa-secundario.tc-loading::before {
-  display: none;
-}
-
-.tc-ctl-bms-tree {
-  overflow: auto;
-  height: 350px;
-}
-
-.tc-ctl-bms-tree > form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
-}
-
-.tc-ctl-bms-active-maps {
-  display: flex;
-  flex-direction: row;
-  gap: var(--bms-gap-between-maps);
-  justify-content: center;
-  align-items: center;
-}
-
-.tc-ctl-bms-active-map-miniature {
-  height: 85px;
-  width: var(--bms-map-miniature-width);
-  border-radius: 6px;
-  box-shadow: 0 0 5px rgba(0,0,0, 0.2);
-  background-image: url("https://ide.cime.es/test/thumbnails/dummy_map_thumbnail.jpg");
-  background-size: cover;
-  cursor: pointer;
-  position: relative;
-}
-
-.tc-ctl-bms-active-map-miniature > div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border: 3px solid;
-  border-radius: 6px;
-  pointer-events: none;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.tc-ctl-bms-active-map-miniature > div > span {
-  font-size: 0.75rem;
-  text-align: center;
-  text-shadow: 0.1em 0.1em 0 var(--thumb-text-shadow-color),0.1em -0.1em 0 var(--thumb-text-shadow-color),-0.1em 0.1em 0 var(--thumb-text-shadow-color),-0.1em -0.1em 0 var(--thumb-text-shadow-color);
-  pointer-events: none;
-}
-
-.tc-ctl-bms-active-map-miniature > button {
-  display: none;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  cursor: pointer;
-  border: none;
-  border-radius: 3px;
-  width: var(--bms-button-size);
-  height: var(--bms-button-size);
-  background-image: url(../img/mapaCerrar_old.png);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: calc(var(--bms-button-size) + 10px) calc(var(--bms-button-size) + 10px);
-  vertical-align: center;
-}
-
-.tc-ctl-bms-divider {
-  border-top: 1px solid #eee;
-}
-
-.tc-ctl-bms ul.tc-ctl-bms-branch {
-  list-style-type: none;
-  padding: 0;
-  text-align: center;
-  margin: 0;
-}
-
-ul.tc-ctl-bms-branch > li {
-  height: 85px;
-  width: calc(24% - 6px);
-  cursor: pointer;
-  position: relative;
-  padding: 0;
-  margin: 3px;
-  border-radius: 6px;
-  background-size: cover;
-}
-
-ul.tc-ctl-bms-branch > li > div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border: 2px solid;
-  border-radius: 6px;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-ul.tc-ctl-bms-branch > li > div > span {
-  font-size: 0.75rem;
-  text-align: center;
-  text-shadow: 0.1em 0.1em 0 var(--thumb-text-shadow-color),0.1em -0.1em 0 var(--thumb-text-shadow-color),-0.1em 0.1em 0 var(--thumb-text-shadow-color),-0.1em -0.1em 0 var(--thumb-text-shadow-color);
-  pointer-events: none;
-  border: none;
-  border-radius: 0;
-}
-
-.tc-ctl-bms-node input[type="radio"] ~ span {
-  border: none;
-  pointer-events: none;
-}
-
-.tc-ctl-bms-node input[type="radio"]:checked ~ span {
-  border: none;
-}
-
-ul.tc-ctl-bms-branch > li > button {
-  display: none;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  cursor: pointer;
-  border: none;
-  border-radius: 3px;
-  width: var(--bms-button-size);
-  height: var(--bms-button-size);
-  background-image: url(../img/mapaMas.png);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: calc(var(--bms-button-size) + 10px) calc(var(--bms-button-size) + 10px);
-  vertical-align: center;
-}
-
-.tc-ctl-bms-slider {
-  margin-top: 7px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  justify-content: center;
-  align-items: center;
-}
-
-.tc-ctl-bms-slider-control {
-  display: flex;
-  flex-direction: row;
-  gap: var(--bms-gap-between-inputs);
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.tc-ctl-bms-slider-control-button-container {
-  display: flex;
-  justify-content: center;
-  vertical-align: center;
-}
-
-.tc-ctl-bms-slider-control-button-container > button {
-  cursor: pointer;
-  border: none;
-  border-radius: 3px;
-  width: var(--bms-button-size);
-  height: var(--bms-button-size);
-  background-image: url(../img/mapaMas.png);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: calc(var(--bms-button-size) + 10px) calc(var(--bms-button-size) + 10px);
-  vertical-align: center;
-}
-
-.tc-ctl-bms-slider-control-button-container > button[name="lessOpacity"] {
-  background-image: url("../img/mapaMenos.png");
-}
-
-.tc-ctl-bms-slider-control-button-container > button[name="moreOpacity"] {
-  background-image: url("../img/mapaMas.png");
-}
-
-.tc-ctl-bms-slider-input-container {
-  display: flex;
-  justify-content: center;
-  vertical-align: center;
-  position: relative;
-  width: calc(var(--bms-map-miniature-width) + var(--bms-gap-between-maps) - (var(--bms-gap-between-inputs) * 2) - 16px);
-}
-
-.tc-ctl-bms-slider-input-container > span {
-  font-size: 0.75rem;
-  position: absolute;
-  top: -14px;
-}
-
-.tc-ctl-bms-slider-input-container > input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 10px;
-  border-radius: 3px;
-  border: 1px solid;
-  position: relative;
-  z-index: 1;
-  background-image:
-    var(--bms-slider-background),
-    conic-gradient(white 90deg, lightgrey 90deg 180deg, white 180deg 270deg, lightgrey 270deg);
-  background-repeat: no-repeat, repeat;
-  background-size: 100% 100%, 10px 10px;
-  background-position: center left;
-}
-
-/*
- * Si se cambia el tamaño del thumb, hay que reajustar el tamaño en la función 'updateOpacityLabelPosition' del
- * componente BasemapSelectorSilme.
- */
-
-/* --------------------------- webkit browsers */
-.tc-ctl-bms-slider-input-container > input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 24px;
-  border-radius: 3px;
-  overflow: visible;
-  cursor: pointer;
-  border: 1px solid;
-  box-shadow: inset 0 0 1px rgba(0,0,0, 0.2);
-}
-
-/* -------------------------- Firefox */
-.tc-ctl-bms-slider-input-container > input[type="range"]::-moz-range-thumb {
-  width: 10px;
-  height: 24px;
-  border-radius: 3px;
-  overflow: visible;
-  cursor: pointer;
-  border: 1px solid;
-  box-shadow: inset 0 0 1px rgba(0,0,0, 0.2);
-}
-
-.tc-ctl-bms-slider-input-container > input[type="range"]::-moz-focus-outer {
-  border: none;
-}
-
-/*ul.tc-ctl-bms-branch > li {*/
-  /*text-align: center;*/
-  /*vertical-align: center;*/
-  /*font-size: 0.75rem;*/
-  /*height: 75px;*/
-  /*width: 24%;*/
-  /*position: relative;*/
-/*}*/
-
-/*.tc-ctl-bms-node label {*/
-/*  position: absolute;*/
-/*  width: auto;*/
-/*  height: auto;*/
-/*  border: 0px;*/
-/*  top: 2px;*/
-/*  left: 2px;*/
-/*  right: 2px;*/
-/*  bottom: 2px;*/
-/*  background-size: cover;*/
-/*}*/
-
-/*.tc-ctl-bms-node label span {*/
-/*  width: auto;*/
-/*  height: auto;*/
-/*  top: 0px;*/
-/*  left: 0px;*/
-/*  right: 0px;*/
-/*  bottom: 0px;*/
-/*  padding-top: unset;*/
-/*}*/
-
-/*#bms .tc-ctl-bms-node input[type=radio] ~ span {*/
-/*  width: auto;*/
-/*}*/
-
-/* ----------------------------------------------------------------------------------- */
 
 /*TODO REVISAR 20240430 folders*/
 /* Lo de sa posició i demés s'ha de revisar en aquest mateix document a sa línia 1345 en endevant */

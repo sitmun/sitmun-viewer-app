@@ -23,6 +23,7 @@ var arrayJsFiles = [
   //"assets/js/patch/SigSilmeOL.js",
   "assets/js/patch/SilmeMap.js",
   "assets/js/patch/SilmeModal.js",
+  "assets/js/patch/SilmeSecondBaseLayer.js",
   "assets/js/patch/SilmeUtils.js",
   "assets/js/patch/SilmeTree.js"
 ];

@@ -2,9 +2,5 @@
     "tools": "Tresnak",
     "legend":  "Legenda",
     "overviewMap": "Kokapena mapan",
-    "overviewMap.tooltip": "Kokapena mapan",
-    "removeBaseLayer": "Desmarkatu atzeko mapa hau",
-    "addBaseLayer": "Gehitu atzeko planoko mapa",
-    "lessOpacity": "Murriztu opakutasuna",
-    "moreOpacity": "Opakutasuna handitu"
+    "overviewMap.tooltip": "Kokapena mapan"
 }
