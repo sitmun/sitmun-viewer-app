@@ -15,7 +15,22 @@
       </div>
     </div>
 
-    <p class="dashboard-item-description" *ngIf="item.description">
+  <div class="dashboard-item-content" [ngClass]="item.isUnavailable ? 'dashboard-item-maintenance' : 'dashboard-item-active'">
+    <button (click)="navigateToApplicationDetailsOrMap(item.id)">
+      <h3 class="dashboard-item-title"> {{item.title}} {{item.name}} </h3>
+    </button>
+
+    <button class="dashboard-item-nbTerritories"
+    [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }"
+    (click)="navigateToMap(applicationId, this.listOfTerritories.content[0].id)"
+    *ngIf="nbTerritory == 1" >
+      {{ this.listOfTerritories[0].name }}
+    </button>
+    <button class="dashboard-item-nbTerritories" [disabled]="item.isUnavailable" *ngIf="nbTerritory > 1" (click)="displayTerritoriesTag(item)">
+      {{ nbTerritory }} {{ 'dashboardPage.nbTerritoriesTitle' | translate }}
+    </button>
+
+    <p class="dashboard-item-description">
       {{ item.description && item.description.length > DESCRIPTION_MAX_CHARACTER
           ? (item.description.slice(0, DESCRIPTION_MAX_CHARACTER) + '...')
           : item.description }}
