@@ -1,28 +1,58 @@
 <h2>{{i18n "backgroundMaps"}}</h2>
 <div class="tc-ctl-bms-tree">
   <form>
-    <table style="width:100%;">
-      <tr>
-        <td id="td_baseLayer1" class="verde activo" onclick="selectB1()"><span id="lbl_baseLayer1"></span></td>
-        <td style="width:50%;">
-          <input type="range" id="rangeTransparency" name="rangeTransparency" value="100" style="width:100%;" />
-        </td>
-        <td id="td_baseLayer2" class="azul" onclick="selectB2()"><span id="lbl_baseLayer2"></span></td>
-      </tr>
-    </table>
 
+    <!-- Contenedor de las miniaturas con los dos mapas seleccionados -->
+    <div class="tc-ctl-bms-active-maps">
+      <div id="bms_active_map_1" class="tc-ctl-bms-active-map-miniature">
+        <div> <!-- Borde -->
+          <span></span> <!-- Etiqueta -->
+        </div>
+        <button type="button" name="removeBaseLayer" title="{{i18n "removeBaseLayer"}}"></button>
+
+      </div>
+
+      <div id="bms_active_map_2" class="tc-ctl-bms-active-map-miniature bms-comparable">
+        <div> <!-- Borde -->
+          <span></span> <!-- Etiqueta -->
+        </div>
+        <button type="button" name="removeBaseLayer" title="{{i18n "removeBaseLayer"}}"></button>
+      </div>
+    </div>
+
+    <!-- Control del slider para cambiar la oposición -->
+    <div class="tc-ctl-bms-slider bms-comparable">
+
+      <div class="tc-ctl-bms-slider-control">
+        <div class="tc-ctl-bms-slider-control-button-container">
+          <button type="button" name="lessOpacity" title="{{i18n "lessOpacity"}}"></button>
+        </div>
+
+        <div class="tc-ctl-bms-slider-input-container">
+          <span>50%</span>
+          <input type="range" value="50" min="0" max="100" step="1.0">
+        </div>
+
+        <div class="tc-ctl-bms-slider-control-button-container">
+          <button type="button" name="moreOpacity" title="{{i18n "moreOpacity"}}"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divisor -->
+    <div class="tc-ctl-bms-divider"></div>
+
+    <!--Galería de mapas base -->
     <ul class="tc-ctl-bms-branch">
-      {{#each baseLayers}}
-        {{> tc-ctl-bms-node controlId=..}}
-      {{/each}}
-      {{#each dialogMore}}
+      {{#if dialogMore}}
         <li class="tc-ctl-bms-node">
           <label class="tc-ctl-bms-more-node" title="{{i18n "moreBackgroundMaps"}}">
             <input type="radio" name="bms" value="moreLayers">
             <span></span>
           </label>
         </li>
-      {{/each}}
+      {{/if}}
     </ul>
+
   </form>
 </div>
