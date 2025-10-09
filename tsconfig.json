@@ -31,7 +31,8 @@
       "@ui/*": ["src/app/ui/*"]
     },
     "useDefineForClassFields": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "typeRoots": ["./src/app/api", "./node_modules/@types"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
