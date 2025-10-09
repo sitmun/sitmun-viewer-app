@@ -21,7 +21,7 @@ var ajustarPanell = function () {
   bmsElmTree.style.height = null;
   bmsElmTree.style.maxHeight = null;
   bmsElmTree.querySelector('ul').style.maxHeight = null;
-  if (wlmElmContent != null) {//TODO - DELETE
+  if (wlmElmContent != null) { // TODO: Delete
     wlmElmContent.style.maxHeight = null;
     wlmElmContent.querySelector('ul').style.maxHeight = null;
   }
