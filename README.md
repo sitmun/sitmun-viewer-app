@@ -53,7 +53,7 @@ This frontend integrates with the [SITMUN Backend Core](https://github.com/sitmu
 - 🌐 **Internationalization**: Support for multiple languages (CA, ES, EN, FR)
 - 🎨 **Customizable UI**: Configurable interface with material design
 - 🚀 **Performance Optimized**: Lazy loading and efficient rendering
-- 🔧 **SITNA Integration**: Advanced mapping capabilities through SITNA library v3.0.1
+- 🔧 **SITNA Integration**: Advanced mapping capabilities through SITNA library (api-sitna v4.1.0)
 - 🔐 **ServiceWorker**: Authentication token management for API requests
 
 ## Quick Start
@@ -256,6 +256,66 @@ npm run lint
 
 ## Deployment
 
+### Default paths (local development)
+
+- `src/index.html` uses root-based paths:
+  - `<base href="/">`
+  - `window.SITNA_BASE_URL = '/assets/js/api-sitna/'`
+  - `ServiceWorker` registered with `scope: '/'`
+- `webpack.config.js` defines `SITNA_BASE_URL` as `'/assets/js/api-sitna'` via `DefinePlugin`.
+- Works when the app is served at `/` (e.g., `http://localhost:4200/`).
+
+### Deploying under a sub-path (BASE_PATH/)
+
+When serving the app at `https://host/BASE_PATH/`, update all of the following to use `BASE_PATH/` explicitly:
+
+1) Angular build base href
+```bash
+ng build --configuration=production --base-href=/BASE_PATH/
+```
+
+2) HTML base href (src/index.html)
+```html
+<base href="/BASE_PATH/">
+```
+
+3) SITNA base URL (runtime, in src/index.html)
+```html
+<script>
+  window.SITNA_BASE_URL = '/BASE_PATH/assets/js/api-sitna/';
+</script>
+```
+
+4) Service Worker scope (src/index.html)
+```js
+navigator.serviceWorker.register('ServiceWorker.js', { scope: '/BASE_PATH/' })
+```
+
+5) Runtime asset loads (src/index.html)
+- Patch loader script:
+```js
+script.src = '/BASE_PATH/assets/js/patch/patch_main.js';
+```
+- Toastr assets:
+```html
+<link rel="stylesheet" href="/BASE_PATH/assets/js/toastr/toastr.min.css" />
+<script src="/BASE_PATH/assets/js/toastr/toastr.min.js"></script>
+```
+
+6) SITNA base URL (compile-time, webpack.config.js)
+```js
+const apiSitnaDestiny = '/BASE_PATH/assets/js/api-sitna';
+new webpack.DefinePlugin({ SITNA_BASE_URL: JSON.stringify(apiSitnaDestiny) })
+```
+
+7) Web server routing
+- Serve the built app under `/BASE_PATH/` in your web server (e.g., Nginx location block).
+
+Notes & pitfalls:
+
+- All of the above must agree: `<base href>`, runtime `SITNA_BASE_URL`, ServiceWorker `scope`, webpack `DefinePlugin` value, and the CLI `--base-href`.
+- If you see JSON parsing errors like `Unexpected token '<'`, paths likely point to HTML (e.g., index.html). Re-check the base path.
+
 ## API Integration
 
 ### Backend Integration
@@ -305,14 +365,11 @@ GET /api/config/client/profile/{appId}/{territoryId}
 
 ### SITNA Integration
 
-The application uses the **SITNA (Sistema de Información Territorial de Navarra) library v3.0.1** for advanced mapping capabilities:
+The application uses the **SITNA (Sistema de Información Territorial de Navarra) library** for advanced mapping capabilities:
 
 **Version Information:**
 
-- **SITNA API Version**: 3.0.1 [10/10/2023, 9:59:28]
-- **TC Library Version**: 3.0.0 [2022-12-7 13:49:07]
-- **OpenLayers Integration**: Built-in OpenLayers support
-- **Build Date**: October 10, 2023
+- **SITNA API Version**: Aligned with api-sitna 4.1.0
 
 #### **Core Mapping Features**
 
@@ -421,7 +478,7 @@ src/
 - **Modular Design**: Feature-based module organization
 - **Reactive Programming**: RxJS for asynchronous operations
 - **Material Design**: Angular Material for consistent UI
-- **SITNA Integration**: Advanced mapping through SITNA library v3.0.1
+- **SITNA Integration**: Advanced mapping through SITNA library (api-sitna v4.1.0)
 
 ## Contributing
 
