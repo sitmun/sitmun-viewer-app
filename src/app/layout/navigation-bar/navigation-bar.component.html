@@ -12,6 +12,7 @@
         <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
       </div>
       <secondary-button
+        class="change-app-territory-button"
         *ngIf="isOnMap() && showChangeAppOrTerritoryButton && (headerBase?.switchApplication?.visible !== false)"
         (click)="displayTerritoriesAppList = !displayTerritoriesAppList"
         [button_text]="'genericPrivateHeaders.changeAppOrTerritory' | translate"
@@ -37,6 +38,12 @@
 <div class="navbar-responsive" *ngIf="isConnected()">
   <div class="home-button" [class.active]="navigationClassActive === 'home'">
     <button (click)="homeRedirect()">
+      <div class="icon"></div>
+    </button>
+  </div>
+
+   <div class="changeAppTerr-button" *ngIf="isOnMap() && showChangeAppOrTerritoryButton && (headerBase?.switchApplication?.visible !== false)">
+    <button (click)="displayTerritoriesAppList = !displayTerritoriesAppList">
       <div class="icon"></div>
     </button>
   </div>

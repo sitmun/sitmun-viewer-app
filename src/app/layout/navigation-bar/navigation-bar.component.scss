@@ -201,7 +201,8 @@ $path_base: "./../../../assets/img/";
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   .nav-bar .right .home-menu,
-  .nav-bar .right .authentication-menu {
+  .nav-bar .right .authentication-menu,
+  .change-app-territory-button {
     display: none;
   }
 
@@ -221,7 +222,8 @@ $path_base: "./../../../assets/img/";
     .home-button,
     .news-button,
     .profile-button,
-    .logout-button {
+    .logout-button,
+    .changeAppTerr-button {
       button {
         all: unset;
         display: flex;
@@ -263,6 +265,10 @@ $path_base: "./../../../assets/img/";
 
     .logout-button button .icon{
       background-image: url($path_base + "Icona-desconnexió.svg");
+    }
+
+    .changeAppTerr-button button .icon{
+      background-image: url($path_base + "Icona-canviar mobile.svg");
     }
 
     /* active buttons */

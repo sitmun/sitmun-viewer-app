@@ -131,7 +131,7 @@
   "profile.territoryApplications": "Aplicaciones del territorio",
   "profile.description": "Detalles de la aplicación",
   "profile.role": "Role",
-  "profile.childInheritance": "Aplicado a los hijos",
+  "profile.childInheritance": "Aplicado a loshijos",
   "profile.tasks": "Tareas",
   "profile.geographicalInformation": "Información geográfica",
   "profile.saveProfilePopup": "Actualizar perfil",
@@ -147,6 +147,5 @@
   "profile.noUpdate": "No se ha actualizado ningún dato",
   "profile.emailAlreadyExistError": "Este correo ya está en uso.",
   "profile.territoryManagementUpdateSucess": "Los datos asociados a los territorios se han actualizado correctamente.",
-  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios.",
-  "genericPrivateHeaders.changeAppOrTerritory": "Changer d'application ou de territoire"
+  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios."
 }

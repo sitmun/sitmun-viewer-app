@@ -146,5 +146,5 @@
   "territory.information": "Information",
   "territory.description": "Description",
   "territory.descriptionMissing": "Aucune description",
-  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
+  "genericPrivateHeaders.changeAppOrTerritory": "Changer d'application ou de territoire"
 }

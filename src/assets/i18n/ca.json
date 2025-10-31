@@ -147,6 +147,5 @@
   "territory.filterSearchResult": "Filtrar la llista",
   "territory.information": "Informació",
   "territory.description": "Descripció",
-  "territory.descriptionMissing": "Cap descripció",
-  "genericPrivateHeader.changeAppOrTerritory": "Changer d'application ou de territoire"
+  "territory.descriptionMissing": "Cap descripció"
 }
