@@ -36,7 +36,7 @@ export class UserService {
   }
 
   updateTerritoryPositions(PositionDTO: PositionDTO) {
-    return this.http.post<PositionDTO>(
+    return this.http.put<PositionDTO>(
       environment.apiUrl + URL_API_TERRITORIES_POSITIONS,
       PositionDTO
     );

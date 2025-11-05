@@ -2,9 +2,19 @@
 @use 'dimensions';
 
 $padding-left-base : 15px;
+$page-width: 90%;
 
 h2 {
   padding-top: 20px;
+}
+
+#scroll-to-bottom-button {
+  background-color: colors.$blue-light !important;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
 }
 
 /* profile section */
@@ -13,22 +23,11 @@ h2 {
   margin-bottom: 0;
   margin-left: auto;
   margin-right: auto;
-  width: 70%;
-  height: 100vh;
+  width: $page-width;
+  height: 100svh;
 
   #saveButton {
-    width: 30px;
-  }
-
-  #redirect-link {
-    a {
-      all: unset;
-    }
-
-    a:hover{
-      color: colors.$primary-orange;
-      cursor: pointer;
-    }
+    width: 250px;
   }
 
   #profile-informations {
@@ -60,7 +59,7 @@ h2 {
     margin-bottom: 0;
     margin-left: auto;
     margin-right: auto;
-    width: 70%;
+    width: 90%;
   }
 
   #territories-informations {
@@ -68,7 +67,7 @@ h2 {
     margin-bottom: 0;
     margin-left: auto;
     margin-right: auto;
-    width: 70%;
+    width: $page-width;
 
     .territory-button-item {
       all: unset;
@@ -169,7 +168,6 @@ h2 {
                 .no-type {
                   color: rgba(128, 128, 128, 0.63);
                 }
-
                 .organization-row,
                 .name-row {
 
@@ -253,17 +251,22 @@ h2 {
 :host ::ng-deep form-field-input {
   div {
     width: 80% !important;
-    border: 1px solid colors.$blue;
 
     input {
       color: black !important;
     }
+  }
 
+  .form-section-input {
+    border: 1px solid colors.$blue;
   }
 }
 
 
 @media (max-width: 900px) {
+  #scroll-to-bottom-button {
+    bottom: 13%;
+  }
 
   #user-profile-section {
     margin-top: 5%;

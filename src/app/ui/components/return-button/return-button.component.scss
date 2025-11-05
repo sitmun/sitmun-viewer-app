@@ -1,0 +1,10 @@
+@use 'colors';
+
+.return-button {
+  all: unset;
+
+  &:hover{
+    color: colors.$primary-orange;
+    cursor: pointer;
+  }
+}

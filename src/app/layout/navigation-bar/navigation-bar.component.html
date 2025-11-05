@@ -1,7 +1,7 @@
 <div class='{{tamanyMenu()}}' *ngIf="!navigationBarIsHidden">
   <div class="dashboard-container">
     <div class="left">
-      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="!isOnAuthLogin && (headerBase?.logoSitmun?.visible !== false)"/>
+      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="!isOnAuthLogin && (!isOnMap() || headerBase?.logoSitmun?.visible)"/>
       <div *ngFor="let item of headerLeftSection">
         <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
       </div>

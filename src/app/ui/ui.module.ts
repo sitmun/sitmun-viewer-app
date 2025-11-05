@@ -29,6 +29,10 @@ import { ApplicationDetailsComponent } from './components/application-details/ap
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
 import { MatSelectModule } from '@angular/material/select';
 import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
+import { ReturnButtonComponent } from './components/return-button/return-button.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -42,9 +46,10 @@ import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
     MatInputModule,
     MatIconModule,
     MatSelectModule,
-    MatIconModule,
     MatExpansionModule,
-    SharedPipesModule
+    SharedPipesModule,
+    MatButtonModule,
+    MatTooltipModule
   ],
   declarations: [
     DashboardItemsComponent,
@@ -64,7 +69,8 @@ import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
     TerritoryDetailsComponent,
     DashboardItemComponent,
     ProfileInformationComponent,
-    TerritoriesListComponent
+    TerritoriesListComponent,
+    ReturnButtonComponent
   ],
   exports: [
     DashboardItemsComponent,
@@ -84,7 +90,11 @@ import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
     TerritoryDetailsComponent,
     TerritoriesListComponent,
     DashboardItemComponent,
-    ProfileInformationComponent
+    ProfileInformationComponent,
+    ReturnButtonComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule
   ],
   providers: []
 })

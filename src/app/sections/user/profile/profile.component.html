@@ -1,7 +1,5 @@
 <div id="user-profile-section">
-  <p id="redirect-link">
-    <a href=""> < {{'profile.back' | translate }} </a>
-  </p>
+  <app-return-button> </app-return-button>
   <h1> {{'profile.myAccount' | translate }} </h1>
 
   <div id="profile-informations">
@@ -40,6 +38,10 @@
     </div>
   </div>
 </div>
+
+<button mat-fab id="scroll-to-bottom-button" (click)="changeSection()" >
+  <img [src]="this.scrollButonIcon"/>
+</button>
 
 <div id="territories-profile-section" >
   <h2> {{'profile.territories' | translate }} </h2>
@@ -125,21 +127,21 @@
         </div>
       </div>
     </div>
+    <div id="saveButton">
+      <primary-button
+        [button_text]="'profile.saveProfileTerritoriesText' | translate"
+        (click)="displayPopupSaveTerritoriesPositions()" />
+    </div>
   </div>
 </div>
 
-<div class="popup-overlay" *ngIf="displayPopup"></div>
-<div id="popup-save-profile" *ngIf="displayPopup">
+<div class="popup-overlay" *ngIf="displayPopupProfile || displayPopupTerritoriesProfiles"></div>
+
+<div id="popup-save-profile" *ngIf="displayPopupProfile">
   <h2> {{ 'profile.saveProfilePopup' | translate}} </h2>
   <p> {{ 'profile.saveProfileDescription' | translate}} </p>
 
-  <form-field-input
-    [input_type]="'password'"
-    [input_title]="'profile.saveProfilePasswordText' | translate"
-    [input_placeholder]="'profile.saveProfilePasswordPlaceholder' | translate"
-    [input_name]="'username'"
-    [input_model]="passwordField"
-    (output_model)="passwordField = $event" />
+  <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
 
   <div>
     <primary-button
@@ -148,6 +150,33 @@
 
     <primary-button
       [button_text]="'profile.saveProfileBack' | translate"
-      (click)="HidePopupSaveProfile()" />
+      (click)="ShowPopupSaveProfile()" />
   </div>
 </div>
+
+<div id="popup-save-profile" *ngIf="displayPopupTerritoriesProfiles">
+  <h2> {{ 'profile.saveProfilePopup' | translate}} </h2>
+  <p> {{ 'profile.saveTerritoriesDescription' | translate}} </p>
+
+  <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
+
+  <div>
+    <primary-button
+      [button_text]="'profile.saveProfileSaveText' | translate"
+      (click)="saveTerritoriesPositions()" />
+
+    <primary-button
+      [button_text]="'profile.saveProfileBack' | translate"
+      (click)="ShowPopupSaveTerritoriesPositions()" />
+  </div>
+</div>
+
+<ng-template #passwordInput>
+ <form-field-input
+    [input_type]="'password'"
+    [input_title]="'profile.saveProfilePasswordText' | translate"
+    [input_placeholder]="'profile.saveProfilePasswordPlaceholder' | translate"
+    [input_name]="'username'"
+    [input_model]="passwordField"
+    (output_model)="passwordField = $event" />
+</ng-template>
