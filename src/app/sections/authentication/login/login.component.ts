@@ -5,6 +5,7 @@ import { AuthenticationRequest } from '@auth/authentication.options';
 import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -14,17 +15,19 @@ import { NotificationService } from 'src/app/notifications/services/Notification
 export class LoginComponent implements OnInit {
   authenticationRequest: AuthenticationRequest;
 
-  showPassword : boolean = false;
-  passwordImage : string = "";
-  showPasswordImage : string = "assets/img/showPassword=Default.svg"
-  hidePasswordImage : string = "assets/img/hidePassword=Default.svg"
-  displayPassword : string = "password";
+  showPassword: boolean = false;
+  passwordImage: string = '';
+  showPasswordImage: string = 'assets/img/showPassword=Default.svg';
+  hidePasswordImage: string = 'assets/img/hidePassword=Default.svg';
+  displayPassword: string = 'password';
+  displayDNIEButton: boolean = true;
+  displayBackgroundImage: boolean = true;
 
   constructor(
     private authenticationService: AuthenticationService<unknown>,
     private router: Router,
     private translate: TranslateService,
-    private notificationService : NotificationService,
+    private notificationService: NotificationService
   ) {
     this.authenticationRequest = {
       username: '',
@@ -37,6 +40,8 @@ export class LoginComponent implements OnInit {
     if (this.authenticationService.isLoggedIn()) {
       this.router.navigateByUrl('/');
     }
+    this.displayDNIEButton = !environment.hideDNIEAccess;
+    this.displayBackgroundImage = !environment.hideBackgroundImage;
   }
 
   login() {

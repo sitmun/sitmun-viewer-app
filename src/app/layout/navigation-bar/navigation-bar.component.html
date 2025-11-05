@@ -22,7 +22,7 @@
         class="home-menu button-menu"
         [class.active]="navigationClassActive === 'home'"
         (click)="homeRedirect()"
-        *ngIf="notInAuth()">
+        *ngIf="!isOnAuthLogin">
       </button>
       <button
         class="authentication-menu"
@@ -65,9 +65,10 @@
   *ngIf="showPopup"
   [username]="username"
   [isConnected]="isConnected()"
-  [showLogoutButton]="headerBase?.logoutButton?.visible && isOnMap()"
-  [showSwitchLanguageButton]="headerBase?.switchLanguageButton?.visible && isOnMap()"
-  [showProfileButton]="headerBase?.profileButton?.visible && isOnMap()"
+  [showLogoutButton]="showLogoutButton"
+  [showSwitchLanguageButton]="showSwitchLanguageButton"
+  [showProfileButton]="showProfileButton"
+  [showLoginButton]="!isOnAuthLogin"
   (hideEvent)="showAuthenticationPopup()"
   (loginEvent)="loginRedirect()"
   (logoutEvent)="logoutRedirect()"

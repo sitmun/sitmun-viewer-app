@@ -14,7 +14,7 @@
     <div
       class="lang-select"
       *ngIf="showSwitchLanguageButton"
-      [ngClass]="showLogoutButton ? 'lang-select-radius' : 'full-radius'">
+      [ngClass]="showLogoutButton && showLoginButton ? 'lang-select-radius' : 'full-radius'">
 
       <mat-select [ngModel]="currentLang" (selectionChange)="sendLanguageEvent($event)" *ngIf="languages != null">
         <mat-option *ngFor="let language of languages" [value]="language.shortName">
@@ -25,7 +25,7 @@
       <span class="lang-arrow"></span>
     </div>
 
-    <button *ngIf="!isConnected" class="login-btn popup-btn btn-wide" (click)="sendLoginEvent()">
+    <button *ngIf="!isConnected && showLoginButton" class="login-btn popup-btn btn-wide" (click)="sendLoginEvent()">
       {{ 'loginPage.title' | translate }}
     </button>
 

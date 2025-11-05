@@ -1,4 +1,4 @@
-<div class="login-page">
+<div class="login-page" [ngClass]="{'login-page-background': displayBackgroundImage}">
   <div class="container">
 
     <div class="title-section">
@@ -40,7 +40,7 @@
           [button_text]="'loginPage.submit' | translate"
           [img_src]="'assets/img/Icona-connexió.svg'" />
       </form>
-      <secondary-button [button_text]="'loginPage.DNIE' | translate" />
+      <secondary-button [button_text]="'loginPage.DNIE' | translate" *ngIf="displayDNIEButton"/>
     </div>
   </div>
 </div>

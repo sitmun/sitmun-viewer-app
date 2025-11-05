@@ -153,6 +153,8 @@ Configure the following variables in your environment files:
 ```typescript
 export const environment = {
   hashLocationStrategy: boolean, // Enable hash-based routing
+  hideBackgroundImage: false, // Hide or not the background image in the login section
+  hideDNIEAccess: false, // Hide or not the DNIE Button Access in the login section
   apiUrl: string // Backend API base URL
 };
 ```

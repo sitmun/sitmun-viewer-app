@@ -17,9 +17,6 @@
 
 .login-page {
   position: absolute;
-  background:
-    linear-gradient(to bottom, colors.$common-color-background-navbar 1%,
-    colors.$common-color-background-navbar-with-opacity 30%, colors.$common-color-background-with-opacity 80%), url('~../../../../assets/img/login-back.png') no-repeat;
   height: calc(100% - 80px);
   width: 100%;
   background-size: cover;
@@ -28,12 +25,15 @@
   align-items: center;
   position: fixed;
   padding-left: 150px;
-  background-image: url('~../../../../assets/logos/bck_no_logo.jpg');
   background-position: bottom;
   background-size: cover;
   height: 100%;
   background-repeat: no-repeat;
   top: 0;
+}
+
+.login-page-background {
+  background-image: url('/assets/logos/bck_no_logo.jpg');
 }
 
 .login-page::before {
@@ -66,7 +66,7 @@
     .logo-sitmun {
       width: 70%;
       height: 75px;
-      background-image: url('~../../../../assets/logos/logo_orange.png');
+      background-image: url('/assets/logos/logo_orange.png');
       background-size: contain;
       background-repeat: no-repeat;
       color: transparent;

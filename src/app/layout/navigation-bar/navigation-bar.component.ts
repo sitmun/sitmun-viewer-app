@@ -32,6 +32,11 @@ export class NavigationBarComponent implements OnInit {
   headerRightSection: any;
   headerBase: any;
 
+  isOnAuthLogin: boolean = false;
+  showProfileButton: boolean = true;
+  showSwitchLanguageButton: boolean = true;
+  showLogoutButton: boolean = true;
+
   constructor(
     private router: Router,
     private commonService: CommonService,
@@ -65,6 +70,13 @@ export class NavigationBarComponent implements OnInit {
         this.OverideNavbar(this.router.url);
       }
     });
+  }
+
+  ngDoCheck() {
+    this.isOnAuthLogin = this.isInAuthLoginSection();
+    this.showProfileButton = this.headerBase?.profileButton?.visible && this.isOnMap();
+    this.showLogoutButton = this.headerBase?.logoutButton?.visible && this.isOnMap();
+    this.showSwitchLanguageButton = this.headerBase?.switchLanguageButton?.visible && this.isOnMap();
   }
 
   ngOnDestroy() {
@@ -193,7 +205,7 @@ export class NavigationBarComponent implements OnInit {
     localStorage.setItem('language', language);
   }
 
-  isConnected() {
+  isConnected(): boolean {
     let isConnected = true;
     if (
       this.router.url.startsWith('/public') ||
@@ -205,12 +217,8 @@ export class NavigationBarComponent implements OnInit {
     return isConnected;
   }
 
-  notInAuth() {
-    let notInAuth = true;
-    if (this.router.url.startsWith(NavigationPath.Auth.Base)) {
-      notInAuth = false;
-    }
-    return notInAuth;
+  isInAuthLoginSection(): boolean {
+    return this.router.url.startsWith(NavigationPath.Auth.Login);
   }
 
   isPublicDashboard() {

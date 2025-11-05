@@ -16,10 +16,11 @@ export class MenuComponent implements OnInit {
   languages!: LanguageDTO[];
 
   @Input() username: string = '';
-  @Input() isConnected: boolean = false;
-  @Input() showSwitchLanguageButton: boolean = true;
-  @Input() showLogoutButton: boolean = true;
-  @Input() showProfileButton: boolean = true;
+  @Input() isConnected!: boolean;
+  @Input() showSwitchLanguageButton!: boolean;
+  @Input() showLogoutButton!: boolean;
+  @Input() showProfileButton!: boolean;
+  @Input() showLoginButton!: boolean;
 
   @Output() hideEvent = new EventEmitter();
   @Output() loginEvent = new EventEmitter();
@@ -38,16 +39,11 @@ export class MenuComponent implements OnInit {
     this.languageHelper.getLanguages().subscribe((langs) => {
       this.languages = langs;
     });
-    console.log(this.showProfileButton)
-    if (this.showLogoutButton == null) {
-      this.showLogoutButton = true;
-    }
-    if (this.showSwitchLanguageButton == null) {
-      this.showSwitchLanguageButton = true;
-    }
-    if (this.showProfileButton == null) {
-      this.showProfileButton = true;
-    }
+    this.showLogoutButton = true;
+    this.showSwitchLanguageButton = true;
+    this.showProfileButton = true;
+    this.showLoginButton = true;
+    this.isConnected = false;
   }
 
   sendLanguageEvent(event: MatSelectChange) {
