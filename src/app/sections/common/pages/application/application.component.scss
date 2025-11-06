@@ -7,7 +7,7 @@
   #application {
     padding-top: 5%;
     margin: 0 auto;
-    width: 80%;
+    width: 90%;
     min-height: 100vh;
     height: 100%;
     display: flex;
@@ -24,6 +24,10 @@
       #left-side {
         flex: 2;
         max-width: 70%;
+
+        app-application-details {
+          width: 100%;
+        }
       }
 
       #right-side {

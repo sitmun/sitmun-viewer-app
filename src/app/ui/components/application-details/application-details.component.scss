@@ -2,7 +2,6 @@
 @use 'colors';
 
 #application-details {
-  width: 800px;
 
   #application-title {
     padding-left: 20px;
@@ -76,6 +75,10 @@
 
   * {
     padding-left: 0px;
+  }
+
+  #application-information-details {
+    width: 100%;
   }
 
   #application-information-details p {
