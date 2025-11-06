@@ -6,21 +6,27 @@
   width: 600px;
 }
 
+.territory-name,
+app-return-button {
+  padding-left: 20px;
+}
+
 #content {
   min-height: 100vh;
   height: 100%;
 
   #territory {
-    padding-top: 5%;
+    padding-top: 50px;
     margin-bottom: 0;
     margin-left: auto;
     margin-right: auto;
-    width: 80%;
+    width: 93%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
 
     #territory-details {
+      padding-left: 20px;
       display: flex;
       flex-wrap: wrap;
       align-items: flex-start;

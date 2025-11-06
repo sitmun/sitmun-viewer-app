@@ -5,15 +5,16 @@
   background-color: colors.$blue-light;
 
   #application {
-    padding-top: 5%;
+    padding-top: 50px;
     margin: 0 auto;
-    width: 90%;
+    width: 93%;
     min-height: 100vh;
     height: 100%;
     display: flex;
     flex-direction: column;
 
-    #application-title {
+    #application-title,
+    app-return-button {
       padding-left: 20px;
     }
 
