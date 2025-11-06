@@ -13,7 +13,7 @@ a {
 a:visited {
     color:#700;
 }
-a:hover { 
+a:hover {
     color:#f00;
     text-decoration:none;
 }
@@ -80,7 +80,7 @@ li.tc-ctl-bms-node label span.tc-checked {
     border-color: #666;
     border-bottom-color: #fff;
 }
-    
+
 ul.tc-ctl-finfo-services > li,ul.tc-ctl-finfo-layers > li,ul.tc-ctl-finfo-features > li {
     display: inline-block;
 }
@@ -115,7 +115,7 @@ ul.tc-ctl-finfo-services > li,ul.tc-ctl-finfo-layers > li,ul.tc-ctl-finfo-featur
 	height: 2em;
     padding: 0;
 }
-	
+
 .left-panel > h1 {
 	right: 0;
 	margin-right: -10em;
@@ -170,6 +170,7 @@ ul.tc-ctl-finfo-services > li,ul.tc-ctl-finfo-layers > li,ul.tc-ctl-finfo-featur
 }
 
 .right-collapsed > h1 {
+    top: 204px;
     opacity: 1;
     -webkit-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.2);
     -moz-box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.2);
@@ -194,7 +195,7 @@ ul.tc-ctl-finfo-services > li,ul.tc-ctl-finfo-layers > li,ul.tc-ctl-finfo-featur
 #tools-tab:after,#legend-tab:after,#ovmap-tab:after {
 	content: none;
 }
-	
+
 #legend-tab,#ovmap-tab {
 	bottom: 8em;
 }

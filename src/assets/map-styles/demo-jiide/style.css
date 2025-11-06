@@ -355,7 +355,8 @@ button.tc-ctl-fscreen-btn {
 }
 
 #tools-panel > .panel-content {
-  max-height: inherit !important;
+  height: 95%;
+  top: 80px;
 }
 
 #legend, #measure, #shared, #download, #downloadSilme, #localitzar, #reports, #ovmapH2, #print, #geolocation, #offline, #dataloader, #drawmeasuremodify, #multifeatureinfo, #wfsedit
@@ -2313,9 +2314,6 @@ li.tc-ctl-lcat-leaf > span.tc-selectable:hover {
   cursor: pointer;
 }
 
-.tools-panel > .panel-content {
-  max-height: 60em !important
-}
 
 .silme-invisible {
   visibility: hidden !important
@@ -2407,10 +2405,6 @@ li.tc-ctl-lcat-node > span {
 
 .tc-ctl-legend-watch > img:hover {
   cursor: pointer;
-}
-
-.tools-panel > .panel-content {
-  max-height: 60em !important
 }
 
 .silme-invisible {

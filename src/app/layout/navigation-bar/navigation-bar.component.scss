@@ -154,32 +154,8 @@ $path_base: "./../../../assets/img/";
 
 /* navbar on map section */
 .nav-bar.pet{
-  div {
-    height: 40px;
-    max-width: 100%;
-    .logo {
-      padding-top: 5px;
-
-      img {
-        width: auto;
-        height: 30px;
-        margin-left: 20px;
-      }
-    }
-    .menu {
-      height: 40px;
-      width: 40px;
-
-      button {
-        height: 40px;
-        width: 40px;
-
-        img {
-          height: 30px;
-        }
-      }
-    }
-  }
+  position: absolute !important;
+  background-color: white;
 }
 
 .navbar-responsive{

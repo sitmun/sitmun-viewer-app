@@ -137,6 +137,10 @@
         z-index: 10002;
     }
 
+    .tc-ctl.tc-ctl-attrib, .tc-ctl-scl {
+      bottom: 10%;
+    }
+
     .tc-ctl-sv-coll, .tc-ctl-nav-home-coll, .tc-ctl-sv-exp, .tc-ctl-nav-home-exp {
         transition: unset;
     }
@@ -269,6 +273,8 @@
     }
 
     .right-collapsed > h1 {
+        right: 126px;
+        left: auto;
         right: 20px;
     }
 

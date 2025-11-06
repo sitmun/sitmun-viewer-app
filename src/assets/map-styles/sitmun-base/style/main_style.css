@@ -315,7 +315,8 @@ button.tc-ctl-fscreen-btn {
 }
 
 #tools-panel > .panel-content {
-    max-height: inherit !important;
+  height: 95%;
+  top: 80px;
 }
 
 #legend, #measure, #share, #download, #downloadSilme,
@@ -1924,10 +1925,6 @@ div.tc-ctl-download .tc-ctl-download-btn:before {
     cursor: pointer;
 }
 
-.tools-panel > .panel-content {
-    max-height: 60em !important
-}
-
 .silme-invisible {
     visibility: hidden !important
 }
@@ -2000,10 +1997,6 @@ li.tc-ctl-lcat-node > span {
 
 .tc-ctl-legend-watch > img:hover {
     cursor: pointer;
-}
-
-.tools-panel > .panel-content {
-    max-height: 60em !important
 }
 
 .silme-invisible {

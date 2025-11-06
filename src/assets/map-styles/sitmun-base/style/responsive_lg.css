@@ -5,15 +5,15 @@
     }
 
     .right-panel > h1 {
-        top: 20px;
+        top: 204px;
     }
 
     .right-collapsed > h1 {
-        top: 20px;
+        top: 204px;
     }
 
     .panel-content {
-        top: 20px;
+        top: 80px;
     }
 
     #arbol, .tc-ctl-lcat-search {
