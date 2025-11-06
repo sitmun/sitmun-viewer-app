@@ -12,11 +12,12 @@
 }
 
 .right-panel > h1 {
-  top: 10px;
+  top: 204px;
 }
 
 .right-panel > .panel-content, .silme-panel > .panel-content {
-  top: 0px;
+  top: 80px;
+  height: 100%;
 }
 
 .tc-ctl.tc-ctl-nav {
