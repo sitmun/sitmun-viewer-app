@@ -40,8 +40,8 @@ export class LoginComponent implements OnInit {
     if (this.authenticationService.isLoggedIn()) {
       this.router.navigateByUrl('/');
     }
-    this.displayDNIEButton = !environment.hideDNIEAccess;
-    this.displayBackgroundImage = !environment.hideBackgroundImage;
+    this.displayDNIEButton = !((environment as any).hideDNIEAccess ?? true);
+    this.displayBackgroundImage = !((environment as any).hideBackgroundImage ?? true);
   }
 
   login() {
