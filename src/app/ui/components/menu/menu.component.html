@@ -16,8 +16,8 @@
       *ngIf="showSwitchLanguageButton"
       [ngClass]="showLogoutButton && showLoginButton ? 'lang-select-radius' : 'full-radius'">
 
-      <mat-select [ngModel]="currentLang" (selectionChange)="sendLanguageEvent($event)" *ngIf="languages != null">
-        <mat-option *ngFor="let language of languages" [value]="language.shortName">
+      <mat-select [ngModel]="currentLang" (selectionChange)="sendLanguageEvent($event)" *ngIf="languages !== undefined">
+        <mat-option *ngFor="let language of languages" [value]="language.shortname">
           {{ language.name }}
         </mat-option>
       </mat-select>

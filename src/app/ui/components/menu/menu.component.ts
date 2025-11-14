@@ -1,9 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { CustomDetails } from '@api/services/user.service';
-import { NavigationPath } from '@config/app.config';
 import { LanguageDTO, LanguageHelper } from '@ui/util/LanguageHelper';
 import { MatSelectChange } from '@angular/material/select';
 @Component({
@@ -35,7 +33,7 @@ export class MenuComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.currentLang = this.languageHelper.defaultLanguage;
+    this.currentLang = LanguageHelper.defaultLanguage;
     this.languageHelper.getLanguages().subscribe((langs) => {
       this.languages = langs;
     });

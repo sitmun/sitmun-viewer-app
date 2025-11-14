@@ -6,7 +6,7 @@ import { catchError, map, Observable, of } from 'rxjs';
   providedIn: 'root'
 })
 export class LanguageHelper {
-  public defaultLanguage: string = localStorage.getItem('language') ?? 'es';
+  public static defaultLanguage: string = localStorage.getItem('language') ?? 'es';
 
   constructor(private i18nService: I18nService) {}
 
@@ -16,23 +16,24 @@ export class LanguageHelper {
    */
   getLanguages(): Observable<LanguageDTO[]> {
     return this.i18nService.availableLanguageCodes().pipe(
-      map((languages: LanguageDTO[] | null | undefined) => {
+      map((response: any) => {
+        let languages: LanguageDTO[] = response?._embedded?.languages ?? [];
         if (!languages || languages.length === 0) {
           return [
-            { name: 'es', shortName: 'ES', nativeName: 'Español' },
-            { name: 'en', shortName: 'EN', nativeName: 'English' },
-            { name: 'fr', shortName: 'FR', nativeName: 'Français' },
-            { name: 'ca', shortName: 'CA', nativeName: 'Català' }
+            { name: 'Español', shortname: 'es' },
+            { name: 'English', shortname: 'en' },
+            { name: 'Français', shortname: 'fr' },
+            { name: 'Català', shortname: 'ca' }
           ];
         }
         return languages;
       }),
       catchError(() =>
         of([
-          { name: 'es', shortName: 'Español' },
-          { name: 'en', shortName: 'English' },
-          { name: 'fr', shortName: 'Français' },
-          { name: 'ca', shortName: 'Català' }
+          { name: 'Español', shortname: 'es' },
+          { name: 'English', shortname: 'en' },
+          { name: 'Français', shortname: 'fr' },
+          { name: 'Català', shortname: 'ca' }
         ])
       )
     );
@@ -41,5 +42,5 @@ export class LanguageHelper {
 
 export interface LanguageDTO {
   name: string;
-  shortName: string;
+  shortname: string;
 }

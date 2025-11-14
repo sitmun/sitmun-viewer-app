@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { LanguageHelper } from '@ui/util/LanguageHelper';
 
 @Component({
   selector: 'sitmun-viewer-app-root',
@@ -10,9 +11,8 @@ export class AppComponent {
   title = 'sitmun-viewer-app';
 
   constructor(private translate: TranslateService) {
-    const savedLang = localStorage.getItem('language') || 'es';
-    translate.setDefaultLang(savedLang);
-    translate.use(savedLang);
+    translate.setDefaultLang(LanguageHelper.defaultLanguage);
+    translate.use(LanguageHelper.defaultLanguage);
     this.generateDeviceID();
   }
 
