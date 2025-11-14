@@ -37,11 +37,6 @@ export class MenuComponent implements OnInit {
     this.languageHelper.getLanguages().subscribe((langs) => {
       this.languages = langs;
     });
-    this.showLogoutButton = true;
-    this.showSwitchLanguageButton = true;
-    this.showProfileButton = true;
-    this.showLoginButton = true;
-    this.isConnected = false;
   }
 
   sendLanguageEvent(event: MatSelectChange) {

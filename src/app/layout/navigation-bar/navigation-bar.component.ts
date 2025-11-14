@@ -17,25 +17,25 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./navigation-bar.component.scss']
 })
 export class NavigationBarComponent implements OnInit {
-  showMenu: boolean;
   styleBackground: string = '#000000FF';
+  showMenu: boolean;
   username: string = '';
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
-  isResponsive: boolean = false;
   mediaQueryListener: any;
-  showPopup: boolean = false;
-  navigationBarIsHidden: boolean = false;
-  displayTerritoriesAppList: boolean = false;
-  showChangeAppOrTerritoryButton: boolean = true;
 
   headerLeftSection: any;
   headerRightSection: any;
   headerBase: any;
 
+  isResponsive: boolean = false;
   isOnAuthLogin: boolean = false;
   showProfileButton: boolean = true;
   showSwitchLanguageButton: boolean = true;
   showLogoutButton: boolean = true;
+  showPopup: boolean = false;
+  showChangeAppOrTerritoryButton: boolean = true;
+  navigationBarIsHidden: boolean = false;
+  displayTerritoriesAppList: boolean = false;
 
   constructor(
     private router: Router,
