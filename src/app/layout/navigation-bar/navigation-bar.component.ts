@@ -74,9 +74,9 @@ export class NavigationBarComponent implements OnInit {
 
   ngDoCheck() {
     this.isOnAuthLogin = this.isInAuthLoginSection();
-    this.showProfileButton = !this.isOnMap() || this.headerBase?.profileButton?.visible;
-    this.showLogoutButton = !this.isOnMap() || this.headerBase?.logoutButton?.visible;
-    this.showSwitchLanguageButton = !this.isOnMap() || this.headerBase?.switchLanguageButton?.visible;
+    this.showProfileButton = !this.isOnMap() || (this.headerBase?.profileButton?.visible !== false);
+    this.showLogoutButton = !this.isOnMap() || (this.headerBase?.logoutButton?.visible !== false);
+    this.showSwitchLanguageButton = !this.isOnMap() || (this.headerBase?.switchLanguageButton?.visible !== false);
   }
 
   ngOnDestroy() {

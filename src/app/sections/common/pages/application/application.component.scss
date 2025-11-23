@@ -41,12 +41,12 @@
       }
     }
 
-    button {
+    button:not(.mat-mdc-button) {
       all: unset;
       padding-left: 20px;
     }
 
-    button:hover {
+    button:not(.mat-mdc-button):hover {
       cursor: pointer;
       color: colors.$primary-orange
     }

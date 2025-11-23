@@ -71,11 +71,11 @@ app-return-button {
       }
     }
 
-    button {
+    button:not(.mat-mdc-button) {
       all: unset;
     }
 
-    button:hover {
+    button:not(.mat-mdc-button):hover {
       cursor: pointer;
       color: colors.$primary-orange;
     }
@@ -93,7 +93,7 @@ app-return-button {
     padding: 0 !important;
     box-sizing: border-box;
 
-    button {
+    button:not(.mat-mdc-button) {
       padding: 10px !important;
     }
 

@@ -154,7 +154,7 @@ export class ProfileComponent {
       this.ShowPopupSaveProfile();
     } else {
       this.translateService
-        .get('profile.noUpdateProfiles')
+        .get('profile.noUpdateProfile')
         .subscribe((trad) => {
           this.notificationService.warning(trad);
         });
@@ -327,11 +327,14 @@ export class ProfileComponent {
     return new Promise((resolve) => {
       this.userService.updateTerritoryPositions(position).subscribe({
         next: (positionDTO: PositionDTO) => {
-          this.translateService.get('profile.territoryManagementUpdateSucess');
           resolve(positionDTO);
         },
         error: () => {
-          this.translateService.get('profile.territoryManagementUpdateError');
+          this.translateService
+            .get('profile.territoryManagementUpdateError')
+            .subscribe((trad) => {
+              this.notificationService.error(trad);
+            });
           resolve(null);
         }
       });

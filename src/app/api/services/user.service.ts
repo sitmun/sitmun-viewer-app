@@ -29,14 +29,14 @@ export class UserService {
   };
 
   updateUserAccount(userDTO: UserDto): Observable<UserDto> {
-    return this.http.put<UserDto>(
+    return this.http.post<UserDto>(
       environment.apiUrl + URL_API_USER_ACCOUNT,
       userDTO
     );
   }
 
   updateTerritoryPositions(PositionDTO: PositionDTO) {
-    return this.http.put<PositionDTO>(
+    return this.http.post<PositionDTO>(
       environment.apiUrl + URL_API_TERRITORIES_POSITIONS,
       PositionDTO
     );

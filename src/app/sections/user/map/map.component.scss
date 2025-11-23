@@ -3,6 +3,9 @@
 .map {
   display: flex;
   flex-direction: column;
+  position: relative;
+  height: 100vh;
+  width: 100%;
 
   .map-options {
     display: flex;
@@ -21,6 +24,8 @@
 
   .map-container {
     position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
   }
