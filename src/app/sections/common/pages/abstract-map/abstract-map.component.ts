@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Directive,
   ElementRef,
   OnDestroy,
@@ -15,12 +16,13 @@ import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
-import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
-
-declare const SITNA: any;
+import { Cfg as SitnaCfg } from 'api-sitna';
+import SitnaMap from 'api-sitna';
 
 @Directive()
-export abstract class AbstractMapComponent implements OnInit, OnDestroy {
+export abstract class AbstractMapComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   private componentDestroyed = new Subject<void>();
   private isInEmbedded: boolean;
   private layerCatalogsSilme: any;
@@ -28,6 +30,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private currentGeneralCfg: GeneralCfg | undefined;
   private currentAppCfg: AppCfg | undefined;
   private commonServiceSubscription: Subscription | undefined;
+  private map: any;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -85,6 +88,11 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     // Expose the current map
     // Maybe this needs a proper refactor to avoid this kind of things...
     (window as any).abstractMapObject = this;
+  }
+
+  ngAfterViewInit() {
+    // Wait for SITNA to be available before initializing map
+    this.waitForSITNAAndInitialize();
   }
 
   ngOnDestroy() {
@@ -159,21 +167,20 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       tree.catalog.layers = this.orderLayers(layersAux, groupAux);
     });
 
-
     // Parse the catalogs, so we can use them in the LayerCatalogSilme.js
     let idx = -1;
     (window as any).layerCatalogsSilmeForModal = new Object({
       currentCatalog: this.currentCatalogIdx,
-      catalogs: this.layerCatalogsSilme
-        .map((catalog: any) => {
-          return { id: ++idx, catalog: catalog.title };
-        })
+      catalogs: this.layerCatalogsSilme.map((catalog: any) => {
+        return { id: ++idx, catalog: catalog.title };
+      })
     });
 
-    SITNA.Cfg.controls.layerCatalogSilmeFolders =
+    const catalogCfg =
       this.layerCatalogsSilme.length > 0
         ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
         : {};
+    SitnaCfg.controls.layerCatalogSilmeFolders = catalogCfg;
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 
@@ -187,8 +194,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.currentCatalogIdx = (
       window as any
     ).layerCatalogsSilmeForModal.currentCatalog;
-    SITNA.Cfg.controls.layerCatalogSilmeFolders =
-      this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+    SitnaCfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
     this.clearMap();
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
@@ -196,13 +202,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   clearMap() {
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
-    const map = this.el.nativeElement.querySelector('#mapa');
     const warningModal = this.el.nativeElement.querySelector('.modal-view');
     const overview = this.el.nativeElement.querySelector(
       '.tc-ctl-sv-view.tc-hidden'
     );
-    if (map) {
-      this.renderer.removeChild(mapFather, map);
+    if (this.map) {
+      this.renderer.removeChild(mapFather, this.map);
     }
     if (overview) {
       this.renderer.removeChild(mapFather, overview);
@@ -262,8 +267,14 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
-    const map = new SITNA.Map('mapa', cfg);
-    map.loaded(function () {
+    try {
+      this.map = new SitnaMap('mapa', cfg);
+    } catch (error) {
+      console.error('Failed to initialize map:', error);
+      return;
+    }
+
+    this.map.loaded(function () {
       SitnaHelper.toWelcome(appCfg);
       SitnaHelper.toHelp(appCfg);
       SitnaHelper.toInterface();
@@ -281,7 +292,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
       while (currentGroup) {
         path.unshift(currentGroup.order); // Add the group order to the start of the path
-        currentGroup = (currentGroup.parentNode && currentGroup.parentNode !== currentGroup.id) ? groupsMap.get(currentGroup.parentNode) : null;
+        currentGroup =
+          currentGroup.parentNode && currentGroup.parentNode !== currentGroup.id
+            ? groupsMap.get(currentGroup.parentNode)
+            : null;
       }
 
       return path;
@@ -290,7 +304,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     // Assign each layer its "order path"
     const layersWithPaths = layers.map((layer) => ({
       layer,
-      path: buildPathToRoot(layer),
+      path: buildPathToRoot(layer)
     }));
 
     // Sort the layers based on their "order paths"
@@ -308,7 +322,20 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
     // Returns the sorted list of layers
     return layersWithPaths.map((item) => item.layer);
+  }
 
+  private waitForSITNAAndInitialize(): void {
+    const checkSITNA = () => {
+      const sitna = (window as any).SITNA;
+      if (sitna && sitna.Map) {
+        return;
+      } else {
+        // SITNA not ready yet, try again in 100ms
+        setTimeout(checkSITNA, 100);
+      }
+    };
+
+    checkSITNA();
   }
 
   abstract navigateToDashboard(): any;

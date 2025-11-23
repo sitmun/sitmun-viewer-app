@@ -1,203 +1,167 @@
-//import TC from '../../lib/api-sitna-master-silme/TC.js';
-//import Consts from '../../lib/api-sitna-master-silme/TC/Consts.js';
-// import WorkLayerManager from '../../lib/api-sitna-master-silme/TC/control/WorkLayerManager.js';
-//import itemToolContainer from '../../lib/api-sitna-master-silme/TC/control/itemToolContainer.js';
-
-// SILME const { default: WorkLayerManager } = require("../../lib/api-sitna-master-silme/TC/control/WorkLayerManager");
-// const { default: WorkLayerManager } = require("../../sitna/sitna");
-
 TC.control = TC.control || {};
 
 class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
   CLASS = 'tc-ctl-wlm';
-  CLICKEVENT = 'click';
+
+  // ===========================================================================
+  // Constructor
+  // ===========================================================================
 
   constructor() {
     super(...arguments)
-    const self = this;
-    self.div.classList.remove(super.CLASS);
-    self.div.classList.add(self.CLASS);
+    const _this = this;
+    _this.div.classList.remove(super.CLASS);
+    _this.div.classList.add(_this.CLASS);
+    _this.layers = [];
 
-    self.template[self.CLASS + '-elm'] = 'assets/js/patch/templates/WorkLayerManagerElementSilme.hbs';
-    self.template['tc-ctl-lcat' + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
+    _this.addItemTool({
 
-    self.layers = [];
-
-
-    // self.addLayerTool({
-    /*
-    self.addItemTool({
-        renderFn: function (container, layerId) {
-            const className = self.CLASS + '-btn-info';
-
-            let button = container.querySelector('button.' + className);
-            if (!button) {
-                const layer = self.map.getLayer(layerId);
-                if (layer.isRaster()) {
-                    const info = layer.getInfo();
-                    if (info.hasOwnProperty('abstract') || info.hasOwnProperty('legend') || info.hasOwnProperty('metadata')) {
-                        const text = self.getLocaleString('infoFromThisLayer');
-                        button = document.createElement('button');
-                        button.innerHTML = text;
-                        button.setAttribute('title', text);
-                        button.classList.add(className);
-                        button.dataset.layerId = layerId;
-                        container.appendChild(button);
-                    }
-                }
-            }
-            return button;
-        },
-        actionFn: function () {
-            const button = this;
-            var li = button;
-            do {
-                li = li.parentElement;
-            }
-            while (li && li.tagName !== 'LI');
-            const info = li.querySelector('.tc-ctl-lcat-info');//SILME
-            //const info = li.querySelector('.' + self.CLASS + '-info');
-            const layer = self.map.getLayer(button.dataset.layerId);
-            // Cargamos la imagen de la leyenda
-            info.querySelectorAll('.' + self.CLASS + '-legend img').forEach(function (img) {
-                self.styleLegendImage(img, layer);
-            });
-            // Make the DIV element draggable:
-            dragElement(info);//Silme
-            info.classList.toggle(TC.Consts.classes.HIDDEN);
-
-            if (li.querySelector('input[type="checkbox"]').checked) {
-                const dragHandle = li.querySelector('.' + self.CLASS + '-dd');
-                dragHandle.classList.toggle(TC.Consts.classes.HIDDEN, !info.classList.contains(TC.Consts.classes.HIDDEN));
-            }
-
-            button.classList.toggle(TC.Consts.classes.CHECKED);
-        }
-    });
-    */
-
-    // self.addLayerTool({
-    self.addItemTool({
       renderFn: function (container, layerId) {
-        const className = self.CLASS + '-btn-dl';
-
-        let button = container.querySelector('button.' + className);
+        let button = container.querySelector('button.' + _this.CLASS + '-btn-dl');
         if (!button) {
-          const layer = self.map.getLayer(layerId);
+          const layer = _this.map.getLayer(layerId);
           if (TC.layer.Vector && layer instanceof TC.layer.Vector) {
-            const text = self.getLocaleString('downloadFeatures');
+            const text = _this.getLocaleString('downloadFeatures');
             button = document.createElement('button');
             button.innerHTML = text;
             button.setAttribute('title', text);
-            button.classList.add(className);
+            button.classList.add(_this.CLASS + '-btn-dl');
             button.dataset.layerId = layerId;
             container.appendChild(button);
           }
         }
+
         return button;
       },
+
       actionFn: function () {
         const button = this;
-        var li = button;
+        let li = button;
         do {
           li = li.parentElement;
         }
         while (li && li.tagName !== 'LI');
-        const layer = self.map.getLayer(button.dataset.layerId);
-        self.getDownloadDialog().then(function (control) {
+
+        const layer = _this.map.getLayer(button.dataset.layerId);
+        _this.getDownloadDialog().then(function (control) {
           const title = layer.title || '';
           const options = {
-            title: `${title} - ${self.getLocaleString('downloadFeatures')}`,
+            title: `${title} - ${_this.getLocaleString('downloadFeatures')}`,
             fileName: /\.[a-z0-9]+$/i.test(title) ? title.substr(0, title.lastIndexOf('.')) : title,
-            elevation: self.map.elevation && self.map.elevation.options
+            elevation: _this.map.elevation && _this.map.elevation.options
           };
           control.open(layer.features, options);
         });
+
       }
     });
-
-    //const result = TC.control.WorkLayerManager.prototype.register.call(self, map);
-
-    //return result;
   }
 
-  render(callback, options) {
-    return super.render.call(this, callback, options);
+  // ===========================================================================
+  // Métodos de renderizado
+  // ===========================================================================
+
+  async render(callback, options) {
+    const _this = this;
+    return await super.render.call(_this, callback, options);
   }
+
+
+  async loadTemplates() {
+    const _this = this;
+    await super.loadTemplates.call(_this);
+
+    _this.template[_this.CLASS + '-elm'] = 'assets/js/patch/templates/WorkLayerManagerSilme.hbs';
+    _this.template[_this.CLASS + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
+  }
+
+  // ===========================================================================
+  // Método de registro del componente
+  // ===========================================================================
 
   async register(map) {
-    const self = this;
+    const _this = this;
+    const result = await super.register.call(this, map);
 
-    self.template[self.CLASS + '-elm'] = 'assets/js/patch/templates/WorkLayerManagerSilme.hbs';
-    self.template[self.CLASS + '-info'] = "assets/js/patch/templates/LayerCatalogInfoSilme.hbs";
+    // ...
 
-    await super.register.call(this, map);
-
-    return self;
+    return result;
   }
 
-  onExternalServiceAdded(_e) {
-    // Este control no tiene que aceptar servicios externos directamente
-  }
+  // ===========================================================================
+  // Event listeners para la interfaz
+  // ===========================================================================
 
   addUIEventListeners() {
-    //Copiam la mateixa funció que a WorkLayerManager perque volem modificar un event i no és possible eliminar un event anònim
-    //Apart, afegim un nou event
-    const self = this;
+    const _this = this;
 
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('input[type=checkbox]', function (e) {
-      // al estar en ipad el evento pasa a ser touchstart en la constante: TC.Consts.event.CLICK, los checkbox no funcionan bien con este evento
-      const checkbox = e.target;
-      var li = checkbox;
+    const inputRangeListener = function (e) {
+      const range = e.target;
+      let li = range;
       do {
         li = li.parentElement;
       }
-      while (li && !li.matches('li.' + self.CLASS + '-elm'));
+      while (li && li.tagName !== 'LI');
 
-      const layer = self.map.getLayer(li.dataset.layerId);
+      const layer = _this.map.getLayer(li.dataset.layerId);
+      layer.setOpacity(range.value / 100);
+    };
+
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('input[type=checkbox]', function(e) {
+      const checkbox = e.target;
+      let li = checkbox;
+      do {
+        li = li.parentElement;
+      }
+      while (li && !li.matches('li.' + _this.CLASS + '-elm'));
+
+      const layer = _this.map.getLayer(li.dataset.layerId);
       layer.setVisibility(checkbox.checked);
       e.stopPropagation();
     }));
 
-    const inputRangeListener = function (e) {
-      const range = e.target;
-      var li = range;
+    _this.div.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=range]', inputRangeListener));
+    _this.div.addEventListener('input', TC.EventTarget.listenerBySelector('input[type=range]', inputRangeListener));
+
+    // --- Start Silme
+    // Se ha borrado el listener: ('change', TC.EventTarget.listenerBySelector('.${_this.CLASS}-cb-info')
+    // --- End Silme
+
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('.' + _this.CLASS + '-del' + ':not(.disabled)', function (e) {
+      let li = e.target;
       do {
         li = li.parentElement;
       }
       while (li && li.tagName !== 'LI');
-
-      const layer = self.map.getLayer(li.dataset.layerId);
-      layer.setOpacity(range.value / 100);
-    };
-    self.div.addEventListener('change', TC.EventTarget.listenerBySelector('input[type=range]', inputRangeListener));
-    self.div.addEventListener('input', TC.EventTarget.listenerBySelector('input[type=range]', inputRangeListener));
-
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('.' + self.CLASS + '-del' + ':not(.disabled)', function (e) {
-      var li = e.target;
-      do {
-        li = li.parentElement;
-      }
-      while (li && li.tagName !== 'LI');
-      const layer = self.map.getLayer(li.dataset.layerId);
-      self.map.removeLayer(layer);
+      const layer = _this.map.getLayer(li.dataset.layerId);
+      _this.map.removeLayer(layer);
     }));
 
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('.' + self.CLASS + '-del-all', function (e) {
-      TC.confirm(self.getLocaleString('layersRemove.confirm'), function () {
-        self.getLayerUIElements()
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('.' + _this.CLASS + '-del-all', function (e) {
+      TC.confirm(_this.getLocaleString('layersRemove.confirm'), function () {
+        _this.getLayerUIElements()
           .map(function (li) {
-            return self.map.getLayer(li.dataset.layerId);
+            return _this.map.getLayer(li.dataset.layerId);
           })
           .forEach(function (layer) {
-            self.map.removeLayer(layer);
+            _this.map.removeLayer(layer);
           });
       });
+
+      // --- Start Silme
+      // e.stopPropagation();
+      // --- End Silme
     }));
 
-    //Silme
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('.tc-ctl-lcat-info-close', function (e) {
-      var li = e.target;
+    // --- Start Silme
+    // Se ha borrado el listener: ('click', TC.EventTarget.listenerBySelector('.${_this.CLASS}-btn-more')
+    // --- End Silme
+
+    // --- Start Silme
+    // Listeners personalizados
+
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('.tc-ctl-lcat-info-close', function (e) {
+      let li = e.target;
       do {
         li = li.parentElement;
       }
@@ -205,68 +169,86 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
 
       const info = li.querySelector('.tc-ctl-lcat-info');
       info.classList.toggle(TC.Consts.classes.HIDDEN);
-      //li.querySelector('.tc-ctl-lcat-info').classList.toggle(TC.Consts.classes.CHECKED);
-      //li.querySelector('.tc-ctl-wlm-cb-info').classList.toggle(TC.Consts.classes.CHECKED);
+
       if (li.querySelector('input[type="checkbox"]').checked) {
-        const dragHandle = li.querySelector('.' + self.CLASS + '-dd');
+        const dragHandle = li.querySelector('.' + _this.CLASS + '-dd');
         dragHandle.classList.toggle(TC.Consts.classes.HIDDEN, !info.classList.contains(TC.Consts.classes.HIDDEN));
       }
-      var checkbox = li.querySelector('.tc-ctl-wlm-cb-info').shadowRoot.querySelector('input');
+
+      let checkbox = li.querySelector('.tc-ctl-wlm-cb-info').shadowRoot.querySelector('input');
       checkbox.checked = !checkbox.checked;
     }));
 
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector('.' + self.CLASS + '-btn-query', function (e) {
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('.' + _this.CLASS + '-btn-query', function (e) {
       if (e.target.classList.contains('tc-unavailable') || e.target.classList.contains('tc-loading')) {
         return;
       }
-      var li = e.target;
+
+      let li = e.target;
       do {
         li = li.parentElement;
       }
       while (li && li.tagName !== 'LI');
-      const layer = self.map.getLayer(li.dataset.layerId);
-      self.queryControl.renderModalDialog(layer);
+
+      const layer = _this.map.getLayer(li.dataset.layerId);
+      _this.queryControl.renderModalDialog(layer);
     }));
 
-    //self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector(`.${self.CLASS}-btn-info`, function (e) {
-    self.div.addEventListener(self.CLICKEVENT, TC.EventTarget.listenerBySelector(`.${self.CLASS}-cb-info`, function (e) {
-      var li = e.target;
+    _this.div.addEventListener('click', TC.EventTarget.listenerBySelector('.' + _this.CLASS + '-cb-info', function (e) {
+      // Obtenido del listener anteriormente borrado ('change', TC.EventTarget.listenerBySelector('.${_this.CLASS}-cb-info')
+
+      let li = e.target;
       do {
         li = li.parentElement;
       }
       while (li && li.tagName !== 'LI');
-      const info = li.querySelector('.tc-ctl-lcat-info');//SILME
-      //const info = li.querySelector('.' + self.CLASS + '-info');
-      const layer = self.map.getLayer(li.dataset.layerId);
-      // Cargamos la imagen de la leyenda
-      info.querySelectorAll('.' + self.CLASS + '-legend img').forEach(function (img) {
-        self.styleLegendImage(img, layer);
+
+      // --- Start Silme
+      // const info = li.querySelector('.' + self.CLASS + '-info');
+      const info = li.querySelector('.tc-ctl-lcat-info');
+      // --- End Silme
+
+      const layer = _this.map.getLayer(li.dataset.layerId);
+      info.querySelectorAll('.' + _this.CLASS + '-legend img').forEach(function (img) {
+        _this.styleLegendImage(img, layer);
       });
-      // Make the DIV element draggable:
-      //dragElement(info);//Silme
+
       info.classList.toggle(TC.Consts.classes.HIDDEN);
 
       if (li.querySelector('input[type="checkbox"]').checked) {
-        const dragHandle = li.querySelector('.' + self.CLASS + '-dd');
+        const dragHandle = li.querySelector('.' + _this.CLASS + '-dd');
         dragHandle.classList.toggle(TC.Consts.classes.HIDDEN, !info.classList.contains(TC.Consts.classes.HIDDEN));
       }
 
       info.classList.toggle(TC.Consts.classes.CHECKED);
     }));
+
+    // --- End Silme
   }
 
+  // ===========================================================================
+  // Métodos públicos sobreescritos
+  // ===========================================================================
+
+  async onExternalServiceAdded(_e) {
+    const _this = this;
+    return await super.onExternalServiceAdded.call(_this, _e);
+  }
+
+
   updateLayerVisibility(layer) {
-    const self = this;
-    const li = self.#findLayerElement(layer);
+    const _this = this;
+    const li = _this.#findLayerElement(layer);
     if (li) {
       li.querySelector('input[type="checkbox"]').checked = layer.getVisibility();
     }
-  };
+  }
+
 
   updateLayerTree(layer) {
-    var self = this;
+    const _this = this;
 
-    var getLegendImgByPost = function (layer) {
+    const _getLegendImgByPost = function (layer) {
       return new Promise(function (resolve, reject) {
         if (layer && layer.options.method && layer.options.method === "POST") {
           layer.getLegendGraphicImage()
@@ -281,87 +263,101 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
     };
 
     if (!layer.isBase && !layer.options.stealth) {
-      TC.control.MapContents.prototype.updateLayerTree.call(self, layer);
+      TC.control.MapContents.prototype.updateLayerTree.call(_this, layer);
 
-      var alreadyExists = false;
-      for (var i = 0, len = self.layers.length; i < len; i++) {
-        if (layer === self.layers[i]) {
+      let alreadyExists = false;
+      for (let i = 0, len = _this.layers.length; i < len; i++) {
+        if (layer === _this.layers[i]) {
           alreadyExists = true;
           break;
         }
       }
 
       if (!alreadyExists) {
-        var template = self.CLASS + '-elm';
-        //if (layer.names.length > 0 || layer.availableNames.length > 0)//SILME - TESTING
-        self.layers.push(layer);
+        const template = _this.CLASS + '-elm';
+        //if (layer.names.length > 0 || layer.availableNames.length > 0) // --- Silme - TESTING
+        _this.layers.push(layer);
 
-        /* SILME 20210415 TC.loadJSInOrder(
-            !window.dust,
-            TC.url.templating,
-            function () {*/
-        var domReadyPromise;
-        var layerTitle = layer.title;//Silme || layer.wrap.getServiceTitle();
-        var layerData = {
+        let domReadyPromise;
+
+        // --- Start Silme
+        // let layerTitle = layer.title || layer.wrap.getServiceTitle();
+        let layerTitle = layer.title;
+        // --- End Silme
+
+        let layerData = {
           title: layer.options.hideTitle ? '' : layerTitle,
           hide: !!(layer.renderOptions && layer.renderOptions.hide),
           opacity: layer.renderOptions && layer.renderOptions.opacity ? (layer.renderOptions.opacity * 100) : 100,
           customLegend: layer.customLegend,
           unremovable: layer.unremovable
         };
-        var isRaster = layer.isRaster();
+
+        const isRaster = layer.isRaster();
         if (isRaster) {
           layerData.hasExtent = !!layer.getExtent();
-          layerTitle = layer.getPath()[layer.getPath().length - 1];//Silme conservam sa part de dalt i ho tenim separat per diferenciar entre serveis "normals" i fitxers carregats
-          layerData.title = layerTitle;//Silme
+          layerTitle = layer.getPath()[layer.getPath().length - 1]; // --- Silme - conservam sa part de dalt i ho tenim separat per diferenciar entre serveis "normals" i fitxers carregats
+          layerData.title = layerTitle; // --- Silme
           layerData.layerNames = layer.layerNames;
-          layerData.uid = layer.uid;//Silme
-          var path = layer.getPath();
+          layerData.uid = layer.uid; // --- Silme
+
+          const path = layer.getPath();
           path.shift();
           layerData.path = path;
-          var name = layer.names[0];
-          // SILME var info = layer.wrap.getInfo(name, layer);
-          var info = self.getInfo(name, layer);
+
+          const name = layer.names[0];
+
+          // --- Start Silme
+          // const info = layer.wrap.getInfo(name, layer);
+          const info = _this.#getInfo(name, layer);
+          // --- End Silme
+
           layerData.legend = info.legend;
           layerData['abstract'] = info['abstract'];
-          //Silme
-          if (layer.layerNames != undefined) {
+
+          // --- Start Silme
+          if (layer.layerNames !== undefined) {
             if (layer.layerNames[0].includes(":"))
               layerData.name = layer.layerNames[0].substr(layer.layerNames[0].indexOf(":") + 1);
             else
               layerData.name = layer.layerNames[0];
           }
-          //End Silme
-          //var hasInfo = (info.hasOwnProperty('abstract') || info.hasOwnProperty('legend') || info.hasOwnProperty('metadata'));
+          // --- End Silme
+
           layerData.hasInfo = (info.hasOwnProperty('abstract') || info.hasOwnProperty('legend') || info.hasOwnProperty('metadata'));
-          var metadata;
-          //silme if (layer.tree && layer.tree.children && layer.tree.children.length && layer.tree.children[0].children && layer.tree.children[0].children.length) {
-          if (info.metadata == null) {//Silme
-          }
-          else {
+
+          let metadata;
+
+          // --- Start Silme
+          // if (layer.tree && layer.tree.children && layer.tree.children.length && layer.tree.children[0].children && layer.tree.children[0].children.length) {
+          if (info.metadata == null) {
+            // --- End Silme
+            // Do nothing
+
+          } else {
             metadata = info.metadata;
             if (metadata) {
-              for (var j = 0, len = metadata.length; j < len; j++) {
-                var md = metadata[j];
-                md.formatDescription = self.getLocaleString(TC.Util.getSimpleMimeType(md.format)) || self.getLocaleString('viewMetadata');
+              for (let j = 0, len = metadata.length; j < len; j++) {
+                const md = metadata[j];
+                md.formatDescription = _this.getLocaleString(TC.Util.getSimpleMimeType(md.format)) || _this.getLocaleString('viewMetadata');
               }
             }
           }
+
           layerData.metadata = metadata;
-          if (self.queries) {
+          if (_this.queries) {
             domReadyPromise = checkWFSAvailable(layer);
           }
         }
 
-        //Silme
+        // --- Start Silme
+        if (info != null) { // Esta variable está definida en el LayerCatalogSilmeFolders
 
-        if (info != null) {
-
-          var dataUrl;
+          let dataUrl;
           if (info.dataUrl != null) {
             dataUrl = info.dataUrl;
-            if (dataUrl.length != 0) {
-              dataUrl[0].formatDescription = self.getLocaleString(TC.Util.getSimpleMimeType(dataUrl[0].format)) || self.getLocaleString('viewMetadata');
+            if (dataUrl.length !== 0) {
+              dataUrl[0].formatDescription = _this.getLocaleString(TC.Util.getSimpleMimeType(dataUrl[0].format)) || _this.getLocaleString('viewMetadata');
               layerData.dataUrl = dataUrl;
             }
           }
@@ -398,189 +394,223 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
             layerData.url = layer.url;
           }
         }
-        //END SILME
+        // --- End Silme
 
-        getLegendImgByPost(layer).then(function (src) {
+        _getLegendImgByPost(layer).then(function(src) {
           if (src) {
-            legend.src = src; // ya se ha validado en getLegendImgByPost
+            legend.src = src; // Ya se ha validado en getLegendImgByPost
           }
-          self.getRenderedHtml(self.CLASS + '-elm', layerData).then(function (out) {
+
+          _this.getRenderedHtml(_this.CLASS + '-elm', layerData).then(function(out) {
             const parser = new DOMParser();
             const li = parser.parseFromString(out, 'text/html').body.firstChild;
-            var layerNode;
-            var isGroup = false;
+
+            let layerNode;
+            let isGroup = false;
+
             if (isRaster) {
               isGroup = layer.names.length > 1;
+
               if (!isGroup) {
-                var layerNodes = layer.wrap.getAllLayerNodes();
-                for (var i = 0; i < layerNodes.length; i++) {
-                  var node = layerNodes[i];
+                const layerNodes = layer.wrap.getAllLayerNodes();
+                for (let i = 0; i < layerNodes.length; i++) {
+                  const node = layerNodes[i];
                   if (layer.wrap.getName(node) === name) {
                     layerNode = node;
+
                     if (layer.wrap.getLayerNodes(node).length > 0) {
                       isGroup = true;
                     }
+
                     break;
                   }
                 }
               }
             }
 
-            const typeElm = li.querySelector('.' + self.CLASS + '-type');
-            const className = isGroup ? self.CLASS + '-type-grp' : self.CLASS + '-type-sgl';
+            const typeElm = li.querySelector('.' + _this.CLASS + '-type');
+            const className = isGroup
+              ? _this.CLASS + '-type-grp'
+              : _this.CLASS + '-type-sgl';
             typeElm.classList.add(className);
 
-            //SILME MV aquest codi l'he agafat de la versió 2.1 de la API
-            const zoomBtn = li.querySelector(`.${self.CLASS}-btn-zoom`);
+            // --- Start Silme
+            const zoomBtn = li.querySelector(`.${_this.CLASS}-btn-zoom`);
             if (zoomBtn) {
-              zoomBtn.addEventListener(TC.Consts.event.CLICK, function (e) {
-                self.map.zoomToLayer(li.dataset.layerId, { animate: true });
-              }, { passive: true });
+              zoomBtn.addEventListener(
+                TC.Consts.event.CLICK,
+                function (e) {
+                  _this.map.zoomToLayer(li.dataset.layerId, { animate: true });
+                },
+                { passive: true }
+              );
             }
-            //END SILME
-
-            //if (!hasInfo) {
-            //    if (li.querySelector('.' + self.CLASS + '-btn-info'))
-            //        li.querySelector('.' + self.CLASS + '-btn-info').classList.add(TC.Consts.classes.HIDDEN);
-            //}
+            // --- End Silme
 
             if (layerNode) {
               layer.wrap.normalizeLayerNode(layerNode);
 
-              self.getRenderedHtml(className, layerNode).then(function (out) {
-                var tip;
+              _this.getRenderedHtml(className, layerNode).then(function (out) {
+                let tip;
 
                 typeElm.addEventListener('mouseover', function (e) {
-                  const mapDiv = self.map.div;
+                  const mapDiv = _this.map.div;
                   const typeElmRect = typeElm.getBoundingClientRect();
                   tip = document.createElement('div');
-                  tip.classList.add(self.CLASS + '-tip');
+                  tip.classList.add(_this.CLASS + '-tip');
                   tip.innerHTML = out;
-                  tip.style.top = (typeElmRect.top - mapDiv.offsetTop) + 'px';
+                  tip.style.top = typeElmRect.top - mapDiv.offsetTop + 'px';
                   tip.style.right = mapDiv.offsetWidth - (typeElmRect.left - mapDiv.offsetLeft) + 'px';
                   mapDiv.appendChild(tip);
                 });
+
                 typeElm.addEventListener('mouseout', function (e) {
                   tip.parentElement.removeChild(tip);
                 });
               });
             }
-            const ul = self.div.querySelector('ul');
+
+            const ul = _this.div.querySelector('ul');
             li.dataset.layerId = layer.id;
 
-            const lis = self.getLayerUIElements();
-            const layerList = self.map.workLayers
-              .filter(function (l) {
-                return !l.stealth;
-              });
+            const lis = _this.getLayerUIElements();
+            const layerList = _this.map.workLayers.filter(function (l) {
+              return !l.stealth;
+            });
+
             const layerIdx = layerList.indexOf(layer);
 
-            //self.layerTools.forEach(tool => self.addLayerToolUI(li, tool)); // MV silme 20230317
-            self.getItemTools().forEach(tool => self.addItemToolUI(li, tool));
+            // --- Start Silme
+            // _this.layerTools.forEach(tool => _this.addLayerToolUI(li, tool));
+            _this
+              .getItemTools()
+              .forEach((tool) => _this.addItemToolUI(li, tool));
+            // --- End Silme
 
-            var inserted = false;
-            for (var i = 0, ii = lis.length; i < ii; i++) {
+            let inserted = false;
+            for (let i = 0, ii = lis.length; i < ii; i++) {
               const referenceLi = lis[i];
-              const referenceLayerIdx = layerList.indexOf(self.map.getLayer(referenceLi.dataset.layerId));
+              const referenceLayerIdx = layerList.indexOf(_this.map.getLayer(referenceLi.dataset.layerId));
               if (referenceLayerIdx < layerIdx) {
                 referenceLi.insertAdjacentElement('beforebegin', li);
                 inserted = true;
                 break;
               }
             }
+
             if (!inserted) {
               ul.appendChild(li);
             }
 
-            if (domReadyPromise) domReadyPromise(li);
-            self.updateScale();
+            if (domReadyPromise) {
+              domReadyPromise(li);
+            }
+            _this.updateScale();
 
-            if (isGroup) { //SILME MV
+            // --- Start Silme
+            if (isGroup) {
               li.style.background = '#e4e6d0'
               li.querySelector('.tc-ctl-wlm-tools').querySelectorAll('button').forEach(node => {
                 node.style.background = '#e4e6d0';
               });
+
               li.querySelector('.container').style.background = '#e4e6d0';
             }
-            //Silme redimensionam controls
+
             ajustarPanell();
+            // --- End Silme
           });
 
-          //Silme redimensionam controls
+          // --- Start Silme
           ajustarPanell();
+          // --- End Silme
         });
-        /* END SILME 15042021}
-    );*/
 
-        var elligibleLayersNum = self.#getElligibleLayersNumber();
+        const elligibleLayersNum = _this.#getElligibleLayersNumber();
 
-        const numElm = self.div.querySelector('.' + self.CLASS + '-n');
-        const emptyElm = self.div.querySelector('.' + self.CLASS + '-empty');
-        const contentElm = self.div.querySelector('.' + self.CLASS + '-content');
+        const numElm = _this.div.querySelector('.' + _this.CLASS + '-n');
+        const emptyElm = _this.div.querySelector('.' + _this.CLASS + '-empty');
+        const contentElm = _this.div.querySelector('.' + _this.CLASS + '-content');
         numElm.textContent = elligibleLayersNum;
+
         if (elligibleLayersNum > 0) {
           numElm.classList.add(TC.Consts.classes.VISIBLE);
           emptyElm.classList.add(TC.Consts.classes.HIDDEN);
           contentElm.classList.remove(TC.Consts.classes.HIDDEN);
-          //const deleteAllElm = self.div.querySelector('.' + self.CLASS + '-del-all');//SILME - TESTING
-          //deleteAllElm.classList.toggle(TC.Consts.classes.HIDDEN, !shouldBeDelAllVisible(self));//SILME - TESTING
-        }
-        else {
+          // const deleteAllElm = self.div.querySelector('.' + self.CLASS + '-del-all'); // Silme - TESTING
+          // deleteAllElm.classList.toggle(TC.Consts.classes.HIDDEN, !shouldBeDelAllVisible(self)); // Silme - TESTING
+
+        } else {
           numElm.classList.remove(TC.Consts.classes.VISIBLE);
           emptyElm.classList.remove(TC.Consts.classes.HIDDEN);
           contentElm.classList.add(TC.Consts.classes.HIDDEN);
         }
 
-        const deleteAllElm = self.div.querySelector('.' + self.CLASS + '-del-all');
-        deleteAllElm.classList.toggle(TC.Consts.classes.HIDDEN, !self.#shouldBeDelAllVisible());
+        const deleteAllElm = _this.div.querySelector('.' + _this.CLASS + '-del-all');
+        deleteAllElm.classList.toggle(TC.Consts.classes.HIDDEN, !_this.#shouldBeDelAllVisible());
       }
     }
-  };
-
-  #findLayerElement(layer) {
-    this.getLayerUIElements().find(li => li.dataset.layerId === layer.id);
-  };
-
-  #shouldBeDelAllVisible() {
-    return !this.layers.some(layer => layer.unremovable);
-  };
-
-  #getElligibleLayersNumber() {
-    return this.layers.length;
   }
 
-  getInfo(name, layer) {
-    var self = layer;
-    var result = {};
-    var capabilities = self.capabilities;
-    var url = self.url;
+  // ===========================================================================
+  // Métodos privados utilitarios
+  // ===========================================================================
+
+  #findLayerElement(layer) {
+    const _this = this;
+    return _this.getLayerUIElements().find(li => li.dataset.layerId === layer.id);
+  }
+
+
+  #shouldBeDelAllVisible() {
+    const _this = this;
+    return !_this.layers.some(layer => layer.unremovable);
+  }
+
+
+  #getElligibleLayersNumber() {
+    const _this = this;
+    return _this.layers.length;
+  }
+
+
+  #getInfo(name, layer) {
+    const _this = layer;
+    const result = {};
+    const capabilities = _this.capabilities;
+    const url = _this.url;
+
     if (capabilities && capabilities.Capability) {
-      var layerNodes = self.wrap.getAllLayerNodes();
-      for (var i = 0; i < layerNodes.length; i++) {
-        var l = layerNodes[i];
-        if (self.compareNames(self.wrap.getName(l), name)) {
+      const layerNodes = _this.wrap.getAllLayerNodes();
+      for (let l in layerNodes) {
+        if (_this.compareNames(_this.wrap.getName(l), name)) {
           if (l.Title) {
             result.title = l.Title;
           }
+
           if (l.Abstract) {
             result['abstract'] = l.Abstract;
           }
-          //Silme
+
+          // --- Start Silme
           if (l.Name) {
-            if (l.Name.includes(":"))
+            if (l.Name.includes(":")) {
               result['name'] = l.Name.substr(l.Name.indexOf(":") + 1);
-            else
+
+            } else {
               result['name'] = l.Name;
+            }
           }
 
           if (l.Layer) {
             result.isGroup = true;
           }
-          //End Silme
+          // --- End Silme
+
           result.legend = [];
 
-          var _process = function (value) {
-            var legend = this.wrap.getLegend(value);
+          const _process = function (value) {
+            const legend = this.wrap.getLegend(value);
 
             if (legend.src)
               result.legend.push({
@@ -588,30 +618,29 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
               });
           };
 
-          var _traverse = function (o, func) {
+          const _traverse = function (o, func) {
             if (o.Layer && o.Layer.length > 0) {
-              for (var i in o.Layer) {
-                //bajar un nivel en el árbol
+              for (let i in o.Layer) {
                 _traverse(o.Layer[i], func);
               }
             } else {
-              func.apply(self, [o]);
+              func.apply(_this, [o]);
             }
           };
 
-          //Obtenemos todas las leyendas de la capa o grupo de capas
+          // Obtenemos todas las leyendas de la capa o grupo de capas
           _traverse(l, _process);
 
           if (l.MetadataURL && l.MetadataURL.length) {
             result.metadata = [];
-            for (var j = 0; j < l.MetadataURL.length; j++) {
-              var md = l.MetadataURL[j];
+            for (const md in l.MetadataURL) {
               result.metadata.push({
                 format: md.Format, type: md.type, url: md.OnlineResource
               });
             }
           }
-          //Silme
+
+          // --- Start Silme
           result.dataUrl = [];
           if (l.DataURL) {
             result.dataUrl.push({ format: l.DataURL.Format, type: l.DataURL.OnlineResource.type, url: l.DataURL.OnlineResource.href });
@@ -656,21 +685,17 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
           if (url) {
             result.url = url;
           }
+          // --- End Silme
 
-
-
-          //End silme
           result.queryable = l.queryable;
           break;
         }
       }
     }
-    return result;
-  };
 
+    return result;
+  }
 }
 
-//SILME.control.WorkLayerManager = WorkLayerManagerSilme;
 TC.control.WorkLayerManagerSilme = WorkLayerManagerSilme;
-
 TC.mix(WorkLayerManagerSilme, TC.control.itemToolContainer);

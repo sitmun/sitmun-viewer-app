@@ -1,10 +1,11 @@
 ﻿:root {
-    --ide-main-color: #FF9300;
-    --ide-main-color-light: #ffb100;
+  --ide-main-color: #FF9300;
+  --ide-main-color-light: #ffb100;
+  --ide-contrast-color: #080d4f;
 
-    --ide-contrast-color: #080d4f;
+  --white: #ffffff;
 
-    --white: #ffffff;
+  --bms-slider-background: linear-gradient(to right, #ffffff00, var(--ide-main-color));
 }
 
 .tc-ctl-scl input, .tc-ctl-ss input,
@@ -167,12 +168,12 @@ li.tc-ctl-legend-node, .tc-ctl-lcat-info, .tc-ctl-lcat-proj {
     color: #000000;
 }
 
-.tc-ctl-dmm .tc-ctl-mod > button, .tc-ctl-dmm-cmd > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
+.tc-ctl-dmm .tc-ctl-mod-btn > button, .tc-ctl-dmm-cmd > button, .tc-ctl-dmm .tc-ctl-dmm-cmd button.tc-ctl-dmm-btn-hide.tc-active:not(:disabled), .tc-ctl-dmm .tc-ctl-dmm-cmd button {
     background-color: #ffffff;
     color: #666666;
 }
 
-    .tc-ctl-dmm .tc-ctl-mod > button:disabled, .tc-ctl-dmm .tc-ctl-dmm-cmd button:disabled, .tc-ctl-draw .tc-ctl-draw-tools > button:disabled {
+.tc-ctl-dmm .tc-ctl-mod-btn > button:disabled, .tc-ctl-dmm .tc-ctl-dmm-cmd button:disabled, .tc-ctl-draw .tc-ctl-draw-tools > button:disabled {
     background-color: #eeeeee;
     color: #cccccc;
 }
@@ -291,4 +292,89 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info:hover,
 .tc-ctl-m-finfo-select input[type=radio]:disabled ~ span {
   background-color: #cccccc;
   border-color: #cccccc;
+}
+
+sitna-tab {
+  color: #666666;
+  background: #f5f5f5;
+}
+
+sitna-tab[selected] {
+  background-color: #ffffff;
+  border-color: var(--ide-main-color);
+  color: var(--ide-main-color);
+}
+
+/* --------------------------------------------------------------------------------------
+ * New basemap selector component
+ * ----------------------------------------------------------------------------------- */
+
+.tc-ctl-bms-active-map-miniature > div {
+  border-color : rgba(0,0,0, 0.0);
+}
+
+.tc-ctl-bms-active-map-miniature.tc-checked > div {
+  border-color: var(--ide-main-color);
+}
+
+.tc-ctl-bms-active-map-miniature > button {
+  background-color: #f63333;
+}
+
+.tc-ctl-bms-active-map-miniature > button:hover {
+  background-color: #d72d2d;
+}
+
+.tc-ctl-bms-active-map-miniature > button:active {
+  background-color: #9a2020;
+}
+
+ul.tc-ctl-bms-branch > li > div {
+  border-color: rgba(0,0,0, 0.0);
+}
+
+ul.tc-ctl-bms-branch > li:hover > div {
+  border-color: var(--ide-main-color);
+}
+
+ul.tc-ctl-bms-branch > li > button {
+  background-color: #39d44a;
+}
+
+ul.tc-ctl-bms-branch > li > button:hover {
+  background-color: #32ba41;
+}
+
+ul.tc-ctl-bms-branch > li > button:active {
+  background-color: #24852e;
+}
+
+.tc-ctl-bms-slider-control-button-container > button {
+  background-color: var(--ide-main-color);
+}
+
+.tc-ctl-bms-slider-control-button-container > button:hover {
+  background-color: #e18200;
+}
+
+.tc-ctl-bms-slider-control-button-container > button:active {
+  background-color: #e18200;
+}
+
+.tc-ctl-bms-slider-input-container > span {
+  color: #666666;
+}
+
+.tc-ctl-bms-slider-input-container > input[type="range"] {
+  border-color: #bcbcbc;
+  background-color: #ffffff;
+}
+
+.tc-ctl-bms-slider-input-container > input[type="range"]::-webkit-slider-thumb {
+  border-color: #bcbcbc;
+  background-color: #efefef;
+}
+.tc-ctl-bms-slider-input-container > input[type="range"]::-moz-range-thumb {
+  border-color: #bcbcbc;
+  background-color: #efefef;
 }
