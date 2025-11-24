@@ -217,9 +217,20 @@ export abstract class AbstractMapComponent
       this.renderer.removeChild(this.document.body, warningModal);
     }
 
+    // Find and remove the old mapa div, insert new one in same location
+    const oldMapDiv = mapFather.querySelector('#mapa');
     const div = this.renderer.createElement('div');
     this.renderer.setAttribute(div, 'id', 'mapa');
-    this.renderer.appendChild(mapFather, div);
+    
+    if (oldMapDiv) {
+      // Insert new div in the exact same position as the old one
+      this.renderer.insertBefore(mapFather, div, oldMapDiv);
+      // Remove the old div
+      this.renderer.removeChild(mapFather, oldMapDiv);
+    } else {
+      // If no old div exists, just append
+      this.renderer.appendChild(mapFather, div);
+    }
 
     // Body
     this.removeSitnaDivs();
