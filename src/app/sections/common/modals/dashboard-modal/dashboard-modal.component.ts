@@ -61,7 +61,7 @@ export class DashboardModalComponent extends BaseModal {
     response?.subscribe((response: ResponseDto) => {
       if (this.type === DashboardTypes.TERRITORIES) {
         this.items = response.content.map((i: any) => {
-          return { id: i.id, name: i.title };
+          return { id: i.id, name: i.title || i.name };
         });
       } else {
         this.items = response.content;

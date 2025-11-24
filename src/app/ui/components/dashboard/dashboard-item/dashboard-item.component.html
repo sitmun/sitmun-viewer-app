@@ -24,7 +24,7 @@
 <ng-template #panelHeader>
   <div class="dashboard-item-content-header">
     <button (click)="navigateToMap(item.id)">
-      <h3 class="dashboard-item-title"> {{item.title}} {{item.name}} </h3>
+      <h3 class="dashboard-item-title"> {{item.title || item.name}} </h3>
     </button>
     <div class="dashboard-item-dot">
       <button class="dot" (click)="navigateToApplicationDetails(item.id)">

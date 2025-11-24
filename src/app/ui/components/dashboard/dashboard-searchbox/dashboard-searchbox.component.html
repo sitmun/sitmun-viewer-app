@@ -26,7 +26,7 @@
     <div *ngIf="showDetailedSuggestions && filterApplications().length > 0">
       <p class="suggestion-title">Applications</p>
       <button class="item-app item-application" *ngFor="let application of filterApplications()" (click)="navigateToApplicationPresentation(application.id)">
-        <p [innerHTML]="researchHighlight(application.title)"></p>
+        <p [innerHTML]="researchHighlight(application.title || application.name)"></p>
         <div>
           <img src="{{ application.logo ? application.logo : 'assets/img/card-no-image.svg' }}" />
         </div>

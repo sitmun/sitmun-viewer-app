@@ -15,7 +15,7 @@
           <div class="applications-list" *ngIf="listTerritories && listApplications.length > 0">
             <button class="application-item" *ngFor="let application of getListApplications()" [ngClass]="{ 'selected': application.id.toString() === applicationSelectedId }" (click)="selectApplication(application.id.toString())">
               <img *ngIf="application.id.toString() === applicationSelectedId" src="assets/img/Icona-comprovar-naranja.svg"/>
-              <p> {{ application.title }} </p>
+              <p> {{ application.title || application.name }} </p>
               <img id="app-logo" [src]="application.logo" />
             </button>
           </div>

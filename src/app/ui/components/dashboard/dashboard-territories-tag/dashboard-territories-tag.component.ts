@@ -18,7 +18,7 @@ export class DashboardTerritoriesTagComponent {
   constructor(private router : Router) {}
 
   ngOnInit() {
-    this.applicationName = this.application.title;
+    this.applicationName = this.application.title || this.application.name;
   }
 
   closeTag() {

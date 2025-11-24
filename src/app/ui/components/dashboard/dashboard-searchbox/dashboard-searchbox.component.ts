@@ -76,7 +76,7 @@ export class DashboardSearchboxComponent {
 
   filterApplications() {
     const filteredApps = this.applications.filter((item: any) =>
-      item.title.toLowerCase().includes(this.input.toLowerCase())
+      (item.title || item.name).toLowerCase().includes(this.input.toLowerCase())
     );
     return filteredApps;
   }

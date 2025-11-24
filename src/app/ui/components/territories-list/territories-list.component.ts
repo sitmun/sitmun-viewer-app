@@ -25,7 +25,7 @@ export class TerritoriesListComponent {
     return !this.researchInputApplication
     ? this.listApplications
     : this.listApplications.filter(
-        (application) => application.title.toLowerCase().includes(this.researchInputApplication.toLowerCase())
+        (application) => (application.title || application.name).toLowerCase().includes(this.researchInputApplication.toLowerCase())
       );
   }
 

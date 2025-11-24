@@ -2,7 +2,7 @@
   <div id="application" *ngIf="application">
     <app-return-button> </app-return-button>
     <div id="application-title">
-      <h1> {{ application.title }} </h1>
+      <h1> {{ application.title || application.name }} </h1>
     </div>
     <div id="application-details">
       <div id="left-side">

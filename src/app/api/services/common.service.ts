@@ -17,8 +17,8 @@ export enum DashboardTypes {
 export interface DashboardItem {
   img?: string;
   id: number;
-  title: string;
-  name?: string;
+  title?: string;
+  name: string;
   type?: string;
   logo?: string;
   headerParams: any; // JSON OBJECT
