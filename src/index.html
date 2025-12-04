@@ -12,7 +12,7 @@
         window.addEventListener('load', () => {
 
           navigator.serviceWorker.getRegistration().then(function(reg) {
-            if (reg.active && !navigator.serviceWorker.controller) {
+            if (reg && reg.active && !navigator.serviceWorker.controller) {
               window.location.reload();
             }
           });
