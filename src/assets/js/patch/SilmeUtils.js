@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.SilmeUtils) {
+    return;
+  }
+
 var action = "";
 var layerMarkers;
 
@@ -436,3 +445,7 @@ function getLastBaseMapIndex(){
   }
   return idx;
 }
+
+  // Mark patch as loaded
+  window.__patchesLoaded.SilmeUtils = true;
+})();

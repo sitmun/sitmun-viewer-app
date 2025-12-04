@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.StreetViewSilme) {
+    return;
+  }
+
 if (!TC.control.StreetView) {
   TC.syncLoadJS(TC.apiLocation + 'TC/control/StreetView');
 }
@@ -422,4 +431,8 @@ TC.inherit(TC.control.StreetViewSilme, TC.control.StreetView);
     elm.dispatchEvent(event);
   };
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.StreetViewSilme = true;
 })();

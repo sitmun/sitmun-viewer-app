@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.DefaultsPatch) {
+    return;
+  }
+
 // =============================================================================
 // Patches for TC.Defaults and TC.Cfg objects
 // API SITNA version: 4.1.0
@@ -22,4 +31,8 @@ if (typeof TC !== 'undefined' && TC.Defaults) {
     TC.Cfg.availableBaseLayers = [];
   }
 }
+
+  // Mark patch as loaded
+  window.__patchesLoaded.DefaultsPatch = true;
+})();
 

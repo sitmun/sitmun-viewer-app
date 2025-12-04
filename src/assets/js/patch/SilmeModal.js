@@ -1,4 +1,13 @@
-﻿/**
+﻿(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.SilmeModal) {
+    return;
+  }
+
+/**
  * TODO: Documentar o eliminar si no se usa
  * @param src
  */
@@ -82,3 +91,7 @@ function dragElement(element) {
     true
   );
 }
+
+  // Mark patch as loaded
+  window.__patchesLoaded.SilmeModal = true;
+})();

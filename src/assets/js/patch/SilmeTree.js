@@ -1,4 +1,13 @@
-﻿var treeLayers;
+﻿(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.SilmeTree) {
+    return;
+  }
+
+var treeLayers;
 var initLayers = new Array();
 
 // Funció recursiva que recorre tot l'arbre
@@ -202,3 +211,7 @@ function setLayerUid(layer) {
 
   return layer.uid;
 }
+
+  // Mark patch as loaded
+  window.__patchesLoaded.SilmeTree = true;
+})();

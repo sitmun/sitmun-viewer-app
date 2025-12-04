@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.Popup) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 // =============================================================================
@@ -261,3 +270,7 @@ TC.inherit(TC.control.Popup, TC.Control);
 })();
 
 const Popup = TC.control.Popup;
+
+  // Mark patch as loaded
+  window.__patchesLoaded.Popup = true;
+})();

@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.api_patches) {
+    return;
+  }
+
 const originalFnc = TC.UI.autocomplete;
 
 // =============================================================================
@@ -397,3 +406,7 @@ TC.Util.isPlainObject = function(obj) {
     return false;
   }//Silme
 };
+
+  // Mark patch as loaded
+  window.__patchesLoaded.api_patches = true;
+})();

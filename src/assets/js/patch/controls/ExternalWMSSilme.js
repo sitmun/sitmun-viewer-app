@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.ExternalWMSSilme) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 if (!TC.control.ExternalWMS) {
@@ -265,4 +274,8 @@ TC.inherit(TC.control.ExternalWMSSilme, TC.Control);
     }
   };
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.ExternalWMSSilme = true;
 })();

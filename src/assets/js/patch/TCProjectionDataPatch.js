@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.TCProjectionDataPatch) {
+    return;
+  }
+
 // =====================================================================================================================
 // Proyecciones y nueva API de EPSG.io
 // =====================================================================================================================
@@ -102,3 +111,7 @@ TC.getProjectionData = function (options) {
     });
   });
 };
+
+  // Mark patch as loaded
+  window.__patchesLoaded.TCProjectionDataPatch = true;
+})();

@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.BasemapSelectorSilme) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 if (!TC.control.BasemapSelector) {
@@ -628,4 +637,8 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
     _this.secondaryMap.baseLayer.setOpacity(value);
   };
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.BasemapSelectorSilme = true;
 })();

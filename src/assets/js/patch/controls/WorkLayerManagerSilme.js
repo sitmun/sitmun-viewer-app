@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.WorkLayerManagerSilme) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
@@ -699,3 +708,7 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
 
 TC.control.WorkLayerManagerSilme = WorkLayerManagerSilme;
 TC.mix(WorkLayerManagerSilme, TC.control.itemToolContainer);
+
+  // Mark patch as loaded
+  window.__patchesLoaded.WorkLayerManagerSilme = true;
+})();

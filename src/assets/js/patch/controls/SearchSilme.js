@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.SearchSilme) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 if (!TC.control.Search) {
@@ -67,4 +76,8 @@ TC.inherit(TC.control.SearchSilme, TC.control.Search);
     const result = TC.control.Search.prototype.getStringPattern.call(this, allowedRoles, pattern);
   };
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.SearchSilme = true;
 })();

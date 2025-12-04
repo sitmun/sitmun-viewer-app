@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.DrawMeasureModifySilme) {
+    return;
+  }
+
 TC.control = TC.control || {};
 
 if (!TC.control.DrawMeasureModify) {
@@ -224,4 +233,8 @@ TC.inherit(TC.control.DrawMeasureModifySilme, TC.control.DrawMeasureModify);
     }
   };
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.DrawMeasureModifySilme = true;
 })();

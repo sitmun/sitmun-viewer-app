@@ -1,3 +1,11 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.LayerCatalogSilmeFolders) {
+    return;
+  }
 
 // Variables globales
 var ret = false;
@@ -1771,4 +1779,8 @@ TC.inherit(TC.control.LayerCatalogSilmeFolders, TC.control.LayerCatalog);
     }
   }
 
+})();
+
+  // Mark patch as loaded
+  window.__patchesLoaded.LayerCatalogSilmeFolders = true;
 })();

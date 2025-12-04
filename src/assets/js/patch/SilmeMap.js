@@ -1,3 +1,12 @@
+(function() {
+  // Execution guard: prevent duplicate execution
+  if (typeof window.__patchesLoaded === 'undefined') {
+    window.__patchesLoaded = {};
+  }
+  if (window.__patchesLoaded.SilmeMap) {
+    return;
+  }
+
 var silmeMap;
 var silmeLayerCatalog;
 var silmeSearch;
@@ -70,3 +79,7 @@ function silmeAddLayer(layerName) {
     //}
   }
 }
+
+  // Mark patch as loaded
+  window.__patchesLoaded.SilmeMap = true;
+})();
