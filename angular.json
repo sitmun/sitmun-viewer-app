@@ -49,7 +49,18 @@
             "scripts": [],
             "customWebpackConfig": {
               "path": "./webpack.config.js"
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "c3",
+              "interactjs",
+              "jsnlog",
+              "xml-utils/find-tags-by-name.js",
+              "xml-utils/get-attribute.js",
+              "lru-cache",
+              "pbf",
+              "rbush",
+              "ev-emitter/ev-emitter"
+            ]
           },
           "configurations": {
             "production": {
