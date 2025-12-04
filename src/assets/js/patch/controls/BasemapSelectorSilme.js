@@ -31,7 +31,7 @@ TC.inherit(TC.control.BasemapSelectorSilme, TC.control.BasemapSelector);
   const URL_DEFAULT_BACKGROUND = 'url("https://ide.cime.es/test/thumbnails/dummy_map_thumbnail.jpg")';
 
   // Atributos
-  ctlProto.CLASS = 'tc-ctl-bms';
+  ctlProto.CLASS = 'tc-ctl-bms-silme';
 
   ctlProto._baseMap1Idx = null;
   ctlProto._baseMap1Layer = null;

@@ -3,17 +3,26 @@ import {
   SitnaControls,
   SitnaViews
 } from '@api/model/sitna-cfg';
-import { AppCfg, AppGroup, AppNodeInfo } from '@api/model/app-cfg';
+import {
+  AppCfg,
+  AppGroup,
+  AppLayer,
+  AppNodeInfo,
+  AppService,
+  AppTree
+} from '@api/model/app-cfg';
 import { Injectable } from '@angular/core';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
   BasemapSelector = 'sitna.basemapSelector',
+  BasemapSelectorSilme = 'sitna.basemapSelector.silme.extension',
   Click = 'sitna.click',
   Coordinates = 'sitna.coordinates',
   DataLoader = 'sitna.dataLoader',
   Download = 'sitna.download',
   DrawMeasureModify = 'sitna.drawMeasureModify',
+  DrawMeasureModifySilme = 'sitna.drawMeasureModify.silme.extension',
   FullScreen = 'sitna.fullScreen',
   Geolocation = 'sitna.geolocation',
   Legend = 'sitna.legend',
@@ -23,21 +32,28 @@ enum SitnaControlsEnum {
   OfflineMapMaker = 'sitna.offlineMapMaker',
   OverviewMap = 'sitna.overviewMap',
   PopUp = 'sitna.popup',
+  PopupSilmePatch = 'sitna.popup.silme.patch',
   PrintMap = 'sitna.printMap',
   Scale = 'sitna.scale',
   ScaleBar = 'sitna.scaleBar',
   ScaleSelector = 'sitna.scaleSelector',
   Search = 'sitna.search',
+  SearchSilme = 'sitna.search.silme.extension',
   Share = 'sitna.share',
   StreetView = 'sitna.streetView',
+  StreetViewSilme = 'sitna.streetView.silme.extension',
   TOC = 'sitna.TOC',
   WorkLayerManager = 'sitna.workLayerManager',
+  WorkLayerManagerSilme = 'sitna.workLayerManager.silme.extension',
   LayerCatalog = 'sitna.layerCatalog',
+  LayerCatalogSilmeFolders = 'sitna.layerCatalog.silme.extension',
   MultiFeatureInfo = 'sitna.multiFeatureInfo',
   ThreeD = 'sitna.threed',
   FeatureInfo = 'sitna.featureInfo',
+  FeatureInfoSilme = 'sitna.featureInfo.silme.extension',
   //WFSEdit = 'sitna.WFSEdit',
-  WFSQuery = 'sitna.WFSQuery'
+  WFSQuery = 'sitna.WFSQuery',
+  ExternalWMSSilme = 'sitna.externalWMS.silme.extension',
 }
 let showLegendButton = false;
 let showOverViewMapButton = false;
@@ -45,6 +61,11 @@ let showToolsButton = false;
 
 @Injectable()
 export class SitnaHelper {
+  private static readonly DEFAULT_THUMBNAIL_URL = 'assets/img/dummy_map_thumbnail.jpg';
+  private static readonly OTHER_SERVICES_NODE_ID = 'node99';
+  private static readonly OTHER_SERVICES_TITLE = 'Altres serveis';
+  private static readonly CATALOG_DIV = 'catalog';
+
   constructor() {}
 
   static toCrs(apiConfig: AppCfg): string | undefined {
@@ -126,7 +147,7 @@ export class SitnaHelper {
               matrixSet: service.parameters.matrixSet,
               format: service.parameters.format,
               isBase: true,
-              thumbnail: thumbnail // TODO-redo
+              thumbnail: thumbnail || this.DEFAULT_THUMBNAIL_URL,
             };
             if (service.type == 'WMTS') {
               a.layerNames = layer.layers[0];
@@ -174,11 +195,12 @@ export class SitnaHelper {
     // Process each control type
     this.processAttributionControl(sitnaControls, sitnaControlsFilter);
     this.processBasemapSelectorControl(sitnaControls, sitnaControlsFilter);
+    this.processBasemapSelectorSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processClickControl(sitnaControls, sitnaControlsFilter);
     this.processCoordinatesControl(sitnaControls, sitnaControlsFilter);
     this.processDataLoaderControl(sitnaControls, sitnaControlsFilter);
     this.processDownloadControl(sitnaControls, sitnaControlsFilter);
-    this.processDrawMeasureModifyControl(sitnaControls, sitnaControlsFilter);
+    this.processDrawMeasureModifySilmeControl(sitnaControls, sitnaControlsFilter);
     this.processFullScreenControl(sitnaControls, sitnaControlsFilter);
     this.processGeolocationControl(sitnaControls, sitnaControlsFilter);
     this.processLegendControl(sitnaControls, sitnaControlsFilter);
@@ -197,14 +219,14 @@ export class SitnaHelper {
     this.processScaleControl(sitnaControls, sitnaControlsFilter);
     this.processScaleBarControl(sitnaControls, sitnaControlsFilter);
     this.processScaleSelectorControl(sitnaControls, sitnaControlsFilter);
-    this.processSearchControl(sitnaControls, sitnaControlsFilter);
+    this.processSearchSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processSearchControlOriginal(sitnaControls, sitnaControlsFilter);
     this.processShareControl(sitnaControls, sitnaControlsFilter);
-    this.processStreetViewControl(sitnaControls, sitnaControlsFilter);
+    this.processStreetViewSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processTOCControl(sitnaControls, sitnaControlsFilter);
     this.processThreeDControl(sitnaControls, sitnaControlsFilter);
-    this.processWorkLayerManagerControl(sitnaControls, sitnaControlsFilter);
-    this.processFeatureInfoControl(sitnaControls, sitnaControlsFilter);
+    this.processWorkLayerManagerSilmeControl(sitnaControls, sitnaControlsFilter);
+    this.processFeatureInfoSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processWFSEditControl(sitnaControls, sitnaControlsFilter);
     this.processWFSQueryControl(sitnaControls, sitnaControlsFilter);
     this.processBirdEyeControl(sitnaControls);
@@ -263,6 +285,25 @@ export class SitnaHelper {
       this.isControlPresent(
         sitnaControlsFilter,
         SitnaControlsEnum.BasemapSelector
+      )
+    ) {
+      sitnaControls.basemapSelector = {
+        div: 'bms'
+      };
+    }
+  }
+
+  /**
+   * Process basemap selector silme control
+   */
+  private static processBasemapSelectorSilmeControl(
+    sitnaControls: SitnaControls,
+    sitnaControlsFilter: any[]
+  ) {
+    if (
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.BasemapSelectorSilme
       )
     ) {
       sitnaControls.basemapSelectorSilme = {
@@ -713,18 +754,18 @@ export class SitnaHelper {
   }
 
   /**
-   * Process street view control
+   * Process street view silme control
    */
-  private static processStreetViewControl(
+  private static processStreetViewSilmeControl(
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
     if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.StreetView)
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.StreetViewSilme)
     ) {
       const streetView = this.findControl(
         sitnaControlsFilter,
-        SitnaControlsEnum.StreetView
+        SitnaControlsEnum.StreetViewSilme
       );
       if (streetView) {
         if (this.areParametersEmpty(streetView.parameters)) {
@@ -754,16 +795,16 @@ export class SitnaHelper {
   }
 
   /**
-   * Process work layer manager control
+   * Process work layer manager silme control
    */
-  private static processWorkLayerManagerControl(
+  private static processWorkLayerManagerSilmeControl(
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
     if (
       this.isControlPresent(
         sitnaControlsFilter,
-        SitnaControlsEnum.WorkLayerManager
+        SitnaControlsEnum.WorkLayerManagerSilme
       )
     ) {
       sitnaControls.workLayerManagerSilme = {
@@ -773,16 +814,16 @@ export class SitnaHelper {
   }
 
   /**
-   * Process draw measure modify control
+   * Process draw measure modify silme control
    */
-  private static processDrawMeasureModifyControl(
+  private static processDrawMeasureModifySilmeControl(
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
     if (
       this.isControlPresent(
         sitnaControlsFilter,
-        SitnaControlsEnum.DrawMeasureModify
+        SitnaControlsEnum.DrawMeasureModifySilme
       )
     ) {
       sitnaControls.drawMeasureModifySilme = {
@@ -795,16 +836,16 @@ export class SitnaHelper {
   }
 
   /**
-   * Process search control
+   * Process search silme control
    */
-  private static processSearchControl(
+  private static processSearchSilmeControl(
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
-    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Search)) {
+    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.SearchSilme)) {
       const search = this.findControl(
         sitnaControlsFilter,
-        SitnaControlsEnum.Search
+        SitnaControlsEnum.SearchSilme
       );
 
       if (search) {
@@ -880,18 +921,18 @@ export class SitnaHelper {
   }
 
   /**
-   * Process feature info control
+   * Process feature info silme control
    */
-  private static processFeatureInfoControl(
+  private static processFeatureInfoSilmeControl(
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
     if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.FeatureInfo)
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.FeatureInfoSilme)
     ) {
       const featureInfo = this.findControl(
         sitnaControlsFilter,
-        SitnaControlsEnum.FeatureInfo
+        SitnaControlsEnum.FeatureInfoSilme
       );
       if (featureInfo) {
         if (this.areParametersEmpty(featureInfo.parameters)) {
@@ -957,6 +998,133 @@ export class SitnaHelper {
   }
 
   /**
+   * Normalizes node ID by removing leading slash
+   */
+  private static normalizeNodeId(nodeId: string): string {
+    return nodeId.replace('/', '');
+  }
+
+  /**
+   * Builds a parent-child map for efficient parent node lookups
+   */
+  private static buildParentNodeMap(
+    nodes: [string, AppNodeInfo][],
+    rootNode: string
+  ): Map<string, string> {
+    const parentMap = new Map<string, string>();
+
+    for (const [nodeId, nodeInfo] of nodes) {
+      if (nodeInfo.children) {
+        for (const childId of nodeInfo.children) {
+          // If parent is rootNode, child's parent is itself
+          // Otherwise, child's parent is the nodeId
+          const parentId = nodeId === rootNode ? childId : nodeId;
+          parentMap.set(childId, parentId);
+        }
+      }
+    }
+
+    // Handle root node and nodes not found in children
+    for (const [nodeId] of nodes) {
+      if (!parentMap.has(nodeId)) {
+        if (nodeId === rootNode) {
+          parentMap.set(nodeId, nodeId);
+        } else {
+          parentMap.set(nodeId, nodeId);
+        }
+      }
+    }
+
+    return parentMap;
+  }
+
+  /**
+   * Creates a layer entry for the catalog
+   */
+  private static createLayerEntry(
+    layer: AppLayer,
+    service: AppService,
+    order: number,
+    parentNode: string
+  ) {
+    return {
+      id: layer.id,
+      order: order,
+      title: layer.title,
+      hideTitle: false,
+      type: service.type,
+      url: service.url,
+      hideTree: layer.layers.length > 0,
+      format: '',
+      layerNames: layer.layers,
+      parentGroupNode: this.normalizeNodeId(parentNode)
+    };
+  }
+
+  /**
+   * Creates a group entry for the layer tree
+   */
+  private static createGroupEntry(
+    nodeId: string,
+    nodeInfo: AppNodeInfo,
+    parentNode: string
+  ) {
+    return {
+      id: this.normalizeNodeId(nodeId),
+      order: nodeInfo.order,
+      title: nodeInfo.title,
+      parentNode: this.normalizeNodeId(parentNode),
+      carpeta: true
+    };
+  }
+
+  /**
+   * Processes a single tree and returns catalog data
+   */
+  private static processTree(
+    currentTree: AppTree,
+    layers: AppLayer[],
+    services: AppService[]
+  ): { layerTreeGroups: any[]; layers: any[] } | null {
+    const ltg: any[] = [];
+    const lays: any[] = [];
+
+    const nodes = Object.entries(currentTree.nodes) as [string, AppNodeInfo][];
+    const parentMap = this.buildParentNodeMap(nodes, currentTree.rootNode);
+
+    for (const [nodeId, nodeInfo] of nodes) {
+      const parentNode = parentMap.get(nodeId);
+
+      // If node has no children and has a resource, it's a layer
+      if (nodeInfo.children == null && nodeInfo.resource != null) {
+        const layer = layers.find((l) => l.id == nodeInfo.resource);
+        if (!layer) continue;
+
+        const service = services.find((s) => s.id == layer.service);
+        if (!service || !parentNode) continue;
+
+        lays.push(
+          this.createLayerEntry(layer, service, nodeInfo.order, parentNode)
+        );
+      } else if (parentNode) {
+        // It's a group node
+        ltg.push(this.createGroupEntry(nodeId, nodeInfo, parentNode));
+      }
+    }
+
+    if (lays.length === 0) {
+      return null;
+    }
+
+    ltg.push({
+      id: this.OTHER_SERVICES_NODE_ID,
+      title: this.OTHER_SERVICES_TITLE
+    });
+
+    return { layerTreeGroups: ltg, layers: lays };
+  }
+
+  /**
    * TODO - Comment method description
    * apiConfig contains viewer configuration received from server
    * - application
@@ -969,160 +1137,51 @@ export class SitnaHelper {
    * returns an array of catalogs: [{title: string, catalog: {div: string, enableSearch: boolean, layerTreeGroups: [], layers: []}}]
    */
   static toLayerCatalogSilme(apiConfig: AppCfg) {
-    const catalogs = [];
+    const catalogs: Array<{
+      title: string;
+      catalog: {
+        div: string;
+        enableSearch: boolean;
+        layerTreeGroups: any[];
+        layers: any[];
+      };
+    }> = [];
+
     const sitnaControlsFilter = apiConfig.tasks.filter(
       (x) => x['ui-control'] != null && x['ui-control'].startsWith('sitna.')
     );
-    // if control LayerCatalog is included in config
-    if (
-      sitnaControlsFilter.some(
-        (x) => x['ui-control'] === SitnaControlsEnum.LayerCatalog
-      )
-    ) {
-      const layerCatalog = sitnaControlsFilter.find((obj) => {
-        return obj['ui-control'] === SitnaControlsEnum.LayerCatalog;
-      });
-      // if control LayerCatalog found
-      if (layerCatalog) {
-        const layers = apiConfig.layers;
-        const services = apiConfig.services;
 
-        if (!layers.length || !services.length || !apiConfig.trees.length) {
-          return [];
-        }
+    const layerCatalog = this.findControl(
+      sitnaControlsFilter,
+      SitnaControlsEnum.LayerCatalogSilmeFolders
+    );
 
-        for (let currentTree of apiConfig.trees) {
-          let ltg = [];
-          let lays = [];
-          const nodes: Map<string, AppNodeInfo> = new Map(
-            Object.entries(currentTree.nodes)
-          );
-          const arrayNodes = Array.from(nodes);
-          for (let currentNode of arrayNodes) {
-            let parentNode = null;
-            for (let i = 0; i < arrayNodes.length; i++) {
-              let node = arrayNodes[i];
-              // Para cada nodo, si el nodo tiene hijos
-              if (node[1].children) {
-                for (let j = 0; j < node[1].children.length; j++) {
-                  let element = node[1].children[j];
-                  // Si el currentNode es un hijo del nodo en el que estamos buscando
-                  if (element === currentNode[0]) {
-                    // si el nodo padre es el rootNode, establecemos el nodo padre como el mismo currentNode,
-                    // es decir, el parentNode del currentNode es el propio currentNode, ya que el rootNode no debe estar presente
-                    if (node[0] === currentTree.rootNode)
-                      parentNode = currentNode[0];
-                    // establecemos el nodo en el que estamos buscando como padre
-                    else parentNode = node[0]; // node[0]: nombre del nodo
-                    break;
-                  }
-                }
-              }
-              if (parentNode) break; // si hemos encontrado padre, salimos del bucle
-            }
+    if (!layerCatalog) {
+      return catalogs;
+    }
 
-            // Si el currentNode no es hijo de ningún nodo (no hemos encontrado padre)
-            if (!parentNode) {
-              //Si el currentNode es el nodo raíz lo establecemos como padre
-              if (currentNode[0] == currentTree.rootNode) {
-                parentNode = currentNode[0];
-              }
+    const layers = apiConfig.layers;
+    const services = apiConfig.services;
 
-              if (!parentNode) {
-                let isNodeFound;
-                for (const property in currentTree.nodes) {
-                  if (property === currentNode[0]) {
-                    isNodeFound = true;
-                    break;
-                  }
-                  isNodeFound = false;
-                }
-                if (isNodeFound) parentNode = currentNode[0];
-              }
-            }
-            // si no tiene hijos y tiene resource (una layer),
-            // se trata de una capa
-            if (
-              currentNode[1].children == null &&
-              currentNode[1].resource != null
-            ) {
-              const layer = layers.find(
-                (layer) => layer.id == currentNode[1].resource
-              );
-              if (layer) {
-                const service = services.find(
-                  (service) => service.id == layer.service
-                );
-                if (service) {
-                  if (parentNode) {
-                    if (layer.layers.length > 0) {
-                      lays.push({
-                        id: layer.id,
-                        order: currentNode[1].order,
-                        title: layer.title,
-                        hideTitle: false,
-                        type: service.type,
-                        url: service.url,
-                        hideTree: true,
-                        format: '',
-                        layerNames: layer.layers,
-                        parentGroupNode: parentNode.replace('/', '')
-                      });
-                    } else {
-                      lays.push({
-                        id: layer.id,
-                        order: currentNode[1].order,
-                        title: layer.title,
-                        hideTitle: false,
-                        type: service.type,
-                        url: service.url,
-                        hideTree: false,
-                        format: '',
-                        parentGroupNode: parentNode.replace('/', '')
-                      });
-                    }
-                  }
-                } else {
-                  // error, no se ha encontrado service
-                }
-              } else {
-                // error, no se ha encontrado layer
-              }
-            } else {
-              if (parentNode) {
-                ltg.push({
-                  id: currentNode[0].replace('/', ''),
-                  order: currentNode[1].order,
-                  title: currentNode[1].title,
-                  parentNode: parentNode.replace('/', ''),
-                  // TODO
-                  carpeta: ![
-                    'node12103',
-                    'node12102',
-                    'node12336',
-                    'node12243',
-                    'node12130'
-                  ].includes(currentNode[0].replace('/', ''))
-                  // Afegir-ho a Altres serveis?
-                });
-              }
-            }
+    if (!layers.length || !services.length || !apiConfig.trees.length) {
+      return catalogs;
+    }
+
+    for (const currentTree of apiConfig.trees) {
+      const result = this.processTree(currentTree, layers, services);
+      if (result) {
+        catalogs.push({
+          title: currentTree.title,
+          catalog: {
+            div: this.CATALOG_DIV,
+            enableSearch: true,
+            layerTreeGroups: result.layerTreeGroups,
+            layers: result.layers
           }
-          ltg.push({ id: 'node99', title: 'Altres serveis' });
-          if (lays.length > 0) {
-            catalogs.push({
-              title: currentTree.title,
-              catalog: {
-                div: 'catalog',
-                enableSearch: true,
-                layerTreeGroups: ltg,
-                layers: lays
-              }
-            });
-          }
-        }
+        });
       }
     }
+
     return catalogs;
   }
   static toViews(apiConfig: AppCfg) {
