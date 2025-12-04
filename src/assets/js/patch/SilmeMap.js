@@ -7,33 +7,41 @@
     return;
   }
 
-var silmeMap;
-var silmeLayerCatalog;
-var silmeSearch;
-var pendingLayer;
+// Shared global variable
+window.ret = window.ret || false;
 
-function setExtent(extent) {
+// Global variables
+window.silmeMap = undefined;
+window.silmeLayerCatalog = undefined;
+window.silmeSearch = undefined;
+window.pendingLayer = undefined;
+var silmeMap = window.silmeMap;
+var silmeLayerCatalog = window.silmeLayerCatalog;
+var silmeSearch = window.silmeSearch;
+var pendingLayer = window.pendingLayer;
+
+window.setExtent = function(extent) {
   silmeMap.map.getView().fit(extent, { maxZoom: 14 });
 }
 
-function silmeAddLayer(layerName) {
+window.silmeAddLayer = function(layerName) {
   //SILME
   //Busquem la capa en cas que no la trobi:
   var layer
 
   if (!layer) {
-    for (var k = 0; k < treeLayers.length; k++) {
-      var rama = treeLayers[k].tree;
-      cercaNodePerNom(rama, layerName);
-      if (ret) {
-        layer = treeLayers[k];
-        ret = false;
+    for (var k = 0; k < window.treeLayers.length; k++) {
+      var rama = window.treeLayers[k].tree;
+      window.cercaNodePerNom(rama, layerName);
+      if (window.ret) {
+        layer = window.treeLayers[k];
+        window.ret = false;
         break;
       }
     }
   }
 
-  var leaf = cercaLayersPerLayerName(layer, layerName);
+  var leaf = window.cercaLayersPerLayerName(layer, layerName);
   layer.uid = leaf.uid;
 
 

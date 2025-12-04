@@ -7,11 +7,14 @@
     return;
   }
 
-var action = "";
-var layerMarkers;
+// Global variables
+window.action = "";
+window.layerMarkers = undefined;
+var action = window.action;
+var layerMarkers = window.layerMarkers;
 
-// Frontend
-var ajustarPanell = function () {
+// Frontend - Global function
+window.ajustarPanell = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
@@ -122,7 +125,7 @@ var ajustarPanell = function () {
   }
 }
 
-var ajustarPanellSilme = function () {
+window.ajustarPanellSilme = function () {
   var arrControlsActius = [];
   var heightControlsActiusMenysControlObert = 0;
   var controlObert = null;
@@ -200,7 +203,7 @@ function getCssProperty(elmId, property) {
  * @param {any} srs         -- 'EPSG:4326'
  * @param {any} clearLayer  -- null
  */
-var silmeAddWkt = function (wktString, label, stroke, fill, attributes, srs, clearLayer) {
+window.silmeAddWkt = function (wktString, label, stroke, fill, attributes, srs, clearLayer) {
   var wktArray = new Array();
   wktArray.push(wktString);
 

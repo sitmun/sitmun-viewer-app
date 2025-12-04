@@ -11,7 +11,7 @@
  * TODO: Documentar o eliminar si no se usa
  * @param src
  */
-function creaModal(src) {
+window.creaModal = function(src) {
 
   // Get the modal
   const modal = document.getElementById('silmeModal');
@@ -56,7 +56,7 @@ function creaModal(src) {
  * TODO: Documentar
  * @param element
  */
-function dragElement(element) {
+window.dragElement = function(element) {
   let isDown = false;
 
   element.addEventListener('mousedown', function (e) {

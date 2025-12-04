@@ -7,16 +7,18 @@
     return;
   }
 
-var treeLayers;
-var initLayers = new Array();
+// Global variables
+window.treeLayers = undefined;
+window.initLayers = new Array();
+window.ret = window.ret || false;
 
 // Funció recursiva que recorre tot l'arbre
-function cercaNode(rama, layerUid) {
+window.cercaNode = function(rama, layerUid) {
   if (rama != null) {
     if (rama.children.length > 0) {
       for (const m in rama.children) {
         if (m.uid === layerUid) {
-          ret = true;
+          window.ret = true;
           break;
         } else if (m.children.length < 0) {
           // Do nothing...
@@ -31,11 +33,11 @@ function cercaNode(rama, layerUid) {
 }
 
 // Funció recursiva que recorre tot l'arbre
-function cercaNodePerNom(rama, layerName) {
+window.cercaNodePerNom = function(rama, layerName) {
   if (rama.children.length > 0) {
     for (const m in rama.children) {
       if (m.name === layerName) {
-        ret = true;
+        window.ret = true;
         break;
       } else if (m.children.length < 0) {
         // Do nothing...
@@ -48,7 +50,7 @@ function cercaNodePerNom(rama, layerName) {
 }
 
 // TODO: Documentar
-function isEmpty(obj) {
+window.isEmpty = function(obj) {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) return false;
   }
@@ -56,7 +58,7 @@ function isEmpty(obj) {
 }
 
 // TODO: Documentar
-function cercaLayers(layers, uid) {
+window.cercaLayers = function(layers, uid) {
   if (layers.tree) {
     if (layers.tree.children) {
       for (var i = 0; i < layers.tree.children.length; i++) {
@@ -97,7 +99,7 @@ function cercaLayers(layers, uid) {
 
 
 // TODO: Documentar
-function cercaLayersPerLayerName(layers, layerName) {
+window.cercaLayersPerLayerName = function(layers, layerName) {
   if (layers.tree) {
     if (layers.tree.children) {
       for (var i = 0; i < layers.tree.children.length; i++) {
@@ -141,7 +143,7 @@ function cercaLayersPerLayerName(layers, layerName) {
 
 
 // TODO: Documentar
-function setLayerUid(layer) {
+window.setLayerUid = function(layer) {
   for (const treeLayer in treeLayers) {
     let titol = '';
     if (layer.tree == null) {

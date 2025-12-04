@@ -7,8 +7,9 @@
     return;
   }
 
-// Variables globales
-var ret = false;
+// Variables globales (shared with other patches)
+window.ret = window.ret || false;
+var ret = window.ret;
 var info = null;
 var selfClass = null;
 
@@ -662,7 +663,7 @@ TC.inherit(TC.control.LayerCatalogSilmeFolders, TC.control.LayerCatalog);
       //mv 20210527 açò ho hem afegit per que carregui la capa corresponent després d'afegir un nou servei
       //a l'arbre de capes des del control localitzar (trams i fites de camí de cavalls, però podrien ser altres)
       if (pendingLayer) {
-        silmeAddLayer(pendingLayer)
+        window.silmeAddLayer(pendingLayer)
         pendingLayer = null;
       }
     });
@@ -1375,7 +1376,7 @@ TC.inherit(TC.control.LayerCatalogSilmeFolders, TC.control.LayerCatalog);
             //Silme const info = layer.wrap.getInfo(name);
             //Silme
             for (var i = 0; i < self.layers.length; i++) {
-              layerFound = cercaLayers(self.layers[i], uid);
+              layerFound = window.cercaLayers(self.layers[i], uid);
               if (layerFound != null) {
                 layerParent = self.layers[i];
                 break;
@@ -1613,7 +1614,7 @@ TC.inherit(TC.control.LayerCatalogSilmeFolders, TC.control.LayerCatalog);
         //var info = getInfo(name, layer.wrap);
         //Silme
         for (var i = 0; i < self.layers.length; i++) {
-          layerFound = cercaLayers(self.layers[i], uid);
+          layerFound = window.cercaLayers(self.layers[i], uid);
           if (layerFound != null) {
             layerParent = self.layers[i];
             break;

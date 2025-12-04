@@ -302,6 +302,8 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
           unremovable: layer.unremovable
         };
 
+        let info = null; // Declare here so it's accessible outside the isRaster block
+
         const isRaster = layer.isRaster();
         if (isRaster) {
           layerData.hasExtent = !!layer.getExtent();
@@ -317,8 +319,8 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
           const name = layer.names[0];
 
           // --- Start Silme
-          // const info = layer.wrap.getInfo(name, layer);
-          const info = _this.#getInfo(name, layer);
+          // info = layer.wrap.getInfo(name, layer);
+          info = _this.#getInfo(name, layer);
           // --- End Silme
 
           layerData.legend = info.legend;
@@ -526,12 +528,12 @@ class WorkLayerManagerSilme extends TC.control.WorkLayerManager {
               li.querySelector('.container').style.background = '#e4e6d0';
             }
 
-            ajustarPanell();
+            window.ajustarPanell();
             // --- End Silme
           });
 
           // --- Start Silme
-          ajustarPanell();
+          window.ajustarPanell();
           // --- End Silme
         });
 
