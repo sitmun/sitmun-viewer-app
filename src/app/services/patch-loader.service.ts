@@ -43,17 +43,73 @@ export class PatchLoaderService {
   }
 
   /**
+   * Initialize the patches loaded tracking object if it doesn't exist.
+   */
+  private initializePatchesLoaded(): void {
+    if (typeof window !== 'undefined' && typeof (window as any).__patchesLoaded === 'undefined') {
+      (window as any).__patchesLoaded = {};
+    }
+  }
+
+  /**
+   * Get a unique identifier for a patch file based on its path.
+   *
+   * @param src - The source path of the script
+   * @returns A unique identifier for the patch
+   */
+  private getPatchId(src: string): string {
+    // Extract filename with path for mapping
+    const filename = src.split('/').pop() || src;
+    // Map to the same IDs used in existing guards (for backward compatibility)
+    const idMap: Record<string, string> = {
+      'api_patches.js': 'api_patches',
+      'Popup.js': 'Popup',
+      'WorkLayerManagerSilme.js': 'WorkLayerManagerSilme',
+    };
+    // Use mapped ID if available, otherwise use filename without extension
+    return idMap[filename] || filename.replace('.js', '');
+  }
+
+  /**
    * Load a single script file.
+   * Tracks execution state to prevent re-execution even if script tag exists.
    *
    * @param src - The source path of the script to load
    * @returns Promise that resolves when the script is loaded
    */
   private loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Check if script is already loaded
+      this.initializePatchesLoaded();
+      const patchId = this.getPatchId(src);
+      const patchesLoaded = (window as any).__patchesLoaded;
+
+      // Check if patch has already been executed
+      if (patchesLoaded[patchId]) {
+        resolve();
+        return;
+      }
+
+      // Check if script tag already exists (may have been loaded but not executed yet)
       const existingScript = document.querySelector(`script[src="${src}"]`);
       if (existingScript) {
-        resolve();
+        // Script tag exists but not marked as loaded - wait for it to execute
+        // This handles race conditions where script is loading
+        const checkInterval = setInterval(() => {
+          if (patchesLoaded[patchId]) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 10);
+
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (!patchesLoaded[patchId]) {
+            // Script tag exists but never executed - mark as loaded to prevent infinite wait
+            patchesLoaded[patchId] = true;
+            resolve();
+          }
+        }, 5000);
         return;
       }
 
@@ -61,7 +117,11 @@ export class PatchLoaderService {
       script.src = src;
       script.type = 'text/javascript';
 
-      script.onload = () => resolve();
+      script.onload = () => {
+        // Mark as loaded after script executes
+        patchesLoaded[patchId] = true;
+        resolve();
+      };
       script.onerror = () => reject(new Error(`Failed to load patch: ${src}`));
 
       document.head.appendChild(script);
