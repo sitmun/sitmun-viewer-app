@@ -25,6 +25,7 @@ export class PatchLoaderService {
     // Support
     'assets/js/patch/api_patches.js',
     'assets/js/patch/TCProjectionDataPatch.js',
+    'assets/js/patch/DefaultsPatch.js',
     'assets/js/patch/SilmeMap.js',
     'assets/js/patch/SilmeModal.js',
     'assets/js/patch/SilmeUtils.js',
