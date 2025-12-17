@@ -1,7 +1,8 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, Input, SimpleChanges, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Codelist } from '@api/model/app-codelist';
 import { DashboardItem } from '@api/services/common.service';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 @Component({
   selector: 'app-dashboard-items',
@@ -29,6 +30,8 @@ export class DashboardItemsComponent {
   totalPublicItems: number = 0;
 
   readonly MAX_HIDDEN_MODE_ITEMS: number = 3;
+
+  private readonly appConfigService = inject(AppConfigService);
 
   constructor(private router: Router) {}
 
@@ -63,16 +66,18 @@ export class DashboardItemsComponent {
   }
 
   displayAllApplications(displayAll: boolean) {
-    this.allItems = [...this.items];
+    const filteredByType = this.filterByType(this.items);
+    this.allItems = [...filteredByType];
     this.allItems = this.displayApplications(this.allItems, displayAll);
-    this.totalItems = this.items.length;
+    this.totalItems = filteredByType.length;
   }
 
   displayAllApplicationsPrivate(
     displayAll: boolean,
     isPrivate: boolean
   ) {
-    const filtered = this.items.filter(item => item.appPrivate == isPrivate);
+    const filteredByType = this.filterByType(this.items);
+    const filtered = filteredByType.filter(item => item.appPrivate == isPrivate);
     if(isPrivate) {
       this.privateItems = this.displayApplications(filtered, displayAll);
       this.totalPrivateItems = filtered.length;
@@ -86,6 +91,21 @@ export class DashboardItemsComponent {
   displayApplications(list: DashboardItem[], display: boolean): DashboardItem[] {
     this.totalItems = list.length;
     return display ? list : list.slice(0, this.MAX_HIDDEN_MODE_ITEMS);
+  }
+
+  /**
+   * Filter dashboard items by type based on configuration
+   * Only items with type in allowedTypes list will be shown
+   * Items with null/undefined type are filtered out
+   */
+  filterByType(items: DashboardItem[]): DashboardItem[] {
+    if (!this.appConfigService.isFilteringEnabled()) {
+      return items;
+    }
+    const allowedTypes = this.appConfigService.getAllowedTypes();
+    return items.filter(
+      item => item.type != null && allowedTypes.includes(item.type)
+    );
   }
 
   isDashboard(): boolean {

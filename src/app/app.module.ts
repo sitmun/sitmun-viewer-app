@@ -30,6 +30,10 @@ import {
   AppInitializerService,
   initializeApp,
 } from './services/app-initializer.service';
+import {
+  AppConfigService,
+  initializeAppConfig,
+} from './services/app-config.service';
 
 registerLocaleData(localeEs);
 
@@ -69,6 +73,12 @@ registerLocaleData(localeEs);
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
     { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAppConfig,
+      deps: [AppConfigService],
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,

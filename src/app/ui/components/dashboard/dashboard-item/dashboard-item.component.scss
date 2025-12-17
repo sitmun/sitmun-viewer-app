@@ -1,257 +1,290 @@
 @use 'dimensions';
 @use 'colors';
 
-.dashboard-item {
-  height: 180px;
-  display: flex;
-  align-items: stretch;
-  gap: 20px;
-  border: 1px rgba(128, 128, 128, 0.466) solid;
-  border-radius: 15px;
-}
+:host ::ng-deep mat-card-title {
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  line-height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 1 !important;
+  line-clamp: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  max-height: 24px !important;
 
-.dashboard-item-image {
-  display: flex;
-  align-items: center;
-
-  button {
-    all: unset;
-    height: 100%;
+  .title-button {
     width: 100%;
-
-    img {
-      width: 180px;
-      height: 100%;
-      border-radius: 15px;
-      object-fit: cover;
-    }
-  }
-
-  button:hover {
-    cursor: pointer;
-    img {
-      opacity: 0.7;
-    }
-  }
-}
-
-.dashboard-item-content {
-  flex: 1;
-  padding: 5px;
-  flex-direction: column;
-  height: 100%;
-  display: flex;
-
-  button {
-    all: unset;
-    cursor: auto;
-
-    .dashboard-item-title {
-      padding: 0;
-      margin: 0;
-      font-size: 17px;
-      letter-spacing: 0;
-    }
-  }
-
-  button:hover {
-    cursor: pointer;
-    .dashboard-item-title {
-      color: colors.$blue;
-    }
-  }
-
-  .dashboard-item-nbTerritories {
-    text-align: left;
-    background-color: colors.$blue;
-    color: white;
-    width: fit-content;
-    border-radius: 3px;
-    font-size: 16px;
-    padding: 6px;
-    border: 1px;
-    margin-top: 7px;
-    margin-bottom: 10px;
-    margin-left: 0;
-  }
-
-  .dashboard-item-nbTerritories:hover {
-    cursor: pointer;
-    background-color: #5974fd;
-  }
-
-  .dashboard-item-description {
-    padding: 0;
-    margin-top: 10px;
-    font-size: 16px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    max-width: 100%;
-    color: colors.$gray;
-  }
-
-  .dashboard-item-warning {
     padding: 0;
     margin: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-weight: 700;
     font-size: 16px;
-    color: colors.$primary-orange;
-  }
+    line-height: 24px;
+    color: rgba(0, 0, 0, 0.87);
+    text-align: left;
+    cursor: pointer;
+    display: block;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
 
-  .dashboard-item-moreDetails {
-    all: unset;
-    padding: 5px;
-    margin-bottom: 15px;
-    margin-left: 0;
-    size: 14px;
-    font-weight: bold;
-    margin-top: auto;
-    background-color: #A65460;
-    width: fit-content;
-    max-width: 200px;
-    color: white;
-    border-radius: 5px;
+    &:hover:not(:disabled) {
+      color: colors.$primary-orange;
+    }
 
-    &:hover {
-      cursor: pointer;
-      background-color: #793b45;
+    &:focus {
+      outline: 2px solid colors.$primary-orange;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      color: rgba(0, 0, 0, 0.38);
+      cursor: not-allowed;
     }
   }
+}
 
+:host ::ng-deep mat-card-content {
+  flex-shrink: 0 !important;
+  padding: 0px 8px 0px 16px !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 4 !important;
+  line-clamp: 4 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  max-height: 80px !important;
+  min-height: 0 !important;
 
-  .dashboard-item-maintenanceInfo {
-    background-color: colors.$primary-orange;
-    color: white;
-    padding: 5px 15px;
-    width: fit-content;
-    margin-top: auto;
+  &.maintenance-content {
+    color: #d32f2f !important;
+    font-style: italic !important;
+  }
+}
+
+.dashboard-item {
+  height: 180px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  gap: 0;
+  border: 1px rgba(128, 128, 128, 0.466) solid;
+  border-radius: 12px;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.dashboard-item-image-container {
+  flex-shrink: 0;
+  width: 180px;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.dashboard-item-image-clickable {
+  width: 180px;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  outline: none;
+  margin: 0 !important;
+
+  &:hover:not(.disabled),
+  &:focus:not(.disabled) {
+    opacity: 0.7;
   }
 
-  .dashboard-item-content-header {
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+  }
+}
+
+.dashboard-item-right-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+
+  mat-card-header {
+    flex-shrink: 0;
+    padding: 8px 0px 0px 16px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  mat-card-content {
+    flex-shrink: 0;
+  }
+
+  .spacer {
+    flex-grow: 1;
+  }
+
+  mat-card-actions {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0px 0px 16px;
+    margin: 0;
 
-    button {
-      all: unset;
-      cursor: pointer;
-      flex: 1;
-      min-width: 0;
-      margin-top: 5px;
-
-      .dashboard-item-title {
-        padding: 0;
-        margin: 0;
-        font-size: 17px;
-        letter-spacing: 0;
-        word-break: break-word;
-      }
-
-      &:hover .dashboard-item-title {
-        color: colors.$blue;
-      }
-    }
-
-    .dashboard-item-dot {
+    .primary-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: fit-content;
       flex-shrink: 0;
-      margin-left: 10px;
+      background-color: colors.$primary-orange;
+      color: colors.$white;
+      padding-left: 16px;
+      padding-right: 16px;
 
-      .dot {
-        all: unset;
-        padding-right: 5px;
-        font-size: 30px;
-        line-height: 1;
-        cursor: pointer;
+      mat-icon {
+        flex-shrink: 0;
+        margin-right: 8px;
+        color: colors.$white;
+      }
 
-        &:hover {
-          color: colors.$blue;
+      .button-text {
+        white-space: nowrap;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: colors.$secondary-orange;
+      }
+
+      &:disabled {
+        background-color: rgba(0, 0, 0, 0.12);
+        color: rgba(0, 0, 0, 0.26);
+        cursor: not-allowed;
+        pointer-events: none;
+
+        mat-icon {
+          color: rgba(0, 0, 0, 0.26);
         }
       }
     }
+
+    .secondary-button {
+      color: colors.$primary-orange;
+
+      mat-icon {
+        color: colors.$primary-orange;
+      }
+
+      &:hover:not(:disabled) {
+        color: colors.$secondary-orange;
+        background-color: rgba(colors.$primary-orange, 0.08);
+
+        mat-icon {
+          color: colors.$secondary-orange;
+        }
+      }
+
+      &:disabled {
+        color: rgba(0, 0, 0, 0.26);
+        cursor: not-allowed;
+        pointer-events: none;
+
+        mat-icon {
+          color: rgba(0, 0, 0, 0.26);
+        }
+      }
+    }
+
+    .maintenance-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef5350;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      opacity: 0.7;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        color: #c62828;
+      }
+    }
   }
 }
 
-  /* Maintenance items */
-  .dashboard-item-maintenance .dashboard-item-image button img,
-  .dashboard-item-maintenance .dashboard-item-title,
-  .dashboard-item-maintenance .dashboard-item-nbTerritories,
-  .dashboard-item-maintenance .dashboard-item-description,
-  .dashboard-item-maintenance .dashboard-item-warning,
-  .dashboard-item-maintenance .dashboard-item-moreDetails {
-    pointer-events: none;
-    filter: grayscale(100%);
-    opacity: 0.3;
+/* Maintenance styling for unavailable items */
+.dashboard-item-maintenance {
+  .dashboard-item-image-clickable {
+    opacity: 0.5;
+    filter: grayscale(50%);
   }
-
-  .dashboard-item-maintenance * {
-    pointer-events: none;
-  }
-
-mat-expansion-panel {
-  width: 100%;
-  box-shadow: none !important;
-  pointer-events: auto;
-}
-
-mat-expansion-panel-header {
-  padding: 0 10px;
-}
-
-.dashboard-item-maintenance .mat-expansion-panel-header {
-  pointer-events: auto;
-  opacity: 1;
-}
-
-::ng-deep .mat-expansion-panel .mat-expansion-panel-content .mat-expansion-panel-body {
-  padding: 0 10px 15px;
-}
-
-
-.mobile-card {
-  display: none;
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
-  .desktop-card {
-    display: none;
-  }
-
-  .mobile-card {
-    display: block;
-  }
-
   .dashboard-item {
     overflow-y: hidden;
     overflow-x: hidden;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    margin-bottom: 10px;
-    flex-direction: column;
+    margin-bottom: 8px;
+    flex-direction: column !important;
     align-items: center;
     gap: 0px;
 
-    .dashboard-item-image {
+    .dashboard-item-image-container {
       width: 100%;
+      height: 250px;
+    }
 
-      button {
-        width: 100%;
+    .dashboard-item-image-clickable {
+      width: 100%;
+      height: 250px;
+    }
 
-        img {
-          width: 100%;
-          height: 250px;
-          object-fit: cover;
-        }
+    .dashboard-item-right-section {
+      width: 100%;
+      
+      mat-card-header {
+        padding: 8px 0px 0px 16px;
+        min-width: 0;
+        overflow: hidden;
       }
-    }
 
-    mat-expansion-panel {
-      pointer-events:auto;
-    }
+      mat-card-content {
+        flex-shrink: 0;
+      }
 
-    .dashboard-item-content {
-      width: 100%;
-      padding: 0px;
+      .spacer {
+        flex-grow: 1;
+      }
+
+      mat-card-actions {
+        padding: 8px 0px 8px 16px;
+      }
     }
   }
 }

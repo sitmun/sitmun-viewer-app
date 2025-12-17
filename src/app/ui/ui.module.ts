@@ -32,6 +32,7 @@ import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
 import { ReturnButtonComponent } from './components/return-button/return-button.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCardModule } from '@angular/material/card';
 
 @NgModule({
   imports: [
@@ -49,7 +50,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatExpansionModule,
     SharedPipesModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatCardModule
   ],
   declarations: [
     DashboardItemsComponent,
@@ -94,7 +96,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     ReturnButtonComponent,
     MatButtonModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatCardModule
   ],
   providers: []
 })

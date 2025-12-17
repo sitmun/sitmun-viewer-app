@@ -1,0 +1,6 @@
+{
+  "dashboard": {
+    "allowedTypes": ["I"],
+    "filteringEnabled": true
+  }
+}
