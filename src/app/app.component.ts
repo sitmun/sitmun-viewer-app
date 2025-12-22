@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { LanguageHelper } from '@ui/util/LanguageHelper';
+import { LanguageService } from './services/language.service';
 
 @Component({
   selector: 'sitmun-viewer-app-root',
@@ -10,9 +9,16 @@ import { LanguageHelper } from '@ui/util/LanguageHelper';
 export class AppComponent {
   title = 'sitmun-viewer-app';
 
-  constructor(private translate: TranslateService) {
-    translate.setDefaultLang(LanguageHelper.defaultLanguage);
-    translate.use(LanguageHelper.defaultLanguage);
+  constructor(
+    private languageService: LanguageService
+  ) {
+    // Initialize TranslateService with current language
+    this.languageService.initializeTranslateService();
+    
+    // Optionally load user language from backend if logged in
+    // This can be done asynchronously without blocking app initialization
+    this.languageService.loadUserLanguage().subscribe();
+    
     this.generateDeviceID();
   }
 

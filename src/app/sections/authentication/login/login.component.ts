@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationRequest } from '@auth/authentication.options';
 import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { environment } from 'src/environments/environment';
+import { QueryParam } from '@config/app.config';
 
 @Component({
   selector: 'app-login',
@@ -26,6 +27,7 @@ export class LoginComponent implements OnInit {
   constructor(
     private authenticationService: AuthenticationService<unknown>,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService,
     private notificationService: NotificationService
   ) {
@@ -51,7 +53,23 @@ export class LoginComponent implements OnInit {
     ) {
       this.authenticationService.login(this.authenticationRequest).subscribe({
         next: () => {
+          // Check for redirect query parameter
+          const redirectUrl = this.route.snapshot.queryParams[QueryParam.Login.RedirectAfterLogin];
+          const AUTH_CONFIG = this.authenticationService.getAuthConfig();
+          
+          if (redirectUrl) {
+            // Redirect to the originally requested URL
+            this.router.navigateByUrl(redirectUrl);
+          } else {
+            // Use default path - get auth details for defaultPath function
+            try {
+              const authDetails = this.authenticationService.getLoggedDetails();
+              this.router.navigateByUrl(AUTH_CONFIG.routes.defaultPath(authDetails));
+            } catch {
+              // Fallback to dashboard if details not available yet
           this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+            }
+          }
         },
         error: (error) => {
           if (error.status && error.status === 401) {

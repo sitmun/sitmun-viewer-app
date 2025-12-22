@@ -1,6 +1,7 @@
 import { Location } from '@angular/common';
-import { Component, HostListener, Injectable, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, DoCheck, OnDestroy } from '@angular/core';
 import { NavigationStart, Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
 import {
   CommonService,
   DashboardItemsResponse,
@@ -10,29 +11,49 @@ import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
+import { LanguageService } from 'src/app/services/language.service';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-navigation-bar',
   templateUrl: './navigation-bar.component.html',
-  styleUrls: ['./navigation-bar.component.scss']
+  styleUrls: ['./navigation-bar.component.scss'],
+  animations: [
+    trigger('toolbarCollapse', [
+      state('visible', style({
+        height: '64px',
+        minHeight: '64px',
+        overflow: 'visible',
+        pointerEvents: 'auto'
+      })),
+      state('hidden', style({
+        height: '0',
+        minHeight: '0',
+        overflow: 'hidden',
+        pointerEvents: 'none'
+      })),
+      transition('visible <=> hidden', [
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+      ])
+    ])
+  ],
+  host: {
+    '[@toolbarCollapse]': 'toolbarState'
+  }
 })
-export class NavigationBarComponent implements OnInit {
-  styleBackground: string = '#000000FF';
-  showMenu: boolean;
+export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   username: string = '';
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
-  mediaQueryListener: any;
+  private routerSubscription?: Subscription;
 
-  headerLeftSection: any;
-  headerRightSection: any;
-  headerBase: any;
+  headerLeftSection: IconSection[] | null = null;
+  headerRightSection: IconSection[] | null = null;
+  headerBase: HeaderBase | null = null;
 
-  isResponsive: boolean = false;
   isOnAuthLogin: boolean = false;
   showProfileButton: boolean = true;
   showSwitchLanguageButton: boolean = true;
   showLogoutButton: boolean = true;
-  showPopup: boolean = false;
   showChangeAppOrTerritoryButton: boolean = true;
   navigationBarIsHidden: boolean = false;
   displayTerritoriesAppList: boolean = false;
@@ -42,55 +63,48 @@ export class NavigationBarComponent implements OnInit {
     private commonService: CommonService,
     private translate: TranslateService,
     private authenticationService: AuthenticationService<CustomDetails>,
-    private location: Location
-  ) {
-    this.showMenu = false;
-    router.events.forEach((event) => {
-      if (event instanceof NavigationStart) {
-        this.showMenu = false;
-      }
-    });
-  }
+    private location: Location,
+    private languageService: LanguageService
+  ) {}
 
   ngOnInit() {
-    this.commonService.message$.subscribe((msg) => {
-      if (msg.theme === 'sitmun-base') {
-        this.styleBackground = '#d79922';
-      }
-    });
-
     if (this.isConnected() && !this.isPublicDashboard()) {
       this.username = this.authenticationService.getLoggedUsername();
     }
-    this.CheckWichClassIsActive();
-    this.OverideNavbar(this.router.url);
-    this.router.events.subscribe((event) => {
+    this.checkWhichClassIsActive();
+    this.overrideNavbar(this.router.url);
+    this.routerSubscription = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
-        this.CheckWichClassIsActive();
-        this.OverideNavbar(this.router.url);
+        // Reset toolbar visibility when leaving map pages
+        if (!this.isOnMap()) {
+          this.navigationBarIsHidden = false;
+        }
+        this.checkWhichClassIsActive();
+        this.overrideNavbar(this.router.url);
+        // Update visibility flags on navigation
+        this.updateButtonVisibility();
       }
     });
+    // Initial update
+    this.updateButtonVisibility();
   }
 
   ngDoCheck() {
+    // Only update auth login state here as it's needed for template rendering
     this.isOnAuthLogin = this.isInAuthLoginSection();
-    this.showProfileButton = !this.isOnMap() || (this.headerBase?.profileButton?.visible !== false);
+  }
+
+  private updateButtonVisibility(): void {
+    this.showProfileButton = !this.isOnProfile() && (!this.isOnMap() || (this.headerBase?.profileButton?.visible !== false));
     this.showLogoutButton = !this.isOnMap() || (this.headerBase?.logoutButton?.visible !== false);
-    this.showSwitchLanguageButton = !this.isOnMap() || (this.headerBase?.switchLanguageButton?.visible !== false);
+    this.showSwitchLanguageButton = !this.isOnMap() || (this.headerBase?.switchLanguage?.visible !== false);
   }
 
   ngOnDestroy() {
-    if (this.mediaQueryListener) {
-      this.mediaQueryListener.removeListener();
-    }
+    this.routerSubscription?.unsubscribe();
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    this.CheckIfResponsive();
-  }
-
-  OverideNavbar(url: string) {
+  overrideNavbar(url: string) {
     if (url.startsWith('/public/map') || url.startsWith('/user/map')) {
       // We get the application headers params of the app selected in the map
       this.commonService
@@ -157,10 +171,10 @@ export class NavigationBarComponent implements OnInit {
     }
   }
 
-  CheckWichClassIsActive() {
-    if (this.router.url.includes('profile'))
+  checkWhichClassIsActive() {
+    if (this.router.url.includes('/user/profile') || this.router.url.includes('/public/profile'))
       this.navigationClassActive = NavigationButtonActive.PROFILE;
-    else if (this.router.url.includes('dashboard'))
+    else if (this.router.url.includes('/dashboard'))
       this.navigationClassActive = NavigationButtonActive.HOME;
     else this.navigationClassActive = NavigationButtonActive.OTHER;
   }
@@ -187,25 +201,24 @@ export class NavigationBarComponent implements OnInit {
     this.authenticationService.logout();
   }
 
-  tamanyMenu() {
+  getToolbarClass(): string {
     if (
       this.router.url.startsWith(NavigationPath.Auth.Login) ||
       this.router.url.startsWith(NavigationPath.Auth.ForgotPassword)
     ) {
-      return 'nav-bar login';
+      return 'login';
     } else if (
       this.router.url.startsWith(NavigationPath.Section.User.Base + '/map') ||
       this.router.url.startsWith(NavigationPath.Section.Public.Base + '/map')
     ) {
-      return 'nav-bar pet';
+      return 'pet';
     } else {
-      return 'nav-bar';
+      return '';
     }
   }
 
   changeLanguage(language: string) {
-    this.translate.use(language);
-    localStorage.setItem('language', language);
+    this.languageService.setLanguage(language).subscribe();
   }
 
   isConnected(): boolean {
@@ -228,17 +241,6 @@ export class NavigationBarComponent implements OnInit {
     return this.router.url.startsWith('/public');
   }
 
-  useLanguage(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    this.translate.use(target.value);
-    localStorage.setItem('language', target.value);
-  }
-
-  CheckIfResponsive(): void {
-    const breakpoint = 640;
-    this.isResponsive = window.innerWidth <= breakpoint;
-  }
-
   isOnMap() {
     return (
       this.router.url.startsWith('/user/map') ||
@@ -246,39 +248,39 @@ export class NavigationBarComponent implements OnInit {
     );
   }
 
-  shouldShowChangeButton(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.commonService
-        .fetchDashboardItems(DashboardTypes.APPLICATIONS)
-        .subscribe({
-          next: (applications: DashboardItemsResponse) => {
-            if (applications.totalElements == 1) {
-              let app = applications.content[0];
-              this.commonService
-                .fetchTerritoriesByApplication(app.id)
-                .subscribe({
-                  next: (territories: any) => {
-                    if (territories.numberOfElements == 1)
-                      this.showChangeAppOrTerritoryButton = false;
-                  }
-                });
-            }
-          },
-          error: (err) => {
-            reject(err);
-          }
-        });
-    });
+  isOnProfile(): boolean {
+    return this.router.url.includes(NavigationPath.Section.User.Profile) || 
+           this.router.url.includes('/user/profile');
   }
 
-  showAuthenticationPopup(): void {
-    this.showPopup = !this.showPopup;
+  shouldShowDashboardButton(): boolean {
+    // Don't show on dashboard pages
+    if (this.router.url.includes('/dashboard')) {
+      return false;
+    }
+    // Don't show on login/auth pages
+    if (this.isInAuthLoginSection()) {
+      return false;
+    }
+    // Show on all other pages (map, profile, territory, application, etc.)
+    return true;
   }
+
+  shouldShowChangeAppButton(): boolean {
+    // Show when: on map pages AND showChangeAppOrTerritoryButton is true AND headerBase?.switchApplication?.visible !== false
+    return this.isOnMap() && 
+           this.showChangeAppOrTerritoryButton && 
+           (this.headerBase?.switchApplication?.visible !== false);
+  }
+
+  get toolbarState(): string {
+    return this.navigationBarIsHidden && this.isOnMap() ? 'hidden' : 'visible';
+  }
+
 }
 
 enum NavigationButtonActive {
   HOME = 'home',
-  NEWS = 'news',
   PROFILE = 'profile',
   OTHER = 'other'
 }
@@ -290,6 +292,15 @@ enum NavigationBarSection {
   SWITCH_LANGUAGE_BUTTON = 'switchLanguage',
   PROFILE_BUTTON = 'profileButton',
   LOGOUT_BUTTON = 'logoutButton'
+}
+
+interface HeaderBase {
+  logoSitmun?: { visible?: boolean };
+  switchApplication?: { visible?: boolean };
+  homeMenu?: { visible?: boolean };
+  switchLanguage?: { visible?: boolean };
+  profileButton?: { visible?: boolean };
+  logoutButton?: { visible?: boolean };
 }
 
 interface IconSection {

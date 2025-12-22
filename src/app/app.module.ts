@@ -26,6 +26,13 @@ import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import {
   AppInitializerService,
   initializeApp,
@@ -68,7 +75,14 @@ registerLocaleData(localeEs);
     NgxPaginationModule,
     BrowserAnimationsModule,
     BrowserAnimationsModule,
-    SharedPipesModule
+    SharedPipesModule,
+    MatToolbarModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule,
+    MatTooltipModule,
+    MatButtonToggleModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

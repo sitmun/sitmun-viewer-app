@@ -31,6 +31,7 @@ export abstract class AbstractMapComponent
   private currentAppCfg: AppCfg | undefined;
   private commonServiceSubscription: Subscription | undefined;
   private map: any;
+  private resizeObserver: ResizeObserver | undefined;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -93,11 +94,16 @@ export abstract class AbstractMapComponent
   ngAfterViewInit() {
     // Wait for SITNA to be available before initializing map
     this.waitForSITNAAndInitialize();
+    // Setup ResizeObserver to detect when map container size changes
+    this.setupResizeObserver();
   }
 
   ngOnDestroy() {
     if (this.commonServiceSubscription) {
       this.commonServiceSubscription.unsubscribe();
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
@@ -347,6 +353,51 @@ export abstract class AbstractMapComponent
     };
 
     checkSITNA();
+  }
+
+  private setupResizeObserver(): void {
+    const mapContainer = this.el.nativeElement.querySelector('.map-container');
+    if (!mapContainer) {
+      return;
+    }
+
+    // Create ResizeObserver to watch for container size changes
+    this.resizeObserver = new ResizeObserver(() => {
+      // Trigger map resize when container size changes
+      this.updateMapSize();
+    });
+
+    // Start observing the map container
+    this.resizeObserver.observe(mapContainer);
+  }
+
+  private updateMapSize(): void {
+    if (!this.map) {
+      return;
+    }
+    
+    try {
+      // Call SITNA map's updateSize method
+      if (this.map.updateSize) {
+        this.map.updateSize();
+      }
+      
+      // Also update the underlying OpenLayers map if accessible
+      if (this.map.wrap) {
+        const olMap = this.map.wrap.map || this.map.wrap._map || this.map.wrap.getMap?.();
+        
+        if (olMap) {
+          if (olMap.updateSize) {
+            olMap.updateSize();
+          }
+          if (olMap.render) {
+            olMap.render();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error updating map size:', error);
+    }
   }
 
   abstract navigateToDashboard(): any;

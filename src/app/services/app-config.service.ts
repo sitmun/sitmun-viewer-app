@@ -11,10 +11,21 @@ export interface DashboardConfig {
 }
 
 /**
+ * Interface for a language item in the configuration
+ */
+export interface LanguageItem {
+  name: string;
+  shortname: string;
+  icon?: string;  // Optional icon (emoji or image path)
+}
+
+/**
  * Interface for application configuration
  */
 export interface AppConfig {
   dashboard: DashboardConfig;
+  defaultLanguage?: string;  // Moved from languages.defaultLanguage
+  languages?: LanguageItem[];  // Changed from object with defaultLanguages array to direct array
 }
 
 /**
@@ -31,7 +42,7 @@ export class AppConfigService {
     dashboard: {
       allowedTypes: [],
       filteringEnabled: false,
-    },
+    }
   };
 
   /**
@@ -78,6 +89,41 @@ export class AppConfigService {
     return (
       this.config?.dashboard ?? this.DEFAULT_CONFIG.dashboard
     );
+  }
+
+  /**
+   * Get the default languages list for fallback scenarios
+   * Returns the configured languages from app-config.json or an empty array if not configured
+   */
+  getDefaultLanguages(): Array<{ name: string; shortname: string }> {
+    const languages = this.config?.languages;
+    if (Array.isArray(languages)) {
+      // Return array with name and shortname (without icon)
+      return languages.map(lang => ({ name: lang.name, shortname: lang.shortname }));
+    }
+    return [];
+  }
+
+  /**
+   * Get the default language code (e.g., 'es', 'en')
+   * Returns the configured default language or 'en' as fallback
+   */
+  getDefaultLanguage(): string {
+    return this.config?.defaultLanguage ?? 'en';
+  }
+
+  /**
+   * Get the icon/flag for a language by its shortname
+   * @param shortname Language shortname (e.g., 'es', 'en', 'oc-aranes')
+   * @returns Icon string (emoji or image path) or empty string if not found
+   */
+  getLanguageIcon(shortname: string): string {
+    const languages = this.config?.languages;
+    if (Array.isArray(languages)) {
+      const language = languages.find(lang => lang.shortname === shortname);
+      return language?.icon || '';
+    }
+    return '';
   }
 }
 

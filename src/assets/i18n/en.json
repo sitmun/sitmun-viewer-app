@@ -1,5 +1,5 @@
 {
-  "genericPrivateHeader.hi": "Hello",
+  "genericPrivateHeader.hi": "Hello {{username}}!",
   "loginPage.logoutText": "Log out",
   "loginPage.title": "Log in",
   "loginPage.publicDashboardButton": "Public access",
@@ -116,7 +116,8 @@
   "menu.login": "Log in",
   "menu.hi": "Hi, ",
   "menu.logout": "Log Out",
-  "menu.changeApplication": "Switch application",
+  "menu.dashboard": "Applications",
+  "menu.changeApplication": "Change",
   "menu.changeTerritory": "Switch territory",
   "menu.continue": "Continue",
   "paginate.previous": "Previous",

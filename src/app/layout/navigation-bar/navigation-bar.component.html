@@ -1,88 +1,74 @@
-<div class='{{tamanyMenu()}}' *ngIf="!navigationBarIsHidden">
-  <div class="dashboard-container">
-    <div class="left">
-      <img id="sitmun-logo" class="nav-bar-img" (click)="homeRedirect()" alt="logo" src="assets/logos/logo_orange.png" *ngIf="!isOnAuthLogin && (!isOnMap() || (headerBase?.logoSitmun?.visible !== false))"/>
+<mat-toolbar [ngClass]="getToolbarClass()">
+  <mat-toolbar-row>
+    <!-- Left section -->
+    <div class="toolbar-left">
+      <img src="assets/logos/logo_orange.png" 
+           alt="logo" 
+           class="logo-img"
+           *ngIf="!isOnAuthLogin && (!isOnMap() || (headerBase?.logoSitmun?.visible !== false))"/>
+      
+      <div *ngIf="headerLeftSection">
       <div *ngFor="let item of headerLeftSection">
-        <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
+          <img class="header-img" *ngIf="item?.visible && item?.url" 
+               [src]="item?.url" [alt]="item?.alt" />
+        </div>
       </div>
     </div>
 
-    <div class="right">
+    <span class="toolbar-spacer"></span>
+    
+    <!-- Right section -->
+    <div class="toolbar-right">
+      <div *ngIf="headerRightSection">
       <div *ngFor="let item of headerRightSection">
-        <img class="nav-bar-img" *ngIf="item?.visible && item?.url" [src]="item?.url" [alt]="item?.alt" />
+          <img class="header-img" *ngIf="item?.visible && item?.url" 
+               [src]="item?.url" [alt]="item?.alt" />
       </div>
-      <secondary-button
-        class="change-app-territory-button"
-        *ngIf="isOnMap() && showChangeAppOrTerritoryButton && (headerBase?.switchApplication?.visible !== false)"
-        (click)="displayTerritoriesAppList = !displayTerritoriesAppList"
-        [button_text]="'genericPrivateHeaders.changeAppOrTerritory' | translate"
-        [button_img_url]="'assets/img/Icona-canviar.svg'"
-      />
-      <button
-        class="home-menu button-menu"
-        [class.active]="navigationClassActive === 'home'"
-        (click)="homeRedirect()"
-        *ngIf="!isOnAuthLogin">
-      </button>
-      <button
-        class="authentication-menu"
-        (click)="showAuthenticationPopup()">
-      </button>
-    </div>
-  </div>
-  <button class="hide-navigationbar" (click)="navigationBarIsHidden = true" *ngIf="isOnMap()">
-    <img src="assets/img/Icona-fletxa-cap-avall.svg"/>
-  </button>
 </div>
 
-<div class="navbar-responsive" *ngIf="isConnected()">
-  <div class="home-button" [class.active]="navigationClassActive === 'home'">
-    <button (click)="homeRedirect()">
-      <div class="icon"></div>
-    </button>
-  </div>
+      <!-- Hide navbar button for map view -->
+      <button mat-icon-button 
+              class="hide-toolbar-btn" 
+              (click)="navigationBarIsHidden = true" 
+              *ngIf="isOnMap() && !navigationBarIsHidden"
+              aria-label="Hide toolbar">
+        <mat-icon>expand_less</mat-icon>
+      </button>
 
-   <div class="changeAppTerr-button" *ngIf="isOnMap() && showChangeAppOrTerritoryButton && (headerBase?.switchApplication?.visible !== false)">
-    <button (click)="displayTerritoriesAppList = !displayTerritoriesAppList">
-      <div class="icon"></div>
-    </button>
-  </div>
-
-  <div class="profile-button" [class.active]="navigationClassActive === 'profile'" *ngIf="isConnected() && !isPublicDashboard()">
-    <button (click)="profileRedirect()">
-      <div class="icon"></div>
-    </button>
-  </div>
-
-  <div class="logout-button" *ngIf="!isPublicDashboard()">
-    <button (click)="logoutRedirect()">
-      <div class="icon"></div>
-    </button>
-  </div>
-</div>
-
-<app-menu
-  *ngIf="showPopup"
+      <app-menu #menuComponent
   [username]="username"
   [isConnected]="isConnected()"
   [showLogoutButton]="showLogoutButton"
   [showSwitchLanguageButton]="showSwitchLanguageButton"
   [showProfileButton]="showProfileButton"
   [showLoginButton]="!isOnAuthLogin"
-  (hideEvent)="showAuthenticationPopup()"
+                [showDashboardButton]="shouldShowDashboardButton()"
+                [showChangeAppButton]="shouldShowChangeAppButton()"
   (loginEvent)="loginRedirect()"
   (logoutEvent)="logoutRedirect()"
   (profileEvent)="profileRedirect()"
-  (languageEvent)="changeLanguage($event)">
+                (languageEvent)="changeLanguage($event)"
+                (dashboardEvent)="homeRedirect()"
+                (changeAppEvent)="displayTerritoriesAppList = !displayTerritoriesAppList">
 </app-menu>
 
-<div class="navbar-map-hidden" *ngIf="isOnMap() && navigationBarIsHidden">
-  <button (click)="navigationBarIsHidden = false">
-    <img src="assets/img/Icona-menu.svg" />
+      <button mat-icon-button [matMenuTriggerFor]="menuComponent.menu" [class.login-menu-button]="isOnAuthLogin">
+        <mat-icon>menu</mat-icon>
   </button>
 </div>
+  </mat-toolbar-row>
+</mat-toolbar>
 
-<div id="changeDisplayedMap" *ngIf="displayTerritoriesAppList && isOnMap()">
-  <app-territories-list
-  (close)="displayTerritoriesAppList = !displayTerritoriesAppList"/>
+<!-- Show navbar button when hidden -->
+<button mat-icon-button 
+        class="show-toolbar-btn" 
+        *ngIf="isOnMap() && navigationBarIsHidden"
+        (click)="navigationBarIsHidden = false"
+        aria-label="Show toolbar">
+  <mat-icon>expand_more</mat-icon>
+</button>
+
+<!-- Territories list modal -->
+<div class="territories-overlay" *ngIf="displayTerritoriesAppList && isOnMap()">
+  <app-territories-list (close)="displayTerritoriesAppList = false"/>
 </div>

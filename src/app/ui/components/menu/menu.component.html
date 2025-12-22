@@ -1,52 +1,71 @@
-<div class="auth-popup">
-  <div class="popup-close">
-    <img src="assets/img/Icona-marxar.svg" alt="close-icon" (click)="sendHideEvent()"/>
-  </div>
+<mat-menu #appMenu="matMenu" xPosition="before">
+  <!-- Welcome header as disabled menu item -->
+  <button mat-menu-item class="menu-header" *ngIf="isConnected">
+    <span>{{ 'genericPrivateHeader.hi' | translate: {username: username} }}</span>
+  </button>
+  
+  <mat-divider *ngIf="isConnected"></mat-divider>
+  
+  <!-- Navigation Group -->
+  <!-- Dashboard button -->
+  <button mat-menu-item *ngIf="showDashboardButton" (click)="sendDashboardEvent()">
+    <mat-icon>dashboard</mat-icon>
+    <span>{{ 'menu.dashboard' | translate }}</span>
+  </button>
 
-  <!-- Welcome section-->
-  <div class="popup-welcome">
-    <p *ngIf="isConnected"> {{ 'genericPrivateHeader.hi' | translate }} {{ username }} !</p>
-    <p *ngIf="!isConnected"> {{ 'genericPrivateHeader.hi' | translate }} !</p>
-  </div>
+  <!-- Change app/territory button -->
+  <button mat-menu-item *ngIf="showChangeAppButton" (click)="sendChangeAppEvent()">
+    <mat-icon>swap_horiz</mat-icon>
+    <span>{{ 'menu.changeApplication' | translate }}</span>
+  </button>
 
-  <!-- Options section -->
-  <div class="popup-options">
-    <div
-      class="lang-select"
-      *ngIf="showSwitchLanguageButton"
-      [ngClass]="showLogoutButton && showLoginButton ? 'lang-select-radius' : 'full-radius'">
+  <mat-divider *ngIf="(showDashboardButton || showChangeAppButton) && showSwitchLanguageButton"></mat-divider>
+  
+  <!-- Settings Group -->
+  <!-- Language selector as menu item with sub-menu -->
+  <button mat-menu-item [matMenuTriggerFor]="languageMenu" *ngIf="showSwitchLanguageButton && languages !== undefined">
+    <!-- Flag icon instead of globe icon -->
+    <span class="current-language-icon" *ngIf="getLanguageIcon(currentLang)">
+      <img *ngIf="isImageIcon(currentLang)" 
+           [src]="getLanguageIcon(currentLang)" 
+           [alt]="getCurrentLanguageName()"
+           class="flag-image-small" />
+    </span>
+    <span>{{ getCurrentLanguageName() }}</span>
+  </button>
 
-      <mat-select [ngModel]="currentLang" (selectionChange)="sendLanguageEvent($event)" *ngIf="languages !== undefined">
-        <mat-option *ngFor="let language of languages" [value]="language.shortname">
-          {{ language.name }}
-        </mat-option>
-      </mat-select>
-
-      <span class="lang-arrow"></span>
-    </div>
-
-    <button *ngIf="!isConnected && showLoginButton" class="login-btn popup-btn btn-wide" (click)="sendLoginEvent()">
-      {{ 'loginPage.title' | translate }}
+  <mat-menu #languageMenu="matMenu" class="language-submenu">
+    <button mat-menu-item 
+            *ngFor="let language of languages"
+            [class.selected]="currentLang === language.shortname"
+            (click)="selectLanguage(language.shortname)">
+      <!-- Language icon/flag - hidden when selected -->
+      <span class="language-icon" *ngIf="getLanguageIcon(language.shortname) && currentLang !== language.shortname">
+        <img *ngIf="isImageIcon(language.shortname)" 
+             [src]="getLanguageIcon(language.shortname)" 
+             [alt]="language.name"
+             class="flag-image" />
+      </span>
+      <span>{{ language.name }}</span>
+      <mat-icon *ngIf="currentLang === language.shortname" class="check-icon">check</mat-icon>
     </button>
+  </mat-menu>
 
-    <button
-      *ngIf="isConnected && showLogoutButton"
-      class="logout-btn popup-btn btn-wide"
-      [ngClass]="showSwitchLanguageButton || !isConnected ? '' : 'full-radius'"
-      (click)="sendLogoutEvent()">
-      <img class="btn-icon" src="assets/img/logout.svg" alt="logout-icon" />
-      {{ 'loginPage.logoutText' | translate }}
+  <mat-divider *ngIf="showSwitchLanguageButton && (isConnected || (!isConnected && showLoginButton))"></mat-divider>
+  
+  <!-- Account Group -->
+  <button mat-menu-item *ngIf="!isConnected && showLoginButton" (click)="sendLoginEvent()">
+    <mat-icon>login</mat-icon>
+    <span>{{ 'loginPage.title' | translate }}</span>
+  </button>
+  
+  <button mat-menu-item *ngIf="isConnected && showProfileButton" (click)="sendProfileEvent()">
+    <mat-icon>person</mat-icon>
+    <span>{{ 'profile.myAccount' | translate }}</span>
     </button>
-  </div>
-
-  <!-- Profile section -->
-  <div class="popup-profile" *ngIf="isConnected && showProfileButton">
-    <button
-      (click)="sendProfileEvent()"
-      class="profile-btn popup-btn"
-      [ngClass]="{ 'profile-btn-full': !showLogoutButton && !showSwitchLanguageButton }">
-      <img src="assets/img/Icona-usuari-blanco.svg" alt="profile-icon" />
-       {{ 'loginPage.profile' | translate }}
-    </button>
-  </div>
-</div>
+  
+  <button mat-menu-item *ngIf="isConnected && showLogoutButton" (click)="sendLogoutEvent()">
+    <mat-icon>logout</mat-icon>
+    <span>{{ 'loginPage.logoutText' | translate }}</span>
+  </button>
+</mat-menu>

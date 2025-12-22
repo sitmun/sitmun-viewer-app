@@ -1,263 +1,265 @@
+@use '@angular/material' as mat;
 @use 'colors';
 @use 'dimensions';
 
-$path_base: "./../../../assets/img/";
+// Material spacing constants (8dp grid)
+$spacing-xs: 4px;   // 0.5× base unit
+$spacing-sm: 8px;   // 1× base unit
+$spacing-md: 16px;  // 2× base unit
+$spacing-lg: 24px;  // 3× base unit
+$spacing-xl: 32px;  // 4× base unit
+$spacing-xxl: 40px; // 5× base unit
 
-:host
-{
-  display: flex;
+// Material component sizes
+$toolbar-height-desktop: 64px;  // Material standard
+$toolbar-height-mobile: 56px;   // Material standard
+$icon-size-standard: 24px;      // Material standard
+$icon-button-size: 40px;        // Material standard (touch target 48px with padding)
+
+:host {
+  display: block; // Allow toolbar to collapse naturally
+  flex-shrink: 0; // Don't shrink when in flex container
+  overflow: visible; // Allow buttons to overflow when collapsed
+  height: 64px; // Default height, will be animated
 }
 
-.button-menu {
-  all: unset;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.navbar-map-hidden {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 50px;
-  height: 30px;
-  padding: 0;
-
-  button {
-    all: unset;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.75);
-    cursor: pointer;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px;
-
-    img {
-      height: 25px;
-      width: 25px;
-    }
-  }
-}
-
-.nav-bar-img {
-  height: 80%;
-}
-
-.nav-bar {
-  z-index: 99999;
-  width: 100%;
-  color: black;
-  position: relative;
-
-  .hide-navigationbar {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 25px;
-    width: 50px;
-    background-color: rgba(255, 255, 255, 0.75);
-    border: none;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    cursor: pointer;
-    z-index: 999;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-
-    img {
-      height: 100%;
-      width: auto;
-      display: block;
-      margin: 0 auto;
-    }
-  }
-
-  div {
-    height: 70px;
+::ng-deep {
+  .mat-toolbar {
+    background-color: white;
+    color: colors.$black;
+    height: 100%; // Fill host height
+    min-height: 0; // Allow collapsing
+    padding: 0 $spacing-md; // 16px horizontal padding
+    z-index: 99999; // Required: SITNA map controls use z-index up to 99999
     position: relative;
+    overflow: hidden !important; // Required for height collapse animation - hide toolbar content
+    box-sizing: border-box; // Include padding in height calculation
+    border: none; // Ensure no border
+    margin: 0; // Ensure no margin
+
+    &.pet {
+      position: sticky; // Sticky positioning for push mode - stays at top but in document flow
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 
+                  0 4px 5px 0 rgba(0, 0, 0, 0.14), 
+                  0 1px 10px 0 rgba(0, 0, 0, 0.12); // Material elevation-4
+    }
+    
+    &.login {
+      padding: 0 $spacing-sm; // 8px for compact login view
+      background-color: transparent !important;
+    }
+    
+    .mat-toolbar-row {
+      height: 100% !important; // Fill toolbar height
+      min-height: 0 !important; // Allow collapsing - override Material defaults
+      padding: 0 !important; // Remove any default padding
+    }
+    
+    .toolbar-spacer {
+      flex: 1 1 auto;
+    }
+    
+    .toolbar-left {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-
-
-
-    .left {
-      padding-left: 20px;
-      img {
-        padding-left: 20px;
+      gap: $spacing-md; // 16px between items
+      padding-left: $spacing-sm; // 8px edge padding
+      
+      .logo-img {
+        height: $icon-button-size; // 40px for proper touch target
+        width: auto; // Maintain aspect ratio
+        max-width: 100%; // Prevent overflow
+        padding: $spacing-xs; // 4px internal padding
+        image-rendering: smooth; // Smooth rendering to reduce pixelation
+        object-fit: contain; // Maintain aspect ratio and prevent distortion
+        display: block; // Remove inline spacing issues
       }
-
-      #sitmun-logo:hover {
-        cursor: pointer;
+      
+      .header-img {
+        height: $spacing-xl; // 32px for custom header images
+        margin: 0 $spacing-xs; // 4px horizontal margin
       }
     }
 
-    .right {
+    .toolbar-right {
       display: flex;
-      gap: 10px;
-      justify-content: space-between;
       align-items: center;
+      gap: $spacing-sm; // 8px between buttons (Material recommendation)
+      padding-right: $spacing-sm; // 8px edge padding
+      
+      .mat-mdc-icon-button {
+        width: $icon-button-size;
+        height: $icon-button-size;
+        padding: $spacing-sm; // 8px padding = 48px touch target with icon
+        border-radius: 10px !important; // Rectangular with rounded corners
+        
+        // Override Material's circular button styling for ripple effect
+        &::before,
+        &::after {
+          border-radius: 10px !important;
+        }
+        
+        // Override Material's internal button element
+        .mat-mdc-button-persistent-ripple,
+        .mdc-button__ripple {
+          border-radius: 10px !important;
+        }
+        
+        &.active {
+          color: colors.$orange;
+        }
 
-      .authentication-menu {
-        background-color: transparent;
-        border: none;
-        background-image: url($path_base + "menu.svg");
-        width: 40px;
-        height: 40px;
-        margin: 0;
-        padding: 0;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
+        &:hover {
+          color: colors.$orange;
+        }
+
+        &.login-menu-button {
+          color: white;
+          
+          &:hover {
+            color: white;
+            opacity: 0.8;
+          }
       }
 
-      .authentication-menu:hover {
-        background-image: url($path_base + "menu-naranja.svg");
-        cursor: pointer;
-      }
+        .mat-icon {
+          font-size: $icon-size-standard; // 24px Material standard
+          width: $icon-size-standard;
+          height: $icon-size-standard;
+        }
+}
 
-      .home-menu {
-        width: 40px;
-        height: 40px;
-        margin: 0;
-        padding: 0;
-        background-image: url($path_base + "home.svg");
-      }
-
-      .home-menu:hover{
-        background-image: url($path_base + "home-hover.svg");
-        cursor: pointer;
-      }
-
-      .home-menu.active {
-        background-image: url($path_base + "home-hover.svg");
-      }
-
-      .home-menu {
-        background-size: contain;
-        background-repeat: no-repeat;
+      .header-img {
+        height: $spacing-xl; // 32px for custom header images
+        margin: 0 $spacing-xs; // 4px horizontal margin
       }
     }
+    
   }
-}
-
-/* navbar on map section */
-.nav-bar.pet{
-  position: absolute !important;
-  background-color: white;
-}
-
-.navbar-responsive{
-  display: none;
-}
-
-#changeDisplayedMap app-territories-list {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 99999;
-  border-radius: 8px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
-  box-sizing: border-box;
-}
-
-
-
-@media (max-width: dimensions.$base-layout-breakpoint-small) {
-  .nav-bar .right .home-menu,
-  .nav-bar .right .authentication-menu,
-  .change-app-territory-button {
+  
+  .hide-toolbar-btn {
+    border-radius: 10px !important; // Rectangular with rounded corners (match orange buttons)
+    
+    // Override Material's circular button styling for ripple effect
+    &::before,
+    &::after {
+      border-radius: 10px !important;
+    }
+    
+    // Override Material's internal button element
+    .mat-mdc-button-persistent-ripple,
+    .mdc-button__ripple {
+      border-radius: 10px !important;
+    }
+    
+    // Keep transparent background (inherits from Material)
+  }
+  
+  .bottom-toolbar {
     display: none;
-  }
 
-  .navbar-responsive {
-    height: 10%;
-    background-color: colors.$violet;
+    @media (max-width: dimensions.$base-layout-breakpoint-small) {
     display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      height: $toolbar-height-mobile; // 56px Material mobile standard
+      background-color: colors.$violet;
     justify-content: space-around;
-    align-items: center;
+      padding: $spacing-xs 0; // 4px vertical padding
     z-index: 1000;
 
-    .home-button,
-    .news-button,
-    .profile-button,
-    .logout-button,
-    .changeAppTerr-button {
-      button {
-        all: unset;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        width: 45px;
-        height: 45px;
-        padding: 0;
-        margin: 0;
-        background: none;
-        background-size: 100% 100%;
-        box-sizing: border-box;
-        background-position: center;
-      }
-
-      .icon {
-        width: 80%;
-        height: 80%;
-        display: block;
-        background-size: contain;
-        background-repeat: no-repeat;
+      .mat-mdc-icon-button {
+        width: $icon-button-size;
+        height: $icon-button-size;
+        
+        &.active {
+          color: colors.$orange;
+        }
+        
+        .mat-icon {
+          font-size: $icon-size-standard;
+          width: $icon-size-standard;
+          height: $icon-size-standard;
       }
     }
-
-
-    /* buttons */
-    .home-button button .icon {
-      background-image: url($path_base + "home.svg");
     }
-
-    .news-button button .icon{
-      background-image: url($path_base + "Icona-notícies.svg");
+  }
+  
+  .territories-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    padding: $spacing-lg; // 24px padding around content
+    
+    app-territories-list {
+      border-radius: $spacing-sm; // 8px
+      box-shadow: 0 2px $spacing-md rgba(0, 0, 0, 0.15);
+      box-sizing: border-box;
     }
+  }
+}
 
-    .profile-button button .icon{
-      background-image: url($path_base + "Icona-usuari.svg");
-    }
+// Show button styles - outside ::ng-deep since button is in component template
+.show-toolbar-btn {
+  position: fixed !important;
+  // Match toolbar button vertical position: toolbar is 64px, button is 40px
+  // Center vertically: (64 - 40) / 2 = 12px from top
+  top: 12px !important;
+  right: 20px !important; // 20px from right edge (due to SITNA tools-tab position)
+  
+  // Required overrides (don't remove - explained below)
+  z-index: 999999 !important; // Required: SITNA map controls use z-index up to 99999
+  pointer-events: auto !important; // Required: Override animation's pointer-events: none on host
+  opacity: 1 !important; // Required: Ensure visible when toolbar collapsed
+  visibility: visible !important; // Required: Ensure visible when toolbar collapsed
+  display: flex !important; // Ensure button is displayed
+  align-items: center !important;
+  justify-content: center !important;
+  
+  // Standard Material button styling - match tools-tab button style
+  width: $icon-button-size !important;
+  height: $icon-button-size !important;
+  padding: $spacing-sm !important;
+  border-radius: 0px !important; // Square like tools-tab button
+  
+  // Dark gray/black background like tools-tab button (rgba(0, 0, 0, 0.8))
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  
+  // Shadow similar to tools-tab (0px 0px 5px rgba(0,0,0,0.2))
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
+  
+  &:hover {
+    // Solid black on hover like tools-tab (rgba(0, 0, 0, 1))
+    background-color: rgba(0, 0, 0, 1) !important;
+    cursor: pointer;
+  }
+  
+  .mat-icon {
+    font-size: $icon-size-standard !important;
+    width: $icon-size-standard !important;
+    height: $icon-size-standard !important;
+    color: colors.$white !important; // White icon like tools-tab
+    pointer-events: none; // Let clicks pass through to button
+  }
+  
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
 
-    .logout-button button .icon{
-      background-image: url($path_base + "Icona-desconnexió.svg");
-    }
-
-    .changeAppTerr-button button .icon{
-      background-image: url($path_base + "Icona-canviar mobile.svg");
-    }
-
-    /* active buttons */
-    .home-button.active button .icon {
-      background-image: url($path_base + "home-hover.svg");
-    }
-
-    .news-button.active button .icon {
-      background-image: url($path_base + "Icona-notícies-naranja.svg");
-    }
-
-    .profile-button.active button .icon {
-      background-image: url($path_base + "Icona-usuari-naranja.svg");
-    }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

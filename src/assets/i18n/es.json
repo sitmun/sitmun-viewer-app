@@ -1,5 +1,5 @@
 {
-  "genericPrivateHeader.hi": "Hola",
+  "genericPrivateHeader.hi": "¡Hola {{username}}!",
   "loginPage.logoutText": "Desconexión",
   "genericPrivateHeaders.changeAppOrTerritory": "Cambiar la aplicación o el territorio",
   "loginPage.title": "Iniciar sesión",
@@ -74,7 +74,8 @@
   "menu.login": "Entrar",
   "menu.hi": "Hola, ",
   "menu.logout": "Cerrar Sesión",
-  "menu.changeApplication": "Cambiar aplicación",
+  "menu.dashboard": "Aplicaciones",
+  "menu.changeApplication": "Cambiar",
   "menu.changeTerritory": "Cambiar territorio",
   "menu.continue": "Continuar",
   "paginate.previous": "Anterior",

@@ -1,0 +1,18 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+router-outlet {
+  display: none; // router-outlet is just a placeholder
+}
+
+::ng-deep router-outlet + * {
+  flex: 1; // Fill remaining space after toolbar
+  overflow: hidden; // No scroll, map fills space
+  display: flex;
+  flex-direction: column;
+  min-height: 0; // Allow flex item to shrink below content size
+}

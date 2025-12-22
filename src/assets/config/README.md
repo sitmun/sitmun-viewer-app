@@ -31,6 +31,39 @@ Array of type codes that will be displayed in the dashboard. Only items with a t
 
 Enables or disables type-based filtering. When `false`, all items are shown regardless of their type.
 
+## Language Configuration
+
+The application can be configured with default languages that are used as fallbacks when the API fails or returns empty results, a default language code for initial application setup, and visual icons/flags for each language.
+
+### Configuration Fields
+
+#### `defaultLanguage`
+
+**Type**: `string`  
+**Default**: `"en"`  
+**Optional**: Yes  
+**Location**: Root level of configuration
+
+The default language code (e.g., "es", "en", "fr") that the application will use when no language is stored in the user's browser localStorage. This is used during initial application load and when the user hasn't selected a language preference.
+
+**Note**: If not specified, the application defaults to "en" (English). This allows each deployment to set their preferred default language without code changes.
+
+#### `languages`
+
+**Type**: `Array<{ name: string; shortname: string; icon?: string }>`  
+**Default**: Empty array (no fallback languages)  
+**Optional**: Yes
+
+Array of language objects that will be used as fallback when the language API is unavailable. Each language object contains:
+
+- `name`: Display name of the language (e.g., "Español", "English")
+- `shortname`: Language code (e.g., "es", "en", "oc-aranes")
+- `icon`: Optional icon/flag for the language. Can be:
+  - Unicode flag emoji (e.g., "🇪🇸", "🇬🇧", "🇫🇷")
+  - Image file path (e.g., "assets/flags/catalan.svg", "assets/flags/val-aran.svg")
+
+**Note**: This configuration is optional. If not specified, the application will use an empty array. This allows each deployment to customize the available languages and their visual representation without code changes.
+
 ### Type Values Reference
 
 The `type` property values are defined in the backend database. Known types include:
@@ -75,6 +108,57 @@ The `type` property values are defined in the backend database. Known types incl
     "allowedTypes": [],
     "filteringEnabled": false
   }
+}
+```
+
+### Language Configuration Examples
+
+#### Default Languages with Icons (All Languages)
+
+```json
+{
+  "dashboard": {
+    "allowedTypes": ["I"],
+    "filteringEnabled": true
+  },
+  "defaultLanguage": "es",
+  "languages": [
+    { "name": "Español", "shortname": "es", "icon": "🇪🇸" },
+    { "name": "English", "shortname": "en", "icon": "🇬🇧" },
+    { "name": "Français", "shortname": "fr", "icon": "🇫🇷" },
+    { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" },
+    { "name": "Aranés", "shortname": "oc-aranes", "icon": "assets/flags/val-aran.svg" }
+  ]
+}
+```
+
+#### Custom Language Set (Deployment-Specific)
+
+```json
+{
+  "dashboard": {
+    "allowedTypes": ["I"],
+    "filteringEnabled": true
+  },
+  "defaultLanguage": "ca",
+  "languages": [
+    { "name": "Español", "shortname": "es", "icon": "🇪🇸" },
+    { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" }
+  ]
+}
+```
+
+#### Languages Without Icons
+
+Icons are optional. If not specified, the language will be displayed without an icon:
+
+```json
+{
+  "defaultLanguage": "es",
+  "languages": [
+    { "name": "Español", "shortname": "es" },
+    { "name": "English", "shortname": "en" }
+  ]
 }
 ```
 
@@ -161,3 +245,6 @@ For questions or issues with configuration:
 ## Version History
 
 - **v1.0**: Initial dashboard type filtering configuration
+- **v1.1**: Added language configuration support for deployment-specific default languages
+- **v1.2**: Added `defaultLanguage` configuration field for setting the initial application language
+- **v1.3**: Restructured language configuration - moved `defaultLanguage` to root, converted `languages` to array with embedded icons. Added support for language icons/flags (emoji and image files)

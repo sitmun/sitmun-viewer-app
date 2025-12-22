@@ -9,3 +9,13 @@ body {
   font-family: system-ui;
   background-color: white;
 }
+
+/* CDK Overlay Container - ensures Material menus and overlays appear above all content */
+/* This fixes z-index issues when menu is in a different DOM hierarchy than the map */
+.cdk-overlay-container {
+  z-index: 100000 !important; // Higher than toolbar (z-index: 99999) and map content
+}
+
+.cdk-overlay-pane {
+  z-index: 100000 !important; // Higher than toolbar (z-index: 99999) and map content
+}

@@ -1,15 +1,17 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { CustomDetails } from '@api/services/user.service';
-import { LanguageDTO, LanguageHelper } from '@ui/util/LanguageHelper';
-import { MatSelectChange } from '@angular/material/select';
+import { LanguageDTO, LanguageService } from 'src/app/services/language.service';
+import { MatMenu } from '@angular/material/menu';
+
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit {
+  @ViewChild(MatMenu, { static: true }) menu!: MatMenu;
   currentLang: string = '';
   languages!: LanguageDTO[];
 
@@ -19,46 +21,72 @@ export class MenuComponent implements OnInit {
   @Input() showLogoutButton!: boolean;
   @Input() showProfileButton!: boolean;
   @Input() showLoginButton!: boolean;
+  @Input() showDashboardButton!: boolean;
+  @Input() showChangeAppButton!: boolean;
 
-  @Output() hideEvent = new EventEmitter();
   @Output() loginEvent = new EventEmitter();
   @Output() profileEvent = new EventEmitter();
   @Output() logoutEvent = new EventEmitter();
   @Output() languageEvent = new EventEmitter<string>();
+  @Output() dashboardEvent = new EventEmitter();
+  @Output() changeAppEvent = new EventEmitter();
 
   constructor(
     private router: Router,
     private authenticationService: AuthenticationService<CustomDetails>,
-    private languageHelper: LanguageHelper
+    private languageService: LanguageService
   ) {}
 
   ngOnInit() {
-    this.currentLang = LanguageHelper.defaultLanguage;
-    this.languageHelper.getLanguages().subscribe((langs) => {
+    this.currentLang = this.languageService.getCurrentLanguage();
+    this.loadLanguages();
+  }
+
+  private loadLanguages() {
+    this.languageService.getLanguagesTranslatedSorted(this.currentLang).subscribe((langs: LanguageDTO[]) => {
       this.languages = langs;
     });
   }
 
-  sendLanguageEvent(event: MatSelectChange) {
-    this.languageEvent.emit(event.value);
+  getCurrentLanguageName(): string {
+    return this.languageService.getLanguageName(this.languages, this.currentLang);
+  }
+
+  getLanguageIcon(shortname: string): string {
+    return this.languageService.getLanguageIcon(shortname);
+  }
+
+  isImageIcon(shortname: string): boolean {
+    const icon = this.getLanguageIcon(shortname);
+    return icon.startsWith('assets/') || icon.startsWith('/');
+  }
+
+  selectLanguage(languageShortname: string) {
+    this.currentLang = languageShortname;
+    this.languageService.setLanguage(languageShortname).subscribe(() => {
+      // Reload languages with names in the new language
+      this.loadLanguages();
+      this.languageEvent.emit(languageShortname);
+    });
   }
 
   sendLoginEvent() {
     this.loginEvent.emit();
-    this.sendHideEvent();
   }
 
   sendProfileEvent() {
     this.profileEvent.emit();
-    this.sendHideEvent();
   }
 
   sendLogoutEvent() {
     this.logoutEvent.emit();
-    this.sendHideEvent();
   }
 
-  sendHideEvent() {
-    this.hideEvent.emit();
+  sendDashboardEvent() {
+    this.dashboardEvent.emit();
+  }
+
+  sendChangeAppEvent() {
+    this.changeAppEvent.emit();
   }
 }

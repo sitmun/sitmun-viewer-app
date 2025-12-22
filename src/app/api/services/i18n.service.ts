@@ -6,10 +6,11 @@ import { CustomDetails } from '@api/services/user.service';
 import { messages } from './messages';
 import {
   URL_API_I18N_LANGUAGE,
-  URL_API_I18N_MESSAGES_LIST
+  URL_API_I18N_MESSAGES_LIST,
+  URL_API_I18N_LANGUAGES_TRANSLATED
 } from '@api/api-config';
 import { environment } from 'src/environments/environment';
-import { LanguageDTO } from '@ui/util/LanguageHelper';
+import { LanguageDTO } from 'src/app/services/language.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,17 @@ export class I18nService {
   availableLanguageCodes(): Observable<LanguageDTO[]> {
     return this.http.get<LanguageDTO[]>(
       environment.apiUrl + URL_API_I18N_MESSAGES_LIST
+    );
+  }
+
+  /**
+   * Get available languages with names translated in the specified language.
+   * @param lang The language shortname (e.g., 'es', 'en') to get translated language names
+   * @returns Observable of LanguageDTO array with translated names
+   */
+  getLanguagesTranslated(lang: string): Observable<LanguageDTO[]> {
+    return this.http.get<LanguageDTO[]>(
+      environment.apiUrl + URL_API_I18N_LANGUAGES_TRANSLATED(lang)
     );
   }
 

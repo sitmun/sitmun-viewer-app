@@ -1,198 +1,233 @@
 @use 'colors';
-@use 'dimensions';
 
-$path_base: "./../../../../assets/img/";
-$font-size: 20px;
-$btn-height: 80px;
-$btn-width: 250px;
-$btn-width-full: 500px;
-$btn-radius: 75px;
-$icon-size: 30px;
+// Material spacing constants (8dp grid)
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
 
-/* Close button */
-.popup-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1000;
-  height: fit-content;
-  width: fit-content;
-  margin: 10px;
+// Material component sizes
+$menu-item-height: 48px;      // Material standard
+$menu-min-width: 360px;       // Increased to accommodate longer text like "Change application or territory"
+$menu-icon-margin: 16px;      // Material standard icon spacing
+$menu-header-font-size: 20px; // Material headline-6
 
-  &:hover {
-    cursor: pointer;
-    filter: brightness(0.8);
+::ng-deep {
+  // CDK Overlay Container - ensures menu overlay appears above all content
+  .cdk-overlay-container {
+    z-index: 100000 !important; // Higher than toolbar (z-index: 99999)
   }
-
-  img {
-    height: $icon-size;
-    width: $icon-size;
+  
+  .cdk-overlay-pane {
+    z-index: 100000 !important; // Higher than toolbar (z-index: 99999)
   }
-}
-
-/* Welcome section */
-.popup-welcome {
-  padding-top: 1px;
-
-  p {
+  
+  // Target menu content for this component's menu
+  .mat-mdc-menu-panel {
+    min-width: $menu-min-width; // 280px Material minimum
+    z-index: 100000 !important; // Ensure menu appears above toolbar (z-index: 99999)
+  }
+  
+  .mat-mdc-menu-content {
+    padding: 0; // Reset default padding to control it per section
+    background-color: colors.$white; // Changed from #2C2E30 to white
+    
+    .menu-header {
+      height: auto;
+      min-height: $spacing-xl * 2; // 64px minimum header height
+      padding: $spacing-lg $spacing-md; // 24px vertical, 16px horizontal
     text-align: center;
-    font-size: 35px;
-  }
+      cursor: default;
+      pointer-events: none; // Ensure it's not interactive
+      
+      &:hover {
+        background-color: transparent !important; // No hover effect for header
+      }
+      
+      &:focus {
+        outline: none; // Remove focus outline for disabled item
+      }
+      
+      span {
+        font-size: $menu-header-font-size;
+        font-weight: 500; // Medium weight for header
+        line-height: 1.5; // Material typography standard
+        color: colors.$black;
+        display: block;
+        width: 100%;
+      }
 }
 
-/* Options sections */
-.popup-options {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-}
-
-.lang-select-radius {
-  border-bottom-left-radius: $btn-radius;
-  border-top-left-radius: $btn-radius;
-  width: $btn-width;
-}
-
-.lang-select {
-  position: relative;
-  display: inline-block;
-  background-color: #212121;
-  height: $btn-height;
-
-  mat-select {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-
-    ::ng-deep .mat-mdc-select-trigger {
-      height: 100%;
+    .mat-mdc-divider {
+      margin: $spacing-sm 0; // 8px vertical margin for dividers
+      border-top-color: rgba(colors.$black, 0.12); // Light divider for light theme
     }
-
-    ::ng-deep .mat-mdc-select-value {
+    
+    .mat-mdc-menu-item {
+      height: $menu-item-height; // 48px Material standard
+      color: colors.$black; // Changed from white to black
+      padding: 0 $spacing-md; // 16px horizontal padding
+      line-height: $menu-item-height;
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 100%;
-      text-align: center;
-      color: white;
-      transition: color 0.3s;
-    }
+      
+      &:hover {
+        background-color: colors.$orange-light; // Light orange background on hover
+        color: colors.$primary-orange; // Orange text on hover
+      }
+      
+      &:active {
+        background-color: rgba(colors.$primary-orange, 0.1);
+  }
 
-    ::ng-deep .mat-mdc-select-arrow-wrapper {
-      display: none; // hide native arrow
+      .mat-icon {
+        margin-right: $menu-icon-margin; // 16px Material standard
+        width: $spacing-lg; // 24px icon size
+        height: $spacing-lg;
+        font-size: $spacing-lg;
+        color: inherit;
+        flex-shrink: 0; // Prevent icon from shrinking
+      }
+      
+      span:not(.language-icon):not(.current-language-icon) {
+        line-height: 1.5; // Material typography
+        flex: 1; // Allow text to take available space
+        min-width: 0; // Allow text to shrink if needed
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap; // Prevent text wrapping to keep on single line
+      }
+      
+      // Style Material's automatic submenu icon
+      ::ng-deep .mat-mdc-menu-submenu-icon {
+        margin-left: $spacing-sm; // 8px spacing from text
+        margin-right: 0;
+        color: rgba(colors.$black, 0.54); // Material icon color
+        flex-shrink: 0; // Prevent icon from shrinking
+    }
+  }
+    
+    // First and last items spacing
+    .mat-mdc-menu-item:first-of-type {
+      margin-top: $spacing-xs; // 4px top spacing
+    }
+    
+    .mat-mdc-menu-item:last-of-type {
+      margin-bottom: $spacing-xs; // 4px bottom spacing
+    }
+  }
+  
+  // Language sub-menu specific styles
+  .language-submenu {
+    z-index: 100000 !important; // Ensure submenu appears above toolbar (z-index: 99999)
+    
+    .mat-mdc-menu-content .mat-mdc-menu-item {
+      // Explicitly ensure flex layout for language menu items with higher specificity
+      display: flex !important;
+      align-items: center !important;
+      flex-direction: row !important;
+      
+      &.selected {
+        background-color: rgba(colors.$primary-orange, 0.1);
+        color: colors.$primary-orange;
+        
+        .check-icon {
+          margin-left: auto;
+          margin-right: 0;
+          color: colors.$primary-orange;
+        }
+      }
+
+      // Language icon styling
+      .language-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center;
+        margin-right: $menu-icon-margin; // 16px Material standard (same as mat-icon)
+        width: $spacing-lg; // 24px Match Material icon size
+        height: $spacing-lg;
+        flex-shrink: 0; // Prevent shrinking
+        vertical-align: middle; // Ensure proper vertical alignment
+        
+        .flag-image {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+          display: block;
+        }
+      }
+      
+      // Ensure text span stays inline and vertically centered
+      > span:not(.language-icon):not(.current-language-icon) {
+        line-height: $menu-item-height !important; // Match parent height for vertical centering
+        align-self: center;
+      }
+      
+      // Style the check icon to take the same space as language-icon for alignment
+      .check-icon {
+        order: -1; // Move check icon before the text
+        margin-right: $menu-icon-margin !important; // Same as language-icon
+        margin-left: 0 !important; // Override default
+        width: $spacing-lg;
+        height: $spacing-lg;
+        font-size: $spacing-lg;
+        flex-shrink: 0;
+      }
     }
   }
 
-  .lang-arrow {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: $icon-size;
-    height: $icon-size;
-    pointer-events: none;
-    background-image: url(#{$path_base}Icona-fletxa-cap-avall-gris.svg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    transition: background-image 0.3s;
+  // Current language icon in main menu button
+  .current-language-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center;
+    margin-right: $menu-icon-margin; // 16px Material standard (same as mat-icon)
+    width: $spacing-lg; // 24px Match Material icon size
+    height: $spacing-lg;
+    flex-shrink: 0; // Prevent shrinking
+    vertical-align: middle; // Ensure proper vertical alignment
+    
+    .flag-image-small {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      display: block;
+    }
   }
+  
+  // Change dropdown to light theme
+  .mat-mdc-select-panel {
+    background-color: colors.$white !important; // Changed from #212121 to white
+    
+    .mat-mdc-option {
+      color: colors.$black !important; // Changed from white to black
 
   &:hover {
-    ::ng-deep .mat-mdc-select-value {
-      color: colors.$primary-orange !important;
+        background-color: colors.$orange-light !important; // Light orange on hover
+      }
+      
+      &.mdc-list-item--selected {
+        background-color: rgba(colors.$primary-orange, 0.1) !important;
+        color: colors.$primary-orange !important;
+      }
     }
   }
-}
-
-::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
-  color: white !important;
-}
-
-::ng-deep .mdc-menu-surface {
-  background-color: #212121 !important;
-}
-
-::ng-deep .mat-mdc-option-active {
-  background-color: rgba(colors.$primary-orange, 0.9) !important;
-}
-
-::ng-deep .mat-pseudo-checkbox.mat-pseudo-checkbox-checked::after {
-  border-color: white !important;
-}
-
-::ng-deep .mat-mdc-option:hover {
-  background-color: rgba(colors.$primary-orange, 0.9) !important;
-}
-
-.btn-wide {
-  width: $btn-width;
-  font-size: $font-size;
-}
-
-.login-btn,
-.logout-btn {
-  border-bottom-right-radius: $btn-radius;
-  border-top-right-radius: $btn-radius;
-}
-
-.full-radius {
-  border-radius: $btn-radius;
-  width: $btn-width-full;
-}
-
-.btn-icon {
-  height: 30%;
-}
-
-.popup-btn {
-  font-size: $font-size;
-  display: inline-block;
-  color: white;
-  background-color: #212121;
-  border: 0;
-  height: $btn-height;
-
-  &:hover {
-    cursor: pointer;
-    color: colors.$primary-orange;
+  
+  .mdc-menu-surface {
+    background-color: colors.$white !important; // Changed from #212121 to white
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); // Add shadow for depth
+    border: 1px solid rgba(0, 0, 0, 0.08); // Subtle border
+    z-index: 100000 !important; // Ensure menu appears above toolbar (z-index: 99999)
   }
-}
-
-.auth-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #2C2E30;
-  color: white;
-  padding: 20px;
-  z-index: 1;
-}
-
-/* Profile section */
-.popup-profile {
-  margin-top: 10px;
-}
-
-.profile-btn {
-  border-radius: $btn-radius;
-  width: 50%;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  img {
-    height: 20px;
-    width: auto;
+  
+  // Update option text color for light theme
+  .mat-mdc-option .mdc-list-item__primary-text {
+    color: colors.$black !important; // Changed from white to black
   }
-}
-
-.profile-btn-full {
-  width: $btn-width-full;
+  
+  // Remove dark theme active/hover overrides - use light theme versions above
+  .mat-mdc-option-active {
+    background-color: rgba(colors.$primary-orange, 0.1) !important; // Light orange for active
+  }
 }
