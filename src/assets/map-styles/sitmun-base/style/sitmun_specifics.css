@@ -107,6 +107,25 @@ li.tc-ctl-lcat-node > button.tc-ctl-lcat-btn-info {
 
 }
 
+/* Fix for bms buttons overlapping expand/collapse icon */
+/* The expand/collapse icon is 20px x 20px, positioned at calc(100% - 10px) */
+/* Position both buttons at 35px from right and match icon dimensions */
+/* Center buttons vertically in the h2 */
+#bms > h2 button.tc-icon-btn.tc-ctl-bms-btn-view {
+  margin-right: 35px !important;
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 14px !important;
+  color: inherit !important;
+}
+
+/* Grey color and disable events for buttons when bms is collapsed */
+#bms.tc-collapsed > h2 button.tc-icon-btn.tc-ctl-bms-btn-view,
+#bms.tc-collapsed > h2 button.tc-icon-btn.tc-ctl-bms-btn-view::before {
+  color: inherit !important;
+  pointer-events: none !important;
+}
+
 @media (max-width: 768px) {
   .tools-panel > h1 {
     top: 84px;
