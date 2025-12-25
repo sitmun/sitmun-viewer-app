@@ -91,8 +91,8 @@
   "map.error.badConfigTree": "Algunos de los catálogos de capas de esta aplicación no están correctamente configurados y han sido omitidos del mapa. Por favor, revise la configuración de la aplicación.",
   "map.error.ommitedCatalogs": "Catálogos omitidos",
   "map.territoriesApplication.mainTitle": "Cambiar la aplicación o el territorio",
-  "map.territoriesApplication.applicationsTitle": "Cambio de aplicación dentro de este territorio",
-  "map.territoriesApplication.territoriesTitle": "Cambio de territorio dentro de esta aplicación",
+  "map.territoriesApplication.applicationsTitle": "Seleccionar aplicación disponible para el usuario",
+  "map.territoriesApplication.territoriesTitle": "Seleccionar territorio disponible para la aplicación",
   "map.territoriesApplication.save": "Aplicar cambios",
   "map.applicationsListFilter": "Filtra la lista de aplicaciones",
   "map.territoriesListFilter": "Filtra la lista de territorios",
@@ -158,5 +158,7 @@
   "profile.noUpdateTerritories": "No se han realizado cambios en tu territorio. Por favor, modifica al menos un campo antes de poder guardar.",
   "profile.emailAlreadyExistError": "Este correo ya está en uso.",
   "profile.territoryManagementUpdateSucess": "Los datos asociados a los territorios se han actualizado correctamente.",
-  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios."
+  "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios.",
+  "common.filterHintSelectedApplicationAlwaysVisible": "La aplicación seleccionada siempre permanece visible",
+  "common.filterHintSelectedTerritoryAlwaysVisible": "El territorio seleccionado siempre permanece visible"
 }

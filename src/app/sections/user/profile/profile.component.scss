@@ -249,7 +249,7 @@ h2 {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-:host ::ng-deep form-field-input {
+:host ::ng-deep app-form-field-input {
   div {
     width: 80% !important;
 

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
-  selector: 'form-field-input',
+  selector: 'app-form-field-input',
   templateUrl: './form-field-input.component.html',
   styleUrls: ['./form-field-input.component.scss']
 })

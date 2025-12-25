@@ -11,9 +11,23 @@
       </div>
       <div id="right-side">
         <div id="associated-territories">
-          <app-dashboard-territories-tag
-          [application]="application"
-          [territories]="territories"/>
+          <app-selectable-list
+            [items]="groupedTerritories"
+            [showTitle]="true"
+            [title]="'application.territoriesAssociated' | translate"
+            [showCloseButton]="false"
+            [showCount]="true"
+            [totalCount]="territories.length"
+            [countLabel]="'dashboardPage.nbTerritoriesTitle' | translate"
+            [logoProperty]="'territorialAuthorityLogo'"
+            [nameProperty]="'name'"
+            [defaultIcon]="'language'"
+            [showSearch]="territories.length > 1"
+            [searchPlaceholder]="'dashboardDialogTag.inputPlaceholder' | translate"
+            [searchValue]="searchValue"
+            (searchValueChange)="onSearchChange($event)"
+            (itemClicked)="onTerritoryClick($event)">
+          </app-selectable-list>
         </div>
       </div>
     </div>

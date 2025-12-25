@@ -11,6 +11,16 @@ import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
+/**
+ * Component for displaying a single application card in the dashboard.
+ * 
+ * This component handles the "selection of territory given an application" logic:
+ * - When an application with a single territory is clicked, it automatically navigates to the map
+ * - When an application with multiple territories is clicked, it shows the territories list
+ * 
+ * This is separate from the ChangeApplicationTerritoryDialogComponent, which handles
+ * the dialog-based application/territory selection UI.
+ */
 @Component({
   selector: 'app-dashboard-item',
   templateUrl: './dashboard-item.component.html',
@@ -67,6 +77,31 @@ export class DashboardItemComponent {
     }
   }
 
+  /**
+   * Determines if the current route is in the public section.
+   */
+  private isPublicSection(): boolean {
+    return this.router.url.startsWith(NavigationPath.Section.Public.Base);
+  }
+
+  /**
+   * Gets the appropriate map URL based on the current section (public or user).
+   */
+  private getMapUrl(applicationId: number, territoryId: number): string {
+    return this.isPublicSection()
+      ? NavigationPath.Section.Public.Map(applicationId, territoryId)
+      : NavigationPath.Section.User.Map(applicationId, territoryId);
+  }
+
+  /**
+   * Gets the appropriate application URL based on the current section (public or user).
+   */
+  private getApplicationUrl(applicationId: number): string {
+    return this.isPublicSection()
+      ? NavigationPath.Section.Public.Application(applicationId)
+      : NavigationPath.Section.User.Application(applicationId);
+  }
+
   fillTerritory(appId: number) {
     this.applicationId = appId;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
@@ -78,12 +113,7 @@ export class DashboardItemComponent {
   }
 
   navigateToApplicationDetails(idApp: number) {
-    if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(NavigationPath.Section.Public.Application(idApp));
-    }
-    else {
-      this.router.navigateByUrl(NavigationPath.Section.User.Application(idApp));
-    }
+    this.router.navigateByUrl(this.getApplicationUrl(idApp));
   }
 
   displayTerritoriesTag(application : any) {
@@ -96,20 +126,21 @@ export class DashboardItemComponent {
 
   navigateToMap(idApp : number) {
     if(this.nbTerritory == 1) {
-      if(this.router.url.startsWith("/public")){
-        this.router.navigateByUrl(
-          NavigationPath.Section.Public.Map(idApp, this.listOfTerritories[0].id)
-        );
-      }
-      else {
-        this.router.navigateByUrl(
-          NavigationPath.Section.User.Map(idApp, this.listOfTerritories[0].id)
-        );
-      }
+      this.router.navigateByUrl(
+        this.getMapUrl(idApp, this.listOfTerritories[0].id)
+      );
     }
     else {
       this.displayTerritoriesTag(this.item);
     }
+  }
+
+  /**
+   * Navigates to the map for a specific application and territory.
+   * This method is called when a territory is clicked in the territories tag/modal.
+   */
+  navigateToTerritoryMap(applicationId: number, territoryId: number): void {
+    this.router.navigateByUrl(this.getMapUrl(applicationId, territoryId));
   }
 
 }

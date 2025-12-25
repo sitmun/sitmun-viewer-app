@@ -16,14 +16,14 @@
 
     <div class="form-section">
       <form (submit)="login()">
-        <form-field-input
+        <app-form-field-input
           [input_type]="'text'"
           [input_title]="'loginPage.usernameText' | translate"
           [input_placeholder]="'loginPage.usernamePlaceholder' | translate"
           [input_name]="'username'"
           [input_model]="authenticationRequest.username"
           (output_model)="authenticationRequest.username = $event" />
-        <form-field-input
+        <app-form-field-input
           [input_type]="displayPassword"
           [input_title]="'loginPage.passwordText' | translate"
           [input_placeholder]="'loginPage.passwordPlaceholder' | translate"

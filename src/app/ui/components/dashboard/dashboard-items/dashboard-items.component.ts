@@ -1,8 +1,11 @@
-import { Component, Input, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, SimpleChanges, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { Codelist } from '@api/model/app-codelist';
 import { DashboardItem } from '@api/services/common.service';
 import { AppConfigService } from 'src/app/services/app-config.service';
+import { DashboardItemComponent } from '../dashboard-item/dashboard-item.component';
+import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 
 @Component({
   selector: 'app-dashboard-items',
@@ -12,14 +15,11 @@ import { AppConfigService } from 'src/app/services/app-config.service';
 export class DashboardItemsComponent {
   @Input() items: DashboardItem[] = [];
   @Input() image_src: string = "";
+  @Output() itemClicked = new EventEmitter<DashboardItem>();
 
   applicationSelected: any = null;
   hasWarning: boolean = false;
   isInMaintenance: boolean = false;
-  displayTag: boolean = false;
-
-  applicationToDisplayTag!: DashboardItem;
-  territoriesToDisplayTag!: any;
 
   public privateItems: DashboardItem[] = [];
   public publicItems: DashboardItem[] = [];
@@ -33,7 +33,10 @@ export class DashboardItemsComponent {
 
   private readonly appConfigService = inject(AppConfigService);
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
@@ -55,13 +58,20 @@ export class DashboardItemsComponent {
     }
   }
 
-  displayTerritoriesTag(display: any) {
+  displayTerritoriesTag(display: any, dashboardItemComponent?: DashboardItemComponent) {
     if (display.application != null) {
-      this.displayTag = true;
-      this.applicationToDisplayTag = display.application;
-      this.territoriesToDisplayTag = display.territories;
-    } else {
-      this.displayTag = false;
+      const dialogRef = this.dialog.open(DashboardTerritorySelectionDialogComponent, {
+        width: '400px',
+        maxWidth: '90vw',
+        data: {
+          application: display.application,
+          territories: display.territories
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(() => {
+        // Handle dialog close if needed
+      });
     }
   }
 

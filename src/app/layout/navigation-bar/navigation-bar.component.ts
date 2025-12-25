@@ -13,6 +13,8 @@ import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from 'src/app/services/language.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change-application-territory-dialog/change-application-territory-dialog.component';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -56,7 +58,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   showLogoutButton: boolean = true;
   showChangeAppOrTerritoryButton: boolean = true;
   navigationBarIsHidden: boolean = false;
-  displayTerritoriesAppList: boolean = false;
 
   constructor(
     private router: Router,
@@ -64,7 +65,8 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
     private translate: TranslateService,
     private authenticationService: AuthenticationService<CustomDetails>,
     private location: Location,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -275,6 +277,27 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
 
   get toolbarState(): string {
     return this.navigationBarIsHidden && this.isOnMap() ? 'hidden' : 'visible';
+  }
+
+  /**
+   * Opens the change application/territory dialog.
+   * This method only handles opening the dialog - it does not contain any
+   * territory selection or navigation logic. Those concerns are handled separately:
+   * - Single-territory auto-navigation: handled in DashboardItemComponent.navigateToMap()
+   * - Dialog selection logic: handled in ChangeApplicationTerritoryDialogComponent
+   */
+  openTerritoriesDialog(): void {
+    const dialogRef = this.dialog.open(ChangeApplicationTerritoryDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      disableClose: false,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // Dialog closed
+    });
   }
 
 }

@@ -191,20 +191,6 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
     }
   }
   
-  .territories-overlay {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999;
-    padding: $spacing-lg; // 24px padding around content
-    
-    app-territories-list {
-      border-radius: $spacing-sm; // 8px
-      box-shadow: 0 2px $spacing-md rgba(0, 0, 0, 0.15);
-      box-sizing: border-box;
-    }
-  }
 }
 
 // Show button styles - outside ::ng-deep since button is in component template

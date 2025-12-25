@@ -133,8 +133,8 @@
   "map.error.badConfigTree": "Alguns dels catàlegs de capes d'aquesta aplicació no estan configurats correctament i han estat omesos del mapa. Reviseu la configuració de l'aplicació si us plau.",
   "map.error.ommitedCatalogs": "Catálegs omises",
   "map.territoriesApplication.mainTitle": "Canviar l'aplicació o el territori",
-  "map.territoriesApplication.applicationsTitle": "Canvi de aplicació dins aquest territori",
-  "map.territoriesApplication.territoriesTitle": "Canvi de territori dins aquesta aplicació",
+  "map.territoriesApplication.applicationsTitle": "Seleccionar aplicació disponible per a l'usuari",
+  "map.territoriesApplication.territoriesTitle": "Seleccionar territori disponible per a l'aplicació",
   "map.territoriesApplication.save": "Aplicar canvis",
   "map.applicationsListFilter": "Filtra la llista d'aplicacions",
   "map.territoriesListFilter": "Filtra la llista de territoris",
@@ -158,5 +158,7 @@
   "territory.filterSearchResult": "Filtrar la llista",
   "territory.information": "Informació",
   "territory.description": "Descripció",
-  "territory.descriptionMissing": "Cap descripció"
+  "territory.descriptionMissing": "Cap descripció",
+  "common.filterHintSelectedApplicationAlwaysVisible": "L'aplicació seleccionada sempre roman visible",
+  "common.filterHintSelectedTerritoryAlwaysVisible": "El territori seleccionat sempre roman visible"
 }

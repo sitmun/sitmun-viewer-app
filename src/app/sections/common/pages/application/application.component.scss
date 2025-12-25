@@ -36,7 +36,23 @@
 
         #associated-territories {
           box-sizing: border-box;
-          height: 500px;
+          height: 400px;
+          min-height: 400px;
+          max-height: 400px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+
+          app-selectable-list {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+
+            ::ng-deep mat-card.embedded mat-card-content {
+              padding: 0;
+            }
+          }
         }
       }
     }
@@ -73,6 +89,12 @@
     #right-side {
       width: 100vw;
       margin-bottom: 150px;
+
+      #associated-territories {
+        height: 250px;
+        min-height: 250px;
+        max-height: 250px;
+      }
     }
   }
 }

@@ -103,8 +103,8 @@
   "map.error.badConfigTree": "Certains catalogues de couches de cette application sont mal configurés et ont été omis de la carte. Veuillez vérifier la configuration de l’application.",
   "map.error.ommitedCatalogs": "Catalogues omis",
   "map.territoriesApplication.mainTitle": "Changer l'application ou le territoire",
-  "map.territoriesApplication.applicationsTitle": "Changement d'application dans ce territoire",
-  "map.territoriesApplication.territoriesTitle": "Changement de territoire dans cette application",
+  "map.territoriesApplication.applicationsTitle": "Sélectionner une application disponible pour l'utilisateur",
+  "map.territoriesApplication.territoriesTitle": "Sélectionner un territoire disponible pour l'application",
   "map.territoriesApplication.save": "Appliquer les changements",
   "map.applicationsListFilter": "Filtrer la liste des applications",
   "map.territoriesListFilter": "Filtrer la liste des territoires",
@@ -157,5 +157,7 @@
   "territory.information": "Information",
   "territory.description": "Description",
   "territory.descriptionMissing": "Aucune description",
-  "genericPrivateHeaders.changeAppOrTerritory": "Changer d'application ou de territoire"
+  "genericPrivateHeaders.changeAppOrTerritory": "Changer d'application ou de territoire",
+  "common.filterHintSelectedApplicationAlwaysVisible": "L'application sélectionnée reste toujours visible",
+  "common.filterHintSelectedTerritoryAlwaysVisible": "Le territoire sélectionné reste toujours visible"
 }

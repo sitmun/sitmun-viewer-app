@@ -6,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { DashboardButtonsComponent } from './components/dashboard/dashboard-buttons/dashboard-buttons.component';
 import { DashboardSearchboxComponent } from '@ui/components/dashboard/dashboard-searchbox/dashboard-searchbox.component';
 import { ModalModule } from '@ui/modal/modal.module';
-import { DialogFilterPipe } from '@sections/common/modals/dashboard-modal/dialog-filter.pipe';
 import { MenuComponent } from './components/menu/menu.component';
 import { DashboardPaginationComponent } from './components/dashboard/dashboard-pagination/dashboard-pagination.component';
 import { NgxPaginationModule } from 'ngx-pagination';
@@ -14,11 +13,12 @@ import { PrimaryButtonComponent } from './components/primary-button/primary-butt
 import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
 import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
 import { NotificationComponent } from './components/notification/notification.component';
-import { TerritoriesListComponent } from './components/territories-list/territories-list.component';
+import { ChangeApplicationTerritoryDialogComponent } from './components/change-application-territory-dialog/change-application-territory-dialog.component';
+import { SelectableListComponent } from './components/selectable-list/selectable-list.component';
 import { ProfileInformationComponent } from './components/profile-information/profile-information.component';
 import { DashboardItemComponent } from './components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
-import { DashboardTerritoriesTagComponent } from './components/dashboard/dashboard-territories-tag/dashboard-territories-tag.component';
+import { DashboardTerritorySelectionDialogComponent } from './components/dashboard/dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -35,6 +35,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
+import { MatChipsModule } from '@angular/material/chips';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   imports: [
@@ -55,13 +59,16 @@ import { MatDividerModule } from '@angular/material/divider';
     MatTooltipModule,
     MatCardModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    MatDialogModule,
+    MatListModule,
+    MatChipsModule,
+    RouterModule
   ],
   declarations: [
     DashboardItemsComponent,
     DashboardButtonsComponent,
     DashboardSearchboxComponent,
-    DialogFilterPipe,
     MenuComponent,
     DashboardPaginationComponent,
     PrimaryButtonComponent,
@@ -70,20 +77,20 @@ import { MatDividerModule } from '@angular/material/divider';
     NotificationComponent,
     DashboardItemComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent,
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
     DashboardItemComponent,
     ProfileInformationComponent,
-    TerritoriesListComponent,
-    ReturnButtonComponent
+    ChangeApplicationTerritoryDialogComponent,
+    SelectableListComponent,
+    ReturnButtonComponent,
+    DashboardTerritorySelectionDialogComponent
   ],
   exports: [
     DashboardItemsComponent,
     DashboardButtonsComponent,
     DashboardSearchboxComponent,
     ModalModule,
-    DialogFilterPipe,
     DashboardPaginationComponent,
     MenuComponent,
     PrimaryButtonComponent,
@@ -91,10 +98,10 @@ import { MatDividerModule } from '@angular/material/divider';
     FormFieldInputComponent,
     NotificationComponent,
     DashboardExpandButtonComponent,
-    DashboardTerritoriesTagComponent,
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
-    TerritoriesListComponent,
+    ChangeApplicationTerritoryDialogComponent,
+    SelectableListComponent,
     DashboardItemComponent,
     ProfileInformationComponent,
     ReturnButtonComponent,

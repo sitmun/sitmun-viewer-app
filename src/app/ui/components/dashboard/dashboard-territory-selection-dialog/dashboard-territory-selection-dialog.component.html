@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{ application.title || application.name }}</h2>
+<button mat-icon-button class="dialog-close-button" [mat-dialog-close]="null">
+  <mat-icon>close</mat-icon>
+</button>
+
+<mat-dialog-content>
+  <app-selectable-list
+    [items]="groupedTerritories"
+    [showTitle]="false"
+    [showCloseButton]="false"
+    [showCount]="true"
+    [totalCount]="territories.length"
+    [countLabel]="'dashboardPage.nbTerritoriesTitle' | translate"
+    [logoProperty]="'territorialAuthorityLogo'"
+    [nameProperty]="'name'"
+    [defaultIcon]="'language'"
+    [showSearch]="territories.length > 1"
+    [searchPlaceholder]="'dashboardDialogTag.inputPlaceholder' | translate"
+    [searchValue]="searchValue"
+    (searchValueChange)="onSearchChange($event)"
+    (itemClicked)="onTerritoryClick($event)">
+  </app-selectable-list>
+</mat-dialog-content>
+
+

@@ -1,0 +1,177 @@
+@use 'colors';
+@use 'dimensions';
+
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+mat-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &.embedded {
+    box-shadow: none;
+    padding: 0;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    border: none;
+
+    .card-header-wrapper {
+      padding: 0 0 8px 0;
+    }
+  }
+
+  &:not(.embedded) {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 16px 0 16px;
+    gap: 16px;
+    margin-bottom: 8px;
+
+    .card-header-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      mat-card-title {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+    }
+
+    .card-close-button {
+      flex-shrink: 0;
+      margin-left: 8px;
+      margin-right: -8px;
+      margin-top: -8px;
+    }
+  }
+
+  mat-card-content {
+    padding: 0 16px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    height: 100%;
+  }
+
+  mat-form-field {
+    width: 100%;
+    margin-top: 8px;
+    margin-bottom: 16px;
+
+    .filter-hint {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+      font-style: italic;
+    }
+  }
+
+  mat-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+
+    mat-list-item {
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      &.selected {
+        background-color: rgba(colors.$primary-orange, 0.08);
+      }
+
+      &.unavailable {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      img[matListItemMeta] {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border-radius: 4px;
+        cursor: pointer;
+        pointer-events: auto;
+
+        &.disabled-image {
+          opacity: 0.5;
+          filter: grayscale(50%);
+        }
+      }
+
+      ::ng-deep mat-icon[matListItemMeta] {
+        color: colors.$primary-orange !important;
+        cursor: pointer;
+        pointer-events: auto;
+        font-family: 'Material Icons' !important;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+
+        &.disabled-icon {
+          color: rgba(0, 0, 0, 0.38) !important;
+        }
+      }
+
+      span[matListItemTitle] {
+        &.disabled-text {
+          color: rgba(0, 0, 0, 0.38);
+        }
+      }
+
+      mat-icon[matListItemIcon] {
+        color: colors.$primary-orange;
+        width: 24px;
+        min-width: 24px;
+        flex-shrink: 0;
+        margin-right: 8px !important;
+      }
+    }
+
+    .group-header {
+      padding: 8px 16px;
+      font-weight: 500;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.87);
+      background-color: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    }
+  }
+}
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  mat-card {
+    width: 100%;
+  }
+}
+

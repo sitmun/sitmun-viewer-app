@@ -17,7 +17,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { FormsModule } from '@angular/forms';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
@@ -33,6 +32,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
 import {
   AppInitializerService,
   initializeApp,
@@ -51,7 +52,6 @@ registerLocaleData(localeEs);
     NavigationBarComponent,
     PublicLayoutComponent,
     FooterComponent,
-    DashboardModalComponent,
     LoginModalComponent,
     EmbeddedMapComponent,
     ErrorModalComponent,
@@ -82,7 +82,9 @@ registerLocaleData(localeEs);
     MatIconModule,
     MatDividerModule,
     MatTooltipModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatDialogModule,
+    MatListModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

@@ -9,7 +9,6 @@ import {
 } from '@api/services/common.service';
 import { Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { DashboardModalComponent } from '@sections/common/modals/dashboard-modal/dashboard-modal.component';
 
 @Directive()
 export abstract class AbstractDashboardComponent implements OnInit {

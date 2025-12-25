@@ -133,8 +133,8 @@
   "map.error.badConfigTree": "Some of the layer catalogs in this application are not configured correctly and have been omitted from the map. Please check the app settings.",
   "map.error.ommitedCatalogs": "Ommited catalogs",
   "map.territoriesApplication.mainTitle": "Change the application or the territory",
-  "map.territoriesApplication.applicationsTitle": "Change of application within this territory",
-  "map.territoriesApplication.territoriesTitle": "Change of territory within this application",
+  "map.territoriesApplication.applicationsTitle": "Select application available for the user",
+  "map.territoriesApplication.territoriesTitle": "Select territory available for the application",
   "map.territoriesApplication.save": "Apply changes",
   "map.applicationsListFilter": "Filter the list of applications",
   "map.territoriesListFilter": "Filter the list of territories",
@@ -159,5 +159,7 @@
   "territory.information": "Information",
   "territory.description": "Description",
   "territory.descriptionMissing": "No description",
-  "genericPrivateHeaders.changeAppOrTerritory": "Change application or territory"
+  "genericPrivateHeaders.changeAppOrTerritory": "Change application or territory",
+  "common.filterHintSelectedApplicationAlwaysVisible": "The selected application always remains visible",
+  "common.filterHintSelectedTerritoryAlwaysVisible": "The selected territory always remains visible"
 }

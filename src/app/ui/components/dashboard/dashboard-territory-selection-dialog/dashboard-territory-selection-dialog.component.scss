@@ -1,0 +1,63 @@
+@use 'colors';
+@use 'dimensions';
+
+// Material Design spacing (8dp grid)
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+
+h2[mat-dialog-title] {
+  margin: 0;
+  padding: $spacing-lg;
+  padding-right: 56px; // Space for close button
+  font-weight: 700;
+  text-align: left;
+}
+
+.dialog-close-button {
+  position: absolute;
+  top: $spacing-lg;
+  right: $spacing-lg;
+  margin: 0;
+  z-index: 10;
+}
+
+mat-dialog-content {
+  padding: 0 $spacing-lg $spacing-lg $spacing-lg;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  min-height: 400px;
+  max-height: 400px;
+
+  app-selectable-list {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+
+    ::ng-deep mat-card.embedded mat-card-content {
+      padding: 0;
+    }
+  }
+}
+
+::ng-deep .mat-mdc-dialog-container {
+  max-height: 90vh;
+}
+
+@media (max-width: dimensions.$base-layout-breakpoint-small) {
+  ::ng-deep .mat-mdc-dialog-container {
+    width: 95vw !important;
+    max-height: 95vh;
+  }
+
+  mat-dialog-content {
+    padding: 0 $spacing-md $spacing-md $spacing-md;
+    height: 250px;
+    min-height: 250px;
+    max-height: 250px;
+  }
+}
+
