@@ -37,7 +37,7 @@ describe('AppConfigService', () => {
     it('should load configuration from JSON file', async () => {
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       expect(req.request.method).toBe('GET');
       req.flush(mockConfig);
 
@@ -52,7 +52,7 @@ describe('AppConfigService', () => {
 
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.error(new ProgressEvent('error'));
 
       await loadPromise;
@@ -65,7 +65,7 @@ describe('AppConfigService', () => {
     it('should cache configuration after loading', async () => {
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(mockConfig);
 
       await loadPromise;
@@ -74,7 +74,7 @@ describe('AppConfigService', () => {
       expect(service.isFilteringEnabled()).toBe(true);
 
       // No new HTTP request should be made
-      httpMock.expectNone('/assets/config/app-config.json');
+      httpMock.expectNone('assets/config/app-config.json');
     });
   });
 
@@ -82,7 +82,7 @@ describe('AppConfigService', () => {
     it('should return allowed types from config', async () => {
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(mockConfig);
 
       await loadPromise;
@@ -104,7 +104,7 @@ describe('AppConfigService', () => {
 
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(emptyTypesConfig);
 
       await loadPromise;
@@ -117,7 +117,7 @@ describe('AppConfigService', () => {
     it('should return true when filtering is enabled in config', async () => {
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(mockConfig);
 
       await loadPromise;
@@ -135,7 +135,7 @@ describe('AppConfigService', () => {
 
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(disabledConfig);
 
       await loadPromise;
@@ -152,7 +152,7 @@ describe('AppConfigService', () => {
     it('should return dashboard config when loaded', async () => {
       const loadPromise = service.loadConfig();
 
-      const req = httpMock.expectOne('/assets/config/app-config.json');
+      const req = httpMock.expectOne('assets/config/app-config.json');
       req.flush(mockConfig);
 
       await loadPromise;

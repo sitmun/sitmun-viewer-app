@@ -53,7 +53,7 @@ export class AppConfigService {
   async loadConfig(): Promise<void> {
     try {
       this.config = await firstValueFrom(
-        this.http.get<AppConfig>('/assets/config/app-config.json')
+        this.http.get<AppConfig>('assets/config/app-config.json')
       );
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
