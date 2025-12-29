@@ -7,6 +7,7 @@ import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { environment } from 'src/environments/environment';
 import { QueryParam } from '@config/app.config';
+import { isProblemDetail, extractProblemType } from '../../../utils/problem-detail.utils';
 
 @Component({
   selector: 'app-login',
@@ -71,15 +72,23 @@ export class LoginComponent implements OnInit {
             }
           }
         },
-        error: (error) => {
-          if (error.status && error.status === 401) {
-            this.authenticationRequest.username = '';
-            this.authenticationRequest.password = '';
-            this.translate.get('loginPage.incorrectLogin').subscribe((trad) => {
-              this.notificationService.error(trad);
-            });
+          error: (error) => {
+            if (error.status === 401 || isProblemDetail(error)) {
+              this.authenticationRequest.username = '';
+              this.authenticationRequest.password = '';
+              
+              // Try to get error translation, fallback to default message
+              let errorKey = 'loginPage.incorrectLogin';
+              if (isProblemDetail(error)) {
+                const problemType = extractProblemType(error);
+                errorKey = problemType ? `error.${problemType}` : 'error.unauthorized';
+              }
+              
+              this.translate.get(errorKey).subscribe((trad) => {
+                this.notificationService.error(trad);
+              });
+            }
           }
-        }
       });
     }
   }
