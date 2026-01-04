@@ -228,10 +228,15 @@ button.tc-ctl-fscreen-btn:hover {
 }
 
 .tc-left-panel.tc-collapsed > h1,
+.tc-left-panel.tc-collapsed-left > h1,
 .tc-left-panel.tc-collapsed .tc-ctl.tc-ctl-nav,
+.tc-left-panel.tc-collapsed-left .tc-ctl.tc-ctl-nav,
 .tc-left-panel.tc-collapsed .tc-ctl-sv,
+.tc-left-panel.tc-collapsed-left .tc-ctl-sv,
 .tc-left-panel.tc-collapsed .tc-ctl-be,
-.tc-left-panel.tc-collapsed .tc-ctl-fscreen {
+.tc-left-panel.tc-collapsed-left .tc-ctl-be,
+.tc-left-panel.tc-collapsed .tc-ctl-fscreen,
+.tc-left-panel.tc-collapsed-left .tc-ctl-fscreen {
     left: 20px;
     transition: left 200ms;
     z-index: 10001;
@@ -273,7 +278,8 @@ button.tc-ctl-fscreen-btn:hover {
     transition: right 200ms;
 }
 
-.tc-left-panel.tc-collapsed > .tc-panel-content {
+.tc-left-panel.tc-collapsed > .tc-panel-content,
+.tc-left-panel.tc-collapsed-left > .tc-panel-content {
     left: -340px;
     transition: left 200ms;
 }

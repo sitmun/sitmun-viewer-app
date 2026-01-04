@@ -684,3 +684,90 @@
     text-transform: unset !important;
 }
 
+/* ============================================
+   Silme Panel Styles (from silme-base)
+   ============================================ */
+
+/* Silme panel header positioning */
+.silme-panel > h1 {
+    top: 244px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+/* Legend tab positioning */
+#legend-tab {
+    top: 350px;
+}
+
+/* Silme panel tab backgrounds */
+.tc-left-panel #legend-tab {
+    background-image: url(../silme-base/img/mapaLeyenda.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+.tc-left-panel #silme-tab {
+    background-image: url(../silme-base/img/mapaTools.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+/* Collapsed legend state */
+.tc-left-panel.tc-collapsed-left.legend-active #legend-tab,
+.left-collapsed-legend #legend-tab {
+    background-image: url(../silme-base/img/mapaCerrar.png);
+    background-color: rgba(0, 0, 0, 1);
+    background-color: #b51818;
+}
+
+.tc-left-panel.tc-collapsed-left.legend-active #legend-tab:hover,
+.left-collapsed-legend #legend-tab:hover {
+    background-color: #a51818;
+}
+
+/* Collapsed silme state */
+.tc-left-panel.tc-collapsed-left.silme-active #silme-tab,
+.left-collapsed-silme #silme-tab {
+    background-image: url(../silme-base/img/mapaCerrar.png);
+    background-color: rgba(0, 0, 0, 1);
+    background-color: #b51818;
+}
+
+.tc-left-panel.tc-collapsed-left.silme-active #silme-tab:hover,
+.left-collapsed-silme #silme-tab:hover {
+    background-color: #a51818;
+}
+
+/* Legend control styling */
+.tc-ctl-legend {
+    padding: 0;
+    background-color: hsl(0deg 0% 98%);
+}
+
+/* Hide legend by default when panel is collapsed (unless legend is active) */
+.tc-left-panel.tc-collapsed-left:not(.left-collapsed-legend) #legend,
+.tc-left-panel.tc-collapsed:not(.left-collapsed-legend) #legend {
+    display: none;
+}
+
+/* Show legend when left-collapsed-legend class is present */
+.tc-left-panel.left-collapsed-legend #legend,
+.left-collapsed-legend #legend {
+    display: block;
+}
+
+/* Silme panel content styling when expanded */
+#silme-panel:not(.tc-collapsed-left):not(.tc-collapsed) > .tc-panel-content {
+    display: block;
+}
+
+/* Silme panel content styling when collapsed but legend active */
+#silme-panel.tc-collapsed-left.left-collapsed-legend > .tc-panel-content,
+#silme-panel.tc-collapsed.left-collapsed-legend > .tc-panel-content {
+    display: block;
+}
+
