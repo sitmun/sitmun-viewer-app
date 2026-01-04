@@ -1,0 +1,393 @@
+/* Custom main styles adapted from sitmun-base-old theme */
+
+html, button, input, select, textarea {
+    font-family: sans-serif;
+}
+
+/* Map positioning */
+.tc-map {
+    position: absolute !important;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+/* Controls */
+.tc-ctl {
+    padding: 0px;
+}
+
+/* Coordinates control */
+.tc-ctl-coords {
+    margin: unset;
+    position: absolute;
+    left: 0px;
+    top: auto;
+    bottom: 0px;
+    overflow: hidden;
+    z-index: 9999;
+    font-family: Arial, helvetica, sans-serif;
+    font-size: 0.6em;
+    padding: 5px !important;
+    padding-left: 10px !important;
+    width: 305px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    opacity: 1;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tc-ctl-coords:hover {
+    opacity: 1;
+}
+
+button.tc-ctl-coords-crs {
+    border: 1px solid #000;
+    border-radius: 0px;
+    padding: 2px;
+    margin-right: 2px;
+}
+
+/* Navigation controls */
+.tc-ctl.tc-ctl-nav {
+    top: 84px;
+    left: 20px;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn,
+.tc-ctl-nav-home-btn,
+.tc-ctl-sv-btn,
+.tc-ctl-be,
+button.tc-ctl-fscreen-btn,
+.tc-ctl-nav-home {
+    width: 40px;
+    height: 40px;
+    border-radius: 0px;
+}
+
+.tc-ctl-fscreen {
+    width: 40px !important;
+    left: 20px;
+    top: 210px !important;
+    margin-top: 0px;
+    width: auto;
+}
+
+button.tc-ctl-fscreen-btn {
+    background-image: url(./img/mapaAmpliar.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+.tc-ctl-fscreen button:after {
+    content: '';
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 2px;
+    background-image: url(./img/mapaMas.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    background-image: url(./img/mapaMenos.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+.tc-ctl-nav-home-btn {
+    background-image: url(./img/mapaHome.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin:after,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout:after,
+.tc-ctl-nav-home-btn:after {
+    content: ' ';
+}
+
+/* Scale control */
+.tc-ctl-sb, .tc-ctl-scl {
+    top: auto;
+    left: auto;
+    right: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 0px;
+    border-radius: 0px;
+    border-top-left-radius: 0px;
+    opacity: 1;
+    font-size: 0.75em;
+    padding: 5px !important;
+    padding-right: 10px !important;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tc-ctl-sb {
+    right: 125px;
+}
+
+.tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
+    border: solid 2px #333;
+    border-top: 0;
+}
+
+.tc-ctl-scl input, .tc-ctl-ss input {
+    border: 1px #333 solid;
+    color: #333;
+    font-size: 0.8em;
+    display: inline;
+    vertical-align: baseline;
+    line-height: 1.5em;
+    cursor: pointer;
+    padding: 2px;
+    margin-right: 2px;
+}
+
+/* Panels */
+.tc-slide-panel {
+    position: absolute;
+    width: auto;
+    max-width: 26.25em; /* ~420px target width */
+    height: 100%;
+}
+
+.tc-slide-panel > h1 {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 0px;
+    margin: 0px;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    z-index: -1;
+}
+
+.tc-right-panel > h1 {
+    left: 0;
+    margin-left: -3em;
+    right: auto;
+    transition: right 200ms;
+}
+
+.tc-left-panel > h1,
+.tc-left-panel .tc-ctl.tc-ctl-nav,
+.tc-left-panel .tc-ctl-sv-btn,
+.tc-left-panel .tc-ctl-be,
+.tc-left-panel .tc-ctl-fscreen {
+    left: 340px;
+    transition: left 200ms;
+    z-index: 10001;
+}
+
+.tc-tools-panel > h1 {
+    top: auto;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 1);
+}
+
+/* When collapsed, hide the text and show icon */
+.tc-tools-panel.tc-collapsed-right > h1 {
+    text-indent: -999em;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 50px 50px;
+    background-image: url(./img/mapaCapas.png);
+}
+
+.tc-right-panel.tc-collapsed > h1,
+.tc-right-panel.tc-collapsed-right > h1 {
+    right: 20px;
+    transition: right 200ms;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* When expanded, show text and hide icon */
+.tc-tools-panel:not(.tc-collapsed-right) > h1 {
+    background-image: none;
+}
+
+.tc-slide-panel > h1:hover,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin:hover,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout:hover,
+.tc-ctl-nav-home .tc-ctl-nav-home-btn:hover,
+button.tc-ctl-fscreen-btn:hover {
+    background-color: rgba(0, 0, 0, 1);
+    cursor: pointer;
+}
+
+.tc-left-panel.tc-collapsed > h1,
+.tc-left-panel.tc-collapsed .tc-ctl.tc-ctl-nav,
+.tc-left-panel.tc-collapsed .tc-ctl-sv,
+.tc-left-panel.tc-collapsed .tc-ctl-be,
+.tc-left-panel.tc-collapsed .tc-ctl-fscreen {
+    left: 20px;
+    transition: left 200ms;
+    z-index: 10001;
+}
+
+.tc-panel-content {
+    position: absolute;
+    top: 20px;
+    bottom: 48px;
+    width: 320px;
+    z-index: 10010;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure panel content properly constrains flex children */
+.tc-panel-content > .tc-ctl-lcat,
+.tc-panel-content > .tc-ctl-wlm {
+    min-height: 0;
+}
+
+.tc-right-panel > .tc-panel-content {
+    right: 0px;
+    transition: right 200ms;
+    border-bottom-left-radius: 0px;
+    border-top-left-radius: 0px;
+    width: 420px;
+}
+
+.tc-left-panel > .tc-panel-content {
+    left: 0px;
+    transition: left 200ms;
+    border-bottom-right-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.tc-right-panel.tc-collapsed > .tc-panel-content,
+.tc-right-panel.tc-collapsed-right > .tc-panel-content {
+    right: -420px;
+    transition: right 200ms;
+}
+
+.tc-left-panel.tc-collapsed > .tc-panel-content {
+    left: -340px;
+    transition: left 200ms;
+}
+
+.tc-tools-panel {
+    top: 0;
+    height: 100%;
+    max-height: 100%;
+}
+
+/* When panel is expanded (not collapsed) */
+.tc-tools-panel:not(.tc-collapsed-right) > h1 {
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    opacity: 1;
+    text-indent: 0;
+    background-image: none;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content {
+    top: 0;
+    bottom: 3.75em; /* Space for tab at bottom */
+}
+
+/* Override responsive breakpoint that sets height: auto */
+@media screen and (min-width: 24em) {
+    .tc-tools-panel {
+        height: 100% !important;
+        max-width: 26.25em;
+    }
+}
+
+/* Control headers */
+.tc-ctl h2 {
+    text-transform: none;
+    cursor: pointer;
+    background-position: calc(100% - 10px) 10px, 0px 0px;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 20px 20px, 38px 38px;
+    padding: 10px;
+    padding-left: 35px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+}
+
+/* Control content */
+.tc-ctl {
+    padding: 0px;
+}
+
+.tc-ctl > div {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Collapsed controls */
+.tc-ctl.tc-collapsed > div {
+    display: none;
+}
+
+/* Textboxes and combos */
+.tc-textbox, .tc-combo {
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.3) inset;
+    padding: 5px;
+    border: 0px;
+}
+
+/* Buttons */
+.tc-button {
+    border: 1px solid #7A8500;
+}
+
+/* Input ranges */
+input[type=range] {
+    margin: 0px;
+    width: 70%;
+    padding: 0px;
+    -webkit-appearance: none;
+    height: 2px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    vertical-align: text-top;
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+
+/* Alerts */
+.tc-alert {
+    border-radius: 0px;
+    padding: 15px;
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tc-alert p {
+    margin: 0px;
+}
+
+/* Popup */
+.tc-ctl-popup {
+    filter: drop-shadow(0 0px 3px rgba(0, 0, 0, 0.5));
+    border-radius: 6px;
+    border: 0px solid #ccc;
+    z-index: 99999;
+}
+
+/* Hide controls when map is collapsed */
+.tc-map.tc-collapsed .tc-tools-panel,
+.tc-map.tc-collapsed #search {
+    display: none;
+}
+

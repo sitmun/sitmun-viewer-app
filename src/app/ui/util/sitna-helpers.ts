@@ -12,6 +12,9 @@ import {
   AppTree
 } from '@api/model/app-cfg';
 import { Injectable } from '@angular/core';
+import { ConfigLookupService } from '../../services/config-lookup.service';
+import { UIStateService } from '../../services/ui-state.service';
+import { DomUtilsService } from '../../services/dom-utils.service';
 
 enum SitnaControlsEnum {
   Attribution = 'sitna.attribution',
@@ -55,18 +58,56 @@ enum SitnaControlsEnum {
   WFSQuery = 'sitna.WFSQuery',
   ExternalWMSSilme = 'sitna.externalWMS.silme.extension',
 }
-let showLegendButton = false;
-let showOverViewMapButton = false;
-let showToolsButton = false;
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class SitnaHelper {
   private static readonly DEFAULT_THUMBNAIL_URL = 'assets/img/dummy_map_thumbnail.jpg';
   private static readonly OTHER_SERVICES_NODE_ID = 'node99';
   private static readonly OTHER_SERVICES_TITLE = 'Altres serveis';
   private static readonly CATALOG_DIV = 'catalog';
 
-  constructor() {}
+  // Service instance holder for static method access (transitional)
+  private static instance: SitnaHelper;
+
+  constructor(
+    private configLookup: ConfigLookupService,
+    private uiState: UIStateService,
+    private domUtils: DomUtilsService
+  ) {
+    // Store instance for static method access
+    SitnaHelper.instance = this;
+  }
+
+  /**
+   * Initialize services with configuration (call before using static methods)
+   */
+  initializeServices(apiConfig: AppCfg): void {
+    this.configLookup.initialize(apiConfig);
+    this.uiState.reset();
+  }
+
+  /**
+   * Get UI state service for checking button visibility
+   */
+  getUIState(): UIStateService {
+    return this.uiState;
+  }
+
+  /**
+   * Get DOM utils service
+   */
+  getDomUtils(): DomUtilsService {
+    return this.domUtils;
+  }
+
+  /**
+   * Get config lookup service
+   */
+  getConfigLookup(): ConfigLookupService {
+    return this.configLookup;
+  }
 
   static toCrs(apiConfig: AppCfg): string | undefined {
     let crs;
@@ -105,7 +146,8 @@ export class SitnaHelper {
         // }
       }
       for (let background of backgrounds) {
-        const group = apiConfig.groups.find((elem) => elem.id === background);
+        const group = SitnaHelper.instance?.configLookup.findGroup(background) || 
+          apiConfig.groups.find((elem) => elem.id === background);
         if (group != undefined) {
           groups.push(group);
         }
@@ -118,11 +160,11 @@ export class SitnaHelper {
         }
       }
       for (let layerElement of layers) {
-        const layer = apiConfig.layers.find((elem) => elem.id === layerElement);
+        const layer = SitnaHelper.instance?.configLookup.findLayer(layerElement) ||
+          apiConfig.layers.find((elem) => elem.id === layerElement);
         if (layer != undefined) {
-          const service = apiConfig.services.find(
-            (service) => service.id === layer.service
-          );
+          const service = SitnaHelper.instance?.configLookup.findService(layer.service) ||
+            apiConfig.services.find((service) => service.id === layer.service);
           for (let background of apiConfig.backgrounds) {
             thumbnail = '';
             if (
@@ -388,7 +430,9 @@ export class SitnaHelper {
           }
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -415,7 +459,9 @@ export class SitnaHelper {
           sitnaControls.download = download.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -437,7 +483,9 @@ export class SitnaHelper {
           sitnaControls.drawMeasureModify = drawMeasureModify.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
     */
 
@@ -480,7 +528,9 @@ export class SitnaHelper {
           sitnaControls.geolocation = geolocation.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -495,7 +545,9 @@ export class SitnaHelper {
       sitnaControls.legend = {
         div: 'legend'
       };
-      showLegendButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableLegendButton();
+      }
     }
   }
 
@@ -524,7 +576,9 @@ export class SitnaHelper {
       sitnaControls.measure = {
         div: 'measure'
       };
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
     */
   }
@@ -592,7 +646,9 @@ export class SitnaHelper {
       if (overviewMap) {
         if (this.areParametersEmpty(overviewMap.parameters)) {
           if (apiConfig.application['situation-map']) {
-            const group = apiConfig.groups.find(
+            const group = SitnaHelper.instance?.configLookup.findGroup(
+              apiConfig.application['situation-map']
+            ) || apiConfig.groups.find(
               (elem) => elem.id === apiConfig.application['situation-map']
             );
             if (
@@ -601,13 +657,11 @@ export class SitnaHelper {
               group.layers?.length > 0
             ) {
               const layer = group.layers[0];
-              const layerObject = apiConfig.layers.find(
-                (elem) => elem.id === layer
-              );
+              const layerObject = SitnaHelper.instance?.configLookup.findLayer(layer) || 
+                apiConfig.layers.find((elem) => elem.id === layer);
               if (layerObject != undefined) {
-                const service = apiConfig.services.find(
-                  (service) => service.id === layerObject.service
-                );
+                const service = SitnaHelper.instance?.configLookup.findService(layerObject.service) ||
+                  apiConfig.services.find((service) => service.id === layerObject.service);
                 if (service != undefined) {
                   sitnaControls.overviewMap = {
                     div: 'ovmap',
@@ -630,7 +684,9 @@ export class SitnaHelper {
           sitnaControls.overviewMap = overviewMap.parameters;
         }
       }
-      showOverViewMapButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableOverviewMapButton();
+      }
     }
   }
 
@@ -673,7 +729,9 @@ export class SitnaHelper {
           sitnaControls.printMap = print.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -749,7 +807,9 @@ export class SitnaHelper {
       sitnaControls.share = {
         div: 'share'
       };
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -902,7 +962,9 @@ export class SitnaHelper {
           sitnaControls.multiFeatureInfo = multiFeatureInfo.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
   }
 
@@ -969,7 +1031,9 @@ export class SitnaHelper {
           sitnaControls.WFSEdit = wfsEdit.parameters;
         }
       }
-      showToolsButton = true;
+      if (SitnaHelper.instance) {
+        SitnaHelper.instance.uiState.enableToolsButton();
+      }
     }
     */
   }
@@ -1226,52 +1290,43 @@ export class SitnaHelper {
     ) {
       // Do nothing and show the welcome panel as default
     } else {
-      const welcomeElements = document.getElementsByClassName('welcome-panel');
-      const backgroundCoverElements =
-        document.getElementsByClassName('background-cover');
-
-      if (welcomeElements && welcomeElements[0]) {
-        (welcomeElements[0] as HTMLElement).classList.add('tc-hidden');
-      }
-
-      if (backgroundCoverElements && backgroundCoverElements[0]) {
-        (backgroundCoverElements[0] as HTMLElement).classList.add('tc-hidden');
+      if (SitnaHelper.instance) {
+        const { domUtils } = SitnaHelper.instance;
+        domUtils.hideElementsByClass('welcome-panel');
+        domUtils.hideElementsByClass('background-cover');
       }
     }
   }
+  
   static toHelp(apiConfig: AppCfg) {
+    if (!SitnaHelper.instance) {
+      return; // Services not initialized
+    }
+
+    const { domUtils } = SitnaHelper.instance;
+    
     if (apiConfig.tasks.some((x) => x['ui-control'] === 'markup-help-panel')) {
-      (
-        document.getElementsByClassName('help-links')[0] as HTMLElement
-      ).style.display = 'inline-flex';
+      domUtils.setDisplayByClass('help-links', 'inline-flex');
     } else {
-      (
-        document.getElementsByClassName('help-links')[0] as HTMLElement
-      ).style.display = 'none';
+      domUtils.setDisplayByClass('help-links', 'none');
     }
   }
   static toInterface() {
-    if (!showLegendButton) {
-      const legendElement = document.getElementById('legend-tab');
-      if (legendElement != null) {
-        legendElement.classList.add('tc-hidden');
-      }
+    if (!SitnaHelper.instance) {
+      return; // Services not initialized
     }
-    if (!showOverViewMapButton) {
-      const overViewMapElement = document.getElementById('ovmap-tab');
-      if (overViewMapElement != null) {
-        overViewMapElement.classList.add('tc-hidden');
-      }
+
+    const { uiState, domUtils } = SitnaHelper.instance;
+
+    if (!uiState.isLegendButtonEnabled()) {
+      domUtils.hideElementById('legend-tab');
     }
-    if (!showToolsButton) {
-      const toolsElement = document.getElementById('silme-tab');
-      if (toolsElement != null) {
-        toolsElement.classList.add('tc-hidden');
-      }
+    if (!uiState.isOverviewMapButtonEnabled()) {
+      domUtils.hideElementById('ovmap-tab');
     }
-    // var a =
-    //   document.getElementsByClassName('tc-ctl-edit-mode')[0].children[0].textContent="";
-    // console.log('variable a', a);
+    if (!uiState.isToolsButtonEnabled()) {
+      domUtils.hideElementById('silme-tab');
+    }
   }
 
   static loadMiddleware(apiConfig: AppCfg) {

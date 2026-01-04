@@ -12,7 +12,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MenuComponent } from './menu.component';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { LanguageHelper } from '@ui/util/LanguageHelper';
 
 describe('MenuComponent', () => {
   let component: MenuComponent;
@@ -36,7 +35,6 @@ describe('MenuComponent', () => {
       providers: [
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['logout']) },
-        { provide: LanguageHelper, useValue: jasmine.createSpyObj('LanguageHelper', ['getLanguages']) },
         TranslateService
       ]
     }).compileComponents();

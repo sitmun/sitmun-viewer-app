@@ -16,12 +16,14 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "esModuleInterop": true,
     "target": "ES2022",
     "module": "es2020",
     "lib": [
             "es2020",
             "dom"
     ],
+    "types": ["node"],
     "paths": {
       "@auth/*": ["src/app/auth/*"],
       "@config/*": ["src/app/config/*"],

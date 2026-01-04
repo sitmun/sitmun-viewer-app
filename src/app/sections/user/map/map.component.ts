@@ -6,6 +6,8 @@ import { DOCUMENT, Location } from '@angular/common';
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
+import { ControlRegistryService } from 'src/app/services/control-registry.service';
+import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 
 @Component({
   selector: 'app-map',
@@ -22,7 +24,9 @@ export class MapComponent extends AbstractMapComponent {
     modal: OpenModalService,
     renderer: Renderer2,
     el: ElementRef,
-    @Inject(DOCUMENT) document: Document
+    @Inject(DOCUMENT) document: Document,
+    controlRegistry: ControlRegistryService,
+    configLookup: ConfigLookupService
   ) {
     super(
       translate,
@@ -33,7 +37,9 @@ export class MapComponent extends AbstractMapComponent {
       modal,
       renderer,
       el,
-      document
+      document,
+      controlRegistry,
+      configLookup
     );
   }
 

@@ -18,6 +18,8 @@ import { Location } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { Cfg as SitnaCfg } from 'api-sitna';
 import SitnaMap from 'api-sitna';
+import { ControlRegistryService } from 'src/app/services/control-registry.service';
+import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 
 @Directive()
 export abstract class AbstractMapComponent
@@ -45,7 +47,9 @@ export abstract class AbstractMapComponent
     protected modal: OpenModalService,
     private renderer: Renderer2,
     private el: ElementRef,
-    private document: Document
+    private document: Document,
+    private controlRegistry: ControlRegistryService,
+    private configLookup: ConfigLookupService
   ) {
     const path = this.location.path();
     this.isInEmbedded = path.includes('embedded');
@@ -65,9 +69,9 @@ export abstract class AbstractMapComponent
       this.clearMap();
       this.commonServiceSubscription = this.commonService
         .fetchMapConfiguration(this.applicationId, this.territoryId)
-        .subscribe((appCfg) => {
+        .subscribe(async (appCfg) => {
           if (appCfg) {
-            this.loadConfig(appCfg);
+            await this.loadConfig(appCfg);
             // There might be a new theme in the recently fetched appCfg
             // We will share it with the rest of the app via
             // the commonService.updateMessage()
@@ -136,15 +140,25 @@ export abstract class AbstractMapComponent
     });
   }
 
-  loadConfig(appCfg: AppCfg) {
+  async loadConfig(appCfg: AppCfg) {
     this.currentAppCfg = appCfg;
+    
+    // Initialize lookup service for efficient entity lookups
+    this.configLookup.initialize(appCfg);
+    
+    // Process controls using handler system
+    const controls = await this.controlRegistry.processControls(
+      appCfg.tasks,
+      appCfg
+    );
+    
     this.currentGeneralCfg = {
       locale: this.locale,
       crs: SitnaHelper.toCrs(appCfg),
       initialExtent: SitnaHelper.toInitialExtent(appCfg),
       layout: SitnaHelper.toLayout(appCfg),
       baseLayers: SitnaHelper.toBaseLayers(appCfg),
-      controls: SitnaHelper.toControls(appCfg),
+      controls: controls as any, // Handler system returns Partial<SitnaControls>
       views: SitnaHelper.toViews(appCfg)
     };
 
@@ -153,8 +167,12 @@ export abstract class AbstractMapComponent
     // We need to save the currentGeneralCfg and the currentAppCfg, so when the
     // catalog change, the map can be loaded again with the same configuration
 
+    if (!this.currentGeneralCfg) {
+      console.error('[AbstractMapComponent] currentGeneralCfg is undefined, cannot proceed');
+      return;
+    }
+
     let cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
-    this.layerCatalogsSilme = SitnaHelper.toLayerCatalogSilme(appCfg);
 
     if (!cfgCheck.ok) {
       const ref = this.modal.open(ErrorModalComponent, {
@@ -166,27 +184,13 @@ export abstract class AbstractMapComponent
       return;
     }
 
-    // Order layers
-    this.layerCatalogsSilme.forEach((tree: any) => {
-      const layersAux = tree.catalog.layers;
-      const groupAux = tree.catalog.layerTreeGroups;
-      tree.catalog.layers = this.orderLayers(layersAux, groupAux);
-    });
-
-    // Parse the catalogs, so we can use them in the LayerCatalogSilme.js
-    let idx = -1;
-    (window as any).layerCatalogsSilmeForModal = new Object({
-      currentCatalog: this.currentCatalogIdx,
-      catalogs: this.layerCatalogsSilme.map((catalog: any) => {
-        return { id: ++idx, catalog: catalog.title };
-      })
-    });
-
-    const catalogCfg =
-      this.layerCatalogsSilme.length > 0
-        ? this.layerCatalogsSilme[this.currentCatalogIdx].catalog
-        : {};
-    SitnaCfg.controls.layerCatalogSilmeFolders = catalogCfg;
+    // REMOVED: Silme-specific setup now handled by LayerCatalogSilmeControlHandler
+    
+    if (!this.currentAppCfg || !this.currentGeneralCfg) {
+      console.error('[AbstractMapComponent] Config is undefined, cannot load map');
+      return;
+    }
+    
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 
@@ -197,12 +201,36 @@ export abstract class AbstractMapComponent
     ) {
       return; // This is a safeguard, but it should never happen
     }
-    this.currentCatalogIdx = (
-      window as any
-    ).layerCatalogsSilmeForModal.currentCatalog;
-    SitnaCfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
-    this.clearMap();
-    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+    
+    // Support both Silme and patched layer catalog
+    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
+    const layerCatalogsSilmeForModal = (window as any).layerCatalogsSilmeForModal;
+    
+    if (layerCatalogsForModal) {
+      // Patched layer catalog - rebuild controls configuration with new tree selection
+      console.log('[AbstractMapComponent] Rebuilding controls configuration for catalog switch');
+      
+      // Rebuild controls to pick up the new currentTreeId
+      this.controlRegistry.processControls(
+        this.currentAppCfg.tasks,
+        this.currentAppCfg
+      ).then((controls) => {
+        // Update general config with new controls
+        this.currentGeneralCfg!.controls = controls as any;
+        
+        // Clear and reload map with updated configuration
+        this.clearMap();
+        this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
+      });
+    } else if (layerCatalogsSilmeForModal) {
+      // Silme layer catalog - use existing logic
+      this.currentCatalogIdx = layerCatalogsSilmeForModal.currentCatalog;
+      SitnaCfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+      this.clearMap();
+      this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+    } else {
+      console.warn('[AbstractMapComponent] No catalog modal state found, cannot update catalog');
+    }
   }
 
   clearMap() {

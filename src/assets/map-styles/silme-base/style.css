@@ -1,0 +1,9 @@
+/*Including one css file into other -->*/
+@import "style/main_style.css";
+@import "style/colors.css";
+@import "style/responsive_sm.css";
+@import "style/responsive_md.css";
+@import "style/responsive_lg.css";
+@import "style/responsive_xl.css";
+@import "style/sitmun_specifics.css";
+@import "./style_mapskin.css";

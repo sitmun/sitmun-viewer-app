@@ -20,12 +20,21 @@ export interface LanguageItem {
 }
 
 /**
+ * Interface for control default configuration
+ */
+export interface ControlDefaultConfig {
+  div?: string;
+  [key: string]: any; // Allow additional properties
+}
+
+/**
  * Interface for application configuration
  */
 export interface AppConfig {
   dashboard: DashboardConfig;
   defaultLanguage?: string;  // Moved from languages.defaultLanguage
   languages?: LanguageItem[];  // Changed from object with defaultLanguages array to direct array
+  controlDefaults?: Record<string, ControlDefaultConfig>;  // Control identifier to default config mapping
 }
 
 /**
@@ -124,6 +133,23 @@ export class AppConfigService {
       return language?.icon || '';
     }
     return '';
+  }
+
+  /**
+   * Get default configuration for a control by its identifier
+   * @param controlIdentifier Control identifier (e.g., 'sitna.coordinates', 'sitna.layerCatalog')
+   * @returns Default configuration object or null if not found
+   */
+  getControlDefault(controlIdentifier: string): ControlDefaultConfig | null {
+    return this.config?.controlDefaults?.[controlIdentifier] || null;
+  }
+
+  /**
+   * Get all control defaults
+   * @returns Record of control identifier to default configuration
+   */
+  getAllControlDefaults(): Record<string, ControlDefaultConfig> {
+    return this.config?.controlDefaults || {};
   }
 }
 

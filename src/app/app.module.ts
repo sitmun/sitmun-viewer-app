@@ -42,6 +42,8 @@ import {
   AppConfigService,
   initializeAppConfig,
 } from './services/app-config.service';
+import { ALL_CONTROL_HANDLERS } from './controls/handlers';
+import { ControlRegistryService } from './services/control-registry.service';
 
 registerLocaleData(localeEs);
 
@@ -89,6 +91,8 @@ registerLocaleData(localeEs);
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
     { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
+    // Register all control handlers
+    ...ALL_CONTROL_HANDLERS,
     {
       provide: APP_INITIALIZER,
       useFactory: initializeAppConfig,
@@ -99,6 +103,12 @@ registerLocaleData(localeEs);
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
       deps: [AppInitializerService],
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeControlHandlers,
+      deps: [ControlRegistryService, ...ALL_CONTROL_HANDLERS],
       multi: true,
     },
   ],
@@ -113,4 +123,21 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     // <https://github.com/ngx-translate/core/blob/master/packages/http-loader/lib/http-loader.ts>
     '.json'
   );
+}
+
+/**
+ * Initialize control handlers at application startup.
+ * Registers all handlers with the ControlRegistryService.
+ */
+export function initializeControlHandlers(
+  registry: ControlRegistryService,
+  ...handlers: any[]
+): () => void {
+  return () => {
+    console.log(`[AppModule] Registering ${handlers.length} control handlers...`);
+    registry.registerAll(handlers);
+    const stats = registry.getStatistics();
+    console.log(`[AppModule] Registered handlers:`, stats.handlerTypes);
+    console.log(`[AppModule] Handlers with patches: ${stats.handlersWithPatches}`);
+  };
 }

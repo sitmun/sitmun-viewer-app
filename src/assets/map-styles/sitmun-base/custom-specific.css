@@ -1,0 +1,684 @@
+/* SITMUN-specific styles adapted from sitmun-base-old theme */
+
+:root {
+    --ide-main-color: #ff9300;
+}
+
+/* Adjust panel positions for SITMUN layout */
+.tc-right-panel > h1 {
+    top: 204px;
+}
+
+.tc-ctl.tc-ctl-nav {
+    top: 14px;
+}
+
+.tc-ctl.tc-ctl-nav-home {
+    top: 98px;
+}
+
+.tc-ctl-fscreen {
+    top: 140px !important;
+}
+
+.tc-ctl-sv {
+    top: 268px !important;
+    left: 20px;
+    position: absolute;
+}
+
+.tc-ctl-sv-btn {
+    left: 20px;
+    top: 338px;
+    margin-top: 0px;
+}
+
+.tc-ctl-be {
+    left: 20px;
+    top: 380px;
+    margin-top: 0px;
+    position: absolute;
+}
+
+/* Search positioning */
+#search {
+    position: absolute;
+    padding-left: 0.4em;
+    width: 300px;
+    z-index: 9998;
+    transition: left 200ms;
+    font-size: 0.9em;
+}
+
+#search > a {
+    display: none;
+}
+
+#search.tc-ctl.tc-ctl-search.search-left-collapsed {
+    left: 410px;
+}
+
+#search > h2 {
+    display: none;
+}
+
+.tc-ctl {
+    font-size: 1.1em;
+}
+
+.tc-ctl-search-list {
+    border: 0px;
+    border-radius: 0px;
+    width: 288px;
+}
+
+.tc-ctl-search-content {
+    border-radius: 0px;
+}
+
+.tc-ctl-search .tc-ctl-search-txt,
+.tc-ctl-search-txt {
+    width: calc(100% - 32px);
+    height: 32px;
+    border: 0px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    padding: 0 0 0 5px;
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.6) inset;
+}
+
+.tc-ctl-btn.tc-ctl-search-btn {
+    width: 32px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    line-height: 32px;
+    height: 32px;
+    padding: 0px;
+    background-image: url(./img/search.png);
+    background-position: 2px 1px;
+    background-repeat: no-repeat;
+    background-size: 30px 30px;
+    display: inline-block;
+    vertical-align: top;
+    cursor: pointer;
+    margin-left: 0;
+    overflow: hidden;
+    border: 0;
+    font-size: 0;
+}
+
+/* Work layer manager and layer catalog specific styles */
+/* Keep base padding defaults from api-sitna for WLM and LCAT */
+.tc-ctl-wlm,
+.tc-ctl-lcat {
+    padding: inherit;
+}
+
+/* Make layer catalog fill available height and use flexbox layout */
+.tc-ctl-lcat {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.tc-ctl-wlm h2,
+.tc-ctl-lcat h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/mapLayersStackN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+}
+
+/* Collapsed state for layer catalog header */
+.tc-ctl-lcat.tc-collapsed h2 {
+    background-image: url(./img/mapLayersStackG.png);
+}
+
+/* Change topic button styling */
+.tc-ctl-lcat-btn-change-topic,
+#change-catalog-sitmun {
+    text-decoration: none !important;
+    margin-left: 10px;
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1.1em;
+    font-size: 0.9em;
+    font-weight: normal;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+}
+
+.tc-ctl-lcat-btn-change-topic:hover,
+#change-catalog-sitmun:hover {
+    opacity: 0.7;
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-content ul {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.tc-ctl-wlm li.tc-ctl-wlm-elm {
+    border: 0px;
+    border-radius: 0px;
+    transition: all 200ms;
+    border-top: 1px dotted #ccc;
+    padding: 5px;
+}
+
+.tc-ctl-wlm li.tc-ctl-wlm-elm:first-child {
+    border-top: 0px dotted #ccc;
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-lyr {
+    font-size: 0.75em;
+    padding-bottom: 5px;
+}
+
+.tc-ctl-wlm input[type="range"] {
+    width: 65%;
+    margin-right: 5%;
+}
+
+/* Layer catalog tree background images */
+/* Expanded folders/nodes */
+.tc-ctl-lcat li.tc-ctl-lcat-node {
+    background-image: url(./img/folder_open.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Collapsed folders/nodes */
+.tc-ctl-lcat li.tc-ctl-lcat-node.tc-collapsed {
+    background-image: url(./img/folder_closed.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Last node in branch (only for actual nodes, not leaves) */
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child:not(.tc-ctl-lcat-leaf) {
+    background-image: url(./img/folder_open.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child.tc-collapsed:not(.tc-ctl-lcat-leaf) {
+    background-image: url(./img/folder_closed.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Leaf items - must override any node rules, including last-child */
+.tc-ctl-lcat li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf:last-child {
+    background-image: url(./img/mapLayer.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 4px !important;
+}
+
+/* Hide vertical connector lines in branches */
+.tc-ctl-lcat ul.tc-ctl-lcat-branch {
+    background-image: none !important;
+    margin-left: 4px !important;
+}
+
+/* First branch: no top margin, padding, or top border */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+}
+
+/* First items in first branch: no top border */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child > li.tc-ctl-lcat-node:first-child,
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child > li.tc-ctl-lcat-leaf:first-child {
+    border-top: none !important;
+}
+
+/* Tree container padding */
+.tc-ctl-lcat .tc-ctl-lcat-tree {
+    padding: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 4px !important;
+    flex: 1 !important;
+    overflow: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+/* Ensure search section is also part of flex layout when visible */
+.tc-ctl-lcat .tc-ctl-lcat-search {
+    flex-shrink: 0 !important;
+}
+
+/* Ensure internal components inherit background from container */
+.tc-ctl-lcat li.tc-ctl-lcat-node,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat li.tc-ctl-lcat-node span,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf span,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch,
+.tc-ctl-lcat .tc-ctl-lcat-tree {
+    background-color: inherit !important;
+}
+
+/* Make all folder nodes bold, but not leaves */
+.tc-ctl-lcat li.tc-ctl-lcat-node > span {
+    font-weight: bold !important;
+}
+
+/* Ensure leaves are not bold */
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > span {
+    font-weight: normal !important;
+}
+
+/* Add separation lines between items */
+.tc-ctl-lcat li.tc-ctl-lcat-node,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf {
+    border-top: 1px solid #ddd !important;
+}
+
+/* Vertically center info button in list items */
+.tc-ctl-lcat li.tc-ctl-lcat-node .tc-toggle.tc-ctl-lcat-btn-info,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf .tc-toggle.tc-ctl-lcat-btn-info {
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
+}
+
+/* Add padding-bottom to last child of last branch */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:last-child > li.tc-ctl-lcat-node:last-child,
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:last-child > li.tc-ctl-lcat-leaf:last-child {
+    padding-bottom: 4px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tc-tools-panel > h1 {
+        top: 84px;
+    }
+
+    #search {
+        left: 20px;
+    }
+
+    .tc-left-panel.tc-collapsed .tc-ctl-sv {
+        left: 20px;
+        top: 215px !important;
+    }
+
+}
+
+@media screen and (min-height: 640px) and (pointer: fine) {
+    .tc-ctl-lcat .tc-ctl-lcat-info-close {
+        font-size: 1.3em;
+    }
+}
+
+/* ============================================================================
+   Layer Catalog Info Panel Styling
+   ============================================================================ */
+
+/* Main panel container */
+.tc-ctl-lcat-info, .tc-ctl-lcat-proj {
+    max-height: 570px !important;
+    position: fixed !important;
+    left: 25% !important;
+    bottom: calc(50% - 235px) !important;
+    top: calc(50% - 235px) !important;
+    z-index: 99999 !important;
+    width: 670px !important;
+    height: 340px !important;
+    border: 0px !important;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5) !important;
+    overflow: unset !important;
+    padding: 0px !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Projects modal flexbox layout */
+.tc-ctl-lcat-proj {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Header section - match standard control header styling */
+.tc-ctl-lcat-info h2 {
+    margin: 0px !important;
+    padding: 10px !important;
+    padding-left: 35px !important;
+    border-bottom: 1px solid #ccc !important;
+    font-size: 1.1em !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background */
+    font-weight: bold !important;
+    text-transform: none !important;
+    cursor: default !important;
+}
+
+/* Title with orange dotted line - bold and header-like background */
+.tc-ctl-lcat-title {
+    border-bottom-width: 2px !important;
+    border-bottom-color: #ff9300 !important; /* Orange color */
+    border-bottom-style: dotted !important;
+    margin: 1em 0 !important;
+    font-weight: bold !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background like other headers */
+    padding: 10px !important;
+    border-top: 1px solid #ccc !important;
+    border-left: 1px solid #ccc !important;
+    border-right: 1px solid #ccc !important;
+    flex-shrink: 0 !important;
+    margin-top: 0px !important;
+}
+
+/* Icon in projects modal title - match info modal appearance */
+.tc-ctl-lcat-proj .tc-ctl-lcat-title:before,
+.tc-ctl-lcat-proj h3.tc-ctl-lcat-title:before,
+.tc-ctl-lcat-proj h2.tc-ctl-lcat-title:before {
+    font-family: var(--icon-font-family) !important;
+    content: var(--icon-info) !important;
+    font-size: 0.7em !important;
+    border-radius: 100% !important;
+    padding: 0.27em !important;
+    background-color: #ff0000 !important; /* Red circle */
+    color: #ffffff !important;
+    margin-right: 0.3em !important;
+    display: inline-block !important;
+}
+
+.tc-ctl-lcat-proj-title {
+    border-bottom-width: 2px !important;
+    border-bottom-color: #ff9300 !important; /* Orange color */
+    border-bottom-style: dotted !important;
+    margin: 1em 0 !important;
+    font-weight: bold !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background like other headers */
+    padding: 10px !important;
+    border-top: 1px solid #ccc !important;
+    border-left: 1px solid #ccc !important;
+    border-right: 1px solid #ccc !important;
+}
+
+/* ============================================================================
+   Layer Catalog Projects Panel Styling
+   ============================================================================ */
+
+/* Header section - match info modal header styling */
+.tc-ctl-lcat-proj h2 {
+    margin: 0px !important;
+    padding: 10px !important;
+    padding-left: 35px !important;
+    border-bottom: 1px solid #ccc !important;
+    font-size: 1.1em !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background */
+    font-weight: bold !important;
+    text-transform: none !important;
+    cursor: default !important;
+    flex-shrink: 0 !important;
+}
+
+/* Close button - match info modal close button */
+.tc-ctl-lcat-proj-close {
+    display: block !important;
+    float: right !important;
+    width: 1em !important;
+    height: 1em !important;
+    margin: 2px !important;
+    cursor: pointer !important;
+    font-size: 1.6em !important;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-proj-close:after {
+    content: '\2716' !important;
+    font-family: var(--icon-font-family) !important;
+    font-size: unset !important;
+}
+
+/* Content area - flexible to fill remaining space */
+.tc-ctl-lcat-proj-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 0.3em !important;
+    overflow: hidden !important;
+}
+
+/* Subtitle styling */
+.tc-ctl-lcat-proj-subtitle {
+    font-size: 0.9em !important;
+    margin-bottom: 10px !important;
+    color: #000000 !important;
+    line-height: 1.5 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Catalog list container - scrollable, fills remaining space */
+.tc-ctl-lcat-proj-childs {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    overflow: auto !important;
+    min-height: 0 !important;
+}
+
+/* Catalog item styling - make clickable */
+.tc-ctl-lcat-proj-catalog {
+    cursor: pointer !important;
+    user-select: none !important;
+    padding: 10px !important;
+    margin-bottom: 5px !important;
+    background-color: rgba(0, 0, 0, 0.05) !important; /* Light grey background for unselected */
+    border-radius: 4px !important;
+    transition: background-color 200ms ease !important;
+}
+
+.tc-ctl-lcat-proj-catalog:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important; /* Darker on hover */
+}
+
+.tc-ctl-lcat-proj-catalog label {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+    display: block !important;
+    margin: 0 !important;
+}
+
+/* Selected catalog item */
+.tc-ctl-lcat-proj-selected {
+    background-color: var(--ide-main-color, #ff9300) !important;
+    color: #ffffff !important;
+}
+
+.tc-ctl-lcat-proj-selected:hover {
+    background-color: var(--ide-main-color, #ff9300) !important; /* Keep orange on hover when selected */
+}
+
+.tc-ctl-lcat-proj-selected label {
+    color: #ffffff !important;
+}
+
+/* Buttons container - fixed at bottom */
+.tc-ctl-lcat-proj-buttons {
+    padding: 20px !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-flow: row !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    border-top: 1px solid #ccc !important;
+    flex-shrink: 0 !important;
+}
+
+/* Button styling */
+.tc-ctl-lcat-proj-buttons button {
+    height: 30px !important;
+    min-width: 90px !important;
+    padding: 8px 16px !important;
+    border: 1px solid #ccc !important;
+    background-color: #ffffff !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 0.9em !important;
+    transition: all 200ms ease !important;
+}
+
+.tc-ctl-lcat-proj-buttons button:hover {
+    border-color: #999 !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* "i" icon in header */
+.tc-ctl-lcat .tc-ctl-lcat-info h3:before {
+    font-family: var(--icon-font-family) !important;
+    content: var(--icon-info) !important;
+    font-size: 0.7em !important;
+    border-radius: 100% !important;
+    padding: 0.27em !important;
+    background-color: #ff0000 !important; /* Red circle */
+    color: #ffffff !important;
+    margin-right: 0.3em !important;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info h3 {
+    color: black !important;
+    margin: 0px !important;
+    border-top-left-radius: 0.3em !important;
+    border-top-right-radius: 0.3em !important;
+}
+
+/* Close button */
+.tc-ctl-lcat-info-close {
+    display: block !important;
+    float: right !important;
+    width: 1em !important;
+    height: 1em !important;
+    margin: 0.3em !important;
+    cursor: pointer !important;
+    font-size: 1.6em !important;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info-close:after {
+    content: '\2716' !important;
+    font-family: var(--icon-font-family) !important;
+    font-size: unset !important;
+}
+
+/* Content area - scrollable */
+.tc-ctl-lcat-info-content {
+    overflow: auto !important;
+    height: 300px !important;
+    padding: 0.3em !important;
+}
+
+/* Data sections */
+.tc-ctl-lcat-info-data {
+    height: auto !important;
+    margin-left: 5px !important;
+}
+
+.tc-ctl-lcat-info-data-title {
+    display: inline-block !important;
+    width: 95px !important;
+    vertical-align: top !important;
+}
+
+.tc-ctl-lcat-info-data-content {
+    display: inline-block !important;
+    margin-left: 20px !important;
+    vertical-align: bottom !important;
+    width: 435px !important;
+}
+
+.tc-ctl-lcat-info-data-content pre {
+    font-family: sans-serif !important;
+}
+
+/* Name section - now uses consistent structure with other data sections */
+.tc-ctl-lcat-name {
+    display: inline-block !important;
+    margin-right: 150px !important;
+}
+
+/* Legacy support for old structure */
+#lcat-info-title {
+    display: inline-block !important;
+    margin-left: 5px !important;
+    width: 95px !important;
+}
+
+#lcat-info pre {
+    font-family: inherit !important;
+}
+
+/* Ensure name section label is visible when using new structure */
+.tc-ctl-lcat-info-data .tc-ctl-lcat-info-data-title {
+    display: inline-block !important;
+    width: 95px !important;
+    vertical-align: top !important;
+}
+
+.tc-ctl-lcat-info-data .tc-ctl-lcat-info-data-content {
+    display: inline-block !important;
+    margin-left: 20px !important;
+    vertical-align: bottom !important;
+    width: 435px !important;
+}
+
+/* Abstract sections */
+.tc-ctl-lcat-abstract {
+    background-color: unset !important;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-abstract pre,
+.tc-ctl-lcat .tc-ctl-lcat-parentAbstract pre {
+    font-family: inherit !important;
+    margin: 0 !important;
+    margin-left: 5px !important;
+}
+
+.tc-ctl-lcat-parentAbstract {
+    padding: 0.3em !important;
+}
+
+/* URL section */
+.tc-ctl-lcat-url {
+    padding: 0.3em !important;
+}
+
+/* Metadata and download sections */
+.tc-ctl-lcat-metadata {
+    vertical-align: middle !important;
+}
+
+.tc-ctl-lcat-descarregadades {
+    vertical-align: middle !important;
+}
+
+.tc-ctl-lcat-abstract > a {
+    display: block !important;
+}
+
+/* Headings */
+.tc-ctl-lcat-info h4 {
+    margin: 0.5em 0 0.2em 0 !important;
+    text-transform: unset !important;
+}
+

@@ -68,41 +68,40 @@ describe('NavigationBarComponent', () => {
   it('should have correct method names', () => {
     expect(component.checkWhichClassIsActive).toBeDefined();
     expect(component.overrideNavbar).toBeDefined();
-    expect(component.checkIfResponsive).toBeDefined();
     expect(component.getToolbarClass).toBeDefined();
   });
 
   it('should return correct toolbar class for login route', () => {
-    router.url = '/auth/login';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/auth/login');
     const className = component.getToolbarClass();
     expect(className).toBe('login');
   });
 
   it('should return correct toolbar class for map route', () => {
-    router.url = '/user/map/123';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/user/map/123');
     const className = component.getToolbarClass();
     expect(className).toBe('pet');
   });
 
   it('should return empty string for default route', () => {
-    router.url = '/user/dashboard';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
     const className = component.getToolbarClass();
     expect(className).toBe('');
   });
 
   it('should check if connected correctly', () => {
-    router.url = '/public/dashboard';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/public/dashboard');
     expect(component.isConnected()).toBe(false);
     
-    router.url = '/user/dashboard';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
     expect(component.isConnected()).toBe(true);
   });
 
   it('should check if on map correctly', () => {
-    router.url = '/user/map/123';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/user/map/123');
     expect(component.isOnMap()).toBe(true);
     
-    router.url = '/user/dashboard';
+    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
     expect(component.isOnMap()).toBe(false);
   });
 });

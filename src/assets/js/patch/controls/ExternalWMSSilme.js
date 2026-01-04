@@ -72,7 +72,7 @@ TC.inherit(TC.control.ExternalWMSSilme, TC.Control);
     const _this = this;
     _this.template = {};
 
-    _this.template[_this.CLASS] = "assets/js/sitna/TC/templates/tc-ctl-xwms.hbs";
+    _this.template[_this.CLASS] = "assets/js/api-sitna/TC/templates/tc-ctl-xwms.mjs";
   }
 
   // ===========================================================================

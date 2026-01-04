@@ -10,5 +10,25 @@
     { "name": "Français", "shortname": "fr", "icon": "assets/flags/france.svg" },
     { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" },
     { "name": "Aranés", "shortname": "oc-aranes", "icon": "assets/flags/val-aran.svg" }
-  ]
+  ],
+  "controlDefaults": {
+    "sitna.coordinates": {
+      "div": "coordinates"
+    },
+    "sitna.scale": {
+      "div": "scale"
+    },
+    "sitna.workLayerManager": {
+      "div": "tc-slot-wl"
+    },
+    "sitna.layerCatalog": {
+      "div": "tc-slot-toc"
+    },
+    "sitna.search.silme.extension": {
+      "div": "search"
+    },
+    "sitna.layerCatalog.silme.extension": {
+      "div": "layerCatalog"
+    }
+  }
 }

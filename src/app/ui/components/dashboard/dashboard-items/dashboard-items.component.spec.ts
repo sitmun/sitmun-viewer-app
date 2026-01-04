@@ -18,7 +18,7 @@ describe('DashboardItemsComponent', () => {
   ): DashboardItem => ({
     id,
     name,
-    type,
+    type: type ?? undefined,
     appPrivate,
     isUnavailable: false,
     updateDate: new Date(),
