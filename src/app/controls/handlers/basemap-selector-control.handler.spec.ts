@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { CoordinatesControlHandler } from './coordinates-control.handler';
+import { BasemapSelectorControlHandler } from './basemap-selector-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-describe('CoordinatesControlHandler', () => {
-  let handler: CoordinatesControlHandler;
+describe('BasemapSelectorControlHandler', () => {
+  let handler: BasemapSelectorControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -15,15 +17,21 @@ describe('CoordinatesControlHandler', () => {
       'getTC'
     ]);
 
+    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
+    mockAppConfigService.getControlDefault.and.returnValue({ div: 'bms' });
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
-        CoordinatesControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
+        BasemapSelectorControlHandler,
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 
-    handler = TestBed.inject(CoordinatesControlHandler);
+    handler = TestBed.inject(BasemapSelectorControlHandler);
 
     mockAppCfg = {
       application: {
@@ -49,7 +57,7 @@ describe('CoordinatesControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control identifier', () => {
-      expect(handler.controlIdentifier).toBe('sitna.coordinates');
+      expect(handler.controlIdentifier).toBe('sitna.basemapSelector');
     });
   });
 
@@ -62,22 +70,22 @@ describe('CoordinatesControlHandler', () => {
   describe('buildConfiguration()', () => {
     it('should return configuration with default div', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.basemapSelector',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'coordinates' });
+      expect(config).toEqual({ div: 'bms' });
     });
 
     it('should merge task parameters', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.basemapSelector',
         parameters: {
-          position: 'bottom-right',
-          showElevation: true
+          position: 'top-right',
+          collapsed: true
         }
       } as any;
       const context: AppCfg = {} as any;
@@ -85,15 +93,15 @@ describe('CoordinatesControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'coordinates',
-        position: 'bottom-right',
-        showElevation: true
+        div: 'bms',
+        position: 'top-right',
+        collapsed: true
       });
     });
 
     it('should allow parameters to override div', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.basemapSelector',
         parameters: {
           div: 'custom-div'
         }
@@ -121,7 +129,7 @@ describe('CoordinatesControlHandler', () => {
 
     it('should resolve immediately', async () => {
       const start = Date.now();
-      await handler.loadPatches(mockAppCfg);
+      await handler.loadPatches({} as AppCfg);
       const duration = Date.now() - start;
 
       expect(duration).toBeLessThan(10); // Should be instant
@@ -131,21 +139,21 @@ describe('CoordinatesControlHandler', () => {
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
-      await handler.loadPatches(mockAppCfg);
+      await handler.loadPatches({} as AppCfg);
 
       // Should be ready immediately
       expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.basemapSelector',
         parameters: { custom: 'value' }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('coordinates');
+      expect(config?.div).toBe('bms');
     });
   });
 });

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { DashboardItemsComponent } from './dashboard-items.component';
 import { AppConfigService } from 'src/app/services/app-config.service';
@@ -24,22 +25,23 @@ describe('DashboardItemsComponent', () => {
     updateDate: new Date(),
     createdDate: new Date(),
     creator: 'test',
-    headerParams: {},
+    headerParams: {}
   });
 
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', [], { url: '/user/dashboard' });
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'isFilteringEnabled',
-      'getAllowedTypes',
+      'getAllowedTypes'
     ]);
 
     await TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       declarations: [DashboardItemsComponent],
       providers: [
         { provide: Router, useValue: mockRouter },
-        { provide: AppConfigService, useValue: mockAppConfigService },
-      ],
+        { provide: AppConfigService, useValue: mockAppConfigService }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardItemsComponent);
@@ -57,7 +59,7 @@ describe('DashboardItemsComponent', () => {
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
         createMockItem(2, 'App2', 'E'),
-        createMockItem(3, 'App3', null),
+        createMockItem(3, 'App3', null)
       ];
 
       const result = component.filterByType(items);
@@ -73,7 +75,7 @@ describe('DashboardItemsComponent', () => {
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
         createMockItem(2, 'App2', 'E'),
-        createMockItem(3, 'App3', 'I'),
+        createMockItem(3, 'App3', 'I')
       ];
 
       const result = component.filterByType(items);
@@ -90,7 +92,7 @@ describe('DashboardItemsComponent', () => {
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
         createMockItem(2, 'App2', null),
-        createMockItem(3, 'App3', 'I'),
+        createMockItem(3, 'App3', 'I')
       ];
 
       const result = component.filterByType(items);
@@ -106,7 +108,7 @@ describe('DashboardItemsComponent', () => {
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
-        createMockItem(2, 'App2', 'E'),
+        createMockItem(2, 'App2', 'E')
       ];
 
       const result = component.filterByType(items);
@@ -122,13 +124,13 @@ describe('DashboardItemsComponent', () => {
         createMockItem(1, 'App1', 'I'),
         createMockItem(2, 'App2', 'E'),
         createMockItem(3, 'App3', 'P'),
-        createMockItem(4, 'App4', 'X'),
+        createMockItem(4, 'App4', 'X')
       ];
 
       const result = component.filterByType(items);
 
       expect(result.length).toBe(3);
-      expect(result.map(r => r.name)).toEqual(['App1', 'App2', 'App3']);
+      expect(result.map((r) => r.name)).toEqual(['App1', 'App2', 'App3']);
     });
   });
 
@@ -140,7 +142,7 @@ describe('DashboardItemsComponent', () => {
       component.items = [
         createMockItem(1, 'App1', 'I'),
         createMockItem(2, 'App2', 'E'),
-        createMockItem(3, 'App3', 'I'),
+        createMockItem(3, 'App3', 'I')
       ];
 
       component.displayAllApplications(true);
@@ -159,7 +161,7 @@ describe('DashboardItemsComponent', () => {
         createMockItem(1, 'App1', 'I', true),
         createMockItem(2, 'App2', 'E', true),
         createMockItem(3, 'App3', 'I', false),
-        createMockItem(4, 'App4', 'E', false),
+        createMockItem(4, 'App4', 'E', false)
       ];
 
       component.displayAllApplicationsPrivate(true, true);
@@ -177,7 +179,7 @@ describe('DashboardItemsComponent', () => {
         createMockItem(1, 'App1', 'I', true),
         createMockItem(2, 'App2', 'E', true),
         createMockItem(3, 'App3', 'I', false),
-        createMockItem(4, 'App4', 'E', false),
+        createMockItem(4, 'App4', 'E', false)
       ];
 
       component.displayAllApplicationsPrivate(true, false);
@@ -191,7 +193,7 @@ describe('DashboardItemsComponent', () => {
   describe('isPublic', () => {
     it('should return true for public routes', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/public/dashboard',
+        get: () => '/public/dashboard'
       });
 
       expect(component.isPublic()).toBe(true);
@@ -199,7 +201,7 @@ describe('DashboardItemsComponent', () => {
 
     it('should return false for non-public routes', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/user/dashboard',
+        get: () => '/user/dashboard'
       });
 
       expect(component.isPublic()).toBe(false);
@@ -209,7 +211,7 @@ describe('DashboardItemsComponent', () => {
   describe('isDashboard', () => {
     it('should return true for user dashboard route', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/user/dashboard',
+        get: () => '/user/dashboard'
       });
 
       expect(component.isDashboard()).toBe(true);
@@ -217,7 +219,7 @@ describe('DashboardItemsComponent', () => {
 
     it('should return true for public dashboard route', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/public/dashboard',
+        get: () => '/public/dashboard'
       });
 
       expect(component.isDashboard()).toBe(true);
@@ -225,7 +227,7 @@ describe('DashboardItemsComponent', () => {
 
     it('should return false for non-dashboard routes', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/user/map',
+        get: () => '/user/map'
       });
 
       expect(component.isDashboard()).toBe(false);

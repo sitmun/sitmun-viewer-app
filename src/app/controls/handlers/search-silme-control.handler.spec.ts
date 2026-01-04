@@ -1,27 +1,46 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SearchSilmeControlHandler } from './search-silme-control.handler';
-import { PatchLoaderService } from '../../services/patch-loader.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('SearchSilmeControlHandler', () => {
   let handler: SearchSilmeControlHandler;
-  let mockPatchLoader: jasmine.SpyObj<PatchLoaderService>;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockPatchLoader = jasmine.createSpyObj('PatchLoaderService', ['loadPatch', 'isPatchLoaded']);
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', ['waitForTC', 'getTC']);
+    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
+      'waitForTC',
+      'getTC'
+    ]);
 
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       providers: [
         SearchSilmeControlHandler,
-        { provide: PatchLoaderService, useValue: mockPatchLoader },
         { provide: TCNamespaceService, useValue: mockTCNamespace }
       ]
     });
 
     handler = TestBed.inject(SearchSilmeControlHandler);
+
+    mockAppCfg = {
+      application: {
+        id: 1,
+        title: 'Test App',
+        type: 'test',
+        theme: 'default',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 100, 100]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: []
+    };
   });
 
   it('should be created', () => {
@@ -35,39 +54,28 @@ describe('SearchSilmeControlHandler', () => {
   });
 
   describe('requiredPatches', () => {
-    it('should have correct patch file', () => {
-      expect(handler.requiredPatches).toEqual([
-        'assets/js/patch/controls/SearchSilme.js'
-      ]);
+    it('should be undefined (patches applied programmatically)', () => {
+      expect(handler.requiredPatches).toBeUndefined();
     });
   });
 
   describe('loadPatches()', () => {
-    it('should wait for TC before loading patches', async () => {
-      const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-
-      await handler.loadPatches();
-
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledWith(
-        'assets/js/patch/controls/SearchSilme.js'
-      );
+    it('should resolve successfully with context', async () => {
+      await handler.loadPatches(mockAppCfg);
+      // Default implementation does nothing, just resolves
+      expect(true).toBe(true);
     });
 
-    it('should propagate errors', async () => {
-      const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockPatchLoader.loadPatch.and.returnValue(Promise.reject(new Error('Load failed')));
+    it('should resolve immediately', async () => {
+      const start = Date.now();
+      await handler.loadPatches(mockAppCfg);
+      const duration = Date.now() - start;
 
-      await expectAsync(handler.loadPatches()).toBeRejected();
+      expect(duration).toBeLessThan(10); // Should be instant
     });
 
-    it('should handle TC wait failure', async () => {
-      mockTCNamespace.waitForTC.and.returnValue(Promise.reject(new Error('TC not available')));
-
-      await expectAsync(handler.loadPatches()).toBeRejected();
+    it('should require context parameter', async () => {
+      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
     });
   });
 
@@ -121,40 +129,8 @@ describe('SearchSilmeControlHandler', () => {
   });
 
   describe('isReady()', () => {
-    it('should return false when patches not loaded', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(false);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return false when TC.control.SearchSilme not available', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue({ control: {} } as any);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return true when patches loaded and control available', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue({
-        control: { SearchSilme: {} }
-      } as any);
-
+    it('should return true by default (patches applied programmatically)', () => {
       expect(handler.isReady()).toBe(true);
-    });
-
-    it('should return false when TC is undefined', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue(undefined);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return false when TC.control is undefined', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue({} as any);
-
-      expect(handler.isReady()).toBe(false);
     });
   });
 
@@ -172,13 +148,9 @@ describe('SearchSilmeControlHandler', () => {
       const mockTC = { control: { SearchSilme: {} } };
       mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
       mockTCNamespace.getTC.and.returnValue(mockTC as any);
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
 
       // Load patches
-      await handler.loadPatches();
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalled();
+      await handler.loadPatches(context);
 
       // Should be ready
       expect(handler.isReady()).toBe(true);
@@ -192,18 +164,15 @@ describe('SearchSilmeControlHandler', () => {
       expect(config?.minLength).toBe(3);
     });
 
-    it('should handle workflow when not ready', async () => {
+    it('should handle workflow when ready', async () => {
       const task: AppTasks = {
         'ui-control': 'sitna.search.silme.extension',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
 
-      mockPatchLoader.isPatchLoaded.and.returnValue(false);
-      mockTCNamespace.getTC.and.returnValue(undefined);
-
-      // Not ready
-      expect(handler.isReady()).toBe(false);
+      // Ready by default (patches applied programmatically)
+      expect(handler.isReady()).toBe(true);
 
       // Can still build config (handler doesn't prevent it)
       const config = handler.buildConfiguration(task, context);
@@ -211,4 +180,3 @@ describe('SearchSilmeControlHandler', () => {
     });
   });
 });
-

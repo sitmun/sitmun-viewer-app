@@ -8,6 +8,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
+import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 
 @Component({
   selector: 'app-map',
@@ -26,7 +27,8 @@ export class MapComponent extends AbstractMapComponent {
     el: ElementRef,
     @Inject(DOCUMENT) document: Document,
     controlRegistry: ControlRegistryService,
-    configLookup: ConfigLookupService
+    configLookup: ConfigLookupService,
+    mapConfig: MapConfigurationService
   ) {
     super(
       translate,
@@ -39,7 +41,8 @@ export class MapComponent extends AbstractMapComponent {
       el,
       document,
       controlRegistry,
-      configLookup
+      configLookup,
+      mapConfig
     );
   }
 

@@ -19,7 +19,7 @@ describe('VirtualWmsCapabilitiesService', () => {
         type: 'test',
         theme: 'default',
         srs: 'EPSG:25831',
-        initialExtent: [0, 0, 100, 100],
+        initialExtent: [0, 0, 100, 100]
       },
       backgrounds: [],
       groups: [],
@@ -28,22 +28,22 @@ describe('VirtualWmsCapabilitiesService', () => {
           id: 'layer-1',
           title: 'Layer 1',
           layers: ['wms-layer-1'],
-          service: 'service-1',
+          service: 'service-1'
         },
         {
           id: 'layer-2',
           title: 'Layer 2',
           layers: ['wms-layer-2'],
-          service: 'service-1',
-        },
+          service: 'service-1'
+        }
       ],
       services: [
         {
           id: 'service-1',
           url: 'http://example.com/wms',
           type: 'WMS',
-          parameters: { SRS: 'EPSG:25831' },
-        },
+          parameters: { SRS: 'EPSG:25831' }
+        }
       ],
       tasks: [],
       trees: [
@@ -58,32 +58,32 @@ describe('VirtualWmsCapabilitiesService', () => {
               resource: '',
               isRadio: false,
               children: ['node-2', 'node-3'],
-              order: 1,
+              order: 1
             },
             'node-2': {
               title: 'Folder Node',
               resource: '',
               isRadio: false,
               children: ['node-4'],
-              order: 1,
+              order: 1
             },
             'node-3': {
               title: 'Leaf Node 1',
               resource: 'layer-1',
               isRadio: false,
               children: [],
-              order: 2,
+              order: 2
             },
             'node-4': {
               title: 'Leaf Node 2',
               resource: 'layer-2',
               isRadio: false,
               children: [],
-              order: 1,
-            },
-          },
-        },
-      ],
+              order: 1
+            }
+          }
+        }
+      ]
     };
   });
 
@@ -127,7 +127,7 @@ describe('VirtualWmsCapabilitiesService', () => {
       expect(rootLayer.Name).toBeUndefined();
 
       // Find leaf node (has Name property)
-      const leafNode = rootLayer.Layer!.find(l => l.Name);
+      const leafNode = rootLayer.Layer!.find((l) => l.Name);
       if (leafNode) {
         expect(leafNode.Name).toBeDefined();
       }
@@ -178,29 +178,32 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-2', 'node-3', 'node-missing'],
-                order: 1,
+                order: 1
               },
               'node-missing': {
                 title: 'Node with Missing Resource',
                 resource: 'non-existent-layer',
                 isRadio: false,
                 children: [],
-                order: 3,
-              },
-            },
-          },
-        ],
+                order: 3
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-1', configWithMissingResource);
+      const capabilities = service.generateCapabilities(
+        'node-1',
+        configWithMissingResource
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       // Should only include node-2 and node-3, not node-missing
       expect(rootLayer.Layer).toBeDefined();
       expect(rootLayer.Layer!.length).toBe(2); // Only node-2 and node-3
-      
+
       // Verify node-missing is not in the tree
-      const layerTitles = rootLayer.Layer!.map(l => l.Title);
+      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Node with Missing Resource'); // node-missing should be excluded
@@ -219,28 +222,31 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-2', 'node-3', 'node-no-resource'],
-                order: 1,
+                order: 1
               },
               'node-no-resource': {
                 title: 'Leaf Without Resource',
                 resource: '',
                 isRadio: false,
                 children: [],
-                order: 3,
-              },
-            },
-          },
-        ],
+                order: 3
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-1', configWithLeafWithoutResource);
+      const capabilities = service.generateCapabilities(
+        'node-1',
+        configWithLeafWithoutResource
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       // Should only include node-2 and node-3, not node-no-resource
       expect(rootLayer.Layer).toBeDefined();
       expect(rootLayer.Layer!.length).toBe(2);
-      
-      const layerTitles = rootLayer.Layer!.map(l => l.Title);
+
+      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Leaf Without Resource'); // node-no-resource should be excluded
@@ -259,28 +265,31 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-2', 'node-3', 'node-empty-folder'],
-                order: 1,
+                order: 1
               },
               'node-empty-folder': {
                 title: 'Empty Folder',
                 resource: '',
                 isRadio: false,
                 children: [],
-                order: 3,
-              },
-            },
-          },
-        ],
+                order: 3
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-1', configWithEmptyFolder);
+      const capabilities = service.generateCapabilities(
+        'node-1',
+        configWithEmptyFolder
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       // Should only include node-2 and node-3, not node-empty-folder
       expect(rootLayer.Layer).toBeDefined();
       expect(rootLayer.Layer!.length).toBe(2);
-      
-      const layerTitles = rootLayer.Layer!.map(l => l.Title);
+
+      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Empty Folder'); // node-empty-folder should be excluded
@@ -299,42 +308,45 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-2', 'node-3', 'node-folder-all-excluded'],
-                order: 1,
+                order: 1
               },
               'node-folder-all-excluded': {
                 title: 'Folder with All Children Excluded',
                 resource: '',
                 isRadio: false,
                 children: ['node-missing-1', 'node-missing-2'],
-                order: 3,
+                order: 3
               },
               'node-missing-1': {
                 title: 'Missing Resource 1',
                 resource: 'non-existent-layer-1',
                 isRadio: false,
                 children: [],
-                order: 1,
+                order: 1
               },
               'node-missing-2': {
                 title: 'Missing Resource 2',
                 resource: 'non-existent-layer-2',
                 isRadio: false,
                 children: [],
-                order: 2,
-              },
-            },
-          },
-        ],
+                order: 2
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-1', configWithFolderAllChildrenExcluded);
+      const capabilities = service.generateCapabilities(
+        'node-1',
+        configWithFolderAllChildrenExcluded
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       // Should only include node-2 and node-3, not node-folder-all-excluded (since all its children are excluded)
       expect(rootLayer.Layer).toBeDefined();
       expect(rootLayer.Layer!.length).toBe(2);
-      
-      const layerTitles = rootLayer.Layer!.map(l => l.Title);
+
+      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Folder with All Children Excluded'); // node-folder-all-excluded should be excluded
@@ -352,29 +364,32 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-missing-1', 'node-missing-2'],
-                order: 1,
+                order: 1
               },
               'node-missing-1': {
                 title: 'Missing Resource 1',
                 resource: 'non-existent-layer-1',
                 isRadio: false,
                 children: [],
-                order: 1,
+                order: 1
               },
               'node-missing-2': {
                 title: 'Missing Resource 2',
                 resource: 'non-existent-layer-2',
                 isRadio: false,
                 children: [],
-                order: 2,
-              },
-            },
-          },
-        ],
+                order: 2
+              }
+            }
+          }
+        ]
       };
 
       expect(() => {
-        service.generateCapabilities('node-empty-root', configWithNoValidLayers);
+        service.generateCapabilities(
+          'node-empty-root',
+          configWithNoValidLayers
+        );
       }).toThrow('has no valid layers to include in capabilities');
     });
 
@@ -390,15 +405,18 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: [],
-                order: 1,
-              },
-            },
-          },
-        ],
+                order: 1
+              }
+            }
+          }
+        ]
       };
 
       expect(() => {
-        service.generateCapabilities('node-no-resource', configWithLeafNoResource);
+        service.generateCapabilities(
+          'node-no-resource',
+          configWithLeafNoResource
+        );
       }).toThrow('has no valid layers to include in capabilities');
     });
   });
@@ -411,7 +429,9 @@ describe('VirtualWmsCapabilitiesService', () => {
 
     it('should return false for real URLs', () => {
       expect(service.isVirtualServiceUrl('http://example.com/wms')).toBe(false);
-      expect(service.isVirtualServiceUrl('https://example.com/wms')).toBe(false);
+      expect(service.isVirtualServiceUrl('https://example.com/wms')).toBe(
+        false
+      );
     });
 
     it('should return false for undefined', () => {
@@ -485,11 +505,11 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: 'layer-2',
                 isRadio: false,
                 children: [],
-                order: 1,
-              },
-            },
-          },
-        ],
+                order: 1
+              }
+            }
+          }
+        ]
       };
 
       const config = service.findRealLayerConfig('node-100', multiTreeConfig);
@@ -511,14 +531,17 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: 'non-existent-layer',
                 isRadio: false,
                 children: [],
-                order: 1,
-              },
-            },
-          },
-        ],
+                order: 1
+              }
+            }
+          }
+        ]
       };
 
-      const config = service.findRealLayerConfig('node-orphan', configWithMissingLayer);
+      const config = service.findRealLayerConfig(
+        'node-orphan',
+        configWithMissingLayer
+      );
       expect(config).toBeNull();
     });
   });
@@ -643,8 +666,8 @@ describe('VirtualWmsCapabilitiesService', () => {
             id: 'layer-4',
             title: 'Layer 4',
             layers: ['wms-layer-3'],
-            service: 'service-1',
-          },
+            service: 'service-1'
+          }
         ],
         trees: [
           {
@@ -658,25 +681,25 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: null,
                 isRadio: false,
                 children: ['node-3', 'node-4'],
-                order: 1,
+                order: 1
               },
               'node-3': {
                 title: 'Leaf Node 1',
                 resource: 'layer-1',
                 isRadio: false,
                 children: [],
-                order: 1,
+                order: 1
               },
               'node-4': {
                 title: 'Leaf Node 2',
                 resource: 'layer-4',
                 isRadio: false,
                 children: [],
-                order: 2,
-              },
-            },
-          },
-        ],
+                order: 2
+              }
+            }
+          }
+        ]
       };
 
       // Should find node-3 for layer-1's layerNames
@@ -697,15 +720,17 @@ describe('VirtualWmsCapabilitiesService', () => {
       );
       expect(nodeId2).toBe('node-4');
     });
-  });
 
-  it('should return null if service not found', () => {
+    it('should return null if service not found', () => {
       const configWithMissingService: AppCfg = {
         ...mockAppCfg,
-        services: [], // Empty services
+        services: [] // Empty services
       };
 
-      const config = service.findRealLayerConfig('node-3', configWithMissingService);
+      const config = service.findRealLayerConfig(
+        'node-3',
+        configWithMissingService
+      );
       expect(config).toBeNull();
     });
   });
@@ -726,12 +751,15 @@ describe('VirtualWmsCapabilitiesService', () => {
             id: 'service-1',
             url: 'http://example.com/wms',
             type: 'WMS',
-            parameters: {}, // No SRS
-          },
-        ],
+            parameters: {} // No SRS
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-3', configWithoutServiceSRS);
+      const capabilities = service.generateCapabilities(
+        'node-3',
+        configWithoutServiceSRS
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       expect(rootLayer.CRS).toContain('EPSG:25831'); // From application
@@ -745,14 +773,14 @@ describe('VirtualWmsCapabilitiesService', () => {
             id: 'service-1',
             url: 'http://example.com/wms1',
             type: 'WMS',
-            parameters: { SRS: 'EPSG:25831' },
+            parameters: { SRS: 'EPSG:25831' }
           },
           {
             id: 'service-2',
             url: 'http://example.com/wms2',
             type: 'WMS',
-            parameters: { SRS: 'EPSG:4326' },
-          },
+            parameters: { SRS: 'EPSG:4326' }
+          }
         ],
         layers: [
           ...mockAppCfg.layers,
@@ -760,8 +788,8 @@ describe('VirtualWmsCapabilitiesService', () => {
             id: 'layer-3',
             title: 'Layer 3',
             layers: ['wms-layer-3'],
-            service: 'service-2',
-          },
+            service: 'service-2'
+          }
         ],
         trees: [
           {
@@ -773,21 +801,24 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['node-3', 'node-5'],
-                order: 1,
+                order: 1
               },
               'node-5': {
                 title: 'Leaf 3',
                 resource: 'layer-3',
                 isRadio: false,
                 children: [],
-                order: 3,
-              },
-            },
-          },
-        ],
+                order: 3
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-1', configWithMultipleCRS);
+      const capabilities = service.generateCapabilities(
+        'node-1',
+        configWithMultipleCRS
+      );
       const rootLayer = capabilities.Capability.Layer;
 
       expect(rootLayer.CRS).toContain('EPSG:25831');
@@ -810,7 +841,7 @@ describe('VirtualWmsCapabilitiesService', () => {
     it('should handle empty tree', () => {
       const emptyTreeConfig: AppCfg = {
         ...mockAppCfg,
-        trees: [],
+        trees: []
       };
 
       expect(() => {
@@ -830,14 +861,17 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: 'layer-1',
                 isRadio: false,
                 children: [],
-                order: 1,
-              },
-            },
-          },
-        ],
+                order: 1
+              }
+            }
+          }
+        ]
       };
 
-      const capabilities = service.generateCapabilities('node-no-title', configWithNoTitle);
+      const capabilities = service.generateCapabilities(
+        'node-no-title',
+        configWithNoTitle
+      );
       expect(capabilities.Capability.Layer.Title).toBe('Untitled Layer');
     });
 
@@ -856,42 +890,42 @@ describe('VirtualWmsCapabilitiesService', () => {
                 resource: '',
                 isRadio: false,
                 children: ['level-2'],
-                order: 1,
+                order: 1
               },
               'level-2': {
                 title: 'Level 2',
                 resource: '',
                 isRadio: false,
                 children: ['level-3'],
-                order: 1,
+                order: 1
               },
               'level-3': {
                 title: 'Level 3',
                 resource: '',
                 isRadio: false,
                 children: ['level-4'],
-                order: 1,
+                order: 1
               },
               'level-4': {
                 title: 'Level 4 Leaf',
                 resource: 'layer-1',
                 isRadio: false,
                 children: [],
-                order: 1,
-              },
-            },
-          },
-        ],
+                order: 1
+              }
+            }
+          }
+        ]
       };
 
       const capabilities = service.generateCapabilities('level-1', deepConfig);
       expect(capabilities.Capability.Layer).toBeDefined();
-      
+
       // Navigate to deepest level
       let current = capabilities.Capability.Layer;
       expect(current.Title).toBe('Level 1');
       expect(current.Layer).toBeDefined();
-      
+
       current = current.Layer![0];
       expect(current.Title).toBe('Level 2');
     });
@@ -972,4 +1006,3 @@ describe('VirtualWmsCapabilitiesService', () => {
     });
   });
 });
-

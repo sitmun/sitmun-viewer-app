@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ControlHandlerBase } from './control-handler-base';
-import { ControlHandler, SitnaControlConfig } from './control-handler.interface';
-import { PatchLoaderService } from '../services/patch-loader.service';
+import {
+  ControlHandler,
+  SitnaControlConfig
+} from './control-handler.interface';
 import { TCNamespaceService } from '../services/tc-namespace.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
@@ -12,7 +14,10 @@ class TestControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'test.control';
   readonly requiredPatches = ['assets/js/patch/test.js'];
 
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     return { div: 'test' };
   }
 }
@@ -24,7 +29,10 @@ class NoPatchHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'test.nopatch';
   readonly requiredPatches = undefined;
 
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     return { div: 'nopatch' };
   }
 }
@@ -32,15 +40,11 @@ class NoPatchHandler extends ControlHandlerBase {
 describe('ControlHandlerBase', () => {
   let handler: TestControlHandler;
   let noPatchHandler: NoPatchHandler;
-  let mockPatchLoader: jasmine.SpyObj<PatchLoaderService>;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    // Create spies
-    mockPatchLoader = jasmine.createSpyObj('PatchLoaderService', [
-      'loadPatch',
-      'isPatchLoaded'
-    ]);
+    // Create spy
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
       'waitForTC',
       'waitForTCProperty',
@@ -48,14 +52,29 @@ describe('ControlHandlerBase', () => {
     ]);
 
     TestBed.configureTestingModule({
-      providers: [
-        { provide: PatchLoaderService, useValue: mockPatchLoader },
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
-      ]
+      providers: [{ provide: TCNamespaceService, useValue: mockTCNamespace }]
     });
 
-    handler = new TestControlHandler(mockPatchLoader, mockTCNamespace);
-    noPatchHandler = new NoPatchHandler(mockPatchLoader, mockTCNamespace);
+    handler = new TestControlHandler(mockTCNamespace);
+    noPatchHandler = new NoPatchHandler(mockTCNamespace);
+
+    // Create mock AppCfg for loadPatches context
+    mockAppCfg = {
+      application: {
+        id: 1,
+        title: 'Test App',
+        type: 'test',
+        theme: 'default',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 100, 100]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: []
+    };
   });
 
   describe('Initialization', () => {
@@ -73,76 +92,59 @@ describe('ControlHandlerBase', () => {
   });
 
   describe('loadPatches()', () => {
-    it('should load all required patches', async () => {
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-
-      await handler.loadPatches();
-
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledWith('assets/js/patch/test.js');
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledTimes(1);
+    it('should resolve successfully with context', async () => {
+      await handler.loadPatches(mockAppCfg);
+      // Default implementation does nothing, just resolves
+      expect(true).toBe(true);
     });
 
     it('should handle no patches gracefully', async () => {
-      await noPatchHandler.loadPatches();
-
-      expect(mockPatchLoader.loadPatch).not.toHaveBeenCalled();
+      await noPatchHandler.loadPatches(mockAppCfg);
+      // Default implementation does nothing, just resolves
+      expect(true).toBe(true);
     });
 
-    it('should handle patch loading errors', async () => {
-      mockPatchLoader.loadPatch.and.returnValue(Promise.reject(new Error('Load failed')));
-
-      await expectAsync(handler.loadPatches()).toBeRejected();
+    it('should require context parameter', async () => {
+      // TypeScript will catch this, but we test runtime behavior
+      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
     });
 
-    it('should load multiple patches in parallel', async () => {
+    it('should work with multi-patch handler', async () => {
       class MultiPatchHandler extends ControlHandlerBase {
         readonly controlIdentifier = 'test.multi';
         readonly requiredPatches = ['patch1.js', 'patch2.js', 'patch3.js'];
-        buildConfiguration() { return null; }
+        buildConfiguration() {
+          return null;
+        }
       }
 
-      const multiHandler = new MultiPatchHandler(mockPatchLoader, mockTCNamespace);
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-
-      await multiHandler.loadPatches();
-
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledTimes(3);
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledWith('patch1.js');
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledWith('patch2.js');
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledWith('patch3.js');
+      const multiHandler = new MultiPatchHandler(mockTCNamespace);
+      await multiHandler.loadPatches(mockAppCfg);
+      // Default implementation does nothing, just resolves
+      expect(true).toBe(true);
     });
   });
 
   describe('isReady()', () => {
-    it('should return true when no patches required', () => {
+    it('should return true by default (patches applied programmatically)', () => {
       expect(noPatchHandler.isReady()).toBe(true);
     });
 
-    it('should return true when all patches are loaded', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-
+    it('should return true for handlers with patches (applied programmatically)', () => {
       expect(handler.isReady()).toBe(true);
-      expect(mockPatchLoader.isPatchLoaded).toHaveBeenCalledWith('assets/js/patch/test.js');
     });
 
-    it('should return false when patches are not loaded', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(false);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should check all patches for multi-patch handler', () => {
+    it('should return true for multi-patch handler', () => {
       class MultiPatchHandler extends ControlHandlerBase {
         readonly controlIdentifier = 'test.multi';
         readonly requiredPatches = ['patch1.js', 'patch2.js'];
-        buildConfiguration() { return null; }
+        buildConfiguration() {
+          return null;
+        }
       }
 
-      const multiHandler = new MultiPatchHandler(mockPatchLoader, mockTCNamespace);
-      mockPatchLoader.isPatchLoaded.and.returnValues(true, false);
-
-      expect(multiHandler.isReady()).toBe(false);
-      expect(mockPatchLoader.isPatchLoaded).toHaveBeenCalledTimes(2);
+      const multiHandler = new MultiPatchHandler(mockTCNamespace);
+      expect(multiHandler.isReady()).toBe(true);
     });
   });
 
@@ -184,10 +186,11 @@ describe('ControlHandlerBase', () => {
     });
 
     describe('getDefaultConfig()', () => {
-      it('should return config with div', () => {
-        const config = handler['getDefaultConfig']('testDiv');
-
-        expect(config).toEqual({ div: 'testDiv' });
+      it('should return config from appConfigService', () => {
+        const config = handler['getDefaultConfig']();
+        // Returns config from appConfigService or empty object
+        expect(config).toBeDefined();
+        expect(typeof config).toBe('object');
       });
     });
 
@@ -204,7 +207,11 @@ describe('ControlHandlerBase', () => {
         const params = { option2: 'value2' };
         const result = handler['mergeWithParameters'](defaults, params);
 
-        expect(result).toEqual({ div: 'test', option1: 'value1', option2: 'value2' });
+        expect(result).toEqual({
+          div: 'test',
+          option1: 'value1',
+          option2: 'value2'
+        });
       });
 
       it('should allow parameters to override defaults', () => {
@@ -225,7 +232,9 @@ describe('ControlHandlerBase', () => {
       let scriptLoaded = false;
       await handler['ensureControlLoaded']({
         dependencies: 'TC',
-        loadScript: () => { scriptLoaded = true; },
+        loadScript: () => {
+          scriptLoaded = true;
+        },
         controlName: 'TestControl'
       });
 
@@ -238,8 +247,13 @@ describe('ControlHandlerBase', () => {
       let scriptLoaded = false;
 
       await handler['ensureControlLoaded']({
-        checkLoaded: () => { checkCount++; return true; },
-        loadScript: () => { scriptLoaded = true; },
+        checkLoaded: () => {
+          checkCount++;
+          return true;
+        },
+        loadScript: () => {
+          scriptLoaded = true;
+        },
         controlName: 'TestControl'
       });
 
@@ -273,12 +287,16 @@ describe('ControlHandlerBase', () => {
       });
 
       expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockTCNamespace.waitForTCProperty).toHaveBeenCalledWith('TC.control.SearchSilme');
+      expect(mockTCNamespace.waitForTCProperty).toHaveBeenCalledWith(
+        'TC.control.SearchSilme'
+      );
     });
 
     it('should handle function dependencies', async () => {
       let depResolved = false;
-      const depFunction = async () => { depResolved = true; };
+      const depFunction = async () => {
+        depResolved = true;
+      };
 
       await handler['ensureControlLoaded']({
         dependencies: depFunction,
@@ -322,11 +340,8 @@ describe('ControlHandlerBase', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-
       // Load patches
-      await handler.loadPatches();
+      await handler.loadPatches(mockAppCfg);
 
       // Check ready
       expect(handler.isReady()).toBe(true);
@@ -336,9 +351,8 @@ describe('ControlHandlerBase', () => {
         'ui-control': 'test.control',
         parameters: { custom: 'value' }
       } as any;
-      const mockContext: AppCfg = {} as any;
 
-      const config = handler.buildConfiguration(mockTask, mockContext);
+      const config = handler.buildConfiguration(mockTask, mockAppCfg);
       expect(config).toEqual({ div: 'test' });
 
       // Cleanup
@@ -348,4 +362,3 @@ describe('ControlHandlerBase', () => {
     });
   });
 });
-

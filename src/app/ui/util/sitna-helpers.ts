@@ -56,14 +56,15 @@ enum SitnaControlsEnum {
   FeatureInfoSilme = 'sitna.featureInfo.silme.extension',
   //WFSEdit = 'sitna.WFSEdit',
   WFSQuery = 'sitna.WFSQuery',
-  ExternalWMSSilme = 'sitna.externalWMS.silme.extension',
+  ExternalWMSSilme = 'sitna.externalWMS.silme.extension'
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class SitnaHelper {
-  private static readonly DEFAULT_THUMBNAIL_URL = 'assets/img/dummy_map_thumbnail.jpg';
+  private static readonly DEFAULT_THUMBNAIL_URL =
+    'assets/img/dummy_map_thumbnail.jpg';
   private static readonly OTHER_SERVICES_NODE_ID = 'node99';
   private static readonly OTHER_SERVICES_TITLE = 'Altres serveis';
   private static readonly CATALOG_DIV = 'catalog';
@@ -109,98 +110,8 @@ export class SitnaHelper {
     return this.configLookup;
   }
 
-  static toCrs(apiConfig: AppCfg): string | undefined {
-    let crs;
-    if (apiConfig.application?.srs) {
-      crs = apiConfig.application.srs;
-    }
-    return crs;
-  }
-
-  static toInitialExtent(
-    apiConfig: AppCfg
-  ): [number, number, number, number] | undefined {
-    let initialExtent;
-    if (apiConfig.application.initialExtent) {
-      initialExtent = apiConfig.application.initialExtent;
-    }
-    return initialExtent;
-  }
-
-  static toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
-    /**
-     * WARNING
-     * Thumbnails coming from backgorunds, but backgrounds may contain more than one layer.
-     * This has to be rethought from the admin, once done, the code marked with 'TODO-redo' must be reviewed.     *
-     */
-    let baseLayers: SitnaBaseLayer[] = [];
-    if (apiConfig.backgrounds.length) {
-      let backgrounds: string[] = [];
-      let groups: AppGroup[] = [];
-      let layers: string[] = [];
-      let thumbnail: string = ''; // TODO-redo
-      for (let background of apiConfig.backgrounds) {
-        backgrounds.push(background.id);
-        // if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
-        //   thumbnail = background.thumbnail;
-        // }
-      }
-      for (let background of backgrounds) {
-        const group = SitnaHelper.instance?.configLookup.findGroup(background) || 
-          apiConfig.groups.find((elem) => elem.id === background);
-        if (group != undefined) {
-          groups.push(group);
-        }
-      }
-      for (let group of groups) {
-        if (group.layers != undefined) {
-          for (let layer of group.layers) {
-            layers.push(layer);
-          }
-        }
-      }
-      for (let layerElement of layers) {
-        const layer = SitnaHelper.instance?.configLookup.findLayer(layerElement) ||
-          apiConfig.layers.find((elem) => elem.id === layerElement);
-        if (layer != undefined) {
-          const service = SitnaHelper.instance?.configLookup.findService(layer.service) ||
-            apiConfig.services.find((service) => service.id === layer.service);
-          for (let background of apiConfig.backgrounds) {
-            thumbnail = '';
-            if (
-              typeof background.thumbnail != 'undefined' &&
-              background.thumbnail &&
-              groups.find(
-                (x) => x.id == background.id && x.layers?.includes(layerElement)
-              )
-            ) {
-              // TODO-redo
-              thumbnail = background.thumbnail;
-              break;
-            }
-          }
-          if (service != undefined) {
-            let a: SitnaBaseLayer = {
-              id: layer.title,
-              title: layer.title,
-              url: service.url,
-              type: service.type,
-              layerNames: layer.layers,
-              matrixSet: service.parameters.matrixSet,
-              format: service.parameters.format,
-              isBase: true,
-              thumbnail: thumbnail || this.DEFAULT_THUMBNAIL_URL,
-            };
-            if (service.type == 'WMTS') {
-              a.layerNames = layer.layers[0];
-            }
-            baseLayers.push(a);
-          }
-        }
-      }
-    }
-    return baseLayers;
-  }
+  // Map configuration methods moved to MapConfigurationService
+  // Use MapConfigurationService.toCrs(), toInitialExtent(), toBaseLayers(), toViews(), toLayout()
   // static toWorkLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
   //   let sitnaWorkLayers: SitnaBaseLayer[] = [];
   //   if (apiConfig.layers) {
@@ -242,7 +153,10 @@ export class SitnaHelper {
     this.processCoordinatesControl(sitnaControls, sitnaControlsFilter);
     this.processDataLoaderControl(sitnaControls, sitnaControlsFilter);
     this.processDownloadControl(sitnaControls, sitnaControlsFilter);
-    this.processDrawMeasureModifySilmeControl(sitnaControls, sitnaControlsFilter);
+    this.processDrawMeasureModifySilmeControl(
+      sitnaControls,
+      sitnaControlsFilter
+    );
     this.processFullScreenControl(sitnaControls, sitnaControlsFilter);
     this.processGeolocationControl(sitnaControls, sitnaControlsFilter);
     this.processLegendControl(sitnaControls, sitnaControlsFilter);
@@ -267,7 +181,10 @@ export class SitnaHelper {
     this.processStreetViewSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processTOCControl(sitnaControls, sitnaControlsFilter);
     this.processThreeDControl(sitnaControls, sitnaControlsFilter);
-    this.processWorkLayerManagerSilmeControl(sitnaControls, sitnaControlsFilter);
+    this.processWorkLayerManagerSilmeControl(
+      sitnaControls,
+      sitnaControlsFilter
+    );
     this.processFeatureInfoSilmeControl(sitnaControls, sitnaControlsFilter);
     this.processWFSEditControl(sitnaControls, sitnaControlsFilter);
     this.processWFSQueryControl(sitnaControls, sitnaControlsFilter);
@@ -646,22 +563,30 @@ export class SitnaHelper {
       if (overviewMap) {
         if (this.areParametersEmpty(overviewMap.parameters)) {
           if (apiConfig.application['situation-map']) {
-            const group = SitnaHelper.instance?.configLookup.findGroup(
-              apiConfig.application['situation-map']
-            ) || apiConfig.groups.find(
-              (elem) => elem.id === apiConfig.application['situation-map']
-            );
+            const group =
+              SitnaHelper.instance?.configLookup.findGroup(
+                apiConfig.application['situation-map']
+              ) ||
+              apiConfig.groups.find(
+                (elem) => elem.id === apiConfig.application['situation-map']
+              );
             if (
               group != undefined &&
               group.layers != undefined &&
               group.layers?.length > 0
             ) {
               const layer = group.layers[0];
-              const layerObject = SitnaHelper.instance?.configLookup.findLayer(layer) || 
+              const layerObject =
+                SitnaHelper.instance?.configLookup.findLayer(layer) ||
                 apiConfig.layers.find((elem) => elem.id === layer);
               if (layerObject != undefined) {
-                const service = SitnaHelper.instance?.configLookup.findService(layerObject.service) ||
-                  apiConfig.services.find((service) => service.id === layerObject.service);
+                const service =
+                  SitnaHelper.instance?.configLookup.findService(
+                    layerObject.service
+                  ) ||
+                  apiConfig.services.find(
+                    (service) => service.id === layerObject.service
+                  );
                 if (service != undefined) {
                   sitnaControls.overviewMap = {
                     div: 'ovmap',
@@ -821,7 +746,10 @@ export class SitnaHelper {
     sitnaControlsFilter: any[]
   ) {
     if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.StreetViewSilme)
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.StreetViewSilme
+      )
     ) {
       const streetView = this.findControl(
         sitnaControlsFilter,
@@ -902,7 +830,9 @@ export class SitnaHelper {
     sitnaControls: SitnaControls,
     sitnaControlsFilter: any[]
   ) {
-    if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.SearchSilme)) {
+    if (
+      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.SearchSilme)
+    ) {
       const search = this.findControl(
         sitnaControlsFilter,
         SitnaControlsEnum.SearchSilme
@@ -990,7 +920,10 @@ export class SitnaHelper {
     sitnaControlsFilter: any[]
   ) {
     if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.FeatureInfoSilme)
+      this.isControlPresent(
+        sitnaControlsFilter,
+        SitnaControlsEnum.FeatureInfoSilme
+      )
     ) {
       const featureInfo = this.findControl(
         sitnaControlsFilter,
@@ -1248,42 +1181,8 @@ export class SitnaHelper {
 
     return catalogs;
   }
-  static toViews(apiConfig: AppCfg) {
-    const sitnaViews = {} as SitnaViews;
-    if (
-      apiConfig.tasks.some((x) => x['ui-control'] === SitnaControlsEnum.ThreeD)
-    ) {
-      sitnaViews.threeD = {
-        div: 'threedMap',
-        controls: [
-          'threeD',
-          'navBar',
-          'navBarHome',
-          'basemapSelector',
-          'layerCatalogSilme',
-          'workLayerManagerSilme',
-          'drawMeasureModifySilme',
-          'legend'
-        ]
-      };
-    }
-    return sitnaViews;
-  }
-
-  static toLayout(appCfg: AppCfg) {
-    let theme = 'sitmun-base';
-    if (appCfg.application?.theme) {
-      theme = appCfg.application.theme;
-    }
-
-    return {
-      config: 'assets/map-styles/' + theme + '/config.json',
-      markup: 'assets/map-styles/' + theme + '/markup.html',
-      style: 'assets/map-styles/' + theme + '/style.css',
-      script: 'assets/map-styles/' + theme + '/script.js',
-      i18n: 'assets/map-styles/' + theme + '/resources'
-    };
-  }
+  // Removed: toViews() - moved to MapConfigurationService
+  // Removed: toLayout() - moved to MapConfigurationService
   static toWelcome(apiConfig: AppCfg) {
     if (
       apiConfig.tasks.some((x) => x['ui-control'] === 'markup-welcome-panel')
@@ -1297,14 +1196,14 @@ export class SitnaHelper {
       }
     }
   }
-  
+
   static toHelp(apiConfig: AppCfg) {
     if (!SitnaHelper.instance) {
       return; // Services not initialized
     }
 
     const { domUtils } = SitnaHelper.instance;
-    
+
     if (apiConfig.tasks.some((x) => x['ui-control'] === 'markup-help-panel')) {
       domUtils.setDisplayByClass('help-links', 'inline-flex');
     } else {
@@ -1342,4 +1241,3 @@ export class SitnaHelper {
     }
   }
 }
-

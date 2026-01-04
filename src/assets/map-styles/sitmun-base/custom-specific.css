@@ -123,7 +123,8 @@
 }
 
 .tc-ctl-wlm h2,
-.tc-ctl-lcat h2 {
+.tc-ctl-lcat h2,
+.tc-ctl-bms > h2 {
     background-position: -6px 0px;
     background-repeat: no-repeat;
     background-size: 38px 38px;
@@ -139,8 +140,9 @@
     flex-shrink: 0 !important;
 }
 
-/* Collapsed state for layer catalog header */
-.tc-ctl-lcat.tc-collapsed h2 {
+/* Collapsed state for layer catalog and basemap selector headers */
+.tc-ctl-lcat.tc-collapsed h2,
+#bms.tc-collapsed > h2 {
     background-image: url(./img/mapLayersStackG.png);
 }
 

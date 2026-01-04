@@ -19,16 +19,19 @@
       "div": "scale"
     },
     "sitna.workLayerManager": {
-      "div": "tc-slot-wl"
+      "div": "wlm"
     },
     "sitna.layerCatalog": {
-      "div": "tc-slot-toc"
+      "div": "toc"
+    },
+    "sitna.basemapSelector": {
+      "div": "bms"
     },
     "sitna.search.silme.extension": {
       "div": "search"
     },
     "sitna.layerCatalog.silme.extension": {
-      "div": "layerCatalog"
+      "div": "catalog"
     }
   }
 }

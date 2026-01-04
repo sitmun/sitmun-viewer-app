@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
@@ -8,9 +9,13 @@ describe('WorkLayerManagerControlHandler', () => {
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', ['waitForTC', 'getTC']);
+    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
+      'waitForTC',
+      'getTC'
+    ]);
 
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       providers: [
         WorkLayerManagerControlHandler,
         { provide: TCNamespaceService, useValue: mockTCNamespace }
@@ -103,7 +108,7 @@ describe('WorkLayerManagerControlHandler', () => {
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       const context: AppCfg = {} as any;
-      
+
       // Load patches (no-op for native control)
       await handler.loadPatches(context);
 
@@ -122,4 +127,3 @@ describe('WorkLayerManagerControlHandler', () => {
     });
   });
 });
-

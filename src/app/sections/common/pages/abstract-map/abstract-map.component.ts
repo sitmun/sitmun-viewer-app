@@ -20,6 +20,7 @@ import { Cfg as SitnaCfg } from 'api-sitna';
 import SitnaMap from 'api-sitna';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
+import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 
 @Directive()
 export abstract class AbstractMapComponent
@@ -49,7 +50,8 @@ export abstract class AbstractMapComponent
     private el: ElementRef,
     private document: Document,
     private controlRegistry: ControlRegistryService,
-    private configLookup: ConfigLookupService
+    private configLookup: ConfigLookupService,
+    private mapConfig: MapConfigurationService
   ) {
     const path = this.location.path();
     this.isInEmbedded = path.includes('embedded');
@@ -142,24 +144,24 @@ export abstract class AbstractMapComponent
 
   async loadConfig(appCfg: AppCfg) {
     this.currentAppCfg = appCfg;
-    
+
     // Initialize lookup service for efficient entity lookups
     this.configLookup.initialize(appCfg);
-    
+
     // Process controls using handler system
     const controls = await this.controlRegistry.processControls(
       appCfg.tasks,
       appCfg
     );
-    
+
     this.currentGeneralCfg = {
       locale: this.locale,
-      crs: SitnaHelper.toCrs(appCfg),
-      initialExtent: SitnaHelper.toInitialExtent(appCfg),
-      layout: SitnaHelper.toLayout(appCfg),
-      baseLayers: SitnaHelper.toBaseLayers(appCfg),
+      crs: this.mapConfig.toCrs(appCfg),
+      initialExtent: this.mapConfig.toInitialExtent(appCfg),
+      layout: this.mapConfig.toLayout(appCfg),
+      baseLayers: this.mapConfig.toBaseLayers(appCfg),
       controls: controls as any, // Handler system returns Partial<SitnaControls>
-      views: SitnaHelper.toViews(appCfg)
+      views: this.mapConfig.toViews(appCfg)
     };
 
     SitnaHelper.loadMiddleware(appCfg);
@@ -168,7 +170,9 @@ export abstract class AbstractMapComponent
     // catalog change, the map can be loaded again with the same configuration
 
     if (!this.currentGeneralCfg) {
-      console.error('[AbstractMapComponent] currentGeneralCfg is undefined, cannot proceed');
+      console.error(
+        '[AbstractMapComponent] currentGeneralCfg is undefined, cannot proceed'
+      );
       return;
     }
 
@@ -185,12 +189,14 @@ export abstract class AbstractMapComponent
     }
 
     // REMOVED: Silme-specific setup now handled by LayerCatalogSilmeControlHandler
-    
+
     if (!this.currentAppCfg || !this.currentGeneralCfg) {
-      console.error('[AbstractMapComponent] Config is undefined, cannot load map');
+      console.error(
+        '[AbstractMapComponent] Config is undefined, cannot load map'
+      );
       return;
     }
-    
+
     this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
   }
 
@@ -201,35 +207,40 @@ export abstract class AbstractMapComponent
     ) {
       return; // This is a safeguard, but it should never happen
     }
-    
+
     // Support both Silme and patched layer catalog
     const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    const layerCatalogsSilmeForModal = (window as any).layerCatalogsSilmeForModal;
-    
+    const layerCatalogsSilmeForModal = (window as any)
+      .layerCatalogsSilmeForModal;
+
     if (layerCatalogsForModal) {
       // Patched layer catalog - rebuild controls configuration with new tree selection
-      console.log('[AbstractMapComponent] Rebuilding controls configuration for catalog switch');
-      
+      console.log(
+        '[AbstractMapComponent] Rebuilding controls configuration for catalog switch'
+      );
+
       // Rebuild controls to pick up the new currentTreeId
-      this.controlRegistry.processControls(
-        this.currentAppCfg.tasks,
-        this.currentAppCfg
-      ).then((controls) => {
-        // Update general config with new controls
-        this.currentGeneralCfg!.controls = controls as any;
-        
-        // Clear and reload map with updated configuration
-        this.clearMap();
-        this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
-      });
+      this.controlRegistry
+        .processControls(this.currentAppCfg.tasks, this.currentAppCfg)
+        .then((controls) => {
+          // Update general config with new controls
+          this.currentGeneralCfg!.controls = controls as any;
+
+          // Clear and reload map with updated configuration
+          this.clearMap();
+          this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
+        });
     } else if (layerCatalogsSilmeForModal) {
       // Silme layer catalog - use existing logic
       this.currentCatalogIdx = layerCatalogsSilmeForModal.currentCatalog;
-      SitnaCfg.controls.layerCatalogSilmeFolders = this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
+      SitnaCfg.controls.layerCatalogSilmeFolders =
+        this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
       this.clearMap();
       this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
     } else {
-      console.warn('[AbstractMapComponent] No catalog modal state found, cannot update catalog');
+      console.warn(
+        '[AbstractMapComponent] No catalog modal state found, cannot update catalog'
+      );
     }
   }
 
@@ -255,7 +266,7 @@ export abstract class AbstractMapComponent
     const oldMapDiv = mapFather.querySelector('#mapa');
     const div = this.renderer.createElement('div');
     this.renderer.setAttribute(div, 'id', 'mapa');
-    
+
     if (oldMapDiv) {
       // Insert new div in the exact same position as the old one
       this.renderer.insertBefore(mapFather, div, oldMapDiv);
@@ -403,17 +414,18 @@ export abstract class AbstractMapComponent
     if (!this.map) {
       return;
     }
-    
+
     try {
       // Call SITNA map's updateSize method
       if (this.map.updateSize) {
         this.map.updateSize();
       }
-      
+
       // Also update the underlying OpenLayers map if accessible
       if (this.map.wrap) {
-        const olMap = this.map.wrap.map || this.map.wrap._map || this.map.wrap.getMap?.();
-        
+        const olMap =
+          this.map.wrap.map || this.map.wrap._map || this.map.wrap.getMap?.();
+
         if (olMap) {
           if (olMap.updateSize) {
             olMap.updateSize();

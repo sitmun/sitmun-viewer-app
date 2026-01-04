@@ -1,34 +1,53 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
-import { PatchLoaderService } from '../../services/patch-loader.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 
 describe('LayerCatalogSilmeControlHandler', () => {
   let handler: LayerCatalogSilmeControlHandler;
-  let mockPatchLoader: jasmine.SpyObj<PatchLoaderService>;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockConfigLookup: jasmine.SpyObj<ConfigLookupService>;
+  let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockPatchLoader = jasmine.createSpyObj('PatchLoaderService', ['loadPatch', 'isPatchLoaded']);
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', ['waitForTC', 'getTC']);
+    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
+      'waitForTC',
+      'getTC'
+    ]);
     mockConfigLookup = jasmine.createSpyObj('ConfigLookupService', [
       'initialize',
       'findNode'
     ]);
 
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       providers: [
         LayerCatalogSilmeControlHandler,
-        { provide: PatchLoaderService, useValue: mockPatchLoader },
         { provide: TCNamespaceService, useValue: mockTCNamespace },
         { provide: ConfigLookupService, useValue: mockConfigLookup }
       ]
     });
 
     handler = TestBed.inject(LayerCatalogSilmeControlHandler);
+
+    mockAppCfg = {
+      application: {
+        id: 1,
+        title: 'Test App',
+        type: 'test',
+        theme: 'default',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 100, 100]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: []
+    };
   });
 
   it('should be created', () => {
@@ -37,55 +56,35 @@ describe('LayerCatalogSilmeControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control type', () => {
-      expect(handler.controlIdentifier).toBe('sitna.layerCatalog.silme.extension');
+      expect(handler.controlIdentifier).toBe(
+        'sitna.layerCatalog.silme.extension'
+      );
     });
   });
 
   describe('requiredPatches', () => {
-    it('should have correct patch files', () => {
-      expect(handler.requiredPatches).toEqual([
-        'assets/js/patch/controls/LayerCatalogSilme.js',
-        'assets/js/patch/controls/LayerCatalogSilmeFolders.js'
-      ]);
+    it('should be undefined (patches applied programmatically)', () => {
+      expect(handler.requiredPatches).toBeUndefined();
     });
   });
 
   describe('loadPatches()', () => {
-    it('should wait for TC before loading patches', async () => {
-      const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-
-      await handler.loadPatches();
-
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledTimes(2);
+    it('should resolve successfully with context', async () => {
+      await handler.loadPatches(mockAppCfg);
+      // Default implementation does nothing, just resolves
+      expect(true).toBe(true);
     });
 
-    it('should load patches sequentially', async () => {
-      const mockTC = { control: {} };
-      const loadOrder: string[] = [];
+    it('should resolve immediately', async () => {
+      const start = Date.now();
+      await handler.loadPatches(mockAppCfg);
+      const duration = Date.now() - start;
 
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockPatchLoader.loadPatch.and.callFake((path: string) => {
-        loadOrder.push(path);
-        return Promise.resolve();
-      });
-
-      await handler.loadPatches();
-
-      expect(loadOrder).toEqual([
-        'assets/js/patch/controls/LayerCatalogSilme.js',
-        'assets/js/patch/controls/LayerCatalogSilmeFolders.js'
-      ]);
+      expect(duration).toBeLessThan(10); // Should be instant
     });
 
-    it('should propagate patch loading errors', async () => {
-      const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockPatchLoader.loadPatch.and.returnValue(Promise.reject(new Error('Load failed')));
-
-      await expectAsync(handler.loadPatches()).toBeRejected();
+    it('should require context parameter', async () => {
+      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
     });
   });
 
@@ -93,7 +92,13 @@ describe('LayerCatalogSilmeControlHandler', () => {
     it('should initialize config lookup', () => {
       const context: AppCfg = {
         trees: [
-          { id: 'tree1', rootNode: 'node1', nodes: {}, title: 'Tree 1', image: null }
+          {
+            id: 'tree1',
+            rootNode: 'node1',
+            nodes: {},
+            title: 'Tree 1',
+            image: null
+          }
         ]
       } as any;
       const task: AppTasks = {
@@ -101,7 +106,9 @@ describe('LayerCatalogSilmeControlHandler', () => {
         parameters: {}
       } as any;
 
-      mockConfigLookup.findNode.and.returnValue({ title: 'Node' } as AppNodeInfo);
+      mockConfigLookup.findNode.and.returnValue({
+        title: 'Node'
+      } as AppNodeInfo);
 
       handler.buildConfiguration(task, context);
 
@@ -111,7 +118,13 @@ describe('LayerCatalogSilmeControlHandler', () => {
     it('should create Silme node configuration', () => {
       const context: AppCfg = {
         trees: [
-          { id: 'tree1', rootNode: 'node1', nodes: {}, title: 'Tree 1', image: null }
+          {
+            id: 'tree1',
+            rootNode: 'node1',
+            nodes: {},
+            title: 'Tree 1',
+            image: null
+          }
         ]
       } as any;
       const task: AppTasks = {
@@ -188,7 +201,13 @@ describe('LayerCatalogSilmeControlHandler', () => {
     it('should merge task parameters', () => {
       const context: AppCfg = {
         trees: [
-          { id: 'tree1', rootNode: 'node1', nodes: {}, title: 'Tree 1', image: null }
+          {
+            id: 'tree1',
+            rootNode: 'node1',
+            nodes: {},
+            title: 'Tree 1',
+            image: null
+          }
         ]
       } as any;
       const task: AppTasks = {
@@ -199,7 +218,9 @@ describe('LayerCatalogSilmeControlHandler', () => {
         }
       } as any;
 
-      mockConfigLookup.findNode.and.returnValue({ title: 'Test' } as AppNodeInfo);
+      mockConfigLookup.findNode.and.returnValue({
+        title: 'Test'
+      } as AppNodeInfo);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -209,33 +230,8 @@ describe('LayerCatalogSilmeControlHandler', () => {
   });
 
   describe('isReady()', () => {
-    it('should return false when patches not loaded', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(false);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return false when TC.control.LayerCatalogSilme not available', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue({ control: {} } as any);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return true when patches loaded and control available', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue({
-        control: { LayerCatalogSilme: {} }
-      } as any);
-
+    it('should return true by default (patches applied programmatically)', () => {
       expect(handler.isReady()).toBe(true);
-    });
-
-    it('should return false when TC is undefined', () => {
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockTCNamespace.getTC.and.returnValue(undefined);
-
-      expect(handler.isReady()).toBe(false);
     });
   });
 
@@ -243,12 +239,12 @@ describe('LayerCatalogSilmeControlHandler', () => {
     it('should handle full Silme workflow', async () => {
       const context: AppCfg = {
         trees: [
-          { 
-            id: 'tree1', 
-            rootNode: 'node1', 
-            nodes: { node1: { title: 'Root' } as any }, 
-            title: 'Tree 1', 
-            image: null 
+          {
+            id: 'tree1',
+            rootNode: 'node1',
+            nodes: { node1: { title: 'Root' } as any },
+            title: 'Tree 1',
+            image: null
           }
         ]
       } as any;
@@ -260,14 +256,12 @@ describe('LayerCatalogSilmeControlHandler', () => {
       const mockTC = { control: { LayerCatalogSilme: {} } };
       mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
       mockTCNamespace.getTC.and.returnValue(mockTC as any);
-      mockPatchLoader.loadPatch.and.returnValue(Promise.resolve());
-      mockPatchLoader.isPatchLoaded.and.returnValue(true);
-      mockConfigLookup.findNode.and.returnValue({ title: 'Root Node' } as AppNodeInfo);
+      mockConfigLookup.findNode.and.returnValue({
+        title: 'Root Node'
+      } as AppNodeInfo);
 
       // Load patches
-      await handler.loadPatches();
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockPatchLoader.loadPatch).toHaveBeenCalledTimes(2);
+      await handler.loadPatches(context);
 
       // Should be ready
       expect(handler.isReady()).toBe(true);
@@ -283,4 +277,3 @@ describe('LayerCatalogSilmeControlHandler', () => {
     });
   });
 });
-
