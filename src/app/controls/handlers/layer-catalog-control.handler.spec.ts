@@ -22,11 +22,14 @@ describe('LayerCatalogControlHandler', () => {
       'waitForTC',
       'getTC'
     ]);
-    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve({} as any));
-    mockTCNamespace.getTC.and.returnValue({
+    const mockTC = {
       Util: {},
-      control: {}
-    } as any);
+      control: {
+        LayerCatalog: class LayerCatalog {}
+      }
+    };
+    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
+    mockTCNamespace.getTC.and.returnValue(mockTC as any);
     mockVirtualCapabilities = jasmine.createSpyObj(
       'VirtualWmsCapabilitiesService',
       ['generateVirtualUrl', 'canGenerateCapabilities']

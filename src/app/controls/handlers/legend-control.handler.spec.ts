@@ -2,11 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LegendControlHandler } from './legend-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('LegendControlHandler', () => {
   let handler: LegendControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -15,11 +17,17 @@ describe('LegendControlHandler', () => {
       'getTC'
     ]);
 
+    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
+    mockAppConfigService.getControlDefault.and.returnValue({ div: 'legend' });
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         LegendControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 

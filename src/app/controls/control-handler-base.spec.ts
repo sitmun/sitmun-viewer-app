@@ -5,6 +5,8 @@ import {
   SitnaControlConfig
 } from './control-handler.interface';
 import { TCNamespaceService } from '../services/tc-namespace.service';
+import { AppConfigService } from '../services/app-config.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 /**
@@ -51,12 +53,21 @@ describe('ControlHandlerBase', () => {
       'getTC'
     ]);
 
+    const mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
+    mockAppConfigService.getControlDefault.and.returnValue(null);
+
     TestBed.configureTestingModule({
-      providers: [{ provide: TCNamespaceService, useValue: mockTCNamespace }]
+      imports: [HttpClientTestingModule],
+      providers: [
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
+      ]
     });
 
-    handler = new TestControlHandler(mockTCNamespace);
-    noPatchHandler = new NoPatchHandler(mockTCNamespace);
+    handler = TestBed.runInInjectionContext(() => new TestControlHandler(mockTCNamespace));
+    noPatchHandler = TestBed.runInInjectionContext(() => new NoPatchHandler(mockTCNamespace));
 
     // Create mock AppCfg for loadPatches context
     mockAppCfg = {
@@ -118,7 +129,7 @@ describe('ControlHandlerBase', () => {
         }
       }
 
-      const multiHandler = new MultiPatchHandler(mockTCNamespace);
+      const multiHandler = TestBed.runInInjectionContext(() => new MultiPatchHandler(mockTCNamespace));
       await multiHandler.loadPatches(mockAppCfg);
       // Default implementation does nothing, just resolves
       expect(true).toBe(true);
@@ -143,7 +154,7 @@ describe('ControlHandlerBase', () => {
         }
       }
 
-      const multiHandler = new MultiPatchHandler(mockTCNamespace);
+      const multiHandler = TestBed.runInInjectionContext(() => new MultiPatchHandler(mockTCNamespace));
       expect(multiHandler.isReady()).toBe(true);
     });
   });

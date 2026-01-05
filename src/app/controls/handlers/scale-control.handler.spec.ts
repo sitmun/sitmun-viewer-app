@@ -2,11 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ScaleControlHandler } from './scale-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('ScaleControlHandler', () => {
   let handler: ScaleControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -15,11 +17,17 @@ describe('ScaleControlHandler', () => {
       'getTC'
     ]);
 
+    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
+    mockAppConfigService.getControlDefault.and.returnValue({ div: 'scale' });
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         ScaleControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 

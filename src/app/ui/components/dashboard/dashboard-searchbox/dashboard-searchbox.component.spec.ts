@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { DashboardSearchboxComponent } from './dashboard-searchbox.component';
 
@@ -9,7 +10,10 @@ describe('DashboardSearchboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot()
+      ],
       declarations: [DashboardSearchboxComponent]
     }).compileComponents();
 

@@ -10,11 +10,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { NavigationBarComponent } from './navigation-bar.component';
 import { CommonService } from '@api/services/common.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { Location } from '@angular/common';
+import { LanguageService } from 'src/app/services/language.service';
 
 describe('NavigationBarComponent', () => {
   let component: NavigationBarComponent;
@@ -47,8 +49,11 @@ describe('NavigationBarComponent', () => {
         { provide: CommonService, useValue: jasmine.createSpyObj('CommonService', ['fetchDashboardItems', 'message$']) },
         { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['getLoggedUsername', 'logout']) },
         { provide: Location, useValue: jasmine.createSpyObj('Location', ['back', 'forward']) },
+        { provide: LanguageService, useValue: jasmine.createSpyObj('LanguageService', ['setLanguage', 'getCurrentLanguage', 'getLanguagesTranslatedSorted']) },
+        { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
         TranslateService
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavigationBarComponent);
