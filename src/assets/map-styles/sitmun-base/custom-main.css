@@ -236,6 +236,7 @@ button.tc-ctl-fscreen-btn {
     background-repeat: no-repeat;
     background-size: 50px 50px;
     background-image: url(./img/mapaCapas.png);
+    transform: rotate(0deg);
 }
 
 .tc-right-panel.tc-collapsed > h1,

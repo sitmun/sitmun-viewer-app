@@ -604,6 +604,20 @@
     font-family: inherit !important;
 }
 
+/* ThreeD control button */
+.tc-ctl-3d-btn {
+    width: 40px;
+    height: 40px;
+    left: 8px;
+    border-radius: 0px;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.tc-ctl-3d-btn:hover {
+    background-color: rgba(0, 0, 0, 1);
+    cursor: pointer;
+}
+
 /* Ensure name section label is visible when using new structure */
 .tc-ctl-lcat-info-data .tc-ctl-lcat-info-data-title {
     display: inline-block !important;
@@ -681,6 +695,7 @@
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
+    transform: rotate(0deg);
 }
 
 /* When panel is expanded, use close/arrow icon */
@@ -740,6 +755,7 @@
     background-repeat: no-repeat;
     background-size: 38px 38px;
     background-image: url(./img/legendIconN.png);
+    transform: rotate(0deg);
     padding: 10px;
     padding-left: 26px;
     border-bottom: 1px solid #ccc;
