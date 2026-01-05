@@ -15,6 +15,7 @@ import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
 import { SearchSilmeControlHandler } from './search-silme-control.handler';
 import { AttributionControlHandler } from './attribution-control.handler';
+import { ThreeDControlHandler } from './threed-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -25,6 +26,7 @@ export { BasemapSelectorControlHandler } from './basemap-selector-control.handle
 export { LegendControlHandler } from './legend-control.handler';
 export { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 export { AttributionControlHandler } from './attribution-control.handler';
+export { ThreeDControlHandler } from './threed-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -47,6 +49,7 @@ export const ALL_CONTROL_HANDLERS = [
   LegendControlHandler,
   WorkLayerManagerControlHandler,
   AttributionControlHandler,
+  ThreeDControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,

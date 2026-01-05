@@ -17,6 +17,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 })
 export class BasemapSelectorControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.basemapSelector';
+  readonly sitnaConfigKey = 'basemapSelector';
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(tcNamespaceService: TCNamespaceService) {

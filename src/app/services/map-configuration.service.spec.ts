@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { MapConfigurationService } from './map-configuration.service';
 import { ConfigLookupService } from './config-lookup.service';
 import { AppConfigService } from './app-config.service';
+import { ControlRegistryService } from './control-registry.service';
 import { AppCfg, AppLayer, AppService, AppGroup } from '@api/model/app-cfg';
 import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 
@@ -9,15 +10,21 @@ describe('MapConfigurationService', () => {
   let service: MapConfigurationService;
   let configLookup: ConfigLookupService;
   let appConfigService: jasmine.SpyObj<AppConfigService>;
+  let controlRegistry: jasmine.SpyObj<ControlRegistryService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution']);
+    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution', 'getControlDefault']);
     appConfigService.getAttribution.and.returnValue(null);
+    appConfigService.getControlDefault.and.returnValue(null);
+
+    controlRegistry = jasmine.createSpyObj('ControlRegistryService', ['getHandler']);
+    controlRegistry.getHandler.and.returnValue(undefined);
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: AppConfigService, useValue: appConfigService }
+        { provide: AppConfigService, useValue: appConfigService },
+        { provide: ControlRegistryService, useValue: controlRegistry }
       ]
     });
     service = TestBed.inject(MapConfigurationService);
@@ -193,16 +200,51 @@ describe('MapConfigurationService', () => {
     });
 
     it('should return 3D view configuration if 3D task present', () => {
+      // Mock app-config with controls array
+      appConfigService.getControlDefault.and.returnValue({
+        controls: ['sitna.threeD', 'sitna.basemapSelector', 'sitna.legend']
+      });
+
+      // Mock handlers with sitnaConfigKey
+      controlRegistry.getHandler.and.callFake((name: string) => {
+        const handlers: any = {
+          'sitna.threeD': { sitnaConfigKey: 'threeD' },
+          'sitna.basemapSelector': { sitnaConfigKey: 'basemapSelector' },
+          'sitna.legend': { sitnaConfigKey: 'legend' }
+        };
+        return handlers[name];
+      });
+
       const cfgWith3D: AppCfg = {
         ...mockAppCfg,
         tasks: [{ id: 'task-1', 'ui-control': 'sitna.threed' } as any]
       };
+      
       const result = service.toViews(cfgWith3D);
+      
       expect(result.threeD).toBeDefined();
-      expect(result.threeD?.div).toBe('threedMap');
-      expect(result.threeD?.controls).toContain('threeD');
-      expect(result.threeD?.controls).toContain('basemapSelector');
+      expect(result.threeD?.div).toBe('view3d');
+      
+      // Controls should be translated from backend to SITNA names using handlers' sitnaConfigKey
+      expect(result.threeD?.controls).toContain('threeD');  // Not 'sitna.threeD'
+      expect(result.threeD?.controls).toContain('basemapSelector');  // Not 'sitna.basemapSelector'
       expect(result.threeD?.controls).toContain('legend');
+    });
+
+    it('should omit controls array if empty/not configured', () => {
+      // Mock app-config without controls
+      appConfigService.getControlDefault.and.returnValue({});
+      
+      const cfgWith3D: AppCfg = {
+        ...mockAppCfg,
+        tasks: [{ id: 'task-1', 'ui-control': 'sitna.threed' } as any]
+      };
+      
+      const result = service.toViews(cfgWith3D);
+      
+      expect(result.threeD).toBeDefined();
+      expect(result.threeD?.div).toBe('view3d');
+      expect(result.threeD?.controls).toBeUndefined();  // Let SITNA use defaults
     });
   });
 

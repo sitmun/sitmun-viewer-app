@@ -17,6 +17,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 })
 export class AttributionControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.attribution';
+  readonly sitnaConfigKey = 'attribution';
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(

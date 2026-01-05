@@ -3,6 +3,7 @@ import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
 import { ConfigLookupService } from './config-lookup.service';
 import { AppConfigService } from './app-config.service';
+import { ControlRegistryService } from './control-registry.service';
 
 /**
  * Service for converting AppCfg to SITNA map-level configuration.
@@ -17,7 +18,8 @@ export class MapConfigurationService {
 
   constructor(
     private configLookup: ConfigLookupService,
-    private appConfigService: AppConfigService
+    private appConfigService: AppConfigService,
+    private controlRegistry: ControlRegistryService
   ) {}
 
   /**
@@ -130,22 +132,38 @@ export class MapConfigurationService {
    */
   toViews(apiConfig: AppCfg): SitnaViews {
     const sitnaViews = {} as SitnaViews;
+    
     // Check for 3D view task
     if (apiConfig.tasks.some((x) => x['ui-control'] === 'sitna.threed')) {
+      // Get controls array from app-config.json (backend names)
+      const threeDConfig = this.appConfigService.getControlDefault('sitna.threed');
+      const backendControls = threeDConfig?.['controls'] as string[] | undefined;
+      
+      // Translate backend names to SITNA names using handlers' sitnaConfigKey
+      const sitnaControls = backendControls 
+        ? backendControls
+            .map(backendName => {
+              const handler = this.controlRegistry.getHandler(backendName);
+              if (!handler?.sitnaConfigKey) {
+                console.warn(`[MapConfiguration] No handler or sitnaConfigKey found for '${backendName}', skipping`);
+                return null;
+              }
+              return handler.sitnaConfigKey;
+            })
+            .filter((key): key is string => key !== null)
+        : [];
+      
+      // Build view configuration
       sitnaViews.threeD = {
-        div: 'threedMap',
-        controls: [
-          'threeD',
-          'navBar',
-          'navBarHome',
-          'basemapSelector',
-          'layerCatalogSilme',
-          'workLayerManagerSilme',
-          'drawMeasureModifySilme',
-          'legend'
-        ]
+        div: 'view3d'
       };
+      
+      // Only add controls array if we have controls (otherwise SITNA uses defaults)
+      if (sitnaControls.length > 0) {
+        sitnaViews.threeD.controls = sitnaControls;
+      }
     }
+    
     return sitnaViews;
   }
 

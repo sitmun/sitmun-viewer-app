@@ -18,6 +18,7 @@ import { loadScript } from '../../utils/script-loader';
 })
 export class CoordinatesControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.coordinates';
+  readonly sitnaConfigKey = 'coordinates';
   readonly requiredPatches = ['assets/js/patch/TCProjectionDataPatch.js'];
 
   constructor(

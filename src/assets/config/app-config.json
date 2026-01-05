@@ -42,6 +42,17 @@
     },
     "sitna.layerCatalog.silme.extension": {
       "div": "catalog"
+    },
+    "sitna.threed": {
+      "controls": [
+        "sitna.threeD",
+        "sitna.navBar",
+        "sitna.navBarHome",
+        "sitna.basemapSelector",
+        "sitna.layerCatalog.silme.extension",
+        "sitna.workLayerManager",
+        "sitna.legend"
+      ]
     }
   }
 }

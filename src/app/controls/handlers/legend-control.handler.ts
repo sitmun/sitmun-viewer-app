@@ -17,6 +17,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 })
 export class LegendControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.legend';
+  readonly sitnaConfigKey = 'legend';
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(tcNamespaceService: TCNamespaceService) {

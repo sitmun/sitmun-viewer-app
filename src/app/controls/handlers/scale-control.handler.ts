@@ -17,6 +17,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 })
 export class ScaleControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.scale';
+  readonly sitnaConfigKey = 'scale';
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(

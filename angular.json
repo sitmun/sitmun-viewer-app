@@ -33,6 +33,11 @@
               },
               {
                 "glob": "**/*",
+                "input": "node_modules/cesium/Build/Cesium",
+                "output": "assets/js/api-sitna/lib/cesium/build"
+              },
+              {
+                "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
               }
@@ -139,6 +144,7 @@
         },
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
+          "options": {},
           "configurations": {
             "production": {
               "browserTarget": "viewer-app:build:production"
@@ -176,6 +182,11 @@
                 "glob": "**/*",
                 "input": "node_modules/api-sitna",
                 "output": "assets/js/api-sitna"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/cesium/Build/Cesium",
+                "output": "assets/js/api-sitna/lib/cesium/build"
               },
               {
                 "glob": "**/*",

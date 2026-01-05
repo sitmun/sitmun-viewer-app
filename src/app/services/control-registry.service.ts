@@ -127,8 +127,12 @@ export class ControlRegistryService {
           console.log(`[ControlRegistry] Loading patches for ${task['ui-control']} (control will be used)`);
           await handler!.loadPatches(context);
           
-          // Use handler's custom key if provided, otherwise generate from ui-control
-          const controlKey = handler!.sitnaConfigKey || this.getControlKey(task['ui-control']);
+          // Use handler's explicit sitnaConfigKey (required for all handlers)
+          if (!handler!.sitnaConfigKey) {
+            console.error(`[ControlRegistry] Handler for '${task['ui-control']}' missing sitnaConfigKey`);
+            continue;
+          }
+          const controlKey = handler!.sitnaConfigKey;
           sitnaControls[controlKey as keyof SitnaControls] = config as any;
           
           console.log(`[ControlRegistry] Configured ${task['ui-control']} as '${controlKey}'`, config);
@@ -228,31 +232,6 @@ export class ControlRegistryService {
     }
   }
 
-  /**
-   * Convert control type to SITNA configuration key.
-   * Examples:
-   * - 'sitna.coordinates' -> 'coordinates'
-   * - 'sitna.search.silme.extension' -> 'searchSilmeExtension'
-   * - 'sitna.layerCatalog' -> 'layerCatalog'
-   * 
-   * @param uiControl - Control type from backend
-   * @returns Configuration key for SITNA
-   */
-  private getControlKey(uiControl: string): string {
-    // Remove 'sitna.' prefix
-    let key = uiControl.replace('sitna.', '');
-    
-    // Convert dots to camelCase
-    // 'search.silme.extension' -> 'searchSilmeExtension'
-    const parts = key.split('.');
-    if (parts.length > 1) {
-      key = parts[0] + parts.slice(1).map(
-        part => part.charAt(0).toUpperCase() + part.slice(1)
-      ).join('');
-    }
-    
-    return key;
-  }
 
   /**
    * Unregister a handler for a control type.
