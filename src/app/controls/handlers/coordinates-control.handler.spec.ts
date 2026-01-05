@@ -8,6 +8,7 @@ describe('CoordinatesControlHandler', () => {
   let handler: CoordinatesControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockAppCfg: AppCfg;
+  let originalPatchesLoaded: any;
 
   beforeEach(() => {
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
@@ -41,6 +42,20 @@ describe('CoordinatesControlHandler', () => {
       tasks: [],
       trees: []
     };
+
+    // Save and reset window.__patchesLoaded
+    originalPatchesLoaded = (window as any).__patchesLoaded;
+    (window as any).__patchesLoaded = {};
+
+    // Remove any existing script tags
+    document.querySelectorAll('script[src*="TCProjectionDataPatch"]').forEach(s => s.remove());
+  });
+
+  afterEach(() => {
+    // Restore original patches loaded state
+    (window as any).__patchesLoaded = originalPatchesLoaded;
+    // Clean up script tags
+    document.querySelectorAll('script[src*="TCProjectionDataPatch"]').forEach(s => s.remove());
   });
 
   it('should be created', () => {
@@ -54,8 +69,8 @@ describe('CoordinatesControlHandler', () => {
   });
 
   describe('requiredPatches', () => {
-    it('should have no required patches', () => {
-      expect(handler.requiredPatches).toBeUndefined();
+    it('should require TCProjectionDataPatch', () => {
+      expect(handler.requiredPatches).toEqual(['assets/js/patch/TCProjectionDataPatch.js']);
     });
   });
 
@@ -107,33 +122,64 @@ describe('CoordinatesControlHandler', () => {
   });
 
   describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
+    it('should return false if patch not loaded', () => {
+      (window as any).__patchesLoaded = {};
+      expect(handler.isReady()).toBe(false);
+    });
+
+    it('should return true if patch is loaded', () => {
+      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
       expect(handler.isReady()).toBe(true);
     });
   });
 
   describe('loadPatches()', () => {
-    it('should resolve successfully with context', async () => {
+    it('should not reload if patch already loaded', async () => {
+      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
+      
       await handler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+      
+      // Should not add duplicate script
+      const scripts = document.querySelectorAll('script[src*="TCProjectionDataPatch"]');
+      expect(scripts.length).toBe(0);
     });
 
-    it('should resolve immediately', async () => {
-      const start = Date.now();
-      await handler.loadPatches(mockAppCfg);
-      const duration = Date.now() - start;
+    it('should load TCProjectionDataPatch script when not loaded', async () => {
+      (window as any).__patchesLoaded = {};
+      
+      // Mock script loading by intercepting appendChild
+      const appendChildSpy = spyOn(document.head, 'appendChild').and.callFake((node: any) => {
+        // Simulate script loading by immediately calling onload
+        if (node.tagName === 'SCRIPT' && node.src.includes('TCProjectionDataPatch')) {
+          // Mark patch as loaded to simulate successful load
+          (window as any).__patchesLoaded.TCProjectionDataPatch = true;
+          // Call onload if it exists
+          if (node.onload) {
+            setTimeout(() => node.onload(), 0);
+          }
+        }
+        return node;
+      });
 
-      expect(duration).toBeLessThan(10); // Should be instant
+      await handler.loadPatches(mockAppCfg);
+      
+      expect(appendChildSpy).toHaveBeenCalled();
+      const scriptCall = appendChildSpy.calls.all().find((call: any) => 
+        call.args[0]?.src?.includes('TCProjectionDataPatch')
+      );
+      expect(scriptCall).toBeDefined();
     });
   });
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      // Load patches (no-op for native control)
+      // Mark patch as loaded for integration test
+      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
+
+      // Load patches
       await handler.loadPatches(mockAppCfg);
 
-      // Should be ready immediately
+      // Should be ready after patch is loaded
       expect(handler.isReady()).toBe(true);
 
       // Build config

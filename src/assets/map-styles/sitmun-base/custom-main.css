@@ -36,7 +36,7 @@ html, button, input, select, textarea {
     line-height: 1.4;
     padding: 3px 8px;
     color: #000;
-    max-width: 305px;
+    width: fit-content;
     border-top-left-radius: 0px;
     border-top-right-radius: 4.8px;
     border-bottom-left-radius: 0px;

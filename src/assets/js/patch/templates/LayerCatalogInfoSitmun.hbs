@@ -1,94 +1,191 @@
-<a class="tc-ctl-lcat-info-close"></a>
-<h2>{{i18n "layerInfo"}}</h2>
-<div><h3 class="tc-ctl-lcat-title">{{title}}</h3></div>
-<div class="tc-ctl-lcat-info-content">
-    {{#if abstract}}
-    <div class="tc-ctl-lcat-abstract">
-        {{#if isGroup}}
-        <h4>{{i18n "groupAbstract"}}</h4>
-        {{else}}
-        <h4>{{i18n "abstract"}}</h4>
+<div class='tc-modal'>
+  <div class='tc-modal-window'>
+    <div class='tc-modal-header'>
+      <h3>
+        {{title}}
+      </h3>
+      <a class='tc-ctl-lcat-info-close'></a>
+    </div>
+    <div class='tc-modal-body'>
+      <div class='tc-ctl-lcat-info-content'>
+        {{#if abstract}}
+          <div class='tc-ctl-lcat-abstract'>
+            {{#if isGroup}}
+              <h4>
+                {{i18n 'groupAbstract'}}
+              </h4>
+            {{else}}
+              <h4>
+                {{i18n 'abstract'}}
+              </h4>
+            {{/if}}
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{abstract}}}
+              </pre>
+            </div>
+          </div>
         {{/if}}
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{abstract}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if name}}
-    <div class="tc-ctl-lcat-info-data">
-        {{#if isGroup}}
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "groupLayerId"}}</h4>
-        {{else}}
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "layerId"}}</h4>
+        {{#if name}}
+          <div class='tc-ctl-lcat-info-data'>
+            {{#if isGroup}}
+              <h4 class='tc-ctl-lcat-info-data-title'>
+                {{i18n 'groupLayerId'}}
+              </h4>
+            {{else}}
+              <h4 class='tc-ctl-lcat-info-data-title'>
+                {{i18n 'layerId'}}
+              </h4>
+            {{/if}}
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{name}}}
+              </pre>
+            </div>
+          </div>
         {{/if}}
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{name}}}</pre></div>
+        {{#if url}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'url'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <a
+                href='{{{url}}}?service=wms&amp;request=getcapabilities'
+                target='_blank'
+              >
+                {{{url}}}
+              </a>
+            </div>
+          </div>
+        {{/if}}
+        {{#if parentAbstract}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'parentAbstract'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{parentAbstract}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if contactOrganization}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'contactOrganization'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{contactOrganization}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if contactMail}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'contactMail'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{contactMail}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if contactPerson}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'contactPerson'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{contactPerson}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if contactTelephone}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'contactTelephone'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{contactTelephone}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if fees}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'fees'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{fees}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if accessConstraints}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'accessConstraints'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>
+                {{{accessConstraints}}}
+              </pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if metadata}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'metadata'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              {{#each metadata}}
+                <a
+                  href='{{{url}}}'
+                  type='{{{format}}}'
+                  title='{{{formatDescription}}}'
+                  target='_blank'
+                >
+                  {{{formatDescription}}}
+                </a>{{#unless @last}}
+                  <br />
+                {{/unless}}
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+        {{#if dataUrl}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'descarregadades'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              {{#each dataUrl}}
+                <a
+                  href='{{{url}}}'
+                  type='{{{format}}}'
+                  title='{{{formatDescription}}}'
+                  target='_blank'
+                >
+                  {{{formatDescription}}}
+                </a>{{#unless @last}}
+                  <br />
+                {{/unless}}
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+      </div>
     </div>
-    {{/if}}
-    {{#if url}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "url"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><a href="{{{url}}}?service=wms&amp;request=getcapabilities" target="_blank">{{{url}}}</a></div>
-    </div>
-    {{/if}}
-    {{#if parentAbstract}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "parentAbstract"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{parentAbstract}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if contactOrganization}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactOrganization"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactOrganization}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if contactMail}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactMail"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactMail}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if contactPerson}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactPerson"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactPerson}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if contactTelephone}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "contactTelephone"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{contactTelephone}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if fees}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "fees"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{fees}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if accessConstraints}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "accessConstraints"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content"><pre>{{{accessConstraints}}}</pre></div>
-    </div>
-    {{/if}}
-    {{#if metadata}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "metadata"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content">
-            {{#each metadata}}
-            <a href="{{{url}}}" type="{{{format}}}" title="{{{formatDescription}}}" target="_blank">{{{formatDescription}}}</a>{{#unless @last}}<br>{{/unless}}
-            {{/each}}
-        </div>
-    </div>
-    {{/if}}
-    {{#if dataUrl}}
-    <div class="tc-ctl-lcat-info-data">
-        <h4 class="tc-ctl-lcat-info-data-title">{{i18n "descarregadades"}}</h4>
-        <div class="tc-ctl-lcat-info-data-content">
-            {{#each dataUrl}}
-            <a href="{{{url}}}" type="{{{format}}}" title="{{{formatDescription}}}" target="_blank">{{{formatDescription}}}</a>{{#unless @last}}<br>{{/unless}}
-            {{/each}}
-        </div>
-    </div>
-    {{/if}}
+  </div>
 </div>
-

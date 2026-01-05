@@ -2105,8 +2105,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       // Close button
       if (
-        target.classList.contains('tc-ctl-lcat-proj-close') ||
-        target.closest('.tc-ctl-lcat-proj-close')
+        target.classList.contains('tc-modal-close') ||
+        target.closest('.tc-modal-close')
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -2201,7 +2201,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
         // Re-attach event handlers for newly rendered elements
         const closeButton = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-close'
+          '.tc-modal-close'
         );
         const acceptButton = projectsPanel.querySelector(
           '.tc-ctl-lcat-proj-accept'

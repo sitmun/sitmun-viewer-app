@@ -330,51 +330,73 @@
 
 }
 
-@media screen and (min-height: 640px) and (pointer: fine) {
-    .tc-ctl-lcat .tc-ctl-lcat-info-close {
-        font-size: 1.3em;
-    }
-}
-
 /* ============================================================================
-   Layer Catalog Info Panel Styling
+   Layer Catalog Info Panel Styling (SITMUN templates using tc-modal)
    ============================================================================ */
 
-/* Main panel container */
-.tc-ctl-lcat-info, .tc-ctl-lcat-proj {
-    max-height: 570px !important;
+/* Modal root element inside the container - SITMUN templates */
+.tc-ctl-lcat-info > .tc-modal,
+.tc-ctl-lcat-proj > .tc-modal {
+    /* tc-modal itself handles positioning */
     position: fixed !important;
-    left: 25% !important;
-    bottom: calc(50% - 235px) !important;
-    top: calc(50% - 235px) !important;
-    z-index: 99999 !important;
-    width: 670px !important;
-    height: 340px !important;
-    border: 0px !important;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5) !important;
-    overflow: unset !important;
-    padding: 0px !important;
-    background-color: #ffffff !important;
-    color: #000000 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: rgba(0, 0, 0, 0.5) !important; /* Semi-transparent backdrop */
+    z-index: 10100 !important; /* Higher than panels (9999) and panel controls (10001) */
 }
 
-/* Projects modal flexbox layout */
-.tc-ctl-lcat-proj {
+/* Modal window styling for SITMUN templates */
+.tc-ctl-lcat-proj > .tc-modal .tc-modal-window,
+.tc-ctl-lcat-info > .tc-modal .tc-modal-window {
+    max-width: 670px !important;
+    max-height: 570px !important;
+    width: 670px !important;
     display: flex !important;
     flex-direction: column !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 4px !important;
+}
+
+/* Modal body styling */
+.tc-ctl-lcat-proj > .tc-modal .tc-modal-body,
+.tc-ctl-lcat-info > .tc-modal .tc-modal-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Modal header container */
+.tc-ctl-lcat-info > .tc-modal .tc-modal-header,
+.tc-ctl-lcat-proj > .tc-modal .tc-modal-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid #ccc !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    flex-shrink: 0 !important;
+    padding: 10px !important;
 }
 
 /* Header section - match standard control header styling */
-.tc-ctl-lcat-info h2 {
-    margin: 0px !important;
-    padding: 10px !important;
-    padding-left: 35px !important;
-    border-bottom: 1px solid #ccc !important;
+.tc-ctl-lcat-info > .tc-modal .tc-modal-header h2,
+.tc-ctl-lcat-proj > .tc-modal .tc-modal-header h3 {
+    margin: 0 !important;
+    padding: 0 !important;
     font-size: 1.1em !important;
-    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background */
     font-weight: bold !important;
     text-transform: none !important;
     cursor: default !important;
+    flex: 1 !important;
+    color: inherit !important;
 }
 
 /* Title with orange dotted line - bold and header-like background */
@@ -422,39 +444,9 @@
 }
 
 /* ============================================================================
-   Layer Catalog Projects Panel Styling
+   Layer Catalog Projects Panel Styling (SITMUN templates)
    ============================================================================ */
 
-/* Header section - match info modal header styling */
-.tc-ctl-lcat-proj h2 {
-    margin: 0px !important;
-    padding: 10px !important;
-    padding-left: 35px !important;
-    border-bottom: 1px solid #ccc !important;
-    font-size: 1.1em !important;
-    background-color: rgba(0, 0, 0, 0.05) !important; /* Grey background */
-    font-weight: bold !important;
-    text-transform: none !important;
-    cursor: default !important;
-    flex-shrink: 0 !important;
-}
-
-/* Close button - match info modal close button */
-.tc-ctl-lcat-proj-close {
-    display: block !important;
-    float: right !important;
-    width: 1em !important;
-    height: 1em !important;
-    margin: 2px !important;
-    cursor: pointer !important;
-    font-size: 1.6em !important;
-}
-
-.tc-ctl-lcat .tc-ctl-lcat-proj-close:after {
-    content: '\2716' !important;
-    font-family: var(--icon-font-family) !important;
-    font-size: unset !important;
-}
 
 /* Content area - flexible to fill remaining space */
 .tc-ctl-lcat-proj-content {
@@ -534,22 +526,13 @@
     flex-shrink: 0 !important;
 }
 
-/* Button styling */
-.tc-ctl-lcat-proj-buttons button {
+/* Button styling - use tc-button class for SITMUN modals */
+.tc-ctl-lcat-proj > .tc-modal .tc-ctl-lcat-proj-buttons .tc-button {
     height: 30px !important;
     min-width: 90px !important;
     padding: 8px 16px !important;
-    border: 1px solid #ccc !important;
-    background-color: #ffffff !important;
-    border-radius: 4px !important;
-    cursor: pointer !important;
     font-size: 0.9em !important;
     transition: all 200ms ease !important;
-}
-
-.tc-ctl-lcat-proj-buttons button:hover {
-    border-color: #999 !important;
-    background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* "i" icon in header */
@@ -571,27 +554,13 @@
     border-top-right-radius: 0.3em !important;
 }
 
-/* Close button */
-.tc-ctl-lcat-info-close {
-    display: block !important;
-    float: right !important;
-    width: 1em !important;
-    height: 1em !important;
-    margin: 0.3em !important;
-    cursor: pointer !important;
-    font-size: 1.6em !important;
-}
-
-.tc-ctl-lcat .tc-ctl-lcat-info-close:after {
-    content: '\2716' !important;
-    font-family: var(--icon-font-family) !important;
-    font-size: unset !important;
-}
+/* Close button styling handled above */
 
 /* Content area - scrollable */
-.tc-ctl-lcat-info-content {
+.tc-ctl-lcat-info > .tc-modal .tc-ctl-lcat-info-content {
     overflow: auto !important;
-    height: 300px !important;
+    flex: 1 !important;
+    min-height: 0 !important;
     padding: 0.3em !important;
 }
 
