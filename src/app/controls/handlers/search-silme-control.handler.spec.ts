@@ -2,11 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SearchSilmeControlHandler } from './search-silme-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { AppConfigService } from '../../services/app-config.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('SearchSilmeControlHandler', () => {
   let handler: SearchSilmeControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockAppConfig: jasmine.SpyObj<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -14,12 +16,16 @@ describe('SearchSilmeControlHandler', () => {
       'waitForTC',
       'getTC'
     ]);
+    mockAppConfig = jasmine.createSpyObj('AppConfigService', ['getControlDefault']);
+    mockAppConfig.getControlDefault.and.returnValue({ div: 'search' });
+    mockTCNamespace.getTC.and.returnValue({ control: { SearchSilme: {} } } as any);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         SearchSilmeControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfig }
       ]
     });
 
