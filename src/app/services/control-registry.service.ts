@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ControlHandler, SitnaControlConfig } from '../controls/control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { SitnaControls } from '@api/model/sitna-cfg';
+import { NotificationService } from '../notifications/services/NotificationService';
 
 /**
  * Registry service for control handlers.
@@ -15,6 +16,8 @@ export class ControlRegistryService {
    * Map of control type to handler instance.
    */
   private handlers = new Map<string, ControlHandler>();
+
+  constructor(private notificationService: NotificationService) {}
 
   /**
    * Register a control handler.
@@ -134,7 +137,43 @@ export class ControlRegistryService {
 
     console.log(`[ControlRegistry] Successfully configured ${Object.keys(sitnaControls).length} controls`);
     console.log(`[ControlRegistry] Final sitnaControls object:`, sitnaControls);
+
+    // Validate div usage after all controls are processed
+    this.validateDivUsage(sitnaControls);
+
     return sitnaControls;
+  }
+
+  /**
+   * Validate that no two controls are using the same div.
+   * Shows warning toasts for any conflicts detected.
+   * 
+   * @param sitnaControls - The configured controls object
+   */
+  private validateDivUsage(sitnaControls: Partial<SitnaControls>): void {
+    const divUsage = new Map<string, string[]>();
+
+    // Iterate through all configured controls
+    for (const [controlKey, config] of Object.entries(sitnaControls)) {
+      // Extract div from config (handle both string and object configs)
+      const div = typeof config === 'object' && config !== null ? config.div : null;
+      
+      if (div && typeof div === 'string') {
+        if (!divUsage.has(div)) {
+          divUsage.set(div, []);
+        }
+        divUsage.get(div)!.push(controlKey);
+      }
+    }
+
+    // Show warnings for duplicates
+    for (const [div, controls] of divUsage.entries()) {
+      if (controls.length > 1) {
+        this.notificationService.warning(
+          `Configuration conflict: Multiple controls are using the same div '${div}': ${controls.join(', ')}. Only the first will be rendered correctly.`
+        );
+      }
+    }
   }
 
   /**

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ControlRegistryService } from './control-registry.service';
 import { ControlHandler, SitnaControlConfig } from '../controls/control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { NotificationService } from '../notifications/services/NotificationService';
 
 /**
  * Mock handler for testing
@@ -9,14 +10,16 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 class MockHandler implements ControlHandler {
   readonly controlIdentifier: string;
   readonly requiredPatches?: string[];
+  private customDiv?: string;
   
   loadPatchesCalled = false;
   buildConfigCalled = false;
   cleanupCalled = false;
 
-  constructor(controlIdentifier: string, patches?: string[]) {
+  constructor(controlIdentifier: string, patches?: string[], customDiv?: string) {
     this.controlIdentifier = controlIdentifier;
     this.requiredPatches = patches;
+    this.customDiv = customDiv;
   }
 
   async loadPatches(): Promise<void> {
@@ -25,7 +28,8 @@ class MockHandler implements ControlHandler {
 
   buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
     this.buildConfigCalled = true;
-    return { div: this.controlIdentifier.replace('sitna.', '') };
+    const div = this.customDiv || this.controlIdentifier.replace('sitna.', '');
+    return { div };
   }
 
   isReady(): boolean {
@@ -69,9 +73,16 @@ class ErrorHandler implements ControlHandler {
 
 describe('ControlRegistryService', () => {
   let service: ControlRegistryService;
+  let notificationService: jasmine.SpyObj<NotificationService>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    notificationService = jasmine.createSpyObj('NotificationService', ['warning', 'success', 'error']);
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: NotificationService, useValue: notificationService }
+      ]
+    });
     service = TestBed.inject(ControlRegistryService);
   });
 
@@ -415,6 +426,126 @@ describe('ControlRegistryService', () => {
 
       expect(console.error).toHaveBeenCalled();
       expect(Object.keys(result).length).toBe(0);
+    });
+  });
+
+  describe('Div Validation', () => {
+    it('should not warn when controls use different divs', async () => {
+      const handler1 = new MockHandler('sitna.scale', undefined, 'scale');
+      const handler2 = new MockHandler('sitna.coordinates', undefined, 'coordinates');
+      service.register(handler1);
+      service.register(handler2);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.scale', parameters: {} } as any,
+        { 'ui-control': 'sitna.coordinates', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      expect(notificationService.warning).not.toHaveBeenCalled();
+    });
+
+    it('should warn when multiple controls use the same div', async () => {
+      const handler1 = new MockHandler('sitna.scale', undefined, 'scale');
+      const handler2 = new MockHandler('sitna.scaleBar', undefined, 'scale');
+      const handler3 = new MockHandler('sitna.scaleSelector', undefined, 'scale');
+      service.register(handler1);
+      service.register(handler2);
+      service.register(handler3);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.scale', parameters: {} } as any,
+        { 'ui-control': 'sitna.scaleBar', parameters: {} } as any,
+        { 'ui-control': 'sitna.scaleSelector', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      expect(notificationService.warning).toHaveBeenCalledTimes(1);
+      expect(notificationService.warning).toHaveBeenCalledWith(
+        jasmine.stringContaining("Configuration conflict: Multiple controls are using the same div 'scale'")
+      );
+      expect(notificationService.warning).toHaveBeenCalledWith(
+        jasmine.stringContaining('scale, scaleBar, scaleSelector')
+      );
+    });
+
+    it('should warn for each duplicate div separately', async () => {
+      const handler1 = new MockHandler('sitna.scale', undefined, 'scale');
+      const handler2 = new MockHandler('sitna.scaleBar', undefined, 'scale');
+      const handler3 = new MockHandler('sitna.coordinates', undefined, 'coordinates');
+      const handler4 = new MockHandler('sitna.legend', undefined, 'coordinates');
+      service.register(handler1);
+      service.register(handler2);
+      service.register(handler3);
+      service.register(handler4);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.scale', parameters: {} } as any,
+        { 'ui-control': 'sitna.scaleBar', parameters: {} } as any,
+        { 'ui-control': 'sitna.coordinates', parameters: {} } as any,
+        { 'ui-control': 'sitna.legend', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      expect(notificationService.warning).toHaveBeenCalledTimes(2);
+      expect(notificationService.warning).toHaveBeenCalledWith(
+        jasmine.stringContaining("div 'scale'")
+      );
+      expect(notificationService.warning).toHaveBeenCalledWith(
+        jasmine.stringContaining("div 'coordinates'")
+      );
+    });
+
+    it('should handle controls without div property', async () => {
+      class NoDivHandler implements ControlHandler {
+        readonly controlIdentifier = 'sitna.noDiv';
+        async loadPatches() {}
+        buildConfiguration(): SitnaControlConfig | null {
+          return { someOtherProp: 'value' } as any;
+        }
+        isReady() { return true; }
+      }
+
+      const handler = new NoDivHandler();
+      service.register(handler);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.noDiv', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      expect(notificationService.warning).not.toHaveBeenCalled();
+    });
+
+    it('should handle boolean control configs', async () => {
+      class BooleanHandler implements ControlHandler {
+        readonly controlIdentifier = 'sitna.boolean';
+        async loadPatches() {}
+        buildConfiguration(): SitnaControlConfig | null {
+          return true as any; // Some controls return boolean
+        }
+        isReady() { return true; }
+      }
+
+      const handler = new BooleanHandler();
+      service.register(handler);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.boolean', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      expect(notificationService.warning).not.toHaveBeenCalled();
     });
   });
 });

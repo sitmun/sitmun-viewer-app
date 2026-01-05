@@ -6,6 +6,8 @@
 
 import { CoordinatesControlHandler } from './coordinates-control.handler';
 import { ScaleControlHandler } from './scale-control.handler';
+import { ScaleBarControlHandler } from './scale-bar-control.handler';
+import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
 import { BasemapSelectorControlHandler } from './basemap-selector-control.handler';
 import { LegendControlHandler } from './legend-control.handler';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
@@ -16,6 +18,8 @@ import { SearchSilmeControlHandler } from './search-silme-control.handler';
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
 export { ScaleControlHandler } from './scale-control.handler';
+export { ScaleBarControlHandler } from './scale-bar-control.handler';
+export { ScaleSelectorControlHandler } from './scale-selector-control.handler';
 export { BasemapSelectorControlHandler } from './basemap-selector-control.handler';
 export { LegendControlHandler } from './legend-control.handler';
 export { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
@@ -35,6 +39,8 @@ export const ALL_CONTROL_HANDLERS = [
   // Native
   CoordinatesControlHandler,
   ScaleControlHandler,
+  ScaleBarControlHandler,
+  ScaleSelectorControlHandler,
   BasemapSelectorControlHandler,
   LegendControlHandler,
   WorkLayerManagerControlHandler,

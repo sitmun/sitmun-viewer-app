@@ -18,6 +18,12 @@
     "sitna.scale": {
       "div": "scale"
     },
+    "sitna.scaleBar": {
+      "div": "scale"
+    },
+    "sitna.scaleSelector": {
+      "div": "scale"
+    },
     "sitna.workLayerManager": {
       "div": "wlm"
     },
