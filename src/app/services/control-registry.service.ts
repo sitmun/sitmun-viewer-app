@@ -3,6 +3,7 @@ import { ControlHandler, SitnaControlConfig } from '../controls/control-handler.
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { SitnaControls } from '@api/model/sitna-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
+import { AppConfigService } from './app-config.service';
 
 /**
  * Registry service for control handlers.
@@ -17,7 +18,10 @@ export class ControlRegistryService {
    */
   private handlers = new Map<string, ControlHandler>();
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private appConfigService: AppConfigService
+  ) {}
 
   /**
    * Register a control handler.
@@ -100,6 +104,8 @@ export class ControlRegistryService {
 
     if (activeControls.length === 0) {
       console.warn('[ControlRegistry] No active controls with registered handlers found');
+      // Still check for auto-enabled controls (e.g., attribution)
+      this.ensureAttributionControl(sitnaControls, context);
       return sitnaControls;
     }
 
@@ -135,6 +141,10 @@ export class ControlRegistryService {
       }
     }
 
+    // Post-process: Auto-enable attribution control if attribution is configured
+    // but control is not explicitly enabled via backend task
+    this.ensureAttributionControl(sitnaControls, context);
+
     console.log(`[ControlRegistry] Successfully configured ${Object.keys(sitnaControls).length} controls`);
     console.log(`[ControlRegistry] Final sitnaControls object:`, sitnaControls);
 
@@ -142,6 +152,48 @@ export class ControlRegistryService {
     this.validateDivUsage(sitnaControls);
 
     return sitnaControls;
+  }
+
+  /**
+   * Ensure attribution control is enabled if attribution is configured in app-config.json.
+   * This allows attribution to work even without a backend task.
+   * 
+   * @param sitnaControls - The configured controls object (modified in place)
+   * @param context - Full application configuration context
+   */
+  private ensureAttributionControl(
+    sitnaControls: Partial<SitnaControls>,
+    context: AppCfg
+  ): void {
+    // Check if attribution is configured in app-config.json
+    const attribution = this.appConfigService.getAttribution();
+    
+    if (attribution && !sitnaControls.attribution) {
+      // Attribution is configured but control is not enabled
+      // Get the attribution handler and build default configuration
+      const handler = this.getHandler('sitna.attribution');
+      
+      if (handler) {
+        // Create a dummy task for the handler to process
+        const dummyTask: AppTasks = {
+          id: 'auto-attribution',
+          'ui-control': 'sitna.attribution',
+          parameters: {}
+        };
+        
+        try {
+          const config = handler.buildConfiguration(dummyTask, context);
+          if (config !== null) {
+            sitnaControls.attribution = config as any;
+            console.log('[ControlRegistry] Auto-enabled attribution control (attribution configured in app-config.json)');
+          }
+        } catch (error) {
+          console.warn('[ControlRegistry] Failed to auto-enable attribution control:', error);
+        }
+      } else {
+        console.warn('[ControlRegistry] Attribution handler not found, cannot auto-enable attribution control');
+      }
+    }
   }
 
   /**

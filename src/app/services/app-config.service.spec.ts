@@ -168,4 +168,40 @@ describe('AppConfigService', () => {
       expect(dashboardConfig.filteringEnabled).toBe(false);
     });
   });
+
+  describe('getAttribution', () => {
+    it('should return attribution when configured', async () => {
+      const configWithAttribution: AppConfig = {
+        ...mockConfig,
+        attribution: '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      };
+
+      const loadPromise = service.loadConfig();
+
+      const req = httpMock.expectOne('assets/config/app-config.json');
+      req.flush(configWithAttribution);
+
+      await loadPromise;
+
+      const attribution = service.getAttribution();
+      expect(attribution).toBe('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+    });
+
+    it('should return null when attribution not configured', async () => {
+      const loadPromise = service.loadConfig();
+
+      const req = httpMock.expectOne('assets/config/app-config.json');
+      req.flush(mockConfig);
+
+      await loadPromise;
+
+      const attribution = service.getAttribution();
+      expect(attribution).toBeNull();
+    });
+
+    it('should return null if config not loaded', () => {
+      const attribution = service.getAttribution();
+      expect(attribution).toBeNull();
+    });
+  });
 });

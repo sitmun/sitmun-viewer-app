@@ -31,6 +31,7 @@ export interface ControlDefaultConfig {
  * Interface for application configuration
  */
 export interface AppConfig {
+  attribution?: string;
   dashboard: DashboardConfig;
   defaultLanguage?: string;  // Moved from languages.defaultLanguage
   languages?: LanguageItem[];  // Changed from object with defaultLanguages array to direct array
@@ -150,6 +151,14 @@ export class AppConfigService {
    */
   getAllControlDefaults(): Record<string, ControlDefaultConfig> {
     return this.config?.controlDefaults || {};
+  }
+
+  /**
+   * Get the attribution text from configuration
+   * @returns Attribution string or null if not configured
+   */
+  getAttribution(): string | null {
+    return this.config?.attribution || null;
   }
 }
 

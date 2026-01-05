@@ -19,3 +19,8 @@ body {
 .cdk-overlay-pane {
   z-index: 100000 !important; // Higher than toolbar (z-index: 99999) and map content
 }
+
+/* Hide the hardcoded "API SITNA" GitHub link in attribution control */
+.tc-ctl-attrib .tc-github {
+  display: none !important;
+}

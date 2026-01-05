@@ -154,15 +154,22 @@ export abstract class AbstractMapComponent
       appCfg
     );
 
+    const attribution = this.mapConfig.toAttribution();
+    console.log('[AbstractMapComponent] Attribution from config:', attribution);
+    
     this.currentGeneralCfg = {
       locale: this.locale,
       crs: this.mapConfig.toCrs(appCfg),
       initialExtent: this.mapConfig.toInitialExtent(appCfg),
+      attribution: attribution,
       layout: this.mapConfig.toLayout(appCfg),
       baseLayers: this.mapConfig.toBaseLayers(appCfg),
       controls: controls as any, // Handler system returns Partial<SitnaControls>
       views: this.mapConfig.toViews(appCfg)
     };
+    
+    console.log('[AbstractMapComponent] Attribution in currentGeneralCfg:', this.currentGeneralCfg.attribution);
+    console.log('[AbstractMapComponent] Attribution control enabled:', !!this.currentGeneralCfg.controls.attribution);
 
     SitnaHelper.loadMiddleware(appCfg);
 
@@ -323,8 +330,11 @@ export abstract class AbstractMapComponent
   }
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
+    console.log('[AbstractMapComponent] Loading map with attribution:', cfg.attribution);
+    console.log('[AbstractMapComponent] Attribution control in cfg.controls:', cfg.controls.attribution);
     try {
       this.map = new SitnaMap('mapa', cfg);
+      console.log('[AbstractMapComponent] Map created. Map options.attribution:', this.map?.options?.attribution);
     } catch (error) {
       console.error('Failed to initialize map:', error);
       return;

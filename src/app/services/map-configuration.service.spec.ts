@@ -1,16 +1,25 @@
 import { TestBed } from '@angular/core/testing';
 import { MapConfigurationService } from './map-configuration.service';
 import { ConfigLookupService } from './config-lookup.service';
+import { AppConfigService } from './app-config.service';
 import { AppCfg, AppLayer, AppService, AppGroup } from '@api/model/app-cfg';
 import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 
 describe('MapConfigurationService', () => {
   let service: MapConfigurationService;
   let configLookup: ConfigLookupService;
+  let appConfigService: jasmine.SpyObj<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution']);
+    appConfigService.getAttribution.and.returnValue(null);
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AppConfigService, useValue: appConfigService }
+      ]
+    });
     service = TestBed.inject(MapConfigurationService);
     configLookup = TestBed.inject(ConfigLookupService);
 
@@ -317,6 +326,33 @@ describe('MapConfigurationService', () => {
       // Don't initialize lookup service to test fallback
       const result = service.toBaseLayers(cfgWithLookup);
       expect(result.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('toAttribution', () => {
+    it('should return attribution from app config service', () => {
+      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+
+      const result = service.toAttribution();
+
+      expect(result).toBe('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      expect(appConfigService.getAttribution).toHaveBeenCalled();
+    });
+
+    it('should return undefined when attribution not configured', () => {
+      appConfigService.getAttribution.and.returnValue(null);
+
+      const result = service.toAttribution();
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when attribution is empty string', () => {
+      appConfigService.getAttribution.and.returnValue('');
+
+      const result = service.toAttribution();
+
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -1,4 +1,5 @@
 {
+  "attribution": "<a href=\"https://github.com/sitmun\" target=\"_blank\">SITMUN</a>",
   "dashboard": {
     "allowedTypes": ["I"],
     "filteringEnabled": true

@@ -19,6 +19,7 @@ export interface GeneralCfg {
   locale?: string;
   crs?: string;
   initialExtent?: [number, number, number, number];
+  attribution?: string;
   layout: {
     config: string;
     markup: string;

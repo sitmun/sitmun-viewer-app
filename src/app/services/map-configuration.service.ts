@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
 import { ConfigLookupService } from './config-lookup.service';
+import { AppConfigService } from './app-config.service';
 
 /**
  * Service for converting AppCfg to SITNA map-level configuration.
@@ -14,7 +15,10 @@ export class MapConfigurationService {
   private static readonly DEFAULT_THUMBNAIL_URL =
     'assets/img/dummy_map_thumbnail.jpg';
 
-  constructor(private configLookup: ConfigLookupService) {}
+  constructor(
+    private configLookup: ConfigLookupService,
+    private appConfigService: AppConfigService
+  ) {}
 
   /**
    * Get coordinate reference system from application config
@@ -167,5 +171,14 @@ export class MapConfigurationService {
       script: 'assets/map-styles/' + theme + '/script.js',
       i18n: 'assets/map-styles/' + theme + '/resources'
     };
+  }
+
+  /**
+   * Get attribution text from app configuration
+   * @returns Attribution string or undefined if not configured
+   */
+  toAttribution(): string | undefined {
+    const attribution = this.appConfigService.getAttribution();
+    return attribution || undefined;
   }
 }

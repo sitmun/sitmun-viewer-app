@@ -3,6 +3,7 @@ import { ControlRegistryService } from './control-registry.service';
 import { ControlHandler, SitnaControlConfig } from '../controls/control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
+import { AppConfigService } from './app-config.service';
 
 /**
  * Mock handler for testing
@@ -28,8 +29,14 @@ class MockHandler implements ControlHandler {
 
   buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
     this.buildConfigCalled = true;
-    const div = this.customDiv || this.controlIdentifier.replace('sitna.', '');
-    return { div };
+    // Use task parameters if provided, otherwise use customDiv or default
+    const div = task.parameters?.div || this.customDiv || this.controlIdentifier.replace('sitna.', '');
+    const config: SitnaControlConfig = { div };
+    // Merge any other task parameters
+    if (task.parameters) {
+      Object.assign(config, task.parameters);
+    }
+    return config;
   }
 
   isReady(): boolean {
@@ -74,13 +81,17 @@ class ErrorHandler implements ControlHandler {
 describe('ControlRegistryService', () => {
   let service: ControlRegistryService;
   let notificationService: jasmine.SpyObj<NotificationService>;
+  let appConfigService: jasmine.SpyObj<AppConfigService>;
 
   beforeEach(() => {
     notificationService = jasmine.createSpyObj('NotificationService', ['warning', 'success', 'error']);
+    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution']);
+    appConfigService.getAttribution.and.returnValue(null);
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: NotificationService, useValue: notificationService }
+        { provide: NotificationService, useValue: notificationService },
+        { provide: AppConfigService, useValue: appConfigService }
       ]
     });
     service = TestBed.inject(ControlRegistryService);
@@ -546,6 +557,102 @@ describe('ControlRegistryService', () => {
       await service.processControls(tasks, context);
 
       expect(notificationService.warning).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ensureAttributionControl', () => {
+    it('should auto-enable attribution control when attribution is configured', async () => {
+      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      
+      const attributionHandler = new MockHandler('sitna.attribution');
+      service.register(attributionHandler);
+
+      const tasks: AppTasks[] = [];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.attribution).toBeDefined();
+      expect(attributionHandler.buildConfigCalled).toBe(true);
+    });
+
+    it('should not auto-enable attribution control when attribution is not configured', async () => {
+      appConfigService.getAttribution.and.returnValue(null);
+      
+      const attributionHandler = new MockHandler('sitna.attribution');
+      service.register(attributionHandler);
+
+      const tasks: AppTasks[] = [];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.attribution).toBeUndefined();
+      expect(attributionHandler.buildConfigCalled).toBe(false);
+    });
+
+    it('should not override existing attribution control from backend task', async () => {
+      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      
+      const attributionHandler = new MockHandler('sitna.attribution', undefined, 'custom-attribution');
+      service.register(attributionHandler);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.attribution', parameters: { div: 'backend-attribution' } } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.attribution).toBeDefined();
+      const attributionConfig = result.attribution as any;
+      expect(attributionConfig?.div).toBe('backend-attribution');
+      // Should only be called once (from backend task, not from auto-enable)
+      expect(attributionHandler.buildConfigCalled).toBe(true);
+    });
+
+    it('should handle missing attribution handler gracefully', async () => {
+      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      spyOn(console, 'warn');
+
+      const tasks: AppTasks[] = [];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.attribution).toBeUndefined();
+      expect(console.warn).toHaveBeenCalledWith(
+        jasmine.stringContaining('Attribution handler not found')
+      );
+    });
+
+    it('should handle buildConfiguration errors in auto-enable', async () => {
+      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      
+      class ThrowingAttributionHandler extends MockHandler {
+        constructor() {
+          super('sitna.attribution');
+        }
+        override buildConfiguration(): SitnaControlConfig | null {
+          throw new Error('Build error');
+        }
+      }
+
+      const attributionHandler = new ThrowingAttributionHandler();
+      service.register(attributionHandler);
+      spyOn(console, 'warn');
+
+      const tasks: AppTasks[] = [];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.attribution).toBeUndefined();
+      // console.warn is called with message and error, check first argument
+      expect(console.warn).toHaveBeenCalledWith(
+        jasmine.stringContaining('Failed to auto-enable attribution control'),
+        jasmine.any(Error)
+      );
     });
   });
 });
