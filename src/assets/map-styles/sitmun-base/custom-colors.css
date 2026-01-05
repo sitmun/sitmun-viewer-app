@@ -11,7 +11,6 @@
 .tc-ctl-scl input,
 .tc-ctl-ss input,
 .tc-alert,
-.tc-ctl-coords,
 .tc-ctl-sb,
 .tc-ctl-scl {
     background-color: #ffffff;
@@ -31,7 +30,6 @@
     color: #666666;
 }
 
-.tc-ctl-coords,
 .tc-ctl-popup {
     background-color: #ffffffe6;
 }

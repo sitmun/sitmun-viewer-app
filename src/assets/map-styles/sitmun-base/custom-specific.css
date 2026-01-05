@@ -323,6 +323,11 @@
         top: 215px !important;
     }
 
+    /* Hide coordinates on mobile */
+    #coordinates {
+        display: none;
+    }
+
 }
 
 @media screen and (min-height: 640px) and (pointer: fine) {
@@ -703,14 +708,25 @@
 
 /* Silme panel tab backgrounds */
 .tc-left-panel #legend-tab {
-    background-image: url(../silme-base/img/mapaLeyenda.png);
+    background-image: url(./img/legendIcon.png);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
 }
 
+/* When panel is expanded, use close/arrow icon */
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab {
+    background-image: url(./img/closeIcon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    background-color: #b51818;
+    transform-origin: center center;
+    transform: none;
+}
+
 .tc-left-panel #silme-tab {
-    background-image: url(../silme-base/img/mapaTools.png);
+    background-image: url(./img/tools.png);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
@@ -719,7 +735,7 @@
 /* Collapsed legend state */
 .tc-left-panel.tc-collapsed-left.legend-active #legend-tab,
 .left-collapsed-legend #legend-tab {
-    background-image: url(../silme-base/img/mapaCerrar.png);
+    background-image: url(./img/closeIcon.png);
     background-color: rgba(0, 0, 0, 1);
     background-color: #b51818;
 }
@@ -732,7 +748,7 @@
 /* Collapsed silme state */
 .tc-left-panel.tc-collapsed-left.silme-active #silme-tab,
 .left-collapsed-silme #silme-tab {
-    background-image: url(../silme-base/img/mapaCerrar.png);
+    background-image: url(./img/closeIcon.png);
     background-color: rgba(0, 0, 0, 1);
     background-color: #b51818;
 }
@@ -746,6 +762,32 @@
 .tc-ctl-legend {
     padding: 0;
     background-color: hsl(0deg 0% 98%);
+}
+
+/* Legend h2 header styling - match right panel headers with legend icon */
+#legend h2,
+.tc-ctl-legend h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/legendIconN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+}
+
+/* Override responsive media query that sets display: none for tc-ctl-legend h2 */
+@media screen and (min-height: 40em) and (pointer: fine), screen and (min--moz-device-pixel-ratio:0) and (min-height:40em) {
+    .tc-ctl-legend h2 {
+        display: block !important;
+        height: 19px !important;
+    }
 }
 
 /* Hide legend by default when panel is collapsed (unless legend is active) */

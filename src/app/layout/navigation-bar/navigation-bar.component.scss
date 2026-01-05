@@ -199,7 +199,8 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
   // Match toolbar button vertical position: toolbar is 64px, button is 40px
   // Center vertically: (64 - 40) / 2 = 12px from top
   top: 12px !important;
-  right: 20px !important; // 20px from right edge (due to SITNA tools-tab position)
+  left: 50% !important; // Horizontally centered
+  transform: translateX(-50%) !important; // Offset by half button width to center
   
   // Required overrides (don't remove - explained below)
   z-index: 999999 !important; // Required: SITNA map controls use z-index up to 99999

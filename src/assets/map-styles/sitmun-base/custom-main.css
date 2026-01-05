@@ -4,6 +4,11 @@ html, button, input, select, textarea {
     font-family: sans-serif;
 }
 
+/* Utility classes */
+.tc-hidden {
+    display: none !important;
+}
+
 /* Map positioning */
 .tc-map {
     position: absolute !important;
@@ -18,36 +23,47 @@ html, button, input, select, textarea {
     padding: 0px;
 }
 
-/* Coordinates control */
+/* Coordinates control - matched to attribution control style */
 .tc-ctl-coords {
-    margin: unset;
     position: absolute;
     left: 0px;
     top: auto;
     bottom: 0px;
-    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.9);
     z-index: 9999;
     font-family: Arial, helvetica, sans-serif;
-    font-size: 0.6em;
-    padding: 5px !important;
-    padding-left: 10px !important;
-    width: 305px;
-    border-top-right-radius: 0px;
+    font-size: 11px !important;
+    line-height: 1.4;
+    padding: 3px 8px;
+    color: #000;
+    max-width: 305px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 4.8px;
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
+    right: auto;
     opacity: 1;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    height: 36px;
 }
 
 .tc-ctl-coords:hover {
     opacity: 1;
 }
 
+.tc-ctl-coords-x,
+.tc-ctl-coords-y,
+.tc-ctl-coords-crs {
+    color: #000;
+}
+
 button.tc-ctl-coords-crs {
     border: 1px solid #000;
     border-radius: 0px;
+    background-color: transparent;
     padding: 2px;
     margin-right: 2px;
+    font-size: 11px;
 }
 
 /* Navigation controls */
@@ -208,9 +224,11 @@ button.tc-ctl-fscreen-btn {
 
 .tc-right-panel.tc-collapsed > h1,
 .tc-right-panel.tc-collapsed-right > h1 {
+    left: -20px;
     right: 20px;
-    transition: right 200ms;
+    transition: right 200ms, left 200ms;
     background-color: rgba(0, 0, 0, 0.8);
+    border-bottom-left-radius: 0px !important;
 }
 
 /* When expanded, show text and hide icon */
@@ -242,14 +260,6 @@ button.tc-ctl-fscreen-btn:hover {
     z-index: 10001;
 }
 
-.tc-panel-content {
-    position: absolute;
-    top: 20px;
-    bottom: 48px;
-    width: 320px;
-    z-index: 10010;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-}
 
 /* Ensure panel content properly constrains flex children */
 .tc-panel-content > .tc-ctl-lcat,
@@ -282,10 +292,15 @@ button.tc-ctl-fscreen-btn:hover {
 .tc-left-panel.tc-collapsed-left > .tc-panel-content {
     left: -340px;
     transition: left 200ms;
+    min-width: 0;
+}
+
+/* Min-width for left panel content when expanded */
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) > .tc-panel-content {
+    min-width: 320px;
 }
 
 .tc-tools-panel {
-    top: 0;
     height: 100%;
     max-height: 100%;
 }
@@ -295,10 +310,20 @@ button.tc-ctl-fscreen-btn:hover {
     position: absolute;
     bottom: 0;
     top: auto;
-    width: 100%;
+    width: 40px;
+    height: 40px;
     opacity: 1;
-    text-indent: 0;
-    background-image: none;
+    text-indent: -999em;
+    background-image: url(./img/closeIcon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px !important;
+    background-color: #b51818;
+    transform-origin: center center;
+    transform: rotate(180deg) !important;
+    width: 40px !important;
+    border-bottom-left-radius: 0px !important;
+    left: 10px !important;
 }
 
 .tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content {
