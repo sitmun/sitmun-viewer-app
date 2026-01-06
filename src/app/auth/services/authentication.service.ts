@@ -22,7 +22,7 @@ export class AuthenticationService<T> {
   constructor(
     private http: HttpClient,
     private router: Router,
-    @Inject(AUTH_CONFIG_DI) private config: AuthConfig<T>,
+    @Inject(AUTH_CONFIG_DI) private config: AuthConfig<T>
   ) {
     // TODO
     this.AUTH_TOKEN = this.config.localStoragePrefix + '_auth_token';
@@ -93,9 +93,12 @@ export class AuthenticationService<T> {
   };
 
   private getToken = (): string | null => {
-    const token = localStorage.getItem(this.AUTH_TOKEN)
+    const token = localStorage.getItem(this.AUTH_TOKEN);
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: "AUTH_TOKEN", token: token });
+      navigator.serviceWorker.controller.postMessage({
+        type: 'AUTH_TOKEN',
+        token: token
+      });
     }
     return token;
   };
@@ -103,7 +106,10 @@ export class AuthenticationService<T> {
   private setToken = (token: string): void => {
     localStorage.setItem(this.AUTH_TOKEN, token);
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: "AUTH_TOKEN", token: token });
+      navigator.serviceWorker.controller.postMessage({
+        type: 'AUTH_TOKEN',
+        token: token
+      });
     }
   };
 

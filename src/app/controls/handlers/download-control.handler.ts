@@ -8,7 +8,7 @@ import { UIStateService } from '../../services/ui-state.service';
 /**
  * Handler for the native SITNA download control.
  * Allows users to download map images and data.
- * 
+ *
  * Control Type: sitna.download
  * Patches: None (native SITNA control)
  * Configuration: div + optional parameters (e.g., deselectableTab)
@@ -33,7 +33,10 @@ export class DownloadControlHandler extends ControlHandlerBase {
    * Uses default div if no parameters provided, otherwise merges parameters.
    * Enables tools button when download control is configured.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     const config = this.mergeWithParameters(defaultConfig, task.parameters);
 
@@ -50,4 +53,3 @@ export class DownloadControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

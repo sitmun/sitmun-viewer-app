@@ -21,11 +21,11 @@ export class DashboardComponent
   ) {
     super(router, commonService, modal);
   }
-  application : any;
-  territories : any;
+  application: any;
+  territories: any;
 }
 
 export interface MapTerritory {
-  appId : number;
-  territoryId : number;
+  appId: number;
+  territoryId: number;
 }

@@ -36,11 +36,11 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
 import {
   AppInitializerService,
-  initializeApp,
+  initializeApp
 } from './services/app-initializer.service';
 import {
   AppConfigService,
-  initializeAppConfig,
+  initializeAppConfig
 } from './services/app-config.service';
 import { ALL_CONTROL_HANDLERS } from './controls/handlers';
 import { ControlRegistryService } from './services/control-registry.service';
@@ -97,20 +97,20 @@ registerLocaleData(localeEs);
       provide: APP_INITIALIZER,
       useFactory: initializeAppConfig,
       deps: [AppConfigService],
-      multi: true,
+      multi: true
     },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeApp,
       deps: [AppInitializerService],
-      multi: true,
+      multi: true
     },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeControlHandlers,
       deps: [ControlRegistryService, ...ALL_CONTROL_HANDLERS],
-      multi: true,
-    },
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })
@@ -134,10 +134,14 @@ export function initializeControlHandlers(
   ...handlers: any[]
 ): () => void {
   return () => {
-    console.log(`[AppModule] Registering ${handlers.length} control handlers...`);
+    console.log(
+      `[AppModule] Registering ${handlers.length} control handlers...`
+    );
     registry.registerAll(handlers);
     const stats = registry.getStatistics();
     console.log(`[AppModule] Registered handlers:`, stats.handlerTypes);
-    console.log(`[AppModule] Handlers with patches: ${stats.handlersWithPatches}`);
+    console.log(
+      `[AppModule] Handlers with patches: ${stats.handlersWithPatches}`
+    );
   };
 }

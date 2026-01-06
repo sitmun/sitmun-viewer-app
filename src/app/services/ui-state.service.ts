@@ -8,7 +8,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
  * This enables testability, prevents race conditions, and follows Angular best practices.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class UIStateService {
   private showLegendButton = new BehaviorSubject<boolean>(false);
@@ -18,17 +18,20 @@ export class UIStateService {
   /**
    * Observable for legend button visibility state.
    */
-  readonly showLegend$: Observable<boolean> = this.showLegendButton.asObservable();
+  readonly showLegend$: Observable<boolean> =
+    this.showLegendButton.asObservable();
 
   /**
    * Observable for overview map button visibility state.
    */
-  readonly showOverviewMap$: Observable<boolean> = this.showOverviewMapButton.asObservable();
+  readonly showOverviewMap$: Observable<boolean> =
+    this.showOverviewMapButton.asObservable();
 
   /**
    * Observable for tools button visibility state.
    */
-  readonly showTools$: Observable<boolean> = this.showToolsButton.asObservable();
+  readonly showTools$: Observable<boolean> =
+    this.showToolsButton.asObservable();
 
   /**
    * Enable legend button visibility.
@@ -108,4 +111,3 @@ export class UIStateService {
     this.showToolsButton.next(false);
   }
 }
-

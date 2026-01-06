@@ -7,11 +7,11 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 /**
  * Handler for the Silme extension of featureInfo control.
  * Extended version with Silme-specific template and behavior.
- * 
+ *
  * Control Type: sitna.featureInfo.silme.extension
  * Patches: FeatureInfoSilme.js
  * Configuration: Map-level click handler (no div) - displays feature info in popups
- * 
+ *
  * Special behavior: When parameters are empty, uses 'featureInfoSilme' config key.
  * When custom parameters are provided, uses 'featureInfo' config key to configure
  * the base FeatureInfo behavior that the Silme extension inherits.
@@ -27,9 +27,7 @@ export class FeatureInfoSilmeControlHandler extends ControlHandlerBase {
   private patchLoaded = false;
   private currentTask: AppTasks | null = null;
 
-  constructor(
-    tcNamespaceService: TCNamespaceService
-  ) {
+  constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
   }
 
@@ -84,14 +82,17 @@ export class FeatureInfoSilmeControlHandler extends ControlHandlerBase {
 
   /**
    * Build configuration for FeatureInfoSilme control.
-   * 
+   *
    * Special logic matching legacy behavior (lines 918-944 in sitna-helpers.ts):
    * - Empty parameters → returns { persistentHighlights: true } for 'featureInfoSilme' key
    * - Custom parameters → returns parameters for 'featureInfo' key (configures base class)
-   * 
+   *
    * Note: The registry will use getSitnaConfigKey() to determine which key to use.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     // Store current task for getSitnaConfigKey()
     this.currentTask = task;
 
@@ -118,7 +119,6 @@ export class FeatureInfoSilmeControlHandler extends ControlHandlerBase {
     }
 
     const TC = this.tcNamespaceService.getTC();
-    return !!(TC?.control?.FeatureInfoSilme);
+    return !!TC?.control?.FeatureInfoSilme;
   }
 }
-

@@ -1,8 +1,18 @@
-import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { CustomDetails } from '@api/services/user.service';
-import { LanguageDTO, LanguageService } from 'src/app/services/language.service';
+import {
+  LanguageDTO,
+  LanguageService
+} from 'src/app/services/language.service';
 import { MatMenu } from '@angular/material/menu';
 
 @Component({
@@ -43,13 +53,18 @@ export class MenuComponent implements OnInit {
   }
 
   private loadLanguages() {
-    this.languageService.getLanguagesTranslatedSorted(this.currentLang).subscribe((langs: LanguageDTO[]) => {
-      this.languages = langs;
-    });
+    this.languageService
+      .getLanguagesTranslatedSorted(this.currentLang)
+      .subscribe((langs: LanguageDTO[]) => {
+        this.languages = langs;
+      });
   }
 
   getCurrentLanguageName(): string {
-    return this.languageService.getLanguageName(this.languages, this.currentLang);
+    return this.languageService.getLanguageName(
+      this.languages,
+      this.currentLang
+    );
   }
 
   getLanguageIcon(shortname: string): string {

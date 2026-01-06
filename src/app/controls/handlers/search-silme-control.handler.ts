@@ -7,7 +7,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 /**
  * Handler for legacy Silme search extension.
  * Custom search control for SITMUN-specific search.
- * 
+ *
  * Control Type: sitna.search.silme.extension
  * Patches: Applied programmatically (not loaded from JS files)
  * Configuration: Custom Silme control for entity search
@@ -20,9 +20,7 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'searchSilme'; // Match old system
   readonly requiredPatches = undefined; // Patches applied programmatically
 
-  constructor(
-    tcNamespaceService: TCNamespaceService
-  ) {
+  constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
   }
 
@@ -30,9 +28,12 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
    * Build configuration for SearchSilme control.
    * Uses default div and merges with backend parameters.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
-    
+
     // Merge with parameters, which may include:
     // - searchUrl: URL for search endpoint
     // - searchFields: Fields to search on
@@ -49,7 +50,6 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
     }
 
     const TC = this.tcNamespaceService.getTC();
-    return !!(TC?.control?.SearchSilme);
+    return !!TC?.control?.SearchSilme;
   }
 }
-

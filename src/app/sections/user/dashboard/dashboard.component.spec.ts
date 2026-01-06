@@ -10,10 +10,7 @@ describe('DashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [DashboardComponent]
     }).compileComponents();
 

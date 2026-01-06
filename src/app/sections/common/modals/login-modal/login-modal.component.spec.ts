@@ -13,15 +13,24 @@ describe('LoginModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [LoginModalComponent],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']) },
-        { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['login']) },
-        { provide: OpenModalRef, useValue: jasmine.createSpyObj('OpenModalRef', ['close']) }
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', [
+            'navigate',
+            'navigateByUrl'
+          ])
+        },
+        {
+          provide: AuthenticationService,
+          useValue: jasmine.createSpyObj('AuthenticationService', ['login'])
+        },
+        {
+          provide: OpenModalRef,
+          useValue: jasmine.createSpyObj('OpenModalRef', ['close'])
+        }
       ]
     }).compileComponents();
 

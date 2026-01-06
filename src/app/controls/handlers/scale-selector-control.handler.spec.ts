@@ -20,7 +20,9 @@ describe('ScaleSelectorControlHandler', () => {
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'getControlDefault'
     ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ div: 'scaleSelector' });
+    mockAppConfigService.getControlDefault.and.returnValue({
+      div: 'scaleSelector'
+    });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -140,4 +142,3 @@ describe('ScaleSelectorControlHandler', () => {
     });
   });
 });
-

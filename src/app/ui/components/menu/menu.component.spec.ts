@@ -33,8 +33,14 @@ describe('MenuComponent', () => {
         MatSelectModule
       ],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
-        { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['logout']) },
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', ['navigate'])
+        },
+        {
+          provide: AuthenticationService,
+          useValue: jasmine.createSpyObj('AuthenticationService', ['logout'])
+        },
         TranslateService
       ]
     }).compileComponents();

@@ -22,7 +22,7 @@ export interface DashboardItem {
   type?: string;
   logo?: string;
   headerParams: any; // JSON OBJECT
-  description? : string;
+  description?: string;
   isUnavailable: boolean;
   lastUpdate?: Date;
   maintenanceInformation?: string;
@@ -76,17 +76,14 @@ export interface ItemDto {
 })
 export class CommonService {
   // Common service is used to share some data between components
-  private messageSubject: BehaviorSubject<{ theme: string }>
-    = new BehaviorSubject({ theme: "sitmun-base" });
-  public message$: Observable<{ theme: string  }> =
+  private messageSubject: BehaviorSubject<{ theme: string }> =
+    new BehaviorSubject({ theme: 'sitmun-base' });
+  public message$: Observable<{ theme: string }> =
     this.messageSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
-  fetchDashboardItems(
-    dashboardType: DashboardTypes,
-    keywords?: string
-  ) {
+  fetchDashboardItems(dashboardType: DashboardTypes, keywords?: string) {
     let path;
     switch (dashboardType) {
       case DashboardTypes.APPLICATIONS:
@@ -127,6 +124,6 @@ export class CommonService {
   // Components that need to share a newTheme with others will call
   // updateMessage
   updateMessage(newTheme: string) {
-    this.messageSubject.next({ theme: newTheme});
+    this.messageSubject.next({ theme: newTheme });
   }
 }

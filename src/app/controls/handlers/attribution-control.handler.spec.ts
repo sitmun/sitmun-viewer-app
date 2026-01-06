@@ -69,8 +69,10 @@ describe('AttributionControlHandler', () => {
 
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'attribution' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'attribution'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.attribution',
         parameters: {}
@@ -85,7 +87,7 @@ describe('AttributionControlHandler', () => {
 
     it('should return empty config when no default div configured', () => {
       mockAppConfigService.getControlDefault.and.returnValue(null);
-      
+
       const task: AppTasks = {
         'ui-control': 'sitna.attribution',
         parameters: {}
@@ -99,8 +101,10 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should merge task parameters', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'attribution' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'attribution'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.attribution',
         parameters: {
@@ -118,8 +122,10 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should allow parameters to override default div', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'default-attribution' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'default-attribution'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.attribution',
         parameters: {
@@ -142,8 +148,10 @@ describe('AttributionControlHandler', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'attribution' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'attribution'
+      });
+
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
 
@@ -163,4 +171,3 @@ describe('AttributionControlHandler', () => {
     });
   });
 });
-

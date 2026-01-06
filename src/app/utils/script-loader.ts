@@ -4,7 +4,7 @@
 
 /**
  * Load a script file dynamically.
- * 
+ *
  * @param src - Path to script file (relative to assets or absolute)
  * @returns Promise that resolves when script is loaded
  */
@@ -25,4 +25,3 @@ export function loadScript(src: string): Promise<void> {
     document.head.appendChild(script);
   });
 }
-

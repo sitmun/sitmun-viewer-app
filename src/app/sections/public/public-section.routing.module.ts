@@ -10,7 +10,7 @@ const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
   { path: 'dashboard', component: PublicDashboardComponent },
   { path: 'map/:applicationId/:territoryId', component: PublicMapComponent },
-  { path: 'territory/:territoryId', component: TerritoryComponent},
+  { path: 'territory/:territoryId', component: TerritoryComponent },
   { path: 'application/:applicationId', component: ApplicationComponent }
 ];
 

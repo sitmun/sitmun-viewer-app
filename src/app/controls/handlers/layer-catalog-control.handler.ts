@@ -626,7 +626,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const self = this;
           const layerObj = layer;
 
-
           // Use layerName as the node ID to find the real layer configuration
           // AppCfg is guaranteed to be non-null (set before patches are applied)
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
@@ -645,8 +644,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             nodeId?: string;
             [key: string]: unknown;
           };
-          
-        if (realLayerConfig) {
+
+          if (realLayerConfig) {
             layerOptions.id = self.getUID();
             layerOptions.hideTree = true;
             layerOptions.title = layerObj.title;
@@ -654,25 +653,30 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.url = realLayerConfig.url;
             layerOptions.type = realLayerConfig.type;
             // layerNames should be an array, SITNA will join them internally
-            layerOptions.layerNames = Array.isArray(realLayerConfig.layerNames) ? realLayerConfig.layerNames : [realLayerConfig.layerNames];
+            layerOptions.layerNames = Array.isArray(realLayerConfig.layerNames)
+              ? realLayerConfig.layerNames
+              : [realLayerConfig.layerNames];
             layerOptions.nodeId = layerName;
-        } else {
+          } else {
             layerOptions.id = self.getUID();
             layerOptions.hideTree = true;
             layerOptions.title = layerObj.title;
             layerOptions.url = layerObj.url;
             layerOptions.type = layerObj.type;
             layerOptions.layerNames = layerName;
-        }
+          }
 
-        const effectiveUrl = layerOptions.url;
-        const effectiveType = layerOptions.type;
-        const effectiveLayerNames: string[] = Array.isArray(layerOptions.layerNames)
-          ? layerOptions.layerNames.filter((name): name is string => typeof name === 'string')
-          : layerOptions.layerNames != null
-          ? [String(layerOptions.layerNames)]
-          : [];
-
+          const effectiveUrl = layerOptions.url;
+          const effectiveType = layerOptions.type;
+          const effectiveLayerNames: string[] = Array.isArray(
+            layerOptions.layerNames
+          )
+            ? layerOptions.layerNames.filter(
+                (name): name is string => typeof name === 'string'
+              )
+            : layerOptions.layerNames != null
+            ? [String(layerOptions.layerNames)]
+            : [];
 
           const Raster = TC.layer.Raster;
 
@@ -752,8 +756,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           // If we have existing capabilities, use them immediately
           if (serviceCapabilities) {
             return Promise.resolve(serviceCapabilities).then((capabilities) => {
-                proceedWithLayer(capabilities);
-                return undefined;
+              proceedWithLayer(capabilities);
+              return undefined;
             });
           } else {
             // Load capabilities from the service
@@ -831,47 +835,56 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const originalAddLayer = ctlProto.addLayer;
 
       // Replace addLayer with a function that always returns a resolved Promise
-      ctlProto.addLayer = function (
-        this: any,
-        layer: any
-      ): Promise<void> {
+      ctlProto.addLayer = function (this: any, layer: any): Promise<void> {
         const self = this as any;
         return new Promise<void>(function (resolve, reject) {
-            let fromLayerCatalog: any[] = [];
+          let fromLayerCatalog: any[] = [];
 
-            if (self.options?.layers && self.options.layers.length) {
-                fromLayerCatalog = self.options.layers.filter(function (l: any) {
-                    if (Array.isArray(l.url)) {
-                        return null;
-                    }
-                    if (typeof l.url === 'string' && l.url.startsWith('virtual://')) {
-                        return null;
-                    }
-                    const getMap = TC.Util.reqGetMapOnCapabilities(l.url);
-                    return getMap && getMap.replace(TC.Util.regex.PROTOCOL) === layer.url.replace(TC.Util.regex.PROTOCOL);
-                });
-            }
+          if (self.options?.layers && self.options.layers.length) {
+            fromLayerCatalog = self.options.layers.filter(function (l: any) {
+              if (Array.isArray(l.url)) {
+                return null;
+              }
+              if (typeof l.url === 'string' && l.url.startsWith('virtual://')) {
+                return null;
+              }
+              const getMap = TC.Util.reqGetMapOnCapabilities(l.url);
+              return (
+                getMap &&
+                getMap.replace(TC.Util.regex.PROTOCOL) ===
+                  layer.url.replace(TC.Util.regex.PROTOCOL)
+              );
+            });
+          }
 
-            if (fromLayerCatalog.length === 0) {
-                fromLayerCatalog = self.layers.filter(function (l: any) {
-                    return l.url.replace(TC.Util.regex.PROTOCOL) === layer.url.replace(TC.Util.regex.PROTOCOL);
-                });
-            }
+          if (fromLayerCatalog.length === 0) {
+            fromLayerCatalog = self.layers.filter(function (l: any) {
+              return (
+                l.url.replace(TC.Util.regex.PROTOCOL) ===
+                layer.url.replace(TC.Util.regex.PROTOCOL)
+              );
+            });
+          }
 
-            if (fromLayerCatalog.length === 0) {
-                self.layers.unshift(layer);
-                layer.getCapabilitiesPromise().then(function () {
-                    layer.compatibleLayers = layer.wrap.getCompatibleLayers(self.map.crs);
-                    layer.title = layer.title || layer.wrap.getServiceTitle();
-                    self.renderBranch(layer, function () {
-                        resolve();
-                    });
-                }).catch(function (error: any) {
-                    reject(error);
+          if (fromLayerCatalog.length === 0) {
+            self.layers.unshift(layer);
+            layer
+              .getCapabilitiesPromise()
+              .then(function () {
+                layer.compatibleLayers = layer.wrap.getCompatibleLayers(
+                  self.map.crs
+                );
+                layer.title = layer.title || layer.wrap.getServiceTitle();
+                self.renderBranch(layer, function () {
+                  resolve();
                 });
-            } else {
-                resolve();
-            }
+              })
+              .catch(function (error: any) {
+                reject(error);
+              });
+          } else {
+            resolve();
+          }
         });
       };
 
@@ -905,26 +918,29 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const layerObj = layer || {};
           const result: Element[] = [];
           const rootNodes = self._roots;
-        if (!rootNodes) {
-          return [];
-        }
+          if (!rootNodes) {
+            return [];
+          }
 
-        const selector =layerObj.nodeId ? `li[data-layer-name="${layerObj.nodeId}"]` : `li[data-layer-name="${layerObj.options.layerNames}"]` ;
+          const selector = layerObj.nodeId
+            ? `li[data-layer-name="${layerObj.nodeId}"]`
+            : `li[data-layer-name="${layerObj.options.layerNames}"]`;
 
-        for (let i = 0; i < rootNodes.length; i++) {
+          for (let i = 0; i < rootNodes.length; i++) {
             const rootNode = rootNodes[i];
-            const liLayer = rootNode.querySelector(selector)
+            const liLayer = rootNode.querySelector(selector);
             if (liLayer) {
-                // This is a workaround to remove the loading class from the node
-                liLayer.classList.remove(TC.Consts.classes.LOADING);
-                liLayer.querySelectorAll('li').forEach((li: Element) => {
-                    result.push(li);
-                });
+              // This is a workaround to remove the loading class from the node
+              liLayer.classList.remove(TC.Consts.classes.LOADING);
+              liLayer.querySelectorAll('li').forEach((li: Element) => {
+                result.push(li);
+              });
             }
             result.push(rootNode);
+          }
+          return result;
         }
-        return result;
-       });
+      );
 
       this.patchManager.add(() => meld.remove(advice));
     });
@@ -2252,9 +2268,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         });
 
         // Re-attach event handlers for newly rendered elements
-        const closeButton = projectsPanel.querySelector(
-          '.tc-modal-close'
-        );
+        const closeButton = projectsPanel.querySelector('.tc-modal-close');
         const acceptButton = projectsPanel.querySelector(
           '.tc-ctl-lcat-proj-accept'
         );

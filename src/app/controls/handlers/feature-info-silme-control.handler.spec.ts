@@ -30,7 +30,9 @@ describe('FeatureInfoSilmeControlHandler', () => {
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'getControlDefault'
     ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ persistentHighlights: true });
+    mockAppConfigService.getControlDefault.and.returnValue({
+      persistentHighlights: true
+    });
 
     // Setup window.__patchesLoaded
     (window as any).__patchesLoaded = {
@@ -76,7 +78,9 @@ describe('FeatureInfoSilmeControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control identifier', () => {
-      expect(handler.controlIdentifier).toBe('sitna.featureInfo.silme.extension');
+      expect(handler.controlIdentifier).toBe(
+        'sitna.featureInfo.silme.extension'
+      );
     });
   });
 
@@ -128,14 +132,16 @@ describe('FeatureInfoSilmeControlHandler', () => {
 
   describe('requiredPatches', () => {
     it('should have required patch file', () => {
-      expect(handler.requiredPatches).toEqual(['assets/js/patch/controls/FeatureInfoSilme.js']);
+      expect(handler.requiredPatches).toEqual([
+        'assets/js/patch/controls/FeatureInfoSilme.js'
+      ]);
     });
   });
 
   describe('loadPatches()', () => {
     it('should mark patch as loaded if already loaded', async () => {
       (window as any).__patchesLoaded.FeatureInfoSilme = true;
-      
+
       await handler.loadPatches(mockAppCfg);
 
       expect(mockTCNamespace.waitForTC).not.toHaveBeenCalled();
@@ -143,7 +149,7 @@ describe('FeatureInfoSilmeControlHandler', () => {
 
     it('should wait for TC namespace and load script if not loaded', async () => {
       delete (window as any).__patchesLoaded.FeatureInfoSilme;
-      
+
       // Mock script loading
       const scriptElement = document.createElement('script');
       spyOn(document, 'createElement').and.returnValue(scriptElement);
@@ -277,7 +283,7 @@ describe('FeatureInfoSilmeControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
       expect(config).toEqual({ persistentHighlights: true });
-      
+
       // Should use featureInfoSilme key
       const configKey = handler.getSitnaConfigKey(task);
       expect(configKey).toBe('featureInfoSilme');
@@ -310,11 +316,10 @@ describe('FeatureInfoSilmeControlHandler', () => {
         active: true,
         persistentHighlights: false
       });
-      
+
       // Should use featureInfo key
       const configKey = handler.getSitnaConfigKey(task);
       expect(configKey).toBe('featureInfo');
     });
   });
 });
-

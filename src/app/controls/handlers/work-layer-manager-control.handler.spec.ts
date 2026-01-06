@@ -15,8 +15,12 @@ describe('WorkLayerManagerControlHandler', () => {
       'waitForTC',
       'getTC'
     ]);
-    mockAppConfig = jasmine.createSpyObj('AppConfigService', ['getControlDefault']);
-    mockAppConfig.getControlDefault.and.returnValue({ div: 'workLayerManager' });
+    mockAppConfig = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
+    mockAppConfig.getControlDefault.and.returnValue({
+      div: 'workLayerManager'
+    });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

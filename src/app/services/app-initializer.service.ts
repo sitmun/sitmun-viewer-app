@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SitnaNamespaceService } from './sitna-namespace.service';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AppInitializerService {
   private readonly sitnaNamespaceService = inject(SitnaNamespaceService);
@@ -33,4 +33,3 @@ export function initializeApp(
 ): () => Promise<void> {
   return () => initializer.initialize();
 }
-

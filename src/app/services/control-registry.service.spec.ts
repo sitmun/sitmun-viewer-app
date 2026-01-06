@@ -1,6 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ControlRegistryService } from './control-registry.service';
-import { ControlHandler, SitnaControlConfig } from '../controls/control-handler.interface';
+import {
+  ControlHandler,
+  SitnaControlConfig
+} from '../controls/control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
 import { AppConfigService } from './app-config.service';
@@ -13,27 +16,39 @@ class MockHandler implements ControlHandler {
   readonly sitnaConfigKey: string;
   readonly requiredPatches?: string[];
   private customDiv?: string;
-  
+
   loadPatchesCalled = false;
   buildConfigCalled = false;
   cleanupCalled = false;
 
-  constructor(controlIdentifier: string, patches?: string[], customDiv?: string, sitnaConfigKey?: string) {
+  constructor(
+    controlIdentifier: string,
+    patches?: string[],
+    customDiv?: string,
+    sitnaConfigKey?: string
+  ) {
     this.controlIdentifier = controlIdentifier;
     this.requiredPatches = patches;
     this.customDiv = customDiv;
     // Use provided sitnaConfigKey or derive from controlIdentifier
-    this.sitnaConfigKey = sitnaConfigKey || controlIdentifier.replace('sitna.', '');
+    this.sitnaConfigKey =
+      sitnaConfigKey || controlIdentifier.replace('sitna.', '');
   }
 
   async loadPatches(): Promise<void> {
     this.loadPatchesCalled = true;
   }
 
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     this.buildConfigCalled = true;
     // Use task parameters if provided, otherwise use customDiv or default
-    const div = task.parameters?.div || this.customDiv || this.controlIdentifier.replace('sitna.', '');
+    const div =
+      task.parameters?.div ||
+      this.customDiv ||
+      this.controlIdentifier.replace('sitna.', '');
     const config: SitnaControlConfig = { div };
     // Merge any other task parameters
     if (task.parameters) {
@@ -59,8 +74,12 @@ class NullConfigHandler implements ControlHandler {
   readonly sitnaConfigKey = 'null';
 
   async loadPatches(): Promise<void> {}
-  buildConfiguration(): null { return null; }
-  isReady(): boolean { return true; }
+  buildConfiguration(): null {
+    return null;
+  }
+  isReady(): boolean {
+    return true;
+  }
 }
 
 /**
@@ -89,8 +108,14 @@ describe('ControlRegistryService', () => {
   let appConfigService: jasmine.SpyObj<AppConfigService>;
 
   beforeEach(() => {
-    notificationService = jasmine.createSpyObj('NotificationService', ['warning', 'success', 'error']);
-    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution']);
+    notificationService = jasmine.createSpyObj('NotificationService', [
+      'warning',
+      'success',
+      'error'
+    ]);
+    appConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getAttribution'
+    ]);
     appConfigService.getAttribution.and.returnValue(null);
 
     TestBed.configureTestingModule({
@@ -200,7 +225,12 @@ describe('ControlRegistryService', () => {
 
   describe('processControls()', () => {
     it('should process controls with handlers', async () => {
-      const handler = new MockHandler('sitna.coordinates', undefined, undefined, 'coordinates');
+      const handler = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        undefined,
+        'coordinates'
+      );
       service.register(handler);
 
       const tasks: AppTasks[] = [
@@ -216,8 +246,18 @@ describe('ControlRegistryService', () => {
     });
 
     it('should handle multiple controls', async () => {
-      const handler1 = new MockHandler('sitna.coordinates', undefined, undefined, 'coordinates');
-      const handler2 = new MockHandler('sitna.scale', undefined, undefined, 'scale');
+      const handler1 = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        undefined,
+        'coordinates'
+      );
+      const handler2 = new MockHandler(
+        'sitna.scale',
+        undefined,
+        undefined,
+        'scale'
+      );
       service.register(handler1);
       service.register(handler2);
 
@@ -265,7 +305,12 @@ describe('ControlRegistryService', () => {
 
     it('should continue on patch loading errors', async () => {
       const errorHandler = new ErrorHandler();
-      const goodHandler = new MockHandler('sitna.scale', undefined, undefined, 'scale');
+      const goodHandler = new MockHandler(
+        'sitna.scale',
+        undefined,
+        undefined,
+        'scale'
+      );
       service.register(errorHandler);
       service.register(goodHandler);
 
@@ -307,7 +352,12 @@ describe('ControlRegistryService', () => {
 
   describe('Control Key Generation', () => {
     it('should convert simple control names', async () => {
-      const handler = new MockHandler('sitna.coordinates', undefined, undefined, 'coordinates');
+      const handler = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        undefined,
+        'coordinates'
+      );
       service.register(handler);
 
       const tasks: AppTasks[] = [
@@ -321,7 +371,12 @@ describe('ControlRegistryService', () => {
     });
 
     it('should convert dotted names to camelCase', async () => {
-      const handler = new MockHandler('sitna.search.silme.extension', undefined, undefined, 'searchSilmeExtension');
+      const handler = new MockHandler(
+        'sitna.search.silme.extension',
+        undefined,
+        undefined,
+        'searchSilmeExtension'
+      );
       service.register(handler);
 
       const tasks: AppTasks[] = [
@@ -335,7 +390,12 @@ describe('ControlRegistryService', () => {
     });
 
     it('should handle layerCatalog correctly', async () => {
-      const handler = new MockHandler('sitna.layerCatalog', undefined, undefined, 'layerCatalog');
+      const handler = new MockHandler(
+        'sitna.layerCatalog',
+        undefined,
+        undefined,
+        'layerCatalog'
+      );
       service.register(handler);
 
       const tasks: AppTasks[] = [
@@ -426,7 +486,9 @@ describe('ControlRegistryService', () => {
         buildConfiguration(): SitnaControlConfig | null {
           throw new Error('Build error');
         }
-        isReady() { return true; }
+        isReady() {
+          return true;
+        }
       }
 
       const handler = new ThrowingHandler();
@@ -447,8 +509,18 @@ describe('ControlRegistryService', () => {
 
   describe('Div Validation', () => {
     it('should not warn when controls use different divs', async () => {
-      const handler1 = new MockHandler('sitna.scale', undefined, 'scale', 'scale');
-      const handler2 = new MockHandler('sitna.coordinates', undefined, 'coordinates', 'coordinates');
+      const handler1 = new MockHandler(
+        'sitna.scale',
+        undefined,
+        'scale',
+        'scale'
+      );
+      const handler2 = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        'coordinates',
+        'coordinates'
+      );
       service.register(handler1);
       service.register(handler2);
 
@@ -464,9 +536,24 @@ describe('ControlRegistryService', () => {
     });
 
     it('should warn when multiple controls use the same div', async () => {
-      const handler1 = new MockHandler('sitna.scale', undefined, 'scale', 'scale');
-      const handler2 = new MockHandler('sitna.scaleBar', undefined, 'scale', 'scaleBar');
-      const handler3 = new MockHandler('sitna.scaleSelector', undefined, 'scale', 'scaleSelector');
+      const handler1 = new MockHandler(
+        'sitna.scale',
+        undefined,
+        'scale',
+        'scale'
+      );
+      const handler2 = new MockHandler(
+        'sitna.scaleBar',
+        undefined,
+        'scale',
+        'scaleBar'
+      );
+      const handler3 = new MockHandler(
+        'sitna.scaleSelector',
+        undefined,
+        'scale',
+        'scaleSelector'
+      );
       service.register(handler1);
       service.register(handler2);
       service.register(handler3);
@@ -482,7 +569,9 @@ describe('ControlRegistryService', () => {
 
       expect(notificationService.warning).toHaveBeenCalledTimes(1);
       expect(notificationService.warning).toHaveBeenCalledWith(
-        jasmine.stringContaining("Configuration conflict: Multiple controls are using the same div 'scale'")
+        jasmine.stringContaining(
+          "Configuration conflict: Multiple controls are using the same div 'scale'"
+        )
       );
       expect(notificationService.warning).toHaveBeenCalledWith(
         jasmine.stringContaining('scale, scaleBar, scaleSelector')
@@ -490,10 +579,30 @@ describe('ControlRegistryService', () => {
     });
 
     it('should warn for each duplicate div separately', async () => {
-      const handler1 = new MockHandler('sitna.scale', undefined, 'scale', 'scale');
-      const handler2 = new MockHandler('sitna.scaleBar', undefined, 'scale', 'scaleBar');
-      const handler3 = new MockHandler('sitna.coordinates', undefined, 'coordinates', 'coordinates');
-      const handler4 = new MockHandler('sitna.legend', undefined, 'coordinates', 'legend');
+      const handler1 = new MockHandler(
+        'sitna.scale',
+        undefined,
+        'scale',
+        'scale'
+      );
+      const handler2 = new MockHandler(
+        'sitna.scaleBar',
+        undefined,
+        'scale',
+        'scaleBar'
+      );
+      const handler3 = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        'coordinates',
+        'coordinates'
+      );
+      const handler4 = new MockHandler(
+        'sitna.legend',
+        undefined,
+        'coordinates',
+        'legend'
+      );
       service.register(handler1);
       service.register(handler2);
       service.register(handler3);
@@ -525,7 +634,9 @@ describe('ControlRegistryService', () => {
         buildConfiguration(): SitnaControlConfig | null {
           return { someOtherProp: 'value' } as any;
         }
-        isReady() { return true; }
+        isReady() {
+          return true;
+        }
       }
 
       const handler = new NoDivHandler();
@@ -548,7 +659,9 @@ describe('ControlRegistryService', () => {
         buildConfiguration(): SitnaControlConfig | null {
           return true as any; // Some controls return boolean
         }
-        isReady() { return true; }
+        isReady() {
+          return true;
+        }
       }
 
       const handler = new BooleanHandler();
@@ -567,9 +680,16 @@ describe('ControlRegistryService', () => {
 
   describe('ensureAttributionControl', () => {
     it('should auto-enable attribution control when attribution is configured', async () => {
-      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
-      
-      const attributionHandler = new MockHandler('sitna.attribution', undefined, undefined, 'attribution');
+      appConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
+
+      const attributionHandler = new MockHandler(
+        'sitna.attribution',
+        undefined,
+        undefined,
+        'attribution'
+      );
       service.register(attributionHandler);
 
       const tasks: AppTasks[] = [];
@@ -583,8 +703,13 @@ describe('ControlRegistryService', () => {
 
     it('should not auto-enable attribution control when attribution is not configured', async () => {
       appConfigService.getAttribution.and.returnValue(null);
-      
-      const attributionHandler = new MockHandler('sitna.attribution', undefined, undefined, 'attribution');
+
+      const attributionHandler = new MockHandler(
+        'sitna.attribution',
+        undefined,
+        undefined,
+        'attribution'
+      );
       service.register(attributionHandler);
 
       const tasks: AppTasks[] = [];
@@ -597,13 +722,23 @@ describe('ControlRegistryService', () => {
     });
 
     it('should not override existing attribution control from backend task', async () => {
-      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
-      
-      const attributionHandler = new MockHandler('sitna.attribution', undefined, 'custom-attribution', 'attribution');
+      appConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
+
+      const attributionHandler = new MockHandler(
+        'sitna.attribution',
+        undefined,
+        'custom-attribution',
+        'attribution'
+      );
       service.register(attributionHandler);
 
       const tasks: AppTasks[] = [
-        { 'ui-control': 'sitna.attribution', parameters: { div: 'backend-attribution' } } as any
+        {
+          'ui-control': 'sitna.attribution',
+          parameters: { div: 'backend-attribution' }
+        } as any
       ];
       const context: AppCfg = {} as any;
 
@@ -617,7 +752,9 @@ describe('ControlRegistryService', () => {
     });
 
     it('should handle missing attribution handler gracefully', async () => {
-      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      appConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
       spyOn(console, 'warn');
 
       const tasks: AppTasks[] = [];
@@ -632,8 +769,10 @@ describe('ControlRegistryService', () => {
     });
 
     it('should handle buildConfiguration errors in auto-enable', async () => {
-      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
-      
+      appConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
+
       class ThrowingAttributionHandler extends MockHandler {
         constructor() {
           super('sitna.attribution');
@@ -661,4 +800,3 @@ describe('ControlRegistryService', () => {
     });
   });
 });
-

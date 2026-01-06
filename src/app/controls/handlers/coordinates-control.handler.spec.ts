@@ -48,14 +48,18 @@ describe('CoordinatesControlHandler', () => {
     (window as any).__patchesLoaded = {};
 
     // Remove any existing script tags
-    document.querySelectorAll('script[src*="TCProjectionDataPatch"]').forEach(s => s.remove());
+    document
+      .querySelectorAll('script[src*="TCProjectionDataPatch"]')
+      .forEach((s) => s.remove());
   });
 
   afterEach(() => {
     // Restore original patches loaded state
     (window as any).__patchesLoaded = originalPatchesLoaded;
     // Clean up script tags
-    document.querySelectorAll('script[src*="TCProjectionDataPatch"]').forEach(s => s.remove());
+    document
+      .querySelectorAll('script[src*="TCProjectionDataPatch"]')
+      .forEach((s) => s.remove());
   });
 
   it('should be created', () => {
@@ -70,7 +74,9 @@ describe('CoordinatesControlHandler', () => {
 
   describe('requiredPatches', () => {
     it('should require TCProjectionDataPatch', () => {
-      expect(handler.requiredPatches).toEqual(['assets/js/patch/TCProjectionDataPatch.js']);
+      expect(handler.requiredPatches).toEqual([
+        'assets/js/patch/TCProjectionDataPatch.js'
+      ]);
     });
   });
 
@@ -136,37 +142,46 @@ describe('CoordinatesControlHandler', () => {
   describe('loadPatches()', () => {
     it('should not reload if patch already loaded', async () => {
       (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
-      
+
       await handler.loadPatches(mockAppCfg);
-      
+
       // Should not add duplicate script
-      const scripts = document.querySelectorAll('script[src*="TCProjectionDataPatch"]');
+      const scripts = document.querySelectorAll(
+        'script[src*="TCProjectionDataPatch"]'
+      );
       expect(scripts.length).toBe(0);
     });
 
     it('should load TCProjectionDataPatch script when not loaded', async () => {
       (window as any).__patchesLoaded = {};
-      
+
       // Mock script loading by intercepting appendChild
-      const appendChildSpy = spyOn(document.head, 'appendChild').and.callFake((node: any) => {
-        // Simulate script loading by immediately calling onload
-        if (node.tagName === 'SCRIPT' && node.src.includes('TCProjectionDataPatch')) {
-          // Mark patch as loaded to simulate successful load
-          (window as any).__patchesLoaded.TCProjectionDataPatch = true;
-          // Call onload if it exists
-          if (node.onload) {
-            setTimeout(() => node.onload(), 0);
+      const appendChildSpy = spyOn(document.head, 'appendChild').and.callFake(
+        (node: any) => {
+          // Simulate script loading by immediately calling onload
+          if (
+            node.tagName === 'SCRIPT' &&
+            node.src.includes('TCProjectionDataPatch')
+          ) {
+            // Mark patch as loaded to simulate successful load
+            (window as any).__patchesLoaded.TCProjectionDataPatch = true;
+            // Call onload if it exists
+            if (node.onload) {
+              setTimeout(() => node.onload(), 0);
+            }
           }
+          return node;
         }
-        return node;
-      });
+      );
 
       await handler.loadPatches(mockAppCfg);
-      
+
       expect(appendChildSpy).toHaveBeenCalled();
-      const scriptCall = appendChildSpy.calls.all().find((call: any) => 
-        call.args[0]?.src?.includes('TCProjectionDataPatch')
-      );
+      const scriptCall = appendChildSpy.calls
+        .all()
+        .find((call: any) =>
+          call.args[0]?.src?.includes('TCProjectionDataPatch')
+        );
       expect(scriptCall).toBeDefined();
     });
   });

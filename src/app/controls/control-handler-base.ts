@@ -1,5 +1,9 @@
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { ControlHandler, SitnaControlConfig, ControlLoadOptions } from './control-handler.interface';
+import {
+  ControlHandler,
+  SitnaControlConfig,
+  ControlLoadOptions
+} from './control-handler.interface';
 import { PatchManager, createPatchManager } from '../utils/patch-manager';
 import { TCNamespaceService } from '../services/tc-namespace.service';
 import { AppConfigService } from '../services/app-config.service';
@@ -28,15 +32,13 @@ export abstract class ControlHandlerBase implements ControlHandler {
    */
   protected readonly appConfigService = inject(AppConfigService);
 
-  constructor(
-    protected tcNamespaceService: TCNamespaceService
-  ) {}
+  constructor(protected tcNamespaceService: TCNamespaceService) {}
 
   /**
    * Load patches required by this control.
    * Default implementation does nothing - patches must be applied programmatically.
    * Override for custom loading logic (e.g., programmatic patches using meld).
-   * 
+   *
    * @param context - Full application configuration context (required, must not be null)
    */
   async loadPatches(context: AppCfg): Promise<void> {
@@ -48,7 +50,10 @@ export abstract class ControlHandlerBase implements ControlHandler {
    * Build configuration for this control.
    * Must be implemented by concrete handlers.
    */
-  abstract buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null;
+  abstract buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null;
 
   /**
    * Check if control is ready.
@@ -71,11 +76,13 @@ export abstract class ControlHandlerBase implements ControlHandler {
   /**
    * Ensure a control is loaded with proper dependency management.
    * Ported from BaseScenarioComponent.ensureControlLoaded().
-   * 
+   *
    * @param options - Control loading options
    * @returns Promise that resolves when control is loaded
    */
-  protected async ensureControlLoaded(options: ControlLoadOptions): Promise<void> {
+  protected async ensureControlLoaded(
+    options: ControlLoadOptions
+  ): Promise<void> {
     const { checkLoaded, dependencies, loadScript, controlName } = options;
 
     // Return cached promise if already loading
@@ -102,7 +109,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
       loadScript();
 
       // Wait a tick for script to execute
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     })();
 
     // Cache the promise
@@ -119,7 +126,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
   /**
    * Wait for TC namespace and apply callback.
    * Ported from BaseScenarioComponent.waitForTCAndApply().
-   * 
+   *
    * @param callback - Function to execute with TC namespace
    * @returns Promise that resolves when callback completes
    */
@@ -132,7 +139,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
   /**
    * Resolve dependencies before loading control.
-   * 
+   *
    * @param dependencies - Dependency specification
    */
   private async resolveDependencies(
@@ -143,7 +150,9 @@ export abstract class ControlHandlerBase implements ControlHandler {
       return;
     }
 
-    const depArray = Array.isArray(dependencies) ? dependencies : [dependencies];
+    const depArray = Array.isArray(dependencies)
+      ? dependencies
+      : [dependencies];
 
     for (const dep of depArray) {
       if (dep === 'TC') {
@@ -160,7 +169,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
   /**
    * Wait for a global variable to become available.
-   * 
+   *
    * @param globalName - Name of global variable
    * @param maxRetries - Maximum retry attempts
    * @param delayMs - Delay between retries
@@ -175,15 +184,17 @@ export abstract class ControlHandlerBase implements ControlHandler {
         return;
       }
       if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
-    throw new Error(`Global variable '${globalName}' not available after retries`);
+    throw new Error(
+      `Global variable '${globalName}' not available after retries`
+    );
   }
 
   /**
    * Check if parameters object is empty or undefined.
-   * 
+   *
    * @param params - Parameters to check
    * @returns true if empty or undefined
    */
@@ -194,7 +205,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
   /**
    * Extract control name from controlIdentifier.
    * Removes the 'sitna.' prefix if present.
-   * 
+   *
    * @returns Control name without prefix (e.g., 'layerCatalog' from 'sitna.layerCatalog')
    */
   protected getControlName(): string {
@@ -203,20 +214,22 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
   /**
    * Get default control configuration from app-config.json.
-   * 
+   *
    * @returns Default configuration object from app-config.json, or empty object if not found
    */
   protected getDefaultConfig(): { div: string } {
     // Get configuration from app-config.json
-    const configDefault = this.appConfigService.getControlDefault(this.controlIdentifier);
-    
+    const configDefault = this.appConfigService.getControlDefault(
+      this.controlIdentifier
+    );
+
     // Return config default or empty object
     return (configDefault || {}) as { div: string };
   }
 
   /**
    * Merge default configuration with task parameters.
-   * 
+   *
    * @param defaults - Default configuration
    * @param params - Task parameters from backend
    * @returns Merged configuration
@@ -225,9 +238,8 @@ export abstract class ControlHandlerBase implements ControlHandler {
     defaults: any,
     params: any
   ): SitnaControlConfig {
-    return this.areParametersEmpty(params) 
-      ? defaults 
+    return this.areParametersEmpty(params)
+      ? defaults
       : { ...defaults, ...params };
   }
 }
-

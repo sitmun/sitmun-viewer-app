@@ -7,7 +7,7 @@ import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
  * Uses Angular's Renderer2 for SSR compatibility and security.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class DomUtilsService {
   private renderer: Renderer2;
@@ -55,7 +55,10 @@ export class DomUtilsService {
    * @param hideClassName - CSS class to add (default: 'tc-hidden')
    * @returns Number of elements modified
    */
-  hideElementsByClass(sourceClassName: string, hideClassName: string = 'tc-hidden'): number {
+  hideElementsByClass(
+    sourceClassName: string,
+    hideClassName: string = 'tc-hidden'
+  ): number {
     const elements = document.getElementsByClassName(sourceClassName);
     let count = 0;
     Array.from(elements).forEach((element) => {
@@ -72,7 +75,10 @@ export class DomUtilsService {
    * @param hideClassName - CSS class to remove (default: 'tc-hidden')
    * @returns Number of elements modified
    */
-  showElementsByClass(sourceClassName: string, hideClassName: string = 'tc-hidden'): number {
+  showElementsByClass(
+    sourceClassName: string,
+    hideClassName: string = 'tc-hidden'
+  ): number {
     const elements = document.getElementsByClassName(sourceClassName);
     let count = 0;
     Array.from(elements).forEach((element) => {
@@ -165,4 +171,3 @@ export class DomUtilsService {
     return elements.length > 0 ? elements[0] : null;
   }
 }
-

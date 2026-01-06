@@ -26,7 +26,9 @@ describe('DrawMeasureModifyControlHandler', () => {
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'getControlDefault'
     ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ div: 'drawmeasuremodify' });
+    mockAppConfigService.getControlDefault.and.returnValue({
+      div: 'drawmeasuremodify'
+    });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -181,4 +183,3 @@ describe('DrawMeasureModifyControlHandler', () => {
     });
   });
 });
-

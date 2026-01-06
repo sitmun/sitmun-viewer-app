@@ -9,16 +9,14 @@ import { LanguageService } from './services/language.service';
 export class AppComponent {
   title = 'sitmun-viewer-app';
 
-  constructor(
-    private languageService: LanguageService
-  ) {
+  constructor(private languageService: LanguageService) {
     // Initialize TranslateService with current language
     this.languageService.initializeTranslateService();
-    
+
     // Optionally load user language from backend if logged in
     // This can be done asynchronously without blocking app initialization
     this.languageService.loadUserLanguage().subscribe();
-    
+
     this.generateDeviceID();
   }
 

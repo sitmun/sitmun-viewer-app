@@ -29,7 +29,7 @@ export abstract class AbstractDashboardComponent implements OnInit {
     this.loadItems();
   }
 
-  loadItems(keyword : string = "") {
+  loadItems(keyword: string = '') {
     this.commonService
       .fetchDashboardItems(this.type, keyword)
       .subscribe((res: DashboardItemsResponse) => {
@@ -51,5 +51,4 @@ export abstract class AbstractDashboardComponent implements OnInit {
   onKeywordsSearch(keywords: string) {
     this.loadItems(keywords);
   }
-
 }

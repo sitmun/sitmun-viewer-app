@@ -1,6 +1,17 @@
 import { Injectable } from '@angular/core';
-import { AppCfg, AppLayer, AppNodeInfo, AppService, AppTree } from '@api/model/app-cfg';
-import { WMSCapabilities, WMSCapability, WMSService, WMSLayer } from '../types/wms-capabilities';
+import {
+  AppCfg,
+  AppLayer,
+  AppNodeInfo,
+  AppService,
+  AppTree
+} from '@api/model/app-cfg';
+import {
+  WMSCapabilities,
+  WMSCapability,
+  WMSService,
+  WMSLayer
+} from '../types/wms-capabilities';
 
 /**
  * Type definition for real layer configuration returned by findRealLayerConfig.
@@ -33,10 +44,9 @@ function ensureString(value: unknown): string {
  * configuration without requiring custom Silme extensions.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class VirtualWmsCapabilitiesService {
-
   /**
    * Base URL for virtual WMS services
    */
@@ -51,18 +61,24 @@ export class VirtualWmsCapabilitiesService {
    * @returns WMS GetCapabilities response representing the node's subtree
    */
   generateCapabilities(nodeId: string, apiConfig: AppCfg): WMSCapabilities {
-    console.info(`[VirtualWmsCapabilities] Generating capabilities for node: ${nodeId}`);
+    console.info(
+      `[VirtualWmsCapabilities] Generating capabilities for node: ${nodeId}`
+    );
 
     // Find the tree and node
     const tree = this.findTreeContainingNode(nodeId, apiConfig);
     if (!tree) {
-      console.error(`[VirtualWmsCapabilities] No tree found containing node: ${nodeId}`);
+      console.error(
+        `[VirtualWmsCapabilities] No tree found containing node: ${nodeId}`
+      );
       throw new Error(`Node ${nodeId} not found in any tree`);
     }
 
     const node = tree.nodes[nodeId];
     if (!node) {
-      console.error(`[VirtualWmsCapabilities] Node ${nodeId} not found in tree ${tree.id}`);
+      console.error(
+        `[VirtualWmsCapabilities] Node ${nodeId} not found in tree ${tree.id}`
+      );
       throw new Error(`Node ${nodeId} not found`);
     }
 
@@ -70,13 +86,23 @@ export class VirtualWmsCapabilitiesService {
     const defaultCRS = apiConfig.application.srs || 'EPSG:25831';
 
     // Build the layer tree from this node
-    const rootLayer = this.buildLayerTree(nodeId, node, tree, apiConfig, defaultCRS);
+    const rootLayer = this.buildLayerTree(
+      nodeId,
+      node,
+      tree,
+      apiConfig,
+      defaultCRS
+    );
 
     // Check if there are any layers in the tree
     const layerCount = this.countLayers(rootLayer);
     if (layerCount === 0) {
-      console.error(`[VirtualWmsCapabilities] Node ${nodeId} has no valid layers, cannot create capabilities`);
-      throw new Error(`Node ${nodeId} has no valid layers to include in capabilities`);
+      console.error(
+        `[VirtualWmsCapabilities] Node ${nodeId} has no valid layers, cannot create capabilities`
+      );
+      throw new Error(
+        `Node ${nodeId} has no valid layers to include in capabilities`
+      );
     }
 
     // Create service metadata
@@ -88,7 +114,7 @@ export class VirtualWmsCapabilitiesService {
     const capabilities: WMSCapabilities = {
       version: '1.3.0',
       Service: service,
-      Capability: capability,
+      Capability: capability
     };
 
     console.info(
@@ -102,7 +128,9 @@ export class VirtualWmsCapabilitiesService {
    * Check if a URL is a virtual WMS service URL
    */
   isVirtualServiceUrl(url: string): boolean {
-    return url?.startsWith(VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL) || false;
+    return (
+      url?.startsWith(VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL) || false
+    );
   }
 
   /**
@@ -117,7 +145,7 @@ export class VirtualWmsCapabilitiesService {
 
   /**
    * Generate a virtual WMS service URL for a given node ID
-   * 
+   *
    * @param nodeId - The node ID (e.g., "node/12338")
    * @returns Virtual URL (e.g., "virtual://sitmun-layer-catalog/node/12338")
    */
@@ -128,7 +156,7 @@ export class VirtualWmsCapabilitiesService {
   /**
    * Check if a node can generate valid capabilities (has at least one valid layer).
    * This is used to filter out nodes that would produce empty capabilities.
-   * 
+   *
    * @param nodeId - The node ID to check (e.g., "node/12338")
    * @param apiConfig - The complete SITMUN AppCfg configuration
    * @returns true if the node can generate valid capabilities, false otherwise
@@ -150,7 +178,13 @@ export class VirtualWmsCapabilitiesService {
       const defaultCRS = apiConfig.application.srs;
 
       // Build the layer tree from this node
-      const rootLayer = this.buildLayerTree(nodeId, node, tree, apiConfig, defaultCRS);
+      const rootLayer = this.buildLayerTree(
+        nodeId,
+        node,
+        tree,
+        apiConfig,
+        defaultCRS
+      );
 
       // Check if there are any layers in the tree
       const layerCount = this.countLayers(rootLayer);
@@ -184,21 +218,27 @@ export class VirtualWmsCapabilitiesService {
       // Step 2: Get the resource (layer ID) from the node
       const layerResourceId = node.resource;
       if (!layerResourceId) {
-        console.warn(`[VirtualWmsCapabilities] Node ${nodeId} has no resource property`);
+        console.warn(
+          `[VirtualWmsCapabilities] Node ${nodeId} has no resource property`
+        );
         continue;
       }
 
       // Step 3: Find the layer using the resource ID
       const layer = apiConfig.layers.find((l) => l.id === layerResourceId);
       if (!layer) {
-        console.warn(`[VirtualWmsCapabilities] Layer ${layerResourceId} not found for node ${nodeId}`);
+        console.warn(
+          `[VirtualWmsCapabilities] Layer ${layerResourceId} not found for node ${nodeId}`
+        );
         continue;
       }
 
       // Step 4: Find the service using the layer's service ID
       const service = apiConfig.services.find((s) => s.id === layer.service);
       if (!service) {
-        console.warn(`[VirtualWmsCapabilities] Service ${layer.service} not found for layer ${layerResourceId}`);
+        console.warn(
+          `[VirtualWmsCapabilities] Service ${layer.service} not found for layer ${layerResourceId}`
+        );
         continue;
       }
 
@@ -207,19 +247,21 @@ export class VirtualWmsCapabilitiesService {
       return {
         url: ensureString(service.url),
         type: ensureString(service.type),
-        layerNames: layer.layers, // Array of WMS layer names from the layer
+        layerNames: layer.layers // Array of WMS layer names from the layer
       };
     }
 
     // Node not found in any tree
-    console.warn(`[VirtualWmsCapabilities] Node ${nodeId} not found in any tree`);
+    console.warn(
+      `[VirtualWmsCapabilities] Node ${nodeId} not found in any tree`
+    );
     return null;
   }
 
   /**
    * Reverse lookup: Find nodeId from layer properties (url, type, layerNames).
    * This is the inverse of findRealLayerConfig.
-   * 
+   *
    * @param url - Service URL
    * @param type - Service type (e.g., "WMS")
    * @param layerNames - Array of layer names or comma-separated string
@@ -233,56 +275,61 @@ export class VirtualWmsCapabilitiesService {
     apiConfig: AppCfg
   ): string | null {
     // Normalize layerNames to array
-    const normalizedLayerNames = Array.isArray(layerNames) 
-      ? layerNames 
-      : layerNames.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    
+    const normalizedLayerNames = Array.isArray(layerNames)
+      ? layerNames
+      : layerNames
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+
     // Return null if no layer names provided
     if (normalizedLayerNames.length === 0) {
       return null;
     }
-    
+
     // Convert to Set for order-independent comparison
     const layerNamesSet = new Set(normalizedLayerNames);
-    
+
     // Step 1: Find service matching URL and type
     // Use type guard to ensure service.url and service.type are strings for comparison
     const normalizedUrl = ensureString(url);
     const normalizedType = ensureString(type);
-    const service = apiConfig.services.find(s => 
-      ensureString(s.url) === normalizedUrl && ensureString(s.type) === normalizedType
+    const service = apiConfig.services.find(
+      (s) =>
+        ensureString(s.url) === normalizedUrl &&
+        ensureString(s.type) === normalizedType
     );
-    
+
     if (!service) {
       return null;
     }
-    
+
     // Step 2: Find layer using that service with matching layerNames
-    const layer = apiConfig.layers.find(l => {
+    const layer = apiConfig.layers.find((l) => {
       if (l.service !== service.id) {
         return false;
       }
-      
+
       // Compare layerNames as sets (order independent)
       const layerLayersSet = new Set(l.layers);
       if (layerLayersSet.size !== layerNamesSet.size) {
         return false;
       }
-      
+
       // Check if all elements match
       for (const name of layerNamesSet) {
         if (!layerLayersSet.has(name)) {
           return false;
         }
       }
-      
+
       return true;
     });
-    
+
     if (!layer) {
       return null;
     }
-    
+
     // Step 3: Find node that has this layer as its resource
     for (const tree of apiConfig.trees) {
       for (const [nodeId, node] of Object.entries(tree.nodes)) {
@@ -292,14 +339,17 @@ export class VirtualWmsCapabilitiesService {
         }
       }
     }
-    
+
     return null;
   }
 
   /**
    * Find which tree contains the given node
    */
-  private findTreeContainingNode(nodeId: string, apiConfig: AppCfg): AppTree | null {
+  private findTreeContainingNode(
+    nodeId: string,
+    apiConfig: AppCfg
+  ): AppTree | null {
     for (const tree of apiConfig.trees) {
       if (tree.nodes && tree.nodes[nodeId]) {
         return tree;
@@ -311,19 +361,22 @@ export class VirtualWmsCapabilitiesService {
   /**
    * Create WMS Service metadata from node and application info
    */
-  private createServiceMetadata(node: AppNodeInfo, apiConfig: AppCfg): WMSService {
+  private createServiceMetadata(
+    node: AppNodeInfo,
+    apiConfig: AppCfg
+  ): WMSService {
     return {
       Name: 'WMS',
       Title: node.title || 'Virtual WMS Service',
       Abstract: `Virtual WMS service generated from SITMUN tree structure for: ${node.title}`,
       KeywordList: {
-        Keyword: ['SITMUN', 'Virtual', 'Generated'],
+        Keyword: ['SITMUN', 'Virtual', 'Generated']
       },
       OnlineResource: {
-        'xlink:href': 'virtual://sitmun-layer-catalog/',
+        'xlink:href': 'virtual://sitmun-layer-catalog/'
       },
       Fees: 'none',
-      AccessConstraints: 'none',
+      AccessConstraints: 'none'
     };
   }
 
@@ -342,12 +395,12 @@ export class VirtualWmsCapabilitiesService {
               HTTP: {
                 Get: {
                   OnlineResource: {
-                    'xlink:href': baseUrl,
-                  },
-                },
-              },
-            },
-          ],
+                    'xlink:href': baseUrl
+                  }
+                }
+              }
+            }
+          ]
         },
         GetMap: {
           Format: ['image/png', 'image/jpeg', 'image/gif'],
@@ -356,12 +409,12 @@ export class VirtualWmsCapabilitiesService {
               HTTP: {
                 Get: {
                   OnlineResource: {
-                    'xlink:href': baseUrl,
-                  },
-                },
-              },
-            },
-          ],
+                    'xlink:href': baseUrl
+                  }
+                }
+              }
+            }
+          ]
         },
         GetFeatureInfo: {
           Format: ['text/html', 'text/plain', 'application/json'],
@@ -370,18 +423,18 @@ export class VirtualWmsCapabilitiesService {
               HTTP: {
                 Get: {
                   OnlineResource: {
-                    'xlink:href': baseUrl,
-                  },
-                },
-              },
-            },
-          ],
-        },
+                    'xlink:href': baseUrl
+                  }
+                }
+              }
+            }
+          ]
+        }
       },
       Exception: {
-        Format: ['XML', 'INIMAGE', 'BLANK'],
+        Format: ['XML', 'INIMAGE', 'BLANK']
       },
-      Layer: rootLayer,
+      Layer: rootLayer
     };
   }
 
@@ -397,15 +450,21 @@ export class VirtualWmsCapabilitiesService {
   ): WMSLayer {
     // Root container layer (no Name property)
     // For leaf nodes without title, use 'Untitled Layer' instead of 'Root Layer'
-    const defaultTitle = (node.resource && !node.children?.length) ? 'Untitled Layer' : 'Root Layer';
+    const defaultTitle =
+      node.resource && !node.children?.length ? 'Untitled Layer' : 'Root Layer';
     const rootLayer: WMSLayer = {
       Title: node.title || defaultTitle,
-      CRS: [defaultCRS],
+      CRS: [defaultCRS]
     };
 
     // If node has children, build hierarchy
     if (node.children && node.children.length > 0) {
-      rootLayer.Layer = this.buildChildLayers(node.children, tree, apiConfig, defaultCRS);
+      rootLayer.Layer = this.buildChildLayers(
+        node.children,
+        tree,
+        apiConfig,
+        defaultCRS
+      );
 
       // Aggregate CRS from all children
       if (rootLayer.Layer.length > 0) {
@@ -413,7 +472,12 @@ export class VirtualWmsCapabilitiesService {
       }
     } else if (node.resource) {
       // Leaf node with resource - create a single layer entry
-      const layer = this.convertNodeToLayer(nodeId, node, apiConfig, defaultCRS);
+      const layer = this.convertNodeToLayer(
+        nodeId,
+        node,
+        apiConfig,
+        defaultCRS
+      );
       if (layer) {
         rootLayer.Layer = [layer];
         rootLayer.CRS = layer.CRS;
@@ -437,11 +501,18 @@ export class VirtualWmsCapabilitiesService {
     for (const childId of childIds) {
       const childNode = tree.nodes[childId];
       if (!childNode) {
-        console.warn(`[VirtualWmsCapabilities] Child node ${childId} not found`);
+        console.warn(
+          `[VirtualWmsCapabilities] Child node ${childId} not found`
+        );
         continue;
       }
 
-      const layer = this.convertNodeToLayer(childId, childNode, apiConfig, defaultCRS);
+      const layer = this.convertNodeToLayer(
+        childId,
+        childNode,
+        apiConfig,
+        defaultCRS
+      );
       if (layer) {
         layers.push(layer);
       }
@@ -473,7 +544,7 @@ export class VirtualWmsCapabilitiesService {
   ): WMSLayer | null {
     const layer: WMSLayer & { _order?: number } = {
       Title: node.title || 'Untitled Layer',
-      _order: node.order ?? 999,
+      _order: node.order ?? 999
     };
 
     // If node has children, it's a folder/group (not a leaf - no Name property)
@@ -481,7 +552,12 @@ export class VirtualWmsCapabilitiesService {
       // Find the tree to access child nodes
       const tree = this.findTreeContainingNode(nodeId, apiConfig);
       if (tree) {
-        layer.Layer = this.buildChildLayers(node.children, tree, apiConfig, defaultCRS);
+        layer.Layer = this.buildChildLayers(
+          node.children,
+          tree,
+          apiConfig,
+          defaultCRS
+        );
 
         // If no children were included (all were excluded), exclude this folder too
         if (layer.Layer.length === 0) {
@@ -509,7 +585,9 @@ export class VirtualWmsCapabilitiesService {
         layer.queryable = true;
 
         // Get CRS from service
-        const service = apiConfig.services.find((s) => s.id === appLayer.service);
+        const service = apiConfig.services.find(
+          (s) => s.id === appLayer.service
+        );
         layer.CRS = this.getLayerCRS(appLayer, service, defaultCRS);
       } else {
         // Return null to exclude node from capabilities tree
@@ -532,7 +610,9 @@ export class VirtualWmsCapabilitiesService {
     defaultCRS: string
   ): string[] {
     if (!service) {
-      console.warn(`[VirtualWmsCapabilities] Service ${layer.service} not found, using default CRS`);
+      console.warn(
+        `[VirtualWmsCapabilities] Service ${layer.service} not found, using default CRS`
+      );
       return [defaultCRS];
     }
 
@@ -576,4 +656,3 @@ export class VirtualWmsCapabilitiesService {
     return count;
   }
 }
-

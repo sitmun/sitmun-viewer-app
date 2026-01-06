@@ -44,7 +44,7 @@ export interface ControlHandler {
   /**
    * Load required patches for this control.
    * Should be idempotent - safe to call multiple times.
-   * 
+   *
    * @param context - Full application configuration context (required, must not be null)
    * @returns Promise that resolves when patches are ready
    */
@@ -53,17 +53,20 @@ export interface ControlHandler {
   /**
    * Build SITNA configuration for this control.
    * Called after patches are loaded.
-   * 
+   *
    * @param task - Task data from backend containing parameters
    * @param context - Full application configuration context
    * @returns Configuration object for SITNA, or null to disable control
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null;
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null;
 
   /**
    * Check if control is ready to use.
    * Verifies that patches are loaded and configuration can be built.
-   * 
+   *
    * @returns true if control is ready
    */
   isReady(): boolean;
@@ -100,4 +103,3 @@ export interface ControlLoadOptions {
    */
   controlName: string;
 }
-

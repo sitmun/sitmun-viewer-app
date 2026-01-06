@@ -434,7 +434,7 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       mockConfigLookup.findTreeContainingNode.and.callFake((nodeId: string) => {
-        return context.trees.find(t => t.rootNode === nodeId) as AppTree;
+        return context.trees.find((t) => t.rootNode === nodeId) as AppTree;
       });
       mockConfigLookup.findNode.and.callFake((nodeId: string) => {
         for (const tree of context.trees) {

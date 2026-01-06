@@ -23,17 +23,17 @@ describe('UIStateService', () => {
 
     it('should emit false from all observables initially', (done) => {
       let emissionCount = 0;
-      
+
       service.showLegend$.pipe(take(1)).subscribe((value) => {
         expect(value).toBe(false);
         emissionCount++;
       });
-      
+
       service.showOverviewMap$.pipe(take(1)).subscribe((value) => {
         expect(value).toBe(false);
         emissionCount++;
       });
-      
+
       service.showTools$.pipe(take(1)).subscribe((value) => {
         expect(value).toBe(false);
         emissionCount++;
@@ -68,7 +68,7 @@ describe('UIStateService', () => {
 
     it('should emit false when disabled', (done) => {
       service.enableLegendButton();
-      
+
       let skipFirst = true;
       service.showLegend$.subscribe((value) => {
         if (skipFirst) {
@@ -78,7 +78,7 @@ describe('UIStateService', () => {
         expect(value).toBe(false);
         done();
       });
-      
+
       service.disableLegendButton();
     });
   });
@@ -136,7 +136,7 @@ describe('UIStateService', () => {
       service.enableLegendButton();
       service.enableOverviewMapButton();
       service.enableToolsButton();
-      
+
       expect(service.isLegendButtonEnabled()).toBe(true);
       expect(service.isOverviewMapButtonEnabled()).toBe(true);
       expect(service.isToolsButtonEnabled()).toBe(true);
@@ -221,7 +221,7 @@ describe('UIStateService', () => {
     it('should handle mixed states', () => {
       service.enableLegendButton();
       service.enableToolsButton();
-      
+
       expect(service.isLegendButtonEnabled()).toBe(true);
       expect(service.isOverviewMapButtonEnabled()).toBe(false);
       expect(service.isToolsButtonEnabled()).toBe(true);
@@ -258,7 +258,7 @@ describe('UIStateService', () => {
 
     it('should provide latest value to new subscribers', (done) => {
       service.enableLegendButton();
-      
+
       // Subscribe after state change
       setTimeout(() => {
         service.showLegend$.pipe(take(1)).subscribe((value) => {
@@ -303,4 +303,3 @@ describe('UIStateService', () => {
     });
   });
 });
-

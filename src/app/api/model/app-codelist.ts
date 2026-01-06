@@ -1,4 +1,4 @@
 export enum Codelist {
-  INTERNAL = "I",
-  EXTERNAL = "E"
+  INTERNAL = 'I',
+  EXTERNAL = 'E'
 }

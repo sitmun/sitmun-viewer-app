@@ -75,8 +75,10 @@ describe('FullScreenControlHandler', () => {
 
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'FuScreen' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'FuScreen'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.fullScreen',
         parameters: {}
@@ -91,7 +93,7 @@ describe('FullScreenControlHandler', () => {
 
     it('should return empty config when no default div configured', () => {
       mockAppConfigService.getControlDefault.and.returnValue(null);
-      
+
       const task: AppTasks = {
         'ui-control': 'sitna.fullScreen',
         parameters: {}
@@ -105,8 +107,10 @@ describe('FullScreenControlHandler', () => {
     });
 
     it('should merge task parameters', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'FuScreen' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'FuScreen'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.fullScreen',
         parameters: {
@@ -124,8 +128,10 @@ describe('FullScreenControlHandler', () => {
     });
 
     it('should allow parameters to override default div', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'FuScreen' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'FuScreen'
+      });
+
       const task: AppTasks = {
         'ui-control': 'sitna.fullScreen',
         parameters: {
@@ -148,8 +154,10 @@ describe('FullScreenControlHandler', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue({ div: 'FuScreen' });
-      
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'FuScreen'
+      });
+
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
 
@@ -169,4 +177,3 @@ describe('FullScreenControlHandler', () => {
     });
   });
 });
-

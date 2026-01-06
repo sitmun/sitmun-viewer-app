@@ -11,7 +11,13 @@ import { TerritoryComponent } from '../common/pages/territory/territory.componen
 import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
-  declarations: [DashboardComponent, MapComponent, ApplicationComponent, TerritoryComponent, ProfileComponent ],
+  declarations: [
+    DashboardComponent,
+    MapComponent,
+    ApplicationComponent,
+    TerritoryComponent,
+    ProfileComponent
+  ],
   imports: [
     CommonModule,
     UserRoutingModule,

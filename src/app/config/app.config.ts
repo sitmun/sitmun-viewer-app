@@ -17,7 +17,8 @@ export const NavigationPath = {
       Map: (applicationId: number, territoryId: number) =>
         `/user/map/${applicationId}/${territoryId}`,
       Territory: (territoryId: number) => `/user/territory/${territoryId}`,
-      Application: (applicationId: number) => `/user/application/${applicationId}`,
+      Application: (applicationId: number) =>
+        `/user/application/${applicationId}`,
       Profile: 'user/profile',
       Help: '/user/help'
     },
@@ -27,7 +28,8 @@ export const NavigationPath = {
       Map: (applicationId: number, territoryId: number) =>
         `/public/map/${applicationId}/${territoryId}`,
       Territory: (territoryId: number) => `/public/territory/${territoryId}`,
-      Application: (applicationId: number) => `/public/application/${applicationId}`,
+      Application: (applicationId: number) =>
+        `/public/application/${applicationId}`
     }
   }
 };

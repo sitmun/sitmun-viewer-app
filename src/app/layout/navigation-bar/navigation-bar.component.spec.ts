@@ -24,10 +24,14 @@ describe('NavigationBarComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl'], {
-      url: '/user/dashboard',
-      events: jasmine.createSpyObj('events', ['subscribe', 'forEach'])
-    });
+    const routerSpy = jasmine.createSpyObj(
+      'Router',
+      ['navigate', 'navigateByUrl'],
+      {
+        url: '/user/dashboard',
+        events: jasmine.createSpyObj('events', ['subscribe', 'forEach'])
+      }
+    );
 
     await TestBed.configureTestingModule({
       declarations: [NavigationBarComponent],
@@ -46,11 +50,36 @@ describe('NavigationBarComponent', () => {
       ],
       providers: [
         { provide: Router, useValue: routerSpy },
-        { provide: CommonService, useValue: jasmine.createSpyObj('CommonService', ['fetchDashboardItems', 'message$']) },
-        { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['getLoggedUsername', 'logout']) },
-        { provide: Location, useValue: jasmine.createSpyObj('Location', ['back', 'forward']) },
-        { provide: LanguageService, useValue: jasmine.createSpyObj('LanguageService', ['setLanguage', 'getCurrentLanguage', 'getLanguagesTranslatedSorted']) },
-        { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
+        {
+          provide: CommonService,
+          useValue: jasmine.createSpyObj('CommonService', [
+            'fetchDashboardItems',
+            'message$'
+          ])
+        },
+        {
+          provide: AuthenticationService,
+          useValue: jasmine.createSpyObj('AuthenticationService', [
+            'getLoggedUsername',
+            'logout'
+          ])
+        },
+        {
+          provide: Location,
+          useValue: jasmine.createSpyObj('Location', ['back', 'forward'])
+        },
+        {
+          provide: LanguageService,
+          useValue: jasmine.createSpyObj('LanguageService', [
+            'setLanguage',
+            'getCurrentLanguage',
+            'getLanguagesTranslatedSorted'
+          ])
+        },
+        {
+          provide: MatDialog,
+          useValue: jasmine.createSpyObj('MatDialog', ['open'])
+        },
         TranslateService
       ],
       schemas: [NO_ERRORS_SCHEMA]
@@ -99,7 +128,7 @@ describe('NavigationBarComponent', () => {
   it('should check if connected correctly', () => {
     spyOnProperty(router, 'url', 'get').and.returnValue('/public/dashboard');
     expect(component.isConnected()).toBe(false);
-    
+
     spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
     expect(component.isConnected()).toBe(true);
   });
@@ -107,7 +136,7 @@ describe('NavigationBarComponent', () => {
   it('should check if on map correctly', () => {
     spyOnProperty(router, 'url', 'get').and.returnValue('/user/map/123');
     expect(component.isOnMap()).toBe(true);
-    
+
     spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
     expect(component.isOnMap()).toBe(false);
   });

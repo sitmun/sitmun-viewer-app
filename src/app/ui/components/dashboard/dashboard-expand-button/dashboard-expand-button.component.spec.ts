@@ -10,10 +10,7 @@ describe('DashboardExpandButtonComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [DashboardExpandButtonComponent]
     });
     fixture = TestBed.createComponent(DashboardExpandButtonComponent);

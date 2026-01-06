@@ -28,7 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ApplicationDetailsComponent } from './components/application-details/application-details.component';
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
 import { MatSelectModule } from '@angular/material/select';
-import { SharedPipesModule } from "../../util/pipe/SharedPipesModule";
+import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
 import { ReturnButtonComponent } from './components/return-button/return-button.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';

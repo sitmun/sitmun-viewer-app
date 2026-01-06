@@ -8,7 +8,7 @@ import { UIStateService } from '../../services/ui-state.service';
 /**
  * Handler for the native SITNA dataLoader control.
  * Allows users to load data layers via WMS suggestions and drag-and-drop.
- * 
+ *
  * Control Type: sitna.dataLoader
  * Patches: None (native SITNA control)
  * Configuration: div + optional wmsSuggestions and enableDragAndDrop parameters
@@ -34,9 +34,12 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
    * - wmsSuggestions: Array of WMS group options
    * - enableDragAndDrop: Boolean (defaults to true if not specified)
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
-    
+
     // Always set div to 'xdata' (required by SITNA)
     const config: SitnaControlConfig = {
       div: 'xdata'
@@ -67,4 +70,3 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
     return config;
   }
 }
-

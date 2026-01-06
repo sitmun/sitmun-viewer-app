@@ -1,7 +1,12 @@
 import { Component, Inject, OnInit, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { CommonService, DashboardItem, DashboardItemsResponse, DashboardTypes } from '@api/services/common.service';
+import {
+  CommonService,
+  DashboardItem,
+  DashboardItemsResponse,
+  DashboardTypes
+} from '@api/services/common.service';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
@@ -17,15 +22,15 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   territorySelectedId!: string;
   listApplications!: Array<DashboardItem>;
   listTerritories!: Array<any>;
-  searchValueApplication: string = "";
-  searchValueTerritory: string = "";
+  searchValueApplication: string = '';
+  searchValueTerritory: string = '';
   cachedUnavailableApplicationIds: string[] = [];
   cachedUnavailableTerritoryIds: string[] = [];
-  
+
   // Cached grouped data to prevent infinite loops
   groupedApplications: { group?: string; items: any[] }[] = [];
   groupedTerritories: { group?: string; items: any[] }[] = [];
-  
+
   // Store the last selected territory to restore when territories are loaded
   private lastSelectedTerritoryId: string = '';
 
@@ -50,7 +55,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     }
     const allowedTypes = dashboardConfig.allowedTypes || [];
     return items.filter(
-      item => item.type != null && allowedTypes.includes(item.type)
+      (item) => item.type != null && allowedTypes.includes(item.type)
     );
   }
 
@@ -60,57 +65,68 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   private updateGroupedApplications(): void {
     // Apply type filtering first (same as dashboard)
     const typeFiltered = this.filterByType(this.listApplications || []);
-    
+
     // Filter out unavailable applications (under maintenance)
-    const availableApps = typeFiltered.filter(app => !app.isUnavailable);
-    
+    const availableApps = typeFiltered.filter((app) => !app.isUnavailable);
+
     let filtered = availableApps;
-    
+
     if (this.searchValueApplication) {
       const filterLower = this.searchValueApplication.toLowerCase();
-      filtered = availableApps.filter(
-        (application) => (application.title || application.name).toLowerCase().includes(filterLower)
+      filtered = availableApps.filter((application) =>
+        (application.title || application.name)
+          .toLowerCase()
+          .includes(filterLower)
       );
-      
+
       // Always include the selected application even if it doesn't match the filter, type, or is unavailable
       // This allows users to see what's selected even if it's in maintenance
       if (this.hasApplication()) {
         const selectedApp = this.listApplications?.find(
           (app) => String(app.id) === String(this.applicationSelectedId)
         );
-        if (selectedApp && !filtered.some(app => String(app.id) === String(selectedApp.id))) {
+        if (
+          selectedApp &&
+          !filtered.some((app) => String(app.id) === String(selectedApp.id))
+        ) {
           filtered.unshift(selectedApp); // Add at the beginning
         }
       }
     }
-    
+
     // Update cached grouped format (no grouping for applications)
     this.groupedApplications = [{ items: filtered }];
   }
-  
+
   /**
    * Update cached grouped territories when data or search changes.
    */
   private updateGroupedTerritories(): void {
     let filtered = this.listTerritories || [];
-    
+
     if (this.searchValueTerritory) {
       const filterLower = this.searchValueTerritory.toLowerCase();
-      filtered = filtered.filter(
-        (territory: any) => (territory.name || '').toLowerCase().includes(filterLower)
+      filtered = filtered.filter((territory: any) =>
+        (territory.name || '').toLowerCase().includes(filterLower)
       );
-      
+
       // Always include the selected territory even if it doesn't match the filter
       if (this.hasTerritory()) {
         const selectedTerritory = this.listTerritories?.find(
-          (territory: any) => String(territory.id) === String(this.territorySelectedId)
+          (territory: any) =>
+            String(territory.id) === String(this.territorySelectedId)
         );
-        if (selectedTerritory && !filtered.some((t: any) => String(t.id) === String(selectedTerritory.id))) {
+        if (
+          selectedTerritory &&
+          !filtered.some(
+            (t: any) => String(t.id) === String(selectedTerritory.id)
+          )
+        ) {
           filtered.unshift(selectedTerritory); // Add at the beginning
         }
       }
     }
-    
+
     this.groupedTerritories = [{ items: filtered }];
   }
 
@@ -120,9 +136,9 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
    */
   private updateCachedUnavailableIds(): void {
     this.cachedUnavailableApplicationIds = (this.listApplications || [])
-      .filter(app => app.isUnavailable)
-      .map(app => String(app.id));
-    
+      .filter((app) => app.isUnavailable)
+      .map((app) => String(app.id));
+
     // Note: territories don't have isUnavailable, so this will be empty
     this.cachedUnavailableTerritoryIds = [];
   }
@@ -168,14 +184,15 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     this.territorySelectedId = territoryId;
 
     // We get all applications
-    this.commonService.fetchDashboardItems(DashboardTypes.APPLICATIONS)
-        .subscribe((res: DashboardItemsResponse) => {
-          // Store all applications (before type filtering)
-          // Type filtering will be applied in updateGroupedApplications()
-          this.listApplications = res.content;
-          this.updateCachedUnavailableIds();
-          this.updateGroupedApplications();
-        });
+    this.commonService
+      .fetchDashboardItems(DashboardTypes.APPLICATIONS)
+      .subscribe((res: DashboardItemsResponse) => {
+        // Store all applications (before type filtering)
+        // Type filtering will be applied in updateGroupedApplications()
+        this.listApplications = res.content;
+        this.updateCachedUnavailableIds();
+        this.updateGroupedApplications();
+      });
 
     // We get all territories linked to the applicationSelected (only if applicationSelectedId is valid)
     if (this.hasApplication()) {
@@ -184,15 +201,21 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   }
 
   getAllTerritoriesFromApplicationSelected() {
-    this.commonService.fetchTerritoriesByApplication(Number(this.applicationSelectedId))
+    this.commonService
+      .fetchTerritoriesByApplication(Number(this.applicationSelectedId))
       .subscribe((res: any) => {
         this.listTerritories = res.content;
         this.updateGroupedTerritories();
-        
+
         // If there was a last selected territory and it's available in the new application, auto-select it
-        if (this.lastSelectedTerritoryId && this.listTerritories && this.listTerritories.length > 0) {
+        if (
+          this.lastSelectedTerritoryId &&
+          this.listTerritories &&
+          this.listTerritories.length > 0
+        ) {
           const territoryExists = this.listTerritories.some(
-            (territory: any) => String(territory.id) === String(this.lastSelectedTerritoryId)
+            (territory: any) =>
+              String(territory.id) === String(this.lastSelectedTerritoryId)
           );
           if (territoryExists) {
             this.territorySelectedId = this.lastSelectedTerritoryId;
@@ -213,7 +236,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     if (app && app.isUnavailable) {
       return;
     }
-    
+
     // Toggle selection: if clicking the same application, deselect it
     if (String(this.applicationSelectedId) === String(appSelectedId)) {
       this.applicationSelectedId = '';
@@ -227,7 +250,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
       this.applicationSelectedId = String(appSelectedId);
       this.territorySelectedId = '';
       this.searchValueTerritory = ''; // Clear territory search when changing application
-      
+
       // Update listTerritories - will auto-select last selected territory if available
       this.getAllTerritoriesFromApplicationSelected();
     }
@@ -293,7 +316,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     if (app && app.isUnavailable) {
       return;
     }
-    
+
     // Toggle selection: if clicking the same application, deselect it
     if (String(this.applicationSelectedId) === String(appSelectedId)) {
       this.applicationSelectedId = '';
@@ -307,7 +330,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
       this.applicationSelectedId = String(appSelectedId);
       this.territorySelectedId = '';
       this.searchValueTerritory = ''; // Clear territory search when changing application
-      
+
       // Update listTerritories - will auto-select last selected territory if available
       this.getAllTerritoriesFromApplicationSelected();
     }
@@ -340,20 +363,28 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   switchMap() {
     if (!this.isSelectionValid()) {
       if (!this.hasTerritory()) {
-        this.translateService.get("map.errorNoTerritorySelected").subscribe((trad) => {
-          this.notificationService.error(trad);
-        });
+        this.translateService
+          .get('map.errorNoTerritorySelected')
+          .subscribe((trad) => {
+            this.notificationService.error(trad);
+          });
       }
       return;
     }
 
-    if (this.router.url.startsWith("/public")) {
+    if (this.router.url.startsWith('/public')) {
       this.router.navigateByUrl(
-        NavigationPath.Section.Public.Map(Number(this.applicationSelectedId), Number(this.territorySelectedId))
+        NavigationPath.Section.Public.Map(
+          Number(this.applicationSelectedId),
+          Number(this.territorySelectedId)
+        )
       );
     } else {
       this.router.navigateByUrl(
-        NavigationPath.Section.User.Map(Number(this.applicationSelectedId), Number(this.territorySelectedId))
+        NavigationPath.Section.User.Map(
+          Number(this.applicationSelectedId),
+          Number(this.territorySelectedId)
+        )
       );
     }
     this.closeEvent();

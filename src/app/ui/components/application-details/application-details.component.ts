@@ -1,5 +1,9 @@
-import { CommonService, DashboardItem, DashboardTypes } from '@api/services/common.service';
-import { Component, Input} from '@angular/core';
+import {
+  CommonService,
+  DashboardItem,
+  DashboardTypes
+} from '@api/services/common.service';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-application-details',
@@ -7,5 +11,5 @@ import { Component, Input} from '@angular/core';
   styleUrls: ['./application-details.component.scss']
 })
 export class ApplicationDetailsComponent {
-  @Input() application! : DashboardItem;
+  @Input() application!: DashboardItem;
 }

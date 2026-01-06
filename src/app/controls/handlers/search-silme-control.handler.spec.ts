@@ -16,9 +16,13 @@ describe('SearchSilmeControlHandler', () => {
       'waitForTC',
       'getTC'
     ]);
-    mockAppConfig = jasmine.createSpyObj('AppConfigService', ['getControlDefault']);
+    mockAppConfig = jasmine.createSpyObj('AppConfigService', [
+      'getControlDefault'
+    ]);
     mockAppConfig.getControlDefault.and.returnValue({ div: 'search' });
-    mockTCNamespace.getTC.and.returnValue({ control: { SearchSilme: {} } } as any);
+    mockTCNamespace.getTC.and.returnValue({
+      control: { SearchSilme: {} }
+    } as any);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

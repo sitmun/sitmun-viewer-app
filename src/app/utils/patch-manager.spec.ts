@@ -27,11 +27,11 @@ describe('PatchManager', () => {
 
     it('should add array of restore functions', () => {
       const restored: number[] = [];
-      
+
       patchManager.add([
         () => restored.push(1),
         () => restored.push(2),
-        () => restored.push(3),
+        () => restored.push(3)
       ]);
 
       patchManager.restoreAll();
@@ -40,7 +40,7 @@ describe('PatchManager', () => {
 
     it('should add multiple restore functions separately', () => {
       const restored: string[] = [];
-      
+
       patchManager.add(() => restored.push('first'));
       patchManager.add(() => restored.push('second'));
       patchManager.add(() => restored.push('third'));
@@ -51,11 +51,11 @@ describe('PatchManager', () => {
 
     it('should mix single and array additions', () => {
       const restored: string[] = [];
-      
+
       patchManager.add(() => restored.push('single-1'));
       patchManager.add([
         () => restored.push('array-1'),
-        () => restored.push('array-2'),
+        () => restored.push('array-2')
       ]);
       patchManager.add(() => restored.push('single-2'));
 
@@ -67,7 +67,7 @@ describe('PatchManager', () => {
   describe('restoreAll', () => {
     it('should execute all restore functions', () => {
       const counters = { a: 0, b: 0, c: 0 };
-      
+
       patchManager.add(() => counters.a++);
       patchManager.add(() => counters.b++);
       patchManager.add(() => counters.c++);
@@ -97,7 +97,7 @@ describe('PatchManager', () => {
 
     it('should handle errors in restore functions', () => {
       const restored: string[] = [];
-      
+
       patchManager.add(() => restored.push('first'));
       patchManager.add(() => {
         throw new Error('Intentional error');
@@ -106,7 +106,7 @@ describe('PatchManager', () => {
 
       // Should log error but continue with other patches
       const consoleErrorSpy = spyOn(console, 'error');
-      
+
       patchManager.restoreAll();
 
       expect(restored).toContain('first');
@@ -116,7 +116,7 @@ describe('PatchManager', () => {
 
     it('should restore in FIFO order', () => {
       const order: number[] = [];
-      
+
       for (let i = 1; i <= 5; i++) {
         patchManager.add(() => order.push(i));
       }
@@ -140,7 +140,7 @@ describe('PatchManager', () => {
 
     it('should allow new patches after clear', () => {
       let counter = 0;
-      
+
       patchManager.add(() => counter++);
       patchManager.clear();
       patchManager.add(() => counter++);
@@ -187,7 +187,7 @@ describe('PatchManager', () => {
       const obj = {
         method1: () => 'original-1',
         method2: () => 'original-2',
-        prop: 'original',
+        prop: 'original'
       };
 
       // Store originals
@@ -202,9 +202,15 @@ describe('PatchManager', () => {
 
       // Add restores
       patchManager.add([
-        () => { obj.method1 = original1; },
-        () => { obj.method2 = original2; },
-        () => { obj.prop = originalProp; },
+        () => {
+          obj.method1 = original1;
+        },
+        () => {
+          obj.method2 = original2;
+        },
+        () => {
+          obj.prop = originalProp;
+        }
       ]);
 
       expect(obj.method1()).toBe('patched-1');
@@ -220,14 +226,16 @@ describe('PatchManager', () => {
 
     it('should handle monkey patches', () => {
       const obj = {
-        calculate: (a: number, b: number) => a + b,
+        calculate: (a: number, b: number) => a + b
       };
 
       const original = obj.calculate;
 
       // Monkey patch to multiply instead
       obj.calculate = (a: number, b: number) => a * b;
-      patchManager.add(() => { obj.calculate = original; });
+      patchManager.add(() => {
+        obj.calculate = original;
+      });
 
       expect(obj.calculate(2, 3)).toBe(6); // 2 * 3
 
@@ -238,12 +246,12 @@ describe('PatchManager', () => {
 
     it('should handle aspect-oriented patches', () => {
       const calls: string[] = [];
-      
+
       const service = {
         method: (arg: string) => {
           calls.push(`method:${arg}`);
           return arg;
-        },
+        }
       };
 
       const original = service.method;
@@ -256,7 +264,9 @@ describe('PatchManager', () => {
         return result;
       };
 
-      patchManager.add(() => { service.method = original; });
+      patchManager.add(() => {
+        service.method = original;
+      });
 
       service.method('test');
       expect(calls).toEqual(['before', 'method:test', 'after']);
@@ -274,7 +284,7 @@ describe('PatchManager', () => {
       // Simulate Angular component lifecycle
       const component = {
         patchManager: createPatchManager(),
-        
+
         ngOnInit() {
           // Apply patches
           const original = (window as any).someMethod;
@@ -283,11 +293,11 @@ describe('PatchManager', () => {
             (window as any).someMethod = original;
           });
         },
-        
+
         ngOnDestroy() {
           // Clean up patches
           this.patchManager.restoreAll();
-        },
+        }
       };
 
       (window as any).someMethod = () => 'original';
@@ -354,4 +364,3 @@ describe('PatchManager', () => {
     });
   });
 });
-

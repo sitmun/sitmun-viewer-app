@@ -8,7 +8,7 @@ import { Injectable } from '@angular/core';
  * and utilities for waiting on TC availability.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TCNamespaceService {
   /**
@@ -17,10 +17,7 @@ export class TCNamespaceService {
    * @returns The TC namespace, or undefined if not available
    */
   getTC(): any | undefined {
-    return (
-      (window as any).TC ||
-      (globalThis as any).TC
-    );
+    return (window as any).TC || (globalThis as any).TC;
   }
 
   /**
@@ -94,10 +91,7 @@ export class TCNamespaceService {
    * @param path - Dot-separated property path
    * @returns The property value, or undefined if not found
    */
-  private getPropertyByPath(
-    obj: Record<string, any>,
-    path: string
-  ): any {
+  private getPropertyByPath(obj: Record<string, any>, path: string): any {
     return path.split('.').reduce((current, key) => {
       if (current && typeof current === 'object' && key in current) {
         return (current as Record<string, any>)[key];
@@ -106,4 +100,3 @@ export class TCNamespaceService {
     }, obj as any);
   }
 }
-

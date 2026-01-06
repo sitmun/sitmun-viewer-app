@@ -13,17 +13,37 @@ describe('TerritoryComponent', () => {
   let fixture: ComponentFixture<TerritoryComponent>;
 
   beforeEach(() => {
-    const mockCommonService = jasmine.createSpyObj('CommonService', ['fetchDashboardItems', 'fetchApplicationsByTerritory']);
+    const mockCommonService = jasmine.createSpyObj('CommonService', [
+      'fetchDashboardItems',
+      'fetchApplicationsByTerritory'
+    ]);
     mockCommonService.fetchDashboardItems.and.returnValue(of({ content: [] }));
-    mockCommonService.fetchApplicationsByTerritory.and.returnValue(of({ content: [] }));
+    mockCommonService.fetchApplicationsByTerritory.and.returnValue(
+      of({ content: [] })
+    );
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       declarations: [TerritoryComponent],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']) },
-        { provide: ActivatedRoute, useValue: { params: of({ territoryId: '1' }), snapshot: { paramMap: { get: () => '1' } } } },
-        { provide: Location, useValue: jasmine.createSpyObj('Location', ['back']) },
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', [
+            'navigate',
+            'navigateByUrl'
+          ])
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            params: of({ territoryId: '1' }),
+            snapshot: { paramMap: { get: () => '1' } }
+          }
+        },
+        {
+          provide: Location,
+          useValue: jasmine.createSpyObj('Location', ['back'])
+        },
         { provide: CommonService, useValue: mockCommonService }
       ]
     });

@@ -13,15 +13,32 @@ describe('DashboardItemComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [DashboardItemComponent],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl'], { url: '/user/dashboard' }) },
-        { provide: CommonService, useValue: jasmine.createSpyObj('CommonService', ['fetchTerritoriesByApplication']) },
-        { provide: NotificationService, useValue: jasmine.createSpyObj('NotificationService', ['error', 'success', 'info', 'warning']) }
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj(
+            'Router',
+            ['navigate', 'navigateByUrl'],
+            { url: '/user/dashboard' }
+          )
+        },
+        {
+          provide: CommonService,
+          useValue: jasmine.createSpyObj('CommonService', [
+            'fetchTerritoriesByApplication'
+          ])
+        },
+        {
+          provide: NotificationService,
+          useValue: jasmine.createSpyObj('NotificationService', [
+            'error',
+            'success',
+            'info',
+            'warning'
+          ])
+        }
       ]
     });
     fixture = TestBed.createComponent(DashboardItemComponent);

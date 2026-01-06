@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Output, Input, ElementRef, HostListener, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  Input,
+  ElementRef,
+  HostListener,
+  ViewChild
+} from '@angular/core';
 import { CommonService, ResponseDto } from '@api/services/common.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
@@ -13,19 +21,24 @@ import { NavigationPath } from '@config/app.config';
 export class DashboardSearchboxComponent {
   @ViewChild('inputForm') inputForm!: ElementRef;
   @ViewChild('suggestionsDiv') suggestionsDiv!: ElementRef;
-  @ViewChild('inputSearch') inputSearch! : ElementRef;
+  @ViewChild('inputSearch') inputSearch!: ElementRef;
 
-  @Input() applications : any;
+  @Input() applications: any;
 
   @Output() keywords = new EventEmitter<string>();
 
   input: string;
-  territories : any = [];
+  territories: any = [];
   showSuggestions: boolean = false;
   filteredSuggestions: string[] = [];
-  showDetailedSuggestions : boolean = false;
+  showDetailedSuggestions: boolean = false;
 
-  constructor(private commonService : CommonService, private sanitizer: DomSanitizer, private translate: TranslateService, private router : Router) {
+  constructor(
+    private commonService: CommonService,
+    private sanitizer: DomSanitizer,
+    private translate: TranslateService,
+    private router: Router
+  ) {
     this.input = '';
   }
 
@@ -37,8 +50,10 @@ export class DashboardSearchboxComponent {
     const target = event.target as HTMLElement;
 
     if (this.inputForm && this.suggestionsDiv) {
-      if (!this.inputForm.nativeElement.contains(target) &&
-          !this.suggestionsDiv.nativeElement.contains(target)) {
+      if (
+        !this.inputForm.nativeElement.contains(target) &&
+        !this.suggestionsDiv.nativeElement.contains(target)
+      ) {
         this.showSuggestions = false;
       }
     }
@@ -46,25 +61,29 @@ export class DashboardSearchboxComponent {
 
   ngOnInit() {
     this.applications.forEach((application: any) => {
-      this.commonService.fetchTerritoriesByApplication(application.id).subscribe({
-        next: (res : ResponseDto) => {
-          res.content.forEach((territory : any) => {
-            let existingTerritory = this.territories.find((t: any) => t.name === territory.name);
+      this.commonService
+        .fetchTerritoriesByApplication(application.id)
+        .subscribe({
+          next: (res: ResponseDto) => {
+            res.content.forEach((territory: any) => {
+              let existingTerritory = this.territories.find(
+                (t: any) => t.name === territory.name
+              );
 
-            if (!existingTerritory) {
-              existingTerritory = {
-                id: territory.id,
-                name: territory.name,
-                application: []
-              };
-              this.territories.push(existingTerritory);
-            }
+              if (!existingTerritory) {
+                existingTerritory = {
+                  id: territory.id,
+                  name: territory.name,
+                  application: []
+                };
+                this.territories.push(existingTerritory);
+              }
 
-            existingTerritory.application.push(application);
-            application.territories = res.content;
-          });
-        }
-      })
+              existingTerritory.application.push(application);
+              application.territories = res.content;
+            });
+          }
+        });
     });
   }
 
@@ -85,34 +104,32 @@ export class DashboardSearchboxComponent {
     this.showSuggestions = true;
   }
 
-  loseFocus(event: KeyboardEvent) : void {
+  loseFocus(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       this.showSuggestions = false;
       this.inputSearch.nativeElement.blur();
     }
   }
 
-  navigateToTerritoryPresentation(territoryId : number): void {
-    if(this.router.url.startsWith("/public")){
+  navigateToTerritoryPresentation(territoryId: number): void {
+    if (this.router.url.startsWith('/public')) {
       this.router.navigateByUrl(
         NavigationPath.Section.Public.Territory(territoryId)
       );
-    }
-    else{
+    } else {
       this.router.navigateByUrl(
         NavigationPath.Section.User.Territory(territoryId)
       );
     }
   }
 
-  navigateToApplicationPresentation(applicationId : number): void {
+  navigateToApplicationPresentation(applicationId: number): void {
     this.showSuggestions = false;
-    if(this.router.url.startsWith("/public")){
+    if (this.router.url.startsWith('/public')) {
       this.router.navigateByUrl(
         NavigationPath.Section.Public.Application(applicationId)
       );
-    }
-    else{
+    } else {
       this.router.navigateByUrl(
         NavigationPath.Section.User.Application(applicationId)
       );
@@ -127,8 +144,8 @@ export class DashboardSearchboxComponent {
     let counterOfTerritories = 0;
 
     this.applications.forEach((application: any) => {
-      application.territories.forEach((territory : any) => {
-        if(territory.name.toLowerCase().includes(this.input.toLowerCase())) {
+      application.territories.forEach((territory: any) => {
+        if (territory.name.toLowerCase().includes(this.input.toLowerCase())) {
           counterOfTerritories += 1;
         }
       });
@@ -143,15 +160,18 @@ export class DashboardSearchboxComponent {
    * @returns
    */
   researchHighlight(value: string) {
-    if(this.input){
+    if (this.input) {
       const regex = new RegExp(`(${this.input})`, 'gi');
-      value = value.replace(regex, `<span style='background-color:antiquewhite;'>$1</span>`);
+      value = value.replace(
+        regex,
+        `<span style='background-color:antiquewhite;'>$1</span>`
+      );
     }
     return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
   clearSearchText() {
-    this.input = "";
+    this.input = '';
   }
 
   handleSubmit() {

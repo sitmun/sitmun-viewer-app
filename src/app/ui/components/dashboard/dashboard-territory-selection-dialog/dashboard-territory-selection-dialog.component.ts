@@ -35,14 +35,14 @@ export class DashboardTerritorySelectionDialogComponent implements OnInit {
 
   private updateGroupedTerritories(): void {
     let filtered = this.territories || [];
-    
+
     if (this.searchValue) {
       const searchLower = this.searchValue.toLowerCase();
       filtered = filtered.filter((territory: any) =>
         (territory.name || '').toLowerCase().includes(searchLower)
       );
     }
-    
+
     this.groupedTerritories = [{ items: filtered }];
   }
 
@@ -53,15 +53,13 @@ export class DashboardTerritorySelectionDialogComponent implements OnInit {
 
   onTerritoryClick(territory: any): void {
     if (territory && this.application) {
-      const mapUrl = this.router.url.startsWith("/public")
+      const mapUrl = this.router.url.startsWith('/public')
         ? NavigationPath.Section.Public.Map(this.application.id, territory.id)
         : NavigationPath.Section.User.Map(this.application.id, territory.id);
-      
+
       this.router.navigateByUrl(mapUrl).then(() => {
         this.dialogRef.close();
       });
     }
   }
 }
-
-

@@ -83,4 +83,3 @@ export type SitnaMethodPatches = {
     ...args: unknown[]
   ) => unknown;
 };
-

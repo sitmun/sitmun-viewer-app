@@ -1,5 +1,5 @@
-import { PositionDTO } from "./position";
-import { TerritoryTypeDTO } from "./territoryType";
+import { PositionDTO } from './position';
+import { TerritoryTypeDTO } from './territoryType';
 
 export interface TerritoryDTO {
   id: number;
@@ -18,7 +18,7 @@ export interface TerritoryDTO {
   note?: string;
   legal?: string;
   createdDate: Date;
-  taskAvailabilities?:string;
+  taskAvailabilities?: string;
   cartographyAvailabilities?: string;
   positions: Array<PositionDTO>;
   userConfigurations?: string;

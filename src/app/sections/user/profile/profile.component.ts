@@ -76,7 +76,7 @@ export class ProfileComponent {
   private getUserDetails(): void {
     // User details
     this.userService.getUserDetails().subscribe({
-      next: (res : UserDto) => {
+      next: (res: UserDto) => {
         this.userProfile = res;
         this.copyUserProfile = structuredClone(this.userProfile);
       }
@@ -85,7 +85,7 @@ export class ProfileComponent {
     // User territories
     this.userService.getUserTerritories().subscribe({
       next: (res: any) => {
-        res.content.forEach((element : TerritoryDTO) => {
+        res.content.forEach((element: TerritoryDTO) => {
           this.territories.push(element);
         });
         this.selectedTerritory = this.territories[0];
@@ -97,7 +97,8 @@ export class ProfileComponent {
   }
 
   selectTerritory(event: any) {
-    if (event.target) { // select box territory
+    if (event.target) {
+      // select box territory
       const selectedValue = event.target.value;
       this.selectedTerritory = this.territories.find(
         (territory) => territory.name === selectedValue
@@ -153,11 +154,9 @@ export class ProfileComponent {
     ) {
       this.ShowPopupSaveProfile();
     } else {
-      this.translateService
-        .get('profile.noUpdateProfile')
-        .subscribe((trad) => {
-          this.notificationService.warning(trad);
-        });
+      this.translateService.get('profile.noUpdateProfile').subscribe((trad) => {
+        this.notificationService.warning(trad);
+      });
     }
   }
 
@@ -169,7 +168,7 @@ export class ProfileComponent {
         .get('profile.noUpdateTerritories')
         .subscribe((trad) => {
           this.notificationService.warning(trad);
-      });
+        });
     }
   }
 
@@ -178,7 +177,8 @@ export class ProfileComponent {
   }
 
   ShowPopupSaveTerritoriesPositions() {
-    this.displayPopupTerritoriesProfiles = !this.displayPopupTerritoriesProfiles;
+    this.displayPopupTerritoriesProfiles =
+      !this.displayPopupTerritoriesProfiles;
   }
 
   saveProfile() {
@@ -208,7 +208,8 @@ export class ProfileComponent {
   }
 
   saveTerritoriesPositions() {
-    const updates = this.territoriesPositionsToUpdate.map((territoryPosition: PositionTerritory) =>
+    const updates = this.territoriesPositionsToUpdate.map(
+      (territoryPosition: PositionTerritory) =>
         this.updateTerritoryPosition(
           territoryPosition.territory,
           territoryPosition.position
@@ -274,8 +275,11 @@ export class ProfileComponent {
       throw Error();
     }
 
-    let paragraph = territoryTdElement.querySelector('p') as HTMLParagraphElement;
-    let img = territoryTdElement.querySelector('button')?.children[0] as HTMLImageElement;
+    let paragraph = territoryTdElement.querySelector(
+      'p'
+    ) as HTMLParagraphElement;
+    let img = territoryTdElement.querySelector('button')
+      ?.children[0] as HTMLImageElement;
 
     if (inputPosition.hidden) {
       // Display input & hide paragraph

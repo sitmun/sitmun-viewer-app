@@ -4,10 +4,7 @@ import { Injectable } from '@angular/core';
  * SITNA namespace type definition
  */
 interface SitnaNamespace {
-  Map: new (
-    div: HTMLElement | string,
-    options?: unknown
-  ) => unknown;
+  Map: new (div: HTMLElement | string, options?: unknown) => unknown;
   Cfg?: unknown;
   Consts?: unknown;
   control?: {
@@ -25,7 +22,7 @@ interface SitnaNamespace {
  * - Waiting for SITNA namespace to become available
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class SitnaNamespaceService {
   /**
@@ -61,4 +58,3 @@ export class SitnaNamespaceService {
     throw new Error('SITNA namespace not available after retries');
   }
 }
-

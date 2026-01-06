@@ -1,5 +1,11 @@
 import { Location } from '@angular/common';
-import { Component, HostListener, OnInit, DoCheck, OnDestroy } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  DoCheck,
+  OnDestroy
+} from '@angular/core';
 import { NavigationStart, Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -12,7 +18,13 @@ import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from 'src/app/services/language.service';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate
+} from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change-application-territory-dialog/change-application-territory-dialog.component';
 
@@ -22,18 +34,24 @@ import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change
   styleUrls: ['./navigation-bar.component.scss'],
   animations: [
     trigger('toolbarCollapse', [
-      state('visible', style({
-        height: '64px',
-        minHeight: '64px',
-        overflow: 'visible',
-        pointerEvents: 'auto'
-      })),
-      state('hidden', style({
-        height: '0',
-        minHeight: '0',
-        overflow: 'hidden',
-        pointerEvents: 'none'
-      })),
+      state(
+        'visible',
+        style({
+          height: '64px',
+          minHeight: '64px',
+          overflow: 'visible',
+          pointerEvents: 'auto'
+        })
+      ),
+      state(
+        'hidden',
+        style({
+          height: '0',
+          minHeight: '0',
+          overflow: 'hidden',
+          pointerEvents: 'none'
+        })
+      ),
       transition('visible <=> hidden', [
         animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
       ])
@@ -97,9 +115,13 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   private updateButtonVisibility(): void {
-    this.showProfileButton = !this.isOnProfile() && (!this.isOnMap() || (this.headerBase?.profileButton?.visible !== false));
-    this.showLogoutButton = !this.isOnMap() || (this.headerBase?.logoutButton?.visible !== false);
-    this.showSwitchLanguageButton = !this.isOnMap() || (this.headerBase?.switchLanguage?.visible !== false);
+    this.showProfileButton =
+      !this.isOnProfile() &&
+      (!this.isOnMap() || this.headerBase?.profileButton?.visible !== false);
+    this.showLogoutButton =
+      !this.isOnMap() || this.headerBase?.logoutButton?.visible !== false;
+    this.showSwitchLanguageButton =
+      !this.isOnMap() || this.headerBase?.switchLanguage?.visible !== false;
   }
 
   ngOnDestroy() {
@@ -174,7 +196,10 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   checkWhichClassIsActive() {
-    if (this.router.url.includes('/user/profile') || this.router.url.includes('/public/profile'))
+    if (
+      this.router.url.includes('/user/profile') ||
+      this.router.url.includes('/public/profile')
+    )
       this.navigationClassActive = NavigationButtonActive.PROFILE;
     else if (this.router.url.includes('/dashboard'))
       this.navigationClassActive = NavigationButtonActive.HOME;
@@ -251,8 +276,10 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   isOnProfile(): boolean {
-    return this.router.url.includes(NavigationPath.Section.User.Profile) || 
-           this.router.url.includes('/user/profile');
+    return (
+      this.router.url.includes(NavigationPath.Section.User.Profile) ||
+      this.router.url.includes('/user/profile')
+    );
   }
 
   shouldShowDashboardButton(): boolean {
@@ -270,9 +297,11 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
 
   shouldShowChangeAppButton(): boolean {
     // Show when: on map pages AND showChangeAppOrTerritoryButton is true AND headerBase?.switchApplication?.visible !== false
-    return this.isOnMap() && 
-           this.showChangeAppOrTerritoryButton && 
-           (this.headerBase?.switchApplication?.visible !== false);
+    return (
+      this.isOnMap() &&
+      this.showChangeAppOrTerritoryButton &&
+      this.headerBase?.switchApplication?.visible !== false
+    );
   }
 
   get toolbarState(): string {
@@ -287,19 +316,21 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
    * - Dialog selection logic: handled in ChangeApplicationTerritoryDialogComponent
    */
   openTerritoriesDialog(): void {
-    const dialogRef = this.dialog.open(ChangeApplicationTerritoryDialogComponent, {
-      width: '800px',
-      maxWidth: '90vw',
-      maxHeight: '90vh',
-      disableClose: false,
-      autoFocus: false
-    });
+    const dialogRef = this.dialog.open(
+      ChangeApplicationTerritoryDialogComponent,
+      {
+        width: '800px',
+        maxWidth: '90vw',
+        maxHeight: '90vh',
+        disableClose: false,
+        autoFocus: false
+      }
+    );
 
     dialogRef.afterClosed().subscribe(() => {
       // Dialog closed
     });
   }
-
 }
 
 enum NavigationButtonActive {

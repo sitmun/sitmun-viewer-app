@@ -7,7 +7,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 /**
  * Handler for the native SITNA scale control.
  * Simple control with no patches required.
- * 
+ *
  * Control Type: sitna.scale
  * Patches: None (native SITNA control)
  * Configuration: Simple div + optional parameters
@@ -20,9 +20,7 @@ export class ScaleControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'scale';
   readonly requiredPatches = undefined; // No patches needed
 
-  constructor(
-    tcNamespaceService: TCNamespaceService
-  ) {
+  constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
   }
 
@@ -30,7 +28,10 @@ export class ScaleControlHandler extends ControlHandlerBase {
    * Build configuration for scale control.
    * Uses default div if no parameters provided.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     return this.mergeWithParameters(defaultConfig, task.parameters);
   }
@@ -42,4 +43,3 @@ export class ScaleControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

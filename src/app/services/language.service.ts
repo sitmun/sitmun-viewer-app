@@ -55,10 +55,10 @@ export class LanguageService {
   setLanguage(lang: string, syncBackend: boolean = true): Observable<void> {
     // Update localStorage
     localStorage.setItem('language', lang);
-    
+
     // Update TranslateService
     this.translateService.use(lang);
-    
+
     // Sync with backend if user is logged in
     if (syncBackend && this.authenticationService.isLoggedIn()) {
       const languageDTO: LanguageDTO = { name: lang, shortname: lang };
@@ -71,7 +71,7 @@ export class LanguageService {
         })
       );
     }
-    
+
     return of(undefined);
   }
 
@@ -85,7 +85,7 @@ export class LanguageService {
     if (!languages || !shortname) {
       return 'Language';
     }
-    const language = languages.find(lang => lang.shortname === shortname);
+    const language = languages.find((lang) => lang.shortname === shortname);
     return language ? language.name : 'Language';
   }
 
@@ -102,9 +102,7 @@ export class LanguageService {
         }
         return languages;
       }),
-      catchError(() =>
-        of(this.appConfigService.getDefaultLanguages())
-      )
+      catchError(() => of(this.appConfigService.getDefaultLanguages()))
     );
   }
 
@@ -123,15 +121,13 @@ export class LanguageService {
         } else if (response?._embedded?.languages) {
           languages = response._embedded.languages;
         }
-        
+
         if (!languages || languages.length === 0) {
           return this.appConfigService.getDefaultLanguages();
         }
         return languages;
       }),
-      catchError(() =>
-        of(this.appConfigService.getDefaultLanguages())
-      )
+      catchError(() => of(this.appConfigService.getDefaultLanguages()))
     );
   }
 
@@ -142,7 +138,7 @@ export class LanguageService {
    */
   getLanguagesTranslatedSorted(lang: string): Observable<LanguageDTO[]> {
     return this.getLanguagesTranslated(lang).pipe(
-      map(languages => languages.sort((a, b) => a.name.localeCompare(b.name)))
+      map((languages) => languages.sort((a, b) => a.name.localeCompare(b.name)))
     );
   }
 
@@ -156,7 +152,10 @@ export class LanguageService {
       return this.http.get<LanguageDTO>(URL_API_I18N_LANGUAGE).pipe(
         map((languageDto: LanguageDTO) => {
           // Use shortname if available, otherwise fall back to name or current language
-          const lang = languageDto?.shortname || languageDto?.name || this.getCurrentLanguage();
+          const lang =
+            languageDto?.shortname ||
+            languageDto?.name ||
+            this.getCurrentLanguage();
           if (lang && lang !== this.getCurrentLanguage()) {
             localStorage.setItem('language', lang);
             this.translateService.use(lang);

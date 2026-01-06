@@ -23,7 +23,10 @@ describe('ReturnButtonComponent', () => {
         MatTooltipModule
       ],
       providers: [
-        { provide: Location, useValue: jasmine.createSpyObj('Location', ['back', 'forward']) },
+        {
+          provide: Location,
+          useValue: jasmine.createSpyObj('Location', ['back', 'forward'])
+        },
         TranslateService
       ]
     });

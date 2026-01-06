@@ -13,11 +13,11 @@ import { NotificationService } from 'src/app/notifications/services/Notification
 
 /**
  * Component for displaying a single application card in the dashboard.
- * 
+ *
  * This component handles the "selection of territory given an application" logic:
  * - When an application with a single territory is clicked, it automatically navigates to the map
  * - When an application with multiple territories is clicked, it shows the territories list
- * 
+ *
  * This is separate from the ChangeApplicationTerritoryDialogComponent, which handles
  * the dialog-based application/territory selection UI.
  */
@@ -61,7 +61,6 @@ export class DashboardItemComponent {
     }
     return notInAuth;
   }
-
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -116,7 +115,7 @@ export class DashboardItemComponent {
     this.router.navigateByUrl(this.getApplicationUrl(idApp));
   }
 
-  displayTerritoriesTag(application : any) {
+  displayTerritoriesTag(application: any) {
     let object = {
       application: application,
       territories: this.listOfTerritories
@@ -124,13 +123,12 @@ export class DashboardItemComponent {
     this.tag.emit(object);
   }
 
-  navigateToMap(idApp : number) {
-    if(this.nbTerritory == 1) {
+  navigateToMap(idApp: number) {
+    if (this.nbTerritory == 1) {
       this.router.navigateByUrl(
         this.getMapUrl(idApp, this.listOfTerritories[0].id)
       );
-    }
-    else {
+    } else {
       this.displayTerritoriesTag(this.item);
     }
   }
@@ -142,5 +140,4 @@ export class DashboardItemComponent {
   navigateToTerritoryMap(applicationId: number, territoryId: number): void {
     this.router.navigateByUrl(this.getMapUrl(applicationId, territoryId));
   }
-
 }

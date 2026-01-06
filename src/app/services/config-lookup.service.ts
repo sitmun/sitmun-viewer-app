@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
-import { AppCfg, AppLayer, AppService, AppGroup, AppTree, AppNodeInfo } from '@api/model/app-cfg';
+import {
+  AppCfg,
+  AppLayer,
+  AppService,
+  AppGroup,
+  AppTree,
+  AppNodeInfo
+} from '@api/model/app-cfg';
 
 /**
  * Service for cached lookups of layers, services, and groups from AppCfg.
@@ -8,7 +15,7 @@ import { AppCfg, AppLayer, AppService, AppGroup, AppTree, AppNodeInfo } from '@a
  * Must be initialized with AppCfg before use.
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ConfigLookupService {
   private layersCache = new Map<string, AppLayer>();
@@ -51,7 +58,10 @@ export class ConfigLookupService {
       apiConfig.trees.forEach((tree) => {
         this.treesCache.set(tree.id, tree);
         // Index all nodes from the nodes object
-        const nodesEntries = Object.entries(tree.nodes) as [string, AppNodeInfo][];
+        const nodesEntries = Object.entries(tree.nodes) as [
+          string,
+          AppNodeInfo
+        ][];
         nodesEntries.forEach(([nodeId, nodeInfo]) => {
           this.nodesCache.set(nodeId, nodeInfo);
         });
@@ -183,4 +193,3 @@ export class ConfigLookupService {
     return Array.from(this.treesCache.values());
   }
 }
-

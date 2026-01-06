@@ -7,7 +7,7 @@ describe('TCNamespaceService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(TCNamespaceService);
-    
+
     // Clean up TC namespace before each test
     delete (window as any).TC;
     delete (globalThis as any).TC;
@@ -48,11 +48,11 @@ describe('TCNamespaceService', () => {
       // by setting both separately. Instead, we verify that window.TC is checked first
       // by ensuring the code structure prioritizes window.
       (window as any).TC = windowTC;
-      
+
       // The implementation checks (window as any).TC first, then (globalThis as any).TC
       // In browser, they're the same, so this test verifies window is in the check
       expect(service.getTC()).toBe(windowTC);
-      
+
       // Verify the code checks window first by inspecting the implementation
       // The getTC() method returns window.TC || globalThis.TC, so window is checked first
     });
@@ -103,13 +103,13 @@ describe('TCNamespaceService', () => {
 
     it('should use default retry parameters', async () => {
       const startTime = Date.now();
-      
+
       setTimeout(() => {
         (window as any).TC = { control: {} };
       }, 100);
 
       await service.waitForTC();
-      
+
       // Should have waited at least 100ms
       const elapsed = Date.now() - startTime;
       expect(elapsed).toBeGreaterThanOrEqual(50);
@@ -124,7 +124,7 @@ describe('TCNamespaceService', () => {
       const [result1, result2, result3] = await Promise.all([
         service.waitForTC(20, 10),
         service.waitForTC(20, 10),
-        service.waitForTC(20, 10),
+        service.waitForTC(20, 10)
       ]);
 
       expect(result1).toBeDefined();
@@ -139,8 +139,8 @@ describe('TCNamespaceService', () => {
     it('should resolve when property exists', async () => {
       (window as any).TC = {
         control: {
-          FeatureInfo: class FeatureInfo {},
-        },
+          FeatureInfo: class FeatureInfo {}
+        }
       };
 
       const result = await service.waitForTCProperty('control.FeatureInfo');
@@ -152,7 +152,11 @@ describe('TCNamespaceService', () => {
       (window as any).TC = { control: {} };
 
       // Start waiting
-      const waitPromise = service.waitForTCProperty('control.SearchSilme', 10, 10);
+      const waitPromise = service.waitForTCProperty(
+        'control.SearchSilme',
+        10,
+        10
+      );
 
       // Add property after 50ms
       setTimeout(() => {
@@ -180,13 +184,15 @@ describe('TCNamespaceService', () => {
         level1: {
           level2: {
             level3: {
-              value: 'found',
-            },
-          },
-        },
+              value: 'found'
+            }
+          }
+        }
       };
 
-      const result = await service.waitForTCProperty('level1.level2.level3.value');
+      const result = await service.waitForTCProperty(
+        'level1.level2.level3.value'
+      );
       expect(result).toBe('found');
     });
 
@@ -198,8 +204,8 @@ describe('TCNamespaceService', () => {
       setTimeout(() => {
         (window as any).TC = {
           control: {
-            Test: 'testValue',
-          },
+            Test: 'testValue'
+          }
         };
       }, 50);
 
@@ -210,8 +216,8 @@ describe('TCNamespaceService', () => {
     it('should handle property with falsy but defined values', async () => {
       (window as any).TC = {
         control: {
-          value: 0, // Falsy but defined
-        },
+          value: 0 // Falsy but defined
+        }
       };
 
       const result = await service.waitForTCProperty('control.value');
@@ -221,8 +227,8 @@ describe('TCNamespaceService', () => {
     it('should not resolve for explicitly undefined properties', async () => {
       (window as any).TC = {
         control: {
-          explicitUndefined: undefined,
-        },
+          explicitUndefined: undefined
+        }
       };
 
       try {
@@ -245,9 +251,9 @@ describe('TCNamespaceService', () => {
       (window as any).TC = {
         a: {
           b: {
-            c: 'deep value',
-          },
-        },
+            c: 'deep value'
+          }
+        }
       };
       const result = await service.waitForTCProperty('a.b.c');
       expect(result).toBe('deep value');
@@ -255,7 +261,7 @@ describe('TCNamespaceService', () => {
 
     it('should return undefined for broken path', async () => {
       (window as any).TC = { a: { b: {} } };
-      
+
       try {
         await service.waitForTCProperty('a.b.c.d', 2, 10);
         fail('Should have thrown');
@@ -267,8 +273,8 @@ describe('TCNamespaceService', () => {
     it('should handle arrays in path', async () => {
       (window as any).TC = {
         control: {
-          '0': 'first',
-        },
+          '0': 'first'
+        }
       };
       const result = await service.waitForTCProperty('control.0');
       expect(result).toBe('first');
@@ -318,13 +324,12 @@ describe('TCNamespaceService', () => {
 
     it('should handle very long delay', async () => {
       (window as any).TC = { control: {} };
-      
+
       const startTime = Date.now();
       await service.waitForTC(1, 1000); // Should resolve immediately despite long delay
       const elapsed = Date.now() - startTime;
-      
+
       expect(elapsed).toBeLessThan(100); // Should be fast since TC is already there
     });
   });
 });
-

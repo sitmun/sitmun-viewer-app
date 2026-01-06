@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, SimpleChanges, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  SimpleChanges,
+  inject
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { Codelist } from '@api/model/app-codelist';
@@ -14,7 +21,7 @@ import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territo
 })
 export class DashboardItemsComponent {
   @Input() items: DashboardItem[] = [];
-  @Input() image_src: string = "";
+  @Input() image_src: string = '';
   @Output() itemClicked = new EventEmitter<DashboardItem>();
 
   applicationSelected: any = null;
@@ -33,10 +40,7 @@ export class DashboardItemsComponent {
 
   private readonly appConfigService = inject(AppConfigService);
 
-  constructor(
-    private router: Router,
-    private dialog: MatDialog
-  ) {}
+  constructor(private router: Router, private dialog: MatDialog) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
@@ -58,16 +62,22 @@ export class DashboardItemsComponent {
     }
   }
 
-  displayTerritoriesTag(display: any, dashboardItemComponent?: DashboardItemComponent) {
+  displayTerritoriesTag(
+    display: any,
+    dashboardItemComponent?: DashboardItemComponent
+  ) {
     if (display.application != null) {
-      const dialogRef = this.dialog.open(DashboardTerritorySelectionDialogComponent, {
-        width: '400px',
-        maxWidth: '90vw',
-        data: {
-          application: display.application,
-          territories: display.territories
+      const dialogRef = this.dialog.open(
+        DashboardTerritorySelectionDialogComponent,
+        {
+          width: '400px',
+          maxWidth: '90vw',
+          data: {
+            application: display.application,
+            territories: display.territories
+          }
         }
-      });
+      );
 
       dialogRef.afterClosed().subscribe(() => {
         // Handle dialog close if needed
@@ -82,23 +92,24 @@ export class DashboardItemsComponent {
     this.totalItems = filteredByType.length;
   }
 
-  displayAllApplicationsPrivate(
-    displayAll: boolean,
-    isPrivate: boolean
-  ) {
+  displayAllApplicationsPrivate(displayAll: boolean, isPrivate: boolean) {
     const filteredByType = this.filterByType(this.items);
-    const filtered = filteredByType.filter(item => item.appPrivate == isPrivate);
-    if(isPrivate) {
+    const filtered = filteredByType.filter(
+      (item) => item.appPrivate == isPrivate
+    );
+    if (isPrivate) {
       this.privateItems = this.displayApplications(filtered, displayAll);
       this.totalPrivateItems = filtered.length;
-    }
-    else {
+    } else {
       this.publicItems = this.displayApplications(filtered, displayAll);
       this.totalPublicItems = filtered.length;
     }
   }
 
-  displayApplications(list: DashboardItem[], display: boolean): DashboardItem[] {
+  displayApplications(
+    list: DashboardItem[],
+    display: boolean
+  ): DashboardItem[] {
     this.totalItems = list.length;
     return display ? list : list.slice(0, this.MAX_HIDDEN_MODE_ITEMS);
   }
@@ -114,15 +125,18 @@ export class DashboardItemsComponent {
     }
     const allowedTypes = this.appConfigService.getAllowedTypes();
     return items.filter(
-      item => item.type != null && allowedTypes.includes(item.type)
+      (item) => item.type != null && allowedTypes.includes(item.type)
     );
   }
 
   isDashboard(): boolean {
-    return this.router.url.startsWith("/user/dashboard") || this.router.url.startsWith("/public/dashboard");
+    return (
+      this.router.url.startsWith('/user/dashboard') ||
+      this.router.url.startsWith('/public/dashboard')
+    );
   }
 
   isPublic(): boolean {
-    return this.router.url.startsWith("/public");
+    return this.router.url.startsWith('/public');
   }
 }

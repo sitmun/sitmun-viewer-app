@@ -20,7 +20,9 @@ describe('LayerCatalogSilmeControlHandler', () => {
       'initialize',
       'findNode'
     ]);
-    mockTCNamespace.getTC.and.returnValue({ control: { LayerCatalogSilme: {} } } as any);
+    mockTCNamespace.getTC.and.returnValue({
+      control: { LayerCatalogSilme: {} }
+    } as any);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

@@ -8,7 +8,7 @@ import { loadScript } from '../../utils/script-loader';
 /**
  * Handler for the native SITNA coordinates control.
  * Requires TCProjectionDataPatch for proper CRS/projection support.
- * 
+ *
  * Control Type: sitna.coordinates
  * Patches: TCProjectionDataPatch.js (required for projection data)
  * Configuration: Simple div + optional parameters
@@ -21,16 +21,14 @@ export class CoordinatesControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'coordinates';
   readonly requiredPatches = ['assets/js/patch/TCProjectionDataPatch.js'];
 
-  constructor(
-    tcNamespaceService: TCNamespaceService
-  ) {
+  constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
   }
 
   /**
    * Load TCProjectionDataPatch required for coordinates control.
    * This patch modifies TC.getProjectionData to support proper CRS/projection handling.
-   * 
+   *
    * @param context - Full application configuration context (required, must not be null)
    */
   override async loadPatches(context: AppCfg): Promise<void> {
@@ -41,16 +39,19 @@ export class CoordinatesControlHandler extends ControlHandlerBase {
 
     // Load the patch script
     await loadScript('assets/js/patch/TCProjectionDataPatch.js');
-    
+
     // Wait a tick for script to execute
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   /**
    * Build configuration for coordinates control.
    * Uses default div if no parameters provided.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     return this.mergeWithParameters(defaultConfig, task.parameters);
   }
@@ -63,9 +64,8 @@ export class CoordinatesControlHandler extends ControlHandlerBase {
     if (!super.isReady()) {
       return false;
     }
-    
+
     // Verify patch is loaded
     return !!(window as any).__patchesLoaded?.TCProjectionDataPatch;
   }
 }
-

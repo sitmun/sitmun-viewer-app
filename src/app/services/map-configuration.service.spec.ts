@@ -14,11 +14,16 @@ describe('MapConfigurationService', () => {
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    appConfigService = jasmine.createSpyObj('AppConfigService', ['getAttribution', 'getControlDefault']);
+    appConfigService = jasmine.createSpyObj('AppConfigService', [
+      'getAttribution',
+      'getControlDefault'
+    ]);
     appConfigService.getAttribution.and.returnValue(null);
     appConfigService.getControlDefault.and.returnValue(null);
 
-    controlRegistry = jasmine.createSpyObj('ControlRegistryService', ['getHandler']);
+    controlRegistry = jasmine.createSpyObj('ControlRegistryService', [
+      'getHandler'
+    ]);
     controlRegistry.getHandler.and.returnValue(undefined);
 
     TestBed.configureTestingModule({
@@ -219,32 +224,32 @@ describe('MapConfigurationService', () => {
         ...mockAppCfg,
         tasks: [{ id: 'task-1', 'ui-control': 'sitna.threed' } as any]
       };
-      
+
       const result = service.toViews(cfgWith3D);
-      
+
       expect(result.threeD).toBeDefined();
       expect(result.threeD?.div).toBe('view3d');
-      
+
       // Controls should be translated from backend to SITNA names using handlers' sitnaConfigKey
-      expect(result.threeD?.controls).toContain('threeD');  // Not 'sitna.threeD'
-      expect(result.threeD?.controls).toContain('basemapSelector');  // Not 'sitna.basemapSelector'
+      expect(result.threeD?.controls).toContain('threeD'); // Not 'sitna.threeD'
+      expect(result.threeD?.controls).toContain('basemapSelector'); // Not 'sitna.basemapSelector'
       expect(result.threeD?.controls).toContain('legend');
     });
 
     it('should omit controls array if empty/not configured', () => {
       // Mock app-config without controls
       appConfigService.getControlDefault.and.returnValue({});
-      
+
       const cfgWith3D: AppCfg = {
         ...mockAppCfg,
         tasks: [{ id: 'task-1', 'ui-control': 'sitna.threed' } as any]
       };
-      
+
       const result = service.toViews(cfgWith3D);
-      
+
       expect(result.threeD).toBeDefined();
       expect(result.threeD?.div).toBe('view3d');
-      expect(result.threeD?.controls).toBeUndefined();  // Let SITNA use defaults
+      expect(result.threeD?.controls).toBeUndefined(); // Let SITNA use defaults
     });
   });
 
@@ -373,11 +378,15 @@ describe('MapConfigurationService', () => {
 
   describe('toAttribution', () => {
     it('should return attribution from app config service', () => {
-      appConfigService.getAttribution.and.returnValue('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      appConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
 
       const result = service.toAttribution();
 
-      expect(result).toBe('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      expect(result).toBe(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
       expect(appConfigService.getAttribution).toHaveBeenCalled();
     });
 

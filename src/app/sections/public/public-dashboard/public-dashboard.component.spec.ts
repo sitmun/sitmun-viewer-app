@@ -13,15 +13,27 @@ describe('PublicDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [PublicDashboardComponent],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']) },
-        { provide: CommonService, useValue: jasmine.createSpyObj('CommonService', ['fetchDashboardItems', 'message$']) },
-        { provide: OpenModalService, useValue: jasmine.createSpyObj('OpenModalService', ['open']) }
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', [
+            'navigate',
+            'navigateByUrl'
+          ])
+        },
+        {
+          provide: CommonService,
+          useValue: jasmine.createSpyObj('CommonService', [
+            'fetchDashboardItems',
+            'message$'
+          ])
+        },
+        {
+          provide: OpenModalService,
+          useValue: jasmine.createSpyObj('OpenModalService', ['open'])
+        }
       ]
     }).compileComponents();
 

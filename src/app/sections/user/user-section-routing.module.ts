@@ -11,9 +11,9 @@ const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'map/:applicationId/:territoryId', component: MapComponent },
-  { path: 'territory/:territoryId', component: TerritoryComponent},
+  { path: 'territory/:territoryId', component: TerritoryComponent },
   { path: 'application/:applicationId', component: ApplicationComponent },
-  { path: 'profile', component: ProfileComponent}
+  { path: 'profile', component: ProfileComponent }
 ];
 
 @NgModule({

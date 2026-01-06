@@ -8,7 +8,7 @@ import { UIStateService } from '../../services/ui-state.service';
 /**
  * Handler for the native SITNA drawMeasureModify control.
  * Allows users to draw, measure, and modify features on the map.
- * 
+ *
  * Control Type: sitna.drawMeasureModify
  * Patches: None (native SITNA control)
  * Configuration: div + optional parameters
@@ -33,7 +33,10 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
    * Uses default div if no parameters provided, otherwise merges parameters.
    * Enables tools button when drawMeasureModify control is configured.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     const config = this.mergeWithParameters(defaultConfig, task.parameters);
 
@@ -50,4 +53,3 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

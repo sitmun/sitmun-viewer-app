@@ -10,10 +10,7 @@ describe('DashboardSearchboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [DashboardSearchboxComponent]
     }).compileComponents();
 

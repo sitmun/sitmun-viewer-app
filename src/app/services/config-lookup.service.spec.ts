@@ -18,35 +18,50 @@ describe('ConfigLookupService', () => {
         type: 'test',
         theme: 'default',
         srs: 'EPSG:25831',
-        initialExtent: [0, 0, 100, 100],
+        initialExtent: [0, 0, 100, 100]
       },
       backgrounds: [],
       groups: [
         { id: 'group-1', title: 'Group 1', layers: ['layer-1', 'layer-2'] },
         { id: 'group-2', title: 'Group 2', layers: ['layer-3'] },
-        { id: 'group-3', title: 'Group 3' },
+        { id: 'group-3', title: 'Group 3' }
       ],
       layers: [
-        { id: 'layer-1', title: 'Layer 1', layers: ['wms-layer-1'], service: 'service-1' },
-        { id: 'layer-2', title: 'Layer 2', layers: ['wms-layer-2'], service: 'service-1' },
-        { id: 'layer-3', title: 'Layer 3', layers: ['wms-layer-3'], service: 'service-2' },
+        {
+          id: 'layer-1',
+          title: 'Layer 1',
+          layers: ['wms-layer-1'],
+          service: 'service-1'
+        },
+        {
+          id: 'layer-2',
+          title: 'Layer 2',
+          layers: ['wms-layer-2'],
+          service: 'service-1'
+        },
+        {
+          id: 'layer-3',
+          title: 'Layer 3',
+          layers: ['wms-layer-3'],
+          service: 'service-2'
+        }
       ],
       services: [
         {
           id: 'service-1',
           url: 'http://example.com/wms1',
           type: 'WMS',
-          parameters: { VERSION: '1.3.0' },
+          parameters: { VERSION: '1.3.0' }
         },
         {
           id: 'service-2',
           url: 'http://example.com/wms2',
           type: 'WMS',
-          parameters: { VERSION: '1.1.1' },
-        },
+          parameters: { VERSION: '1.1.1' }
+        }
       ],
       tasks: [],
-      trees: [],
+      trees: []
     };
   });
 
@@ -88,11 +103,11 @@ describe('ConfigLookupService', () => {
         ...mockAppCfg,
         groups: [
           { title: 'Group without ID', layers: [] }, // No id
-          { id: 'group-1', title: 'Group with ID' },
-        ],
+          { id: 'group-1', title: 'Group with ID' }
+        ]
       };
       service.initialize(configWithMissingId);
-      
+
       expect(service.findGroup('group-1')).toBeTruthy();
       expect(service.getAllGroups().length).toBe(1); // Only group with id
     });
@@ -103,7 +118,7 @@ describe('ConfigLookupService', () => {
 
       const newConfig: AppCfg = {
         ...mockAppCfg,
-        layers: [{ id: 'new-layer', title: 'New', layers: [], service: 's1' }],
+        layers: [{ id: 'new-layer', title: 'New', layers: [], service: 's1' }]
       };
       service.initialize(newConfig);
 
@@ -133,7 +148,7 @@ describe('ConfigLookupService', () => {
       const start = performance.now();
       service.findLayer('layer-3');
       const end = performance.now();
-      
+
       expect(end - start).toBeLessThan(1); // Should be near instant
     });
   });
@@ -224,7 +239,7 @@ describe('ConfigLookupService', () => {
         layers: [],
         services: [],
         tasks: [],
-        trees: [],
+        trees: []
       };
 
       service.initialize(emptyConfig);
@@ -239,7 +254,7 @@ describe('ConfigLookupService', () => {
         ...mockAppCfg,
         layers: undefined,
         services: undefined,
-        groups: undefined,
+        groups: undefined
       } as any;
 
       expect(() => service.initialize(partialConfig)).not.toThrow();
@@ -247,4 +262,3 @@ describe('ConfigLookupService', () => {
     });
   });
 });
-

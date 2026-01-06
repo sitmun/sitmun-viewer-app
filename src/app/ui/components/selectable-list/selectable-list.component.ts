@@ -1,4 +1,10 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy
+} from '@angular/core';
 
 /**
  * Pure "dumb" presentation component for displaying selectable or navigable lists.
@@ -13,14 +19,14 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 export class SelectableListComponent {
   // Items to display (pre-filtered and pre-grouped by parent)
   @Input() items: { group?: string; items: any[] }[] = [];
-  
+
   // Display configuration
   @Input() selectedId?: string;
   @Input() unavailableItemIds: string[] = [];
   @Input() logoProperty: string = 'logo';
   @Input() nameProperty: string = 'title';
   @Input() defaultIcon: string = 'apps';
-  
+
   // Header configuration
   @Input() showTitle: boolean = false;
   @Input() title?: string;
@@ -28,14 +34,14 @@ export class SelectableListComponent {
   @Input() showCount: boolean = false;
   @Input() countLabel?: string;
   @Input() totalCount: number = 0;
-  
+
   // Search configuration (parent handles filtering)
   @Input() showSearch: boolean = false;
   @Input() searchPlaceholder: string = '';
   @Input() searchValue: string = '';
   @Input() filterHint?: string; // Optional hint text translation key
   @Output() searchValueChange = new EventEmitter<string>();
-  
+
   // Events - parent decides what to do
   @Output() itemClicked = new EventEmitter<any>();
   @Output() closed = new EventEmitter<void>();
@@ -51,7 +57,7 @@ export class SelectableListComponent {
     if (!this.unavailableItemIds || this.unavailableItemIds.length === 0) {
       return false;
     }
-    return this.unavailableItemIds.some(id => String(id) === String(itemId));
+    return this.unavailableItemIds.some((id) => String(id) === String(itemId));
   }
 
   hasLogo(item: any): boolean {

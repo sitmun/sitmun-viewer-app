@@ -7,7 +7,10 @@ import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { environment } from 'src/environments/environment';
 import { QueryParam } from '@config/app.config';
-import { isProblemDetail, extractProblemType } from '../../../utils/problem-detail.utils';
+import {
+  isProblemDetail,
+  extractProblemType
+} from '../../../utils/problem-detail.utils';
 
 @Component({
   selector: 'app-login',
@@ -44,7 +47,9 @@ export class LoginComponent implements OnInit {
       this.router.navigateByUrl('/');
     }
     this.displayDNIEButton = !((environment as any).hideDNIEAccess ?? true);
-    this.displayBackgroundImage = !((environment as any).hideBackgroundImage ?? true);
+    this.displayBackgroundImage = !(
+      (environment as any).hideBackgroundImage ?? true
+    );
   }
 
   login() {
@@ -55,9 +60,12 @@ export class LoginComponent implements OnInit {
       this.authenticationService.login(this.authenticationRequest).subscribe({
         next: () => {
           // Check for redirect query parameter
-          const redirectUrl = this.route.snapshot.queryParams[QueryParam.Login.RedirectAfterLogin];
+          const redirectUrl =
+            this.route.snapshot.queryParams[
+              QueryParam.Login.RedirectAfterLogin
+            ];
           const AUTH_CONFIG = this.authenticationService.getAuthConfig();
-          
+
           if (redirectUrl) {
             // Redirect to the originally requested URL
             this.router.navigateByUrl(redirectUrl);
@@ -65,30 +73,34 @@ export class LoginComponent implements OnInit {
             // Use default path - get auth details for defaultPath function
             try {
               const authDetails = this.authenticationService.getLoggedDetails();
-              this.router.navigateByUrl(AUTH_CONFIG.routes.defaultPath(authDetails));
+              this.router.navigateByUrl(
+                AUTH_CONFIG.routes.defaultPath(authDetails)
+              );
             } catch {
               // Fallback to dashboard if details not available yet
-          this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+              this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
             }
           }
         },
-          error: (error) => {
-            if (error.status === 401 || isProblemDetail(error)) {
-              this.authenticationRequest.username = '';
-              this.authenticationRequest.password = '';
-              
-              // Try to get error translation, fallback to default message
-              let errorKey = 'loginPage.incorrectLogin';
-              if (isProblemDetail(error)) {
-                const problemType = extractProblemType(error);
-                errorKey = problemType ? `error.${problemType}` : 'error.unauthorized';
-              }
-              
-              this.translate.get(errorKey).subscribe((trad) => {
-                this.notificationService.error(trad);
-              });
+        error: (error) => {
+          if (error.status === 401 || isProblemDetail(error)) {
+            this.authenticationRequest.username = '';
+            this.authenticationRequest.password = '';
+
+            // Try to get error translation, fallback to default message
+            let errorKey = 'loginPage.incorrectLogin';
+            if (isProblemDetail(error)) {
+              const problemType = extractProblemType(error);
+              errorKey = problemType
+                ? `error.${problemType}`
+                : 'error.unauthorized';
             }
+
+            this.translate.get(errorKey).subscribe((trad) => {
+              this.notificationService.error(trad);
+            });
           }
+        }
       });
     }
   }
@@ -98,13 +110,12 @@ export class LoginComponent implements OnInit {
   }
 
   showOrHidePassword() {
-    if(this.showPassword) {
+    if (this.showPassword) {
       this.passwordImage = this.showPasswordImage;
-      this.displayPassword = "password";
-    }
-    else {
+      this.displayPassword = 'password';
+    } else {
       this.passwordImage = this.hidePasswordImage;
-      this.displayPassword = "text";
+      this.displayPassword = 'text';
     }
     this.showPassword = !this.showPassword;
   }

@@ -36,7 +36,9 @@ describe('DrawMeasureModifySilmeControlHandler', () => {
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'getControlDefault'
     ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ div: 'drawmeasuremodify' });
+    mockAppConfigService.getControlDefault.and.returnValue({
+      div: 'drawmeasuremodify'
+    });
 
     // Setup window.__patchesLoaded
     (window as any).__patchesLoaded = {
@@ -83,20 +85,24 @@ describe('DrawMeasureModifySilmeControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control identifier', () => {
-      expect(handler.controlIdentifier).toBe('sitna.drawMeasureModify.silme.extension');
+      expect(handler.controlIdentifier).toBe(
+        'sitna.drawMeasureModify.silme.extension'
+      );
     });
   });
 
   describe('requiredPatches', () => {
     it('should have required patch file', () => {
-      expect(handler.requiredPatches).toEqual(['assets/js/patch/controls/DrawMeasureModifySilme.js']);
+      expect(handler.requiredPatches).toEqual([
+        'assets/js/patch/controls/DrawMeasureModifySilme.js'
+      ]);
     });
   });
 
   describe('loadPatches()', () => {
     it('should mark patch as loaded if already loaded', async () => {
       (window as any).__patchesLoaded.DrawMeasureModifySilme = true;
-      
+
       await handler.loadPatches(mockAppCfg);
 
       expect(mockTCNamespace.waitForTC).not.toHaveBeenCalled();
@@ -104,7 +110,7 @@ describe('DrawMeasureModifySilmeControlHandler', () => {
 
     it('should wait for TC namespace', async () => {
       (window as any).__patchesLoaded.DrawMeasureModifySilme = true;
-      
+
       await handler.loadPatches(mockAppCfg);
 
       // Should check for TC but not load script if already loaded
@@ -272,4 +278,3 @@ describe('DrawMeasureModifySilmeControlHandler', () => {
     });
   });
 });
-

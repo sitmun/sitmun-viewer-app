@@ -16,7 +16,7 @@ export interface DashboardConfig {
 export interface LanguageItem {
   name: string;
   shortname: string;
-  icon?: string;  // Optional icon (emoji or image path)
+  icon?: string; // Optional icon (emoji or image path)
 }
 
 /**
@@ -33,9 +33,9 @@ export interface ControlDefaultConfig {
 export interface AppConfig {
   attribution?: string;
   dashboard: DashboardConfig;
-  defaultLanguage?: string;  // Moved from languages.defaultLanguage
-  languages?: LanguageItem[];  // Changed from object with defaultLanguages array to direct array
-  controlDefaults?: Record<string, ControlDefaultConfig>;  // Control identifier to default config mapping
+  defaultLanguage?: string; // Moved from languages.defaultLanguage
+  languages?: LanguageItem[]; // Changed from object with defaultLanguages array to direct array
+  controlDefaults?: Record<string, ControlDefaultConfig>; // Control identifier to default config mapping
 }
 
 /**
@@ -43,7 +43,7 @@ export interface AppConfig {
  * Configuration is loaded during app initialization and cached
  */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AppConfigService {
   private readonly http = inject(HttpClient);
@@ -51,7 +51,7 @@ export class AppConfigService {
   private readonly DEFAULT_CONFIG: AppConfig = {
     dashboard: {
       allowedTypes: [],
-      filteringEnabled: false,
+      filteringEnabled: false
     }
   };
 
@@ -96,9 +96,7 @@ export class AppConfigService {
    * Get the complete dashboard configuration
    */
   getDashboardConfig(): DashboardConfig {
-    return (
-      this.config?.dashboard ?? this.DEFAULT_CONFIG.dashboard
-    );
+    return this.config?.dashboard ?? this.DEFAULT_CONFIG.dashboard;
   }
 
   /**
@@ -109,7 +107,10 @@ export class AppConfigService {
     const languages = this.config?.languages;
     if (Array.isArray(languages)) {
       // Return array with name and shortname (without icon)
-      return languages.map(lang => ({ name: lang.name, shortname: lang.shortname }));
+      return languages.map((lang) => ({
+        name: lang.name,
+        shortname: lang.shortname
+      }));
     }
     return [];
   }
@@ -130,7 +131,7 @@ export class AppConfigService {
   getLanguageIcon(shortname: string): string {
     const languages = this.config?.languages;
     if (Array.isArray(languages)) {
-      const language = languages.find(lang => lang.shortname === shortname);
+      const language = languages.find((lang) => lang.shortname === shortname);
       return language?.icon || '';
     }
     return '';

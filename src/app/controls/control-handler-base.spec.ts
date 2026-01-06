@@ -66,8 +66,12 @@ describe('ControlHandlerBase', () => {
       ]
     });
 
-    handler = TestBed.runInInjectionContext(() => new TestControlHandler(mockTCNamespace));
-    noPatchHandler = TestBed.runInInjectionContext(() => new NoPatchHandler(mockTCNamespace));
+    handler = TestBed.runInInjectionContext(
+      () => new TestControlHandler(mockTCNamespace)
+    );
+    noPatchHandler = TestBed.runInInjectionContext(
+      () => new NoPatchHandler(mockTCNamespace)
+    );
 
     // Create mock AppCfg for loadPatches context
     mockAppCfg = {
@@ -129,7 +133,9 @@ describe('ControlHandlerBase', () => {
         }
       }
 
-      const multiHandler = TestBed.runInInjectionContext(() => new MultiPatchHandler(mockTCNamespace));
+      const multiHandler = TestBed.runInInjectionContext(
+        () => new MultiPatchHandler(mockTCNamespace)
+      );
       await multiHandler.loadPatches(mockAppCfg);
       // Default implementation does nothing, just resolves
       expect(true).toBe(true);
@@ -154,7 +160,9 @@ describe('ControlHandlerBase', () => {
         }
       }
 
-      const multiHandler = TestBed.runInInjectionContext(() => new MultiPatchHandler(mockTCNamespace));
+      const multiHandler = TestBed.runInInjectionContext(
+        () => new MultiPatchHandler(mockTCNamespace)
+      );
       expect(multiHandler.isReady()).toBe(true);
     });
   });

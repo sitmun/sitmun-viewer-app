@@ -10,11 +10,11 @@
  */
 export function extractProblemType(error: any): string | null {
   const problemType = error?.error?.type;
-  
+
   if (!problemType || typeof problemType !== 'string') {
     return null;
   }
-  
+
   // Extract last segment from URI: https://sitmun.org/problems/unauthorized → unauthorized
   const match = problemType.match(/\/problems\/([a-z-]+)$/);
   return match ? match[1] : null;
@@ -31,7 +31,7 @@ export function getProblemTranslationKey(error: any): string {
   if (!problemType) {
     return 'common.error.generic';
   }
-  
+
   // Provide more specific translations for data integrity violations
   // based on HTTP status code (409 Conflict vs 422 Unprocessable Entity)
   if (problemType === 'data-integrity-violation') {
@@ -41,7 +41,7 @@ export function getProblemTranslationKey(error: any): string {
       return 'error.data-integrity-violation.constraint'; // FK/constraint
     }
   }
-  
+
   return `error.${problemType}`;
 }
 
@@ -70,4 +70,3 @@ export function getErrorMessage(error: any): string {
     return error.error?.message || error.message || 'An error occurred';
   }
 }
-

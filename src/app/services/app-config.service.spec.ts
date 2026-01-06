@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import {
   HttpClientTestingModule,
-  HttpTestingController,
+  HttpTestingController
 } from '@angular/common/http/testing';
 import { AppConfigService, AppConfig } from './app-config.service';
 
@@ -12,14 +12,14 @@ describe('AppConfigService', () => {
   const mockConfig: AppConfig = {
     dashboard: {
       allowedTypes: ['I', 'E'],
-      filteringEnabled: true,
-    },
+      filteringEnabled: true
+    }
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [AppConfigService],
+      providers: [AppConfigService]
     });
     service = TestBed.inject(AppConfigService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -98,8 +98,8 @@ describe('AppConfigService', () => {
       const emptyTypesConfig: AppConfig = {
         dashboard: {
           allowedTypes: [],
-          filteringEnabled: false,
-        },
+          filteringEnabled: false
+        }
       };
 
       const loadPromise = service.loadConfig();
@@ -129,8 +129,8 @@ describe('AppConfigService', () => {
       const disabledConfig: AppConfig = {
         dashboard: {
           allowedTypes: ['I'],
-          filteringEnabled: false,
-        },
+          filteringEnabled: false
+        }
       };
 
       const loadPromise = service.loadConfig();
@@ -173,7 +173,8 @@ describe('AppConfigService', () => {
     it('should return attribution when configured', async () => {
       const configWithAttribution: AppConfig = {
         ...mockConfig,
-        attribution: '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+        attribution:
+          '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
       };
 
       const loadPromise = service.loadConfig();
@@ -184,7 +185,9 @@ describe('AppConfigService', () => {
       await loadPromise;
 
       const attribution = service.getAttribution();
-      expect(attribution).toBe('<a href="https://github.com/sitmun" target="_blank">SITMUN</a>');
+      expect(attribution).toBe(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
     });
 
     it('should return null when attribution not configured', async () => {

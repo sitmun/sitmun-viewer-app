@@ -8,7 +8,7 @@ import { UIStateService } from '../../services/ui-state.service';
 /**
  * Handler for the Silme extension of drawMeasureModify control.
  * Extended version with Silme-specific behavior and elevation display.
- * 
+ *
  * Control Type: sitna.drawMeasureModify.silme.extension
  * Patches: DrawMeasureModifySilme.js
  * Configuration: div + displayElevation configuration
@@ -19,7 +19,9 @@ import { UIStateService } from '../../services/ui-state.service';
 export class DrawMeasureModifySilmeControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.drawMeasureModify.silme.extension';
   readonly sitnaConfigKey = 'drawMeasureModifySilme';
-  readonly requiredPatches = ['assets/js/patch/controls/DrawMeasureModifySilme.js'];
+  readonly requiredPatches = [
+    'assets/js/patch/controls/DrawMeasureModifySilme.js'
+  ];
 
   private patchLoaded = false;
 
@@ -73,21 +75,25 @@ export class DrawMeasureModifySilmeControlHandler extends ControlHandlerBase {
    * Build configuration for DrawMeasureModifySilme control.
    * Uses default div and adds displayElevation configuration.
    * Enables tools button when control is configured.
-   * 
+   *
    * displayElevation.displayOn can be:
    * - 'controlContainer' (default) - uses SITNA's default container
    * - '.tc-ctl-cctr-left' - displays in left control container
    * - '.tc-ctl-cctr-right' - displays in right control container
    * - Any CSS selector string
-   * 
+   *
    * Note: Patches are loaded after configuration is built, so we don't check isReady() here.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
-    
+
     // Check if task parameters specify displayOn, otherwise use default
-    const displayOn = task.parameters?.displayElevation?.displayOn || 'controlContainer';
-    
+    const displayOn =
+      task.parameters?.displayElevation?.displayOn || 'controlContainer';
+
     const config: SitnaControlConfig = {
       ...defaultConfig,
       displayElevation: {
@@ -114,7 +120,6 @@ export class DrawMeasureModifySilmeControlHandler extends ControlHandlerBase {
     }
 
     const TC = this.tcNamespaceService.getTC();
-    return !!(TC?.control?.DrawMeasureModifySilme);
+    return !!TC?.control?.DrawMeasureModifySilme;
   }
 }
-

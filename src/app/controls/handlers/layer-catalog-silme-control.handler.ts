@@ -8,11 +8,11 @@ import { ConfigLookupService } from '../../services/config-lookup.service';
 /**
  * Handler for legacy Silme layerCatalog extension.
  * This is the "old way" - custom Silme control.
- * 
+ *
  * Control Type: sitna.layerCatalog.silme.extension
  * Patches: Applied programmatically (not loaded from JS files)
  * Configuration: Custom Silme control that directly uses SITMUN tree structures
- * 
+ *
  * Note: For the new standard control, see LayerCatalogControlHandler.
  */
 @Injectable({
@@ -25,9 +25,7 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
 
   private readonly configLookup = inject(ConfigLookupService);
 
-  constructor(
-    tcNamespaceService: TCNamespaceService
-  ) {
+  constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
   }
 
@@ -36,20 +34,25 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
    * Uses custom Silme structure with direct tree references.
    * Also sets up global state expected by Silme patches.
    */
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     // Ensure context is initialized in lookup service
     this.configLookup.initialize(context);
 
     // Get root tree nodes
     const rootNodeIds = this.getRootNodeIds(task, context);
-    
+
     if (rootNodeIds.length === 0) {
-      console.warn('[LayerCatalogSilme] No root nodes found, disabling control');
+      console.warn(
+        '[LayerCatalogSilme] No root nodes found, disabling control'
+      );
       return null;
     }
 
     // Silme control uses direct tree node references
-    const silmeNodes = rootNodeIds.map(nodeId => ({
+    const silmeNodes = rootNodeIds.map((nodeId) => ({
       nodeId,
       node: this.configLookup.findNode(nodeId)
     }));
@@ -63,7 +66,9 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
       ...task.parameters // Merge any additional parameters
     };
 
-    console.log(`[LayerCatalogSilme] Configured with ${rootNodeIds.length} tree nodes`);
+    console.log(
+      `[LayerCatalogSilme] Configured with ${rootNodeIds.length} tree nodes`
+    );
     return config;
   }
 
@@ -73,7 +78,7 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
    */
   private setupSilmeGlobalState(context: AppCfg, rootNodeIds: string[]): void {
     // Build simple catalog titles for modal
-    const catalogs = rootNodeIds.map(nodeId => {
+    const catalogs = rootNodeIds.map((nodeId) => {
       const node = this.configLookup.findNode(nodeId);
       return {
         title: node?.title || 'Catálogo',
@@ -90,7 +95,9 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
     // Note: SITNA.Cfg.controls.layerCatalogSilmeFolders is set by old SitnaHelper code
     // That code will eventually be removed when all controls use handlers
 
-    console.log('[LayerCatalogSilme] Global state configured for Silme patches');
+    console.log(
+      '[LayerCatalogSilme] Global state configured for Silme patches'
+    );
   }
 
   /**
@@ -98,8 +105,8 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
    */
   private getRootNodeIds(task: AppTasks, context: AppCfg): string[] {
     if (task.parameters?.rootNodes) {
-      return Array.isArray(task.parameters.rootNodes) 
-        ? task.parameters.rootNodes 
+      return Array.isArray(task.parameters.rootNodes)
+        ? task.parameters.rootNodes
         : [task.parameters.rootNodes];
     }
 
@@ -117,7 +124,6 @@ export class LayerCatalogSilmeControlHandler extends ControlHandlerBase {
 
     // Check if Silme control class is available
     const TC = this.tcNamespaceService.getTC();
-    return !!(TC?.control?.LayerCatalogSilme);
+    return !!TC?.control?.LayerCatalogSilme;
   }
 }
-

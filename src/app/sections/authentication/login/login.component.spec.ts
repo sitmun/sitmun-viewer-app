@@ -14,16 +14,38 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot()
-      ],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [LoginComponent],
       providers: [
-        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl']) },
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } },
-        { provide: AuthenticationService, useValue: jasmine.createSpyObj('AuthenticationService', ['login', 'isLoggedIn', 'getAuthConfig', 'getLoggedDetails']) },
-        { provide: NotificationService, useValue: jasmine.createSpyObj('NotificationService', ['error', 'success', 'info', 'warning']) }
+        {
+          provide: Router,
+          useValue: jasmine.createSpyObj('Router', [
+            'navigate',
+            'navigateByUrl'
+          ])
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: {} } }
+        },
+        {
+          provide: AuthenticationService,
+          useValue: jasmine.createSpyObj('AuthenticationService', [
+            'login',
+            'isLoggedIn',
+            'getAuthConfig',
+            'getLoggedDetails'
+          ])
+        },
+        {
+          provide: NotificationService,
+          useValue: jasmine.createSpyObj('NotificationService', [
+            'error',
+            'success',
+            'info',
+            'warning'
+          ])
+        }
       ]
     }).compileComponents();
 

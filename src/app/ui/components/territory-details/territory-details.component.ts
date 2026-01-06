@@ -6,5 +6,5 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./territory-details.component.scss']
 })
 export class TerritoryDetailsComponent {
-  @Input() territory! : any;
+  @Input() territory!: any;
 }

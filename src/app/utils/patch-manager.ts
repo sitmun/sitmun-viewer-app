@@ -72,7 +72,6 @@ export function createPatchManager(): PatchManager {
     },
     clear: (): void => {
       patches.length = 0;
-    },
+    }
   };
 }
-

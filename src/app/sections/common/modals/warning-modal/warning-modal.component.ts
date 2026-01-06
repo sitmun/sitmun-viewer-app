@@ -30,5 +30,4 @@ export class WarningModalComponent extends BaseModal {
     super.onClose();
     this.modalRef.close();
   }
-
 }
