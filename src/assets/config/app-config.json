@@ -58,6 +58,9 @@
     "sitna.measure": {
       "div": "measure"
     },
+    "sitna.offlineMapMaker": {
+      "div": "offline"
+    },
     "sitna.navBar": {
       "div": "nav"
     },
