@@ -29,6 +29,7 @@ import { MultiFeatureInfoControlHandler } from './multi-feature-info-control.han
 import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
+import { OverviewMapControlHandler } from './overview-map-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -51,6 +52,7 @@ export { MultiFeatureInfoControlHandler } from './multi-feature-info-control.han
 export { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 export { ClickControlHandler } from './click-control.handler';
 export { NavBarControlHandler } from './navbar-control.handler';
+export { OverviewMapControlHandler } from './overview-map-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -87,6 +89,7 @@ export const ALL_CONTROL_HANDLERS = [
   OfflineMapMakerControlHandler,
   ClickControlHandler,
   NavBarControlHandler,
+  OverviewMapControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,

@@ -67,6 +67,9 @@
     "sitna.navBar": {
       "div": "nav"
     },
+    "sitna.overviewMap": {
+      "div": "ovmap"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

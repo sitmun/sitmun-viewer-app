@@ -33,7 +33,6 @@ enum SitnaControlsEnum {
   Measure = 'sitna.measure',
   NavBar = 'sitna.navBar',
   OfflineMapMaker = 'sitna.offlineMapMaker',
-  OverviewMap = 'sitna.overviewMap',
   PopUp = 'sitna.popup',
   PopupSilmePatch = 'sitna.popup.silme.patch',
   PrintMap = 'sitna.printMap',
@@ -164,11 +163,6 @@ export class SitnaHelper {
     this.processMultiFeatureInfoControl(sitnaControls, sitnaControlsFilter);
     this.processNavBarControl(sitnaControls, sitnaControlsFilter);
     this.processOfflineMapMakerControl(sitnaControls, sitnaControlsFilter);
-    this.processOverviewMapControl(
-      sitnaControls,
-      sitnaControlsFilter,
-      apiConfig
-    );
     this.processPopupControl(sitnaControls, sitnaControlsFilter);
     this.processPrintMapControl(sitnaControls, sitnaControlsFilter);
     this.processScaleControl(sitnaControls, sitnaControlsFilter);
@@ -513,76 +507,6 @@ export class SitnaHelper {
       // showToolsButton = true;
     }
     */
-  }
-
-  /**
-   * Process overview map control
-   */
-  private static processOverviewMapControl(
-    sitnaControls: SitnaControls,
-    sitnaControlsFilter: any[],
-    apiConfig: AppCfg
-  ) {
-    if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.OverviewMap)
-    ) {
-      const overviewMap = this.findControl(
-        sitnaControlsFilter,
-        SitnaControlsEnum.OverviewMap
-      );
-      if (overviewMap) {
-        if (this.areParametersEmpty(overviewMap.parameters)) {
-          if (apiConfig.application['situation-map']) {
-            const group =
-              SitnaHelper.instance?.configLookup.findGroup(
-                apiConfig.application['situation-map']
-              ) ||
-              apiConfig.groups.find(
-                (elem) => elem.id === apiConfig.application['situation-map']
-              );
-            if (
-              group != undefined &&
-              group.layers != undefined &&
-              group.layers?.length > 0
-            ) {
-              const layer = group.layers[0];
-              const layerObject =
-                SitnaHelper.instance?.configLookup.findLayer(layer) ||
-                apiConfig.layers.find((elem) => elem.id === layer);
-              if (layerObject != undefined) {
-                const service =
-                  SitnaHelper.instance?.configLookup.findService(
-                    layerObject.service
-                  ) ||
-                  apiConfig.services.find(
-                    (service) => service.id === layerObject.service
-                  );
-                if (service != undefined) {
-                  sitnaControls.overviewMap = {
-                    div: 'ovmap',
-                    layer: {
-                      id: layerObject.title,
-                      url: service.url,
-                      layerNames: layerObject.layers
-                    }
-                  };
-                }
-              }
-            }
-          } else {
-            sitnaControls.overviewMap = {
-              div: 'ovmap',
-              layer: 'mapabase'
-            };
-          }
-        } else {
-          sitnaControls.overviewMap = overviewMap.parameters;
-        }
-      }
-      if (SitnaHelper.instance) {
-        SitnaHelper.instance.uiState.enableOverviewMapButton();
-      }
-    }
   }
 
   /**
