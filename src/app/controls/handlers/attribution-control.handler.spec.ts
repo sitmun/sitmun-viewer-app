@@ -170,4 +170,48 @@ describe('AttributionControlHandler', () => {
       expect(config?.['custom']).toBe('value');
     });
   });
+
+  describe('getDefaultValueWhenMissing()', () => {
+    it('should return false when attribution text is not configured', () => {
+      mockAppConfigService.getAttribution.and.returnValue(null);
+
+      const defaultValue = (handler as any).getDefaultValueWhenMissing();
+
+      expect(defaultValue).toBe(false);
+    });
+
+    it('should return true when attribution text is configured but no default div', () => {
+      mockAppConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
+      mockAppConfigService.getControlDefault.and.returnValue(null);
+
+      const defaultValue = (handler as any).getDefaultValueWhenMissing();
+
+      expect(defaultValue).toBe(true);
+    });
+
+    it('should return config object when attribution text is configured with default div', () => {
+      mockAppConfigService.getAttribution.and.returnValue(
+        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      );
+      mockAppConfigService.getControlDefault.and.returnValue({
+        div: 'attribution'
+      });
+
+      const defaultValue = (handler as any).getDefaultValueWhenMissing();
+
+      expect(defaultValue).toBeDefined();
+      expect(typeof defaultValue).toBe('object');
+      expect(defaultValue.div).toBe('attribution');
+    });
+
+    it('should return false when attribution text is empty string', () => {
+      mockAppConfigService.getAttribution.and.returnValue('');
+
+      const defaultValue = (handler as any).getDefaultValueWhenMissing();
+
+      expect(defaultValue).toBe(false);
+    });
+  });
 });

@@ -4,7 +4,7 @@ import {
   SitnaControlConfig
 } from '../controls/control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { SitnaControls } from '@api/model/sitna-cfg';
+import { SitnaControls, SitnaControlOptions } from '@api/model/sitna-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
 import { AppConfigService } from './app-config.service';
 
@@ -119,8 +119,8 @@ export class ControlRegistryService {
       console.warn(
         '[ControlRegistry] No active controls with registered handlers found'
       );
-      // Still check for auto-enabled controls (e.g., attribution)
-      this.ensureAttributionControl(sitnaControls, context);
+      // Still set default values for missing controls (e.g., auto-enable attribution if text configured)
+      this.setDefaultValuesForMissingControls(sitnaControls, context);
       return sitnaControls;
     }
 
@@ -179,9 +179,9 @@ export class ControlRegistryService {
       }
     }
 
-    // Post-process: Auto-enable attribution control if attribution is configured
-    // but control is not explicitly enabled via backend task
-    this.ensureAttributionControl(sitnaControls, context);
+    // Post-process: Set default values for controls that are registered but NOT requested
+    // Each handler can define its own default value via getDefaultValueWhenMissing()
+    this.setDefaultValuesForMissingControls(sitnaControls, context);
 
     // Post-process: Disable default featureInfo if featureInfo.silme.extension is not requested
     // This matches legacy behavior (line 942 in sitna-helpers.ts)
@@ -201,50 +201,53 @@ export class ControlRegistryService {
   }
 
   /**
-   * Ensure attribution control is enabled if attribution is configured in app-config.json.
-   * This allows attribution to work even without a backend task.
+   * Set default values for controls that are registered but NOT requested in backend tasks.
+   * Each handler must define a default value via getDefaultValueWhenMissing().
+   * 
+   * This approach ensures:
+   * - All controls are explicitly set to a value (never undefined)
+   * - Most controls are disabled (false) when not requested
+   * - Special controls (like attribution) can implement auto-enable logic
+   * - Handlers can check app-config.json for meaningful data (not just structural properties like div)
    *
    * @param sitnaControls - The configured controls object (modified in place)
    * @param context - Full application configuration context
    */
-  private ensureAttributionControl(
+  private setDefaultValuesForMissingControls(
     sitnaControls: Partial<SitnaControls>,
     context: AppCfg
   ): void {
-    // Check if attribution is configured in app-config.json
-    const attribution = this.appConfigService.getAttribution();
-
-    if (attribution && !sitnaControls.attribution) {
-      // Attribution is configured but control is not enabled
-      // Get the attribution handler and build default configuration
-      const handler = this.getHandler('sitna.attribution');
-
-      if (handler) {
-        // Create a dummy task for the handler to process
-        const dummyTask: AppTasks = {
-          id: 'auto-attribution',
-          'ui-control': 'sitna.attribution',
-          parameters: {}
-        };
-
-        try {
-          const config = handler.buildConfiguration(dummyTask, context);
-          if (config !== null) {
-            sitnaControls.attribution = config as any;
-            console.log(
-              '[ControlRegistry] Auto-enabled attribution control (attribution configured in app-config.json)'
-            );
-          }
-        } catch (error) {
+    // Iterate through all registered handlers
+    for (const [controlIdentifier, handler] of this.handlers.entries()) {
+      // Get the SITNA config key for this handler
+      let controlKey: string;
+      if (typeof (handler as any).getSitnaConfigKey === 'function') {
+        controlKey = (handler as any).getSitnaConfigKey();
+      } else if (handler.sitnaConfigKey) {
+        controlKey = handler.sitnaConfigKey;
+      } else {
+        // Skip handlers without a config key
+        continue;
+      }
+      
+      // Only process if control is not already configured (no backend task)
+      if (sitnaControls[controlKey as keyof SitnaControls] === undefined) {
+        // Call handler's getDefaultValueWhenMissing() method
+        // This method MUST return a value (never undefined)
+        const defaultValue = (handler as any).getDefaultValueWhenMissing?.();
+        
+        if (defaultValue !== undefined) {
+          sitnaControls[controlKey as keyof SitnaControls] = defaultValue;
+          console.log(
+            `[ControlRegistry] Set default for missing control '${controlKey}':`,
+            defaultValue
+          );
+        } else {
+          // This should never happen - all handlers must return a value
           console.warn(
-            '[ControlRegistry] Failed to auto-enable attribution control:',
-            error
+            `[ControlRegistry] Handler '${controlIdentifier}' returned undefined from getDefaultValueWhenMissing(). This is not allowed.`
           );
         }
-      } else {
-        console.warn(
-          '[ControlRegistry] Attribution handler not found, cannot auto-enable attribution control'
-        );
       }
     }
   }

@@ -11,6 +11,13 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
  * Control Type: sitna.attribution
  * Patches: None (native SITNA control)
  * Configuration: Simple div + optional parameters
+ *
+ * **Attribution Text vs Control:**
+ * - Attribution text is configured separately in app-config.json and passed to SITNA map options
+ * - Attribution control (this handler) enables/disables the SITNA attribution widget
+ * - The control can work with or without a div parameter (SITNA uses default if not provided)
+ * - Auto-enable: If attribution text exists in app-config.json but no backend task exists,
+ *   ControlRegistryService will automatically enable this control
  */
 @Injectable({
   providedIn: 'root'
@@ -41,5 +48,27 @@ export class AttributionControlHandler extends ControlHandlerBase {
    */
   override isReady(): boolean {
     return true;
+  }
+
+  /**
+   * Attribution has special auto-enable logic:
+   * If attribution TEXT is configured in app-config.json (not just a div),
+   * auto-enable the control even without a backend task.
+   * Otherwise, explicitly disable it.
+   */
+  override getDefaultValueWhenMissing(): any {
+    // Check if attribution TEXT is configured in app-config.json
+    const attribution = this.appConfigService.getAttribution();
+    
+    if (attribution) {
+      // Attribution text exists → auto-enable control with default config
+      const defaultConfig = this.getDefaultConfig(); // Gets div if configured
+      return defaultConfig && Object.keys(defaultConfig).length > 0 
+        ? defaultConfig 
+        : true; // Return config with div, or just true
+    }
+    
+    // No attribution text → explicitly disable control
+    return false;
   }
 }

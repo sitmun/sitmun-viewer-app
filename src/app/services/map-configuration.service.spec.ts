@@ -228,12 +228,88 @@ describe('MapConfigurationService', () => {
       const result = service.toViews(cfgWith3D);
 
       expect(result.threeD).toBeDefined();
+      // Should use fallback 'view3d' when no div in params or config
       expect(result.threeD?.div).toBe('view3d');
 
       // Controls should be translated from backend to SITNA names using handlers' sitnaConfigKey
       expect(result.threeD?.controls).toContain('threeD'); // Not 'sitna.threeD'
       expect(result.threeD?.controls).toContain('basemapSelector'); // Not 'sitna.basemapSelector'
       expect(result.threeD?.controls).toContain('legend');
+    });
+
+    it('should use div from task parameters if provided', () => {
+      appConfigService.getControlDefault.and.returnValue({
+        controls: ['sitna.threeD']
+      });
+
+      controlRegistry.getHandler.and.returnValue({
+        sitnaConfigKey: 'threeD'
+      } as any);
+
+      const cfgWith3D: AppCfg = {
+        ...mockAppCfg,
+        tasks: [
+          {
+            id: 'task-1',
+            'ui-control': 'sitna.threed',
+            parameters: { div: 'custom-view3d-div' }
+          } as any
+        ]
+      };
+
+      const result = service.toViews(cfgWith3D);
+
+      expect(result.threeD).toBeDefined();
+      expect(result.threeD?.div).toBe('custom-view3d-div');
+    });
+
+    it('should use div from default config if not in parameters', () => {
+      appConfigService.getControlDefault.and.returnValue({
+        div: 'config-view3d',
+        controls: ['sitna.threeD']
+      });
+
+      controlRegistry.getHandler.and.returnValue({
+        sitnaConfigKey: 'threeD'
+      } as any);
+
+      const cfgWith3D: AppCfg = {
+        ...mockAppCfg,
+        tasks: [{ id: 'task-1', 'ui-control': 'sitna.threed' } as any]
+      };
+
+      const result = service.toViews(cfgWith3D);
+
+      expect(result.threeD).toBeDefined();
+      expect(result.threeD?.div).toBe('config-view3d');
+    });
+
+    it('should prioritize task parameters over default config', () => {
+      appConfigService.getControlDefault.and.returnValue({
+        div: 'config-view3d',
+        controls: ['sitna.threeD']
+      });
+
+      controlRegistry.getHandler.and.returnValue({
+        sitnaConfigKey: 'threeD'
+      } as any);
+
+      const cfgWith3D: AppCfg = {
+        ...mockAppCfg,
+        tasks: [
+          {
+            id: 'task-1',
+            'ui-control': 'sitna.threed',
+            parameters: { div: 'param-view3d' }
+          } as any
+        ]
+      };
+
+      const result = service.toViews(cfgWith3D);
+
+      expect(result.threeD).toBeDefined();
+      // Task parameters should take precedence
+      expect(result.threeD?.div).toBe('param-view3d');
     });
 
     it('should omit controls array if empty/not configured', () => {

@@ -134,7 +134,10 @@ export class MapConfigurationService {
     const sitnaViews = {} as SitnaViews;
 
     // Check for 3D view task
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'sitna.threed')) {
+    const threeDTask = apiConfig.tasks.find(
+      (x) => x['ui-control'] === 'sitna.threed'
+    );
+    if (threeDTask) {
       // Get controls array from app-config.json (backend names)
       const threeDConfig =
         this.appConfigService.getControlDefault('sitna.threed');
@@ -158,9 +161,14 @@ export class MapConfigurationService {
             .filter((key): key is string => key !== null)
         : [];
 
+      // Get div from task parameters, default config, or fallback to 'view3d'
+      const divFromParams = threeDTask.parameters?.div;
+      const divFromConfig = threeDConfig?.['div'] as string | undefined;
+      const div = divFromParams || divFromConfig || 'view3d';
+
       // Build view configuration
       sitnaViews.threeD = {
-        div: 'view3d'
+        div: div
       };
 
       // Only add controls array if we have controls (otherwise SITNA uses defaults)
@@ -197,7 +205,14 @@ export class MapConfigurationService {
   }
 
   /**
-   * Get attribution text from app configuration
+   * Get attribution text from app configuration.
+   * 
+   * **Note:** This is the attribution TEXT (HTML content), not the control.
+   * The attribution control is handled separately by AttributionControlHandler.
+   * Both are needed for attribution to display:
+   * - Attribution text (this method) → SITNA map options.attribution
+   * - Attribution control → SITNA controls.attribution
+   * 
    * @returns Attribution string or undefined if not configured
    */
   toAttribution(): string | undefined {
