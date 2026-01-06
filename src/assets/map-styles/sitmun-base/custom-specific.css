@@ -9,14 +9,6 @@
     top: 204px;
 }
 
-.tc-ctl.tc-ctl-nav {
-    top: 14px;
-}
-
-.tc-ctl.tc-ctl-nav-home {
-    top: 98px;
-}
-
 .tc-ctl.tc-ctl-fscreen {
     top: 8.8em !important;
     left: 20px !important;
@@ -614,7 +606,6 @@
 .tc-ctl-3d-btn {
     width: 40px;
     height: 40px;
-    left: 8px;
     border-radius: 0px;
     background-color: rgba(0, 0, 0, 0.8);
 }
@@ -820,6 +811,7 @@
 
 /* Ensure download content doesn't get clipped */
 .tc-ctl-download > div {
+    padding: 10px;
     width: 100%;
     box-sizing: border-box;
     overflow-x: visible;
@@ -828,6 +820,10 @@
 /* Draw Measure Modify control styling */
 .tc-ctl-dmm {
     max-width: 320px;
+}
+
+.tc-ctl-dmm > div {
+    padding: 10px;
 }
 
 /* Fix width of specific elements */
@@ -896,6 +892,10 @@
     flex-shrink: 0 !important;
 }
 
+.tc-ctl-geolocation > div {
+    padding: 10px;
+}
+
 .tc-ctl-geolocation.tc-collapsed > h2 {
     background-image: url(./img/geolocationG.png);
     color: #666666;
@@ -904,6 +904,10 @@
 /* Measure control styling */
 .tc-ctl-meas {
     max-width: 320px;
+}
+
+.tc-ctl-meas > div {
+    padding: 10px;
 }
 
 /* Fix width of specific elements */

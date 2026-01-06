@@ -42,8 +42,7 @@ button.tc-ctl-coords-crs,
 .tc-ctl-nav .tc-ctl-nav-btn,
 .tc-ctl-sv-btn,
 .tc-ctl-be,
-button.tc-ctl-fscreen-btn,
-.tc-ctl-nav-home {
+button.tc-ctl-fscreen-btn {
     background-color: #000000cc !important;
 }
 

@@ -26,6 +26,7 @@ import { GeolocationControlHandler } from './geolocation-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 import { MeasureControlHandler } from './measure-control.handler';
 import { ClickControlHandler } from './click-control.handler';
+import { NavBarControlHandler } from './navbar-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -45,6 +46,7 @@ export { GeolocationControlHandler } from './geolocation-control.handler';
 export { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 export { MeasureControlHandler } from './measure-control.handler';
 export { ClickControlHandler } from './click-control.handler';
+export { NavBarControlHandler } from './navbar-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -78,6 +80,7 @@ export const ALL_CONTROL_HANDLERS = [
   LoadingIndicatorControlHandler,
   MeasureControlHandler,
   ClickControlHandler,
+  NavBarControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,

@@ -58,6 +58,9 @@
     "sitna.measure": {
       "div": "measure"
     },
+    "sitna.navBar": {
+      "div": "nav"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

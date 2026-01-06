@@ -72,8 +72,27 @@ button.tc-ctl-coords-crs {
 
 /* Navigation controls */
 .tc-ctl.tc-ctl-nav {
-    top: 84px;
+    top: 19em;
     left: 20px;
+}
+
+.tc-ctl-nav-btn {
+    border-radius: 0px;
+}
+
+.tc-ctl.tc-ctl-nav-home {
+    left: 20px;
+}
+
+.ol-zoomslider {
+    width: 40px !important;
+    padding: 0px !important;
+    top: 41px !important;
+}
+
+.tc-ctl.tc-ctl-3d {
+    left: 20px;
+    top: 36em;
 }
 
 .tc-ctl-nav .tc-ctl-nav-btn,
@@ -84,7 +103,7 @@ button.tc-ctl-fscreen-btn,
 .tc-ctl-nav-home {
     width: 40px;
     height: 40px;
-    border-radius: 0px;
+    border-radius: 0px !important;
 }
 
 .tc-ctl-fscreen {
@@ -134,12 +153,17 @@ button.tc-ctl-fscreen-btn:active {
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
+    background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 .tc-ctl-nav .tc-ctl-nav-btn-zoomin:after,
 .tc-ctl-nav .tc-ctl-nav-btn-zoomout:after,
-.tc-ctl-nav-home-btn:after {
+.tc-ctl-nav-home .tc-ctl-nav-home-btn:after {
     content: ' ';
+    height: 0 !important;
+    width: 0 !important;
+    background: none !important;
+    background-image: none !important;
 }
 
 /* Scale control */
@@ -389,11 +413,6 @@ button.tc-ctl-fscreen-btn:hover {
 /* Control content */
 .tc-ctl {
     padding: 0px;
-}
-
-.tc-ctl > div {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
 }
 
 /* Collapsed controls */
