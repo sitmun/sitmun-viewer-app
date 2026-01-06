@@ -356,8 +356,6 @@ export abstract class AbstractMapComponent
     }
 
     this.map.loaded(function () {
-      SitnaHelper.toWelcome(appCfg);
-      SitnaHelper.toHelp(appCfg);
       SitnaHelper.toInterface();
     });
   }

@@ -1153,33 +1153,8 @@ export class SitnaHelper {
   }
   // Removed: toViews() - moved to MapConfigurationService
   // Removed: toLayout() - moved to MapConfigurationService
-  static toWelcome(apiConfig: AppCfg) {
-    if (
-      apiConfig.tasks.some((x) => x['ui-control'] === 'markup-welcome-panel')
-    ) {
-      // Do nothing and show the welcome panel as default
-    } else {
-      if (SitnaHelper.instance) {
-        const { domUtils } = SitnaHelper.instance;
-        domUtils.hideElementsByClass('welcome-panel');
-        domUtils.hideElementsByClass('background-cover');
-      }
-    }
-  }
-
-  static toHelp(apiConfig: AppCfg) {
-    if (!SitnaHelper.instance) {
-      return; // Services not initialized
-    }
-
-    const { domUtils } = SitnaHelper.instance;
-
-    if (apiConfig.tasks.some((x) => x['ui-control'] === 'markup-help-panel')) {
-      domUtils.setDisplayByClass('help-links', 'inline-flex');
-    } else {
-      domUtils.setDisplayByClass('help-links', 'none');
-    }
-  }
+  // Removed: toWelcome() - welcome panel is now theme-managed (silme-base, demo-jiide)
+  // Removed: toHelp() - help panel is now theme-managed (silme-base, demo-jiide)
   static toInterface() {
     if (!SitnaHelper.instance) {
       return; // Services not initialized
