@@ -12,6 +12,9 @@ describe('SearchSilmeControlHandler', () => {
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
+    // Reset window patches
+    (window as any).__patchesLoaded = {};
+    
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
       'waitForTC',
       'getTC'
@@ -20,9 +23,14 @@ describe('SearchSilmeControlHandler', () => {
       'getControlDefault'
     ]);
     mockAppConfig.getControlDefault.and.returnValue({ div: 'search' });
-    mockTCNamespace.getTC.and.returnValue({
-      control: { SearchSilme: {} }
-    } as any);
+    
+    const mockTC = {
+      control: { SearchSilme: {} },
+      syncLoadJS: jasmine.createSpy('syncLoadJS')
+    };
+    (window as any).TC = mockTC;
+    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
+    mockTCNamespace.getTC.and.returnValue(mockTC as any);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -64,28 +72,56 @@ describe('SearchSilmeControlHandler', () => {
   });
 
   describe('requiredPatches', () => {
-    it('should be undefined (patches applied programmatically)', () => {
-      expect(handler.requiredPatches).toBeUndefined();
+    it('should have SearchSilme.js patch file', () => {
+      expect(handler.requiredPatches).toEqual([
+        'assets/js/patch/controls/SearchSilme.js'
+      ]);
     });
   });
 
   describe('loadPatches()', () => {
-    it('should resolve successfully with context', async () => {
-      await handler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+    beforeEach(() => {
+      // Mock script loading
+      spyOn(document, 'createElement').and.returnValue({
+        src: '',
+        async: false,
+        onload: null,
+        onerror: null
+      } as any);
+      spyOn(document.head, 'appendChild');
     });
 
-    it('should resolve immediately', async () => {
-      const start = Date.now();
+    it('should load patch file when not already loaded', async () => {
+      (window as any).__patchesLoaded = {};
+      
       await handler.loadPatches(mockAppCfg);
-      const duration = Date.now() - start;
-
-      expect(duration).toBeLessThan(10); // Should be instant
+      
+      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(document.createElement).toHaveBeenCalledWith('script');
     });
 
-    it('should require context parameter', async () => {
-      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
+    it('should skip loading if patch already loaded', async () => {
+      (window as any).__patchesLoaded = { SearchSilme: true };
+      
+      await handler.loadPatches(mockAppCfg);
+      
+      // Should not create script element if already loaded
+      expect(document.createElement).not.toHaveBeenCalled();
+    });
+
+    it('should mark patch as loaded after loading', async () => {
+      (window as any).__patchesLoaded = {};
+      const script = document.createElement('script') as any;
+      (document.createElement as jasmine.Spy).and.returnValue(script);
+      
+      await handler.loadPatches(mockAppCfg);
+      
+      // Simulate script load
+      if (script.onload) {
+        script.onload();
+      }
+      
+      expect((window as any).__patchesLoaded.SearchSilme).toBeDefined();
     });
   });
 
@@ -139,12 +175,40 @@ describe('SearchSilmeControlHandler', () => {
   });
 
   describe('isReady()', () => {
-    it('should return true by default (patches applied programmatically)', () => {
+    it('should return false when patch not loaded', () => {
+      expect(handler.isReady()).toBe(false);
+    });
+
+    it('should return true when patch is loaded and control exists', async () => {
+      (window as any).__patchesLoaded = { SearchSilme: true };
+      
+      await handler.loadPatches(mockAppCfg);
+      
       expect(handler.isReady()).toBe(true);
+    });
+
+    it('should return false when patch loaded but control missing', async () => {
+      (window as any).__patchesLoaded = { SearchSilme: true };
+      mockTCNamespace.getTC.and.returnValue({ control: {} } as any);
+      
+      await handler.loadPatches(mockAppCfg);
+      
+      expect(handler.isReady()).toBe(false);
     });
   });
 
   describe('Integration', () => {
+    beforeEach(() => {
+      // Mock script loading
+      spyOn(document, 'createElement').and.returnValue({
+        src: '',
+        async: false,
+        onload: null,
+        onerror: null
+      } as any);
+      spyOn(document.head, 'appendChild');
+    });
+
     it('should handle full SearchSilme workflow', async () => {
       const task: AppTasks = {
         'ui-control': 'sitna.search.silme.extension',
@@ -155,12 +219,18 @@ describe('SearchSilmeControlHandler', () => {
       } as any;
       const context: AppCfg = {} as any;
 
-      const mockTC = { control: { SearchSilme: {} } };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
-      mockTCNamespace.getTC.and.returnValue(mockTC as any);
+      (window as any).__patchesLoaded = {};
+      const script = document.createElement('script') as any;
+      (document.createElement as jasmine.Spy).and.returnValue(script);
 
       // Load patches
       await handler.loadPatches(context);
+      
+      // Simulate script load
+      if (script.onload) {
+        script.onload();
+      }
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Should be ready
       expect(handler.isReady()).toBe(true);
@@ -174,17 +244,22 @@ describe('SearchSilmeControlHandler', () => {
       expect(config?.minLength).toBe(3);
     });
 
-    it('should handle workflow when ready', async () => {
+    it('should handle workflow when patch already loaded', async () => {
       const task: AppTasks = {
         'ui-control': 'sitna.search.silme.extension',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
 
-      // Ready by default (patches applied programmatically)
+      (window as any).__patchesLoaded = { SearchSilme: true };
+
+      // Load patches (should skip actual loading)
+      await handler.loadPatches(context);
+
+      // Should be ready
       expect(handler.isReady()).toBe(true);
 
-      // Can still build config (handler doesn't prevent it)
+      // Can build config
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
     });

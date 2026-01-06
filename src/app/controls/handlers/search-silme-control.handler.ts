@@ -9,7 +9,7 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
  * Custom search control for SITMUN-specific search.
  *
  * Control Type: sitna.search.silme.extension
- * Patches: Applied programmatically (not loaded from JS files)
+ * Patches: SearchSilme.js
  * Configuration: Custom Silme control for entity search
  */
 @Injectable({
@@ -18,10 +18,50 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 export class SearchSilmeControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.search.silme.extension';
   readonly sitnaConfigKey = 'searchSilme'; // Match old system
-  readonly requiredPatches = undefined; // Patches applied programmatically
+  readonly requiredPatches = ['assets/js/patch/controls/SearchSilme.js'];
+
+  private patchLoaded = false;
 
   constructor(tcNamespaceService: TCNamespaceService) {
     super(tcNamespaceService);
+  }
+
+  /**
+   * Load the SearchSilme patch file.
+   * The patch extends TC.control.Search with Silme-specific template.
+   * The patch itself will load TC.control.Search if it's not available.
+   */
+  override async loadPatches(context: AppCfg): Promise<void> {
+    if (this.patchLoaded) {
+      return;
+    }
+
+    // Check if patch is already loaded
+    if ((window as any).__patchesLoaded?.SearchSilme) {
+      this.patchLoaded = true;
+      return;
+    }
+
+    // Wait for TC namespace to be available
+    await this.tcNamespaceService.waitForTC();
+
+    // Load the patch script
+    // The patch file itself loads TC.control.Search if needed
+    await this.ensureControlLoaded({
+      controlName: 'SearchSilme',
+      checkLoaded: () => {
+        return !!(window as any).__patchesLoaded?.SearchSilme;
+      },
+      dependencies: ['TC'], // Only wait for TC - patch loads Search itself
+      loadScript: () => {
+        const script = document.createElement('script');
+        script.src = this.requiredPatches![0];
+        script.async = false;
+        document.head.appendChild(script);
+      }
+    });
+
+    this.patchLoaded = true;
   }
 
   /**
@@ -43,9 +83,10 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
 
   /**
    * Check if SearchSilme control is ready.
+   * Verifies that patch is loaded and TC.control.SearchSilme exists.
    */
   override isReady(): boolean {
-    if (!super.isReady()) {
+    if (!this.patchLoaded) {
       return false;
     }
 

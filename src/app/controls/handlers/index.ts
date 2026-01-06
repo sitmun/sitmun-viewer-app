@@ -30,6 +30,8 @@ import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handl
 import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
 import { OverviewMapControlHandler } from './overview-map-control.handler';
+import { PopupControlHandler } from './popup-control.handler';
+import { PopupSilmeControlHandler } from './popup-silme-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -53,6 +55,8 @@ export { OfflineMapMakerControlHandler } from './offline-map-maker-control.handl
 export { ClickControlHandler } from './click-control.handler';
 export { NavBarControlHandler } from './navbar-control.handler';
 export { OverviewMapControlHandler } from './overview-map-control.handler';
+export { PopupControlHandler } from './popup-control.handler';
+export { PopupSilmeControlHandler } from './popup-silme-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -90,6 +94,7 @@ export const ALL_CONTROL_HANDLERS = [
   ClickControlHandler,
   NavBarControlHandler,
   OverviewMapControlHandler,
+  PopupControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,
@@ -98,5 +103,6 @@ export const ALL_CONTROL_HANDLERS = [
   LayerCatalogSilmeControlHandler,
   SearchSilmeControlHandler,
   DrawMeasureModifySilmeControlHandler,
-  FeatureInfoSilmeControlHandler
+  FeatureInfoSilmeControlHandler,
+  PopupSilmeControlHandler
 ] as const;
