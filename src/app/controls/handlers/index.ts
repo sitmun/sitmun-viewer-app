@@ -20,6 +20,7 @@ import { DataLoaderControlHandler } from './dataloader-control.handler';
 import { DownloadControlHandler } from './download-control.handler';
 import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 import { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
+import { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -42,6 +43,7 @@ export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 export { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
 export { SearchSilmeControlHandler } from './search-silme-control.handler';
 export { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
+export { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
 
 /**
  * Array of all handler classes for easy registration.
@@ -68,5 +70,6 @@ export const ALL_CONTROL_HANDLERS = [
   // Legacy Silme
   LayerCatalogSilmeControlHandler,
   SearchSilmeControlHandler,
-  DrawMeasureModifySilmeControlHandler
+  DrawMeasureModifySilmeControlHandler,
+  FeatureInfoSilmeControlHandler
 ] as const;

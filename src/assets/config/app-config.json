@@ -55,6 +55,9 @@
     "sitna.layerCatalog.silme.extension": {
       "div": "catalog"
     },
+    "sitna.featureInfo.silme.extension": {
+      "persistentHighlights": true
+    },
     "sitna.threed": {
       "controls": [
         "sitna.threeD",

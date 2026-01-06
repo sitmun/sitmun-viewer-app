@@ -128,11 +128,16 @@ export class ControlRegistryService {
           await handler!.loadPatches(context);
           
           // Use handler's explicit sitnaConfigKey (required for all handlers)
-          if (!handler!.sitnaConfigKey) {
+          // Support dynamic config keys via getSitnaConfigKey() method if available
+          let controlKey: string;
+          if (typeof (handler as any).getSitnaConfigKey === 'function') {
+            controlKey = (handler as any).getSitnaConfigKey(task);
+          } else if (handler!.sitnaConfigKey) {
+            controlKey = handler!.sitnaConfigKey;
+          } else {
             console.error(`[ControlRegistry] Handler for '${task['ui-control']}' missing sitnaConfigKey`);
             continue;
           }
-          const controlKey = handler!.sitnaConfigKey;
           sitnaControls[controlKey as keyof SitnaControls] = config as any;
           
           console.log(`[ControlRegistry] Configured ${task['ui-control']} as '${controlKey}'`, config);
@@ -148,6 +153,10 @@ export class ControlRegistryService {
     // Post-process: Auto-enable attribution control if attribution is configured
     // but control is not explicitly enabled via backend task
     this.ensureAttributionControl(sitnaControls, context);
+
+    // Post-process: Disable default featureInfo if featureInfo.silme.extension is not requested
+    // This matches legacy behavior (line 942 in sitna-helpers.ts)
+    this.ensureFeatureInfoDisabled(sitnaControls, tasks);
 
     console.log(`[ControlRegistry] Successfully configured ${Object.keys(sitnaControls).length} controls`);
     console.log(`[ControlRegistry] Final sitnaControls object:`, sitnaControls);
@@ -197,6 +206,30 @@ export class ControlRegistryService {
       } else {
         console.warn('[ControlRegistry] Attribution handler not found, cannot auto-enable attribution control');
       }
+    }
+  }
+
+  /**
+   * Ensure featureInfo is disabled if featureInfo.silme.extension is not requested.
+   * This matches legacy behavior (line 942 in sitna-helpers.ts) where featureInfo = false
+   * is set when the control is not present to prevent default SITNA behavior.
+   * 
+   * @param sitnaControls - The configured controls object (modified in place)
+   * @param tasks - Array of tasks from backend
+   */
+  private ensureFeatureInfoDisabled(
+    sitnaControls: Partial<SitnaControls>,
+    tasks: AppTasks[]
+  ): void {
+    // Check if featureInfo.silme.extension is requested
+    const hasFeatureInfoSilme = tasks.some(
+      task => task['ui-control'] === 'sitna.featureInfo.silme.extension'
+    );
+
+    // If not requested and featureInfo is not already configured, disable it
+    if (!hasFeatureInfoSilme && sitnaControls.featureInfo === undefined) {
+      sitnaControls.featureInfo = false;
+      console.log('[ControlRegistry] Disabled default featureInfo (featureInfo.silme.extension not requested)');
     }
   }
 
