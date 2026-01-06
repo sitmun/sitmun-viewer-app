@@ -58,6 +58,9 @@
     "sitna.measure": {
       "div": "measure"
     },
+    "sitna.multiFeatureInfo": {
+      "div": "multifeatureinfo"
+    },
     "sitna.offlineMapMaker": {
       "div": "offline"
     },

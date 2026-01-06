@@ -25,6 +25,7 @@ import { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.han
 import { GeolocationControlHandler } from './geolocation-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 import { MeasureControlHandler } from './measure-control.handler';
+import { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
@@ -46,6 +47,7 @@ export { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.h
 export { GeolocationControlHandler } from './geolocation-control.handler';
 export { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 export { MeasureControlHandler } from './measure-control.handler';
+export { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 export { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 export { ClickControlHandler } from './click-control.handler';
 export { NavBarControlHandler } from './navbar-control.handler';
@@ -81,6 +83,7 @@ export const ALL_CONTROL_HANDLERS = [
   GeolocationControlHandler,
   LoadingIndicatorControlHandler,
   MeasureControlHandler,
+  MultiFeatureInfoControlHandler,
   OfflineMapMakerControlHandler,
   ClickControlHandler,
   NavBarControlHandler,
