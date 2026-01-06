@@ -93,9 +93,10 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                     const panel = tab.parentElement;
                     const tabId = tab.id;
                     
-                    // Get legend and download elements
+                    // Get legend and tool controls elements
                     const legend = panel.querySelector('.tc-ctl-legend');
                     const download = panel.querySelector('.tc-ctl-download');
+                    const drawMeasureModify = panel.querySelector('.tc-ctl-dmm');
                     
                     // Get tab h1 elements
                     const legendTab = panel.querySelector('#legend-tab');
@@ -109,15 +110,17 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                         if (!isCollapsed) {
                             
                             if (tabId === 'legend-tab') {
-                                // Show legend, hide download
+                                // Show legend, hide tool controls
                                 if (legend) legend.classList.remove('tc-hidden');
                                 if (download) download.classList.add('tc-hidden');
+                                if (drawMeasureModify) drawMeasureModify.classList.add('tc-hidden');
                                 // Hide tools-tab h1, show legend-tab h1
                                 if (toolsTab) toolsTab.classList.add('tc-hidden');
                                 if (legendTab) legendTab.classList.remove('tc-hidden');
                             } else if (tabId === 'tools-tab') {
-                                // Show download, hide legend
+                                // Show tool controls, hide legend
                                 if (download) download.classList.remove('tc-hidden');
+                                if (drawMeasureModify) drawMeasureModify.classList.remove('tc-hidden');
                                 if (legend) legend.classList.add('tc-hidden');
                                 // Hide legend-tab h1, show tools-tab h1
                                 if (legendTab) legendTab.classList.add('tc-hidden');
@@ -128,12 +131,13 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                             if (legendTab && legend) {
                                 legendTab.classList.remove('tc-hidden');
                             }
-                            if (toolsTab && download) {
+                            if (toolsTab && (download || drawMeasureModify)) {
                                 toolsTab.classList.remove('tc-hidden');
                             }
-                            // Show both controls when collapsed (if they exist)
+                            // Show all controls when collapsed (if they exist)
                             if (legend) legend.classList.remove('tc-hidden');
                             if (download) download.classList.remove('tc-hidden');
+                            if (drawMeasureModify) drawMeasureModify.classList.remove('tc-hidden');
                         }
                     } else {
                         // For other tabs, just toggle collapse
@@ -153,13 +157,11 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 }
 
                 // Check for tool controls - hide tools-tab if none are present
-                // Currently checks for download, but can be extended for future tool controls
                 const downloadControl = leftPanel.querySelector('.tc-ctl-download');
-                // Future tool controls can be added here, e.g.:
-                // const otherToolControl = leftPanel.querySelector('.tc-ctl-other-tool');
+                const drawMeasureModifyControl = leftPanel.querySelector('.tc-ctl-dmm') || leftPanel.querySelector('#drawmeasuremodify');
                 
                 const toolsTab = leftPanel.querySelector('#tools-tab');
-                const hasAnyToolControl = downloadControl; // Add || otherToolControl for future controls
+                const hasAnyToolControl = downloadControl || drawMeasureModifyControl;
                 if (!hasAnyToolControl && toolsTab) {
                     toolsTab.classList.add('tc-hidden');
                 }

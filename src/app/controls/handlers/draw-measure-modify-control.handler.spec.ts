@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { DownloadControlHandler } from './download-control.handler';
+import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { UIStateService } from '../../services/ui-state.service';
 import { AppConfigService } from '../../services/app-config.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-describe('DownloadControlHandler', () => {
-  let handler: DownloadControlHandler;
+describe('DrawMeasureModifyControlHandler', () => {
+  let handler: DrawMeasureModifyControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockUIStateService: jasmine.SpyObj<UIStateService>;
   let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
@@ -26,19 +26,19 @@ describe('DownloadControlHandler', () => {
     mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
       'getControlDefault'
     ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ div: 'download' });
+    mockAppConfigService.getControlDefault.and.returnValue({ div: 'drawmeasuremodify' });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
-        DownloadControlHandler,
+        DrawMeasureModifyControlHandler,
         { provide: TCNamespaceService, useValue: mockTCNamespace },
         { provide: UIStateService, useValue: mockUIStateService },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 
-    handler = TestBed.inject(DownloadControlHandler);
+    handler = TestBed.inject(DrawMeasureModifyControlHandler);
 
     mockAppCfg = {
       application: {
@@ -64,7 +64,7 @@ describe('DownloadControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control identifier', () => {
-      expect(handler.controlIdentifier).toBe('sitna.download');
+      expect(handler.controlIdentifier).toBe('sitna.drawMeasureModify');
     });
   });
 
@@ -77,23 +77,23 @@ describe('DownloadControlHandler', () => {
   describe('buildConfiguration()', () => {
     it('should return configuration with default div', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.download',
+        'ui-control': 'sitna.drawMeasureModify',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'download' });
+      expect(config).toEqual({ div: 'drawmeasuremodify' });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
     it('should merge task parameters', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.download',
+        'ui-control': 'sitna.drawMeasureModify',
         parameters: {
-          deselectableTab: true,
-          customOption: 'value'
+          customOption: 'value',
+          anotherOption: true
         }
       } as any;
       const context: AppCfg = {} as any;
@@ -101,31 +101,31 @@ describe('DownloadControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'download',
-        deselectableTab: true,
-        customOption: 'value'
+        div: 'drawmeasuremodify',
+        customOption: 'value',
+        anotherOption: true
       });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
     it('should allow parameters to override div', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.download',
+        'ui-control': 'sitna.drawMeasureModify',
         parameters: {
-          div: 'custom-download-div'
+          div: 'custom-div'
         }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.div).toBe('custom-download-div');
+      expect(config?.div).toBe('custom-div');
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
     it('should always enable tools button', () => {
       const task: AppTasks = {
-        'ui-control': 'sitna.download',
+        'ui-control': 'sitna.drawMeasureModify',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
@@ -168,15 +168,15 @@ describe('DownloadControlHandler', () => {
 
       // Build config
       const task: AppTasks = {
-        'ui-control': 'sitna.download',
-        parameters: { deselectableTab: true }
+        'ui-control': 'sitna.drawMeasureModify',
+        parameters: { customOption: true }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('download');
-      expect(config?.['deselectableTab']).toBe(true);
+      expect(config?.div).toBe('drawmeasuremodify');
+      expect(config?.['customOption']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
   });

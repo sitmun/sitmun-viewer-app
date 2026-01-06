@@ -43,6 +43,12 @@
     "sitna.download": {
       "div": "download"
     },
+    "sitna.drawMeasureModify": {
+      "div": "drawmeasuremodify"
+    },
+    "sitna.drawMeasureModify.silme.extension": {
+      "div": "drawmeasuremodify"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

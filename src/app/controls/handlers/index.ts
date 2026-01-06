@@ -18,6 +18,8 @@ import { AttributionControlHandler } from './attribution-control.handler';
 import { ThreeDControlHandler } from './threed-control.handler';
 import { DataLoaderControlHandler } from './dataloader-control.handler';
 import { DownloadControlHandler } from './download-control.handler';
+import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
+import { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -31,6 +33,7 @@ export { AttributionControlHandler } from './attribution-control.handler';
 export { ThreeDControlHandler } from './threed-control.handler';
 export { DataLoaderControlHandler } from './dataloader-control.handler';
 export { DownloadControlHandler } from './download-control.handler';
+export { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -38,6 +41,7 @@ export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 // Legacy Silme Extension Controls
 export { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
 export { SearchSilmeControlHandler } from './search-silme-control.handler';
+export { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
 
 /**
  * Array of all handler classes for easy registration.
@@ -56,11 +60,13 @@ export const ALL_CONTROL_HANDLERS = [
   ThreeDControlHandler,
   DataLoaderControlHandler,
   DownloadControlHandler,
+  DrawMeasureModifyControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,
 
   // Legacy Silme
   LayerCatalogSilmeControlHandler,
-  SearchSilmeControlHandler
+  SearchSilmeControlHandler,
+  DrawMeasureModifySilmeControlHandler
 ] as const;

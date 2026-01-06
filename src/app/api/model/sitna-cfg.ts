@@ -128,6 +128,7 @@ export interface SitnaElevationOptions {
   resolution?: number;
   sampleNumber?: number;
   services: string[] | SitnaElevationServiceOptions[];
+  displayOn?: string; // CSS selector or predefined value: 'controlContainer', '.tc-ctl-cctr-left', '.tc-ctl-cctr-right', etc.
 }
 export interface SitnaElevationServiceOptions {
   allowedGeometryTypes?: string[];

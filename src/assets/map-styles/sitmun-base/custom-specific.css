@@ -822,6 +822,63 @@ tc-ctl-tctr.tc-collapsed > h2 {
     overflow-x: visible;
 }
 
+/* Draw Measure Modify control styling */
+.tc-ctl-dmm {
+    max-width: 320px;
+}
+
+/* Fix width of specific elements */
+.tc-ctl-dmm > * {
+    width: 300px;
+}
+
+.tc-ctl-dmm > .tc-ctl-meas-mode > *,
+.tc-ctl-dmm > .tc-ctl-meas-mode > * > * {
+    width: 280px;
+}
+
+.tc-ctl-dmm > .tc-ctl-dmm-tool > * > * > * {
+    width: 280px !important;
+}
+
+/* Draw Measure Modify header styling - same properties as other headers */
+.tc-ctl-dmm > h2 {
+    width: 320px !important;
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/drawMeasureN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px !important;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+    position: relative;
+    z-index: 1;
+}
+
+.tc-ctl-dmm.tc-collapsed > h2 {
+    background-image: url(./img/drawMeasureG.png);
+}
+
+/* Prevent tc-ctl-meas-select from overlapping the header */
+.tc-ctl-dmm .tc-ctl-meas-select {
+    margin-top: 0;
+    padding-top: 10px;
+    clear: both;
+    position: relative;
+    z-index: 0;
+}
+
+/* Fix positioning for control containers */
+.tc-ctl-cctr-right {
+    left: 25em !important;
+}
+
 /* Override tc-loading to work as a tag rather than visual cue */
 .tc-ctl-lcat li.tc-ctl-lcat-node.tc-loading > span, 
 .tc-ctl-lcat-search li.tc-loading h5 {
