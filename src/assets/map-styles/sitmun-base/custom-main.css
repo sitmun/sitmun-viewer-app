@@ -95,7 +95,8 @@ button.tc-ctl-coords-crs {
     top: 36em;
 }
 
-.tc-ctl-nav .tc-ctl-nav-btn,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout,
 .tc-ctl-nav-home-btn,
 .tc-ctl-sv-btn,
 .tc-ctl-be,
@@ -104,6 +105,10 @@ button.tc-ctl-fscreen-btn,
     width: 40px;
     height: 40px;
     border-radius: 0px !important;
+}
+
+.ol-zoomslider-thumb {
+    width: 40px !important;
 }
 
 .tc-ctl-fscreen {
