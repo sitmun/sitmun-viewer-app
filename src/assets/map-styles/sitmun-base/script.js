@@ -165,6 +165,37 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 if (!hasAnyToolControl && toolsTab) {
                     toolsTab.classList.add('tc-hidden');
                 }
+
+                // Add h2 click handling for expand/collapse of controls in tools tab
+                leftPanel.addEventListener(SITNA.Consts.event.CLICK, function (e) {
+                    let tab = e.target;
+                    if (tab.tagName === "BUTTON" && tab.closest("div.tc-ctl." + SITNA.Consts.classes.COLLAPSED)) {
+                        tab = tab.parentElement;
+                    }
+                    if (tab.tagName === 'H2') {
+                        // Only handle h2 clicks when tools tab is active
+                        const toolsTab = leftPanel.querySelector('#tools-tab');
+                        const legend = leftPanel.querySelector('.tc-ctl-legend');
+                        const isToolsTabActive = toolsTab && !toolsTab.classList.contains('tc-hidden') && 
+                                                 legend && legend.classList.contains('tc-hidden');
+                        
+                        if (isToolsTabActive) {
+                            // Find the control that contains this h2
+                            for (var i = 0; i < map.controls.length; i++) {
+                                const ctl = map.controls[i];
+                                if (ctl.div && ctl.div.contains(tab)) {
+                                    if (ctl.isHighlighted()) {
+                                        ctl.unhighlight();
+                                    }
+                                    else {
+                                        ctl.highlight();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
             }
 
             /* --- LEGACY --- */

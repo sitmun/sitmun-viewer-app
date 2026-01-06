@@ -145,9 +145,10 @@
 /* Collapsed state for layer catalog and basemap selector headers */
 .tc-ctl-lcat.tc-collapsed h2,
 .tc-ctl-wlm.tc-collapsed h2,
-tc-ctl-bms.tc-collapsed > h2,
-tc-ctl-tctr.tc-collapsed > h2 {
+.tc-ctl-bms.tc-collapsed > h2,
+.tc-ctl-tctr.tc-collapsed > h2 {
     background-image: url(./img/mapLayersStackG.png);
+    color: #666666;
 }
 
 /* Change topic button styling */
@@ -813,6 +814,7 @@ tc-ctl-tctr.tc-collapsed > h2 {
 
 .tc-ctl-download.tc-collapsed > h2 {
     background-image: url(./img/downloadG.png);
+    color: #666666;
 }
 
 /* Ensure download content doesn't get clipped */
@@ -863,6 +865,7 @@ tc-ctl-tctr.tc-collapsed > h2 {
 
 .tc-ctl-dmm.tc-collapsed > h2 {
     background-image: url(./img/drawMeasureG.png);
+    color: #666666;
 }
 
 /* Prevent tc-ctl-meas-select from overlapping the header */

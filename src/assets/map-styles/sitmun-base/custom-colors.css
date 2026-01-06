@@ -58,6 +58,7 @@ button.tc-ctl-fscreen-btn,
 
 .tc-ctl.tc-collapsed > h2 {
     background-color: #0000000d;
+    color: #666666;
 }
 
 /* Text colors */
