@@ -60,7 +60,7 @@ export interface SitnaControls {
   externalWMSSilme?: any;
   legend: boolean | SitnaControlOptions;
   loadingIndicator?: boolean | SitnaControlOptions;
-  //measure?: boolean | SitnaControlOptions;
+  measure?: boolean | SitnaControlOptions;
   multiFeatureInfo?: boolean | SitnaMultiFeatureInfoOptions;
   navBar?: boolean | SitnaControlOptions;
   offlineMapMaker?: boolean | SitnaControlsOfflineMapMaker;

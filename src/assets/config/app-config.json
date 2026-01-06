@@ -55,6 +55,9 @@
     "sitna.geolocation": {
       "div": "geolocation"
     },
+    "sitna.measure": {
+      "div": "measure"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

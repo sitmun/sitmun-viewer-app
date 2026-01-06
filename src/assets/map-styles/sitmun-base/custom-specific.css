@@ -901,6 +901,55 @@
     color: #666666;
 }
 
+/* Measure control styling */
+.tc-ctl-meas {
+    max-width: 320px;
+}
+
+/* Fix width of specific elements */
+.tc-ctl-meas > * {
+    width: 300px;
+}
+
+.tc-ctl-meas .tc-ctl-meas-select {
+    width: 280px;
+}
+
+/* Measure header styling - same properties as other headers */
+/* Uses same icons as drawMeasureModify control */
+.tc-ctl-meas > h2 {
+    width: 320px !important;
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/drawMeasureN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px !important;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+    position: relative;
+    z-index: 1;
+}
+
+.tc-ctl-meas.tc-collapsed > h2 {
+    background-image: url(./img/drawMeasureG.png);
+    color: #666666;
+}
+
+/* Prevent tc-ctl-meas-select from overlapping the header */
+.tc-ctl-meas .tc-ctl-meas-select {
+    margin-top: 0;
+    padding-top: 10px;
+    clear: both;
+    position: relative;
+    z-index: 0;
+}
+
 /* Prevent tc-ctl-meas-select from overlapping the header */
 .tc-ctl-dmm .tc-ctl-meas-select {
     margin-top: 0;
