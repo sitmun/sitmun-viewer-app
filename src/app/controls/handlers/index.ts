@@ -16,6 +16,7 @@ import { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.h
 import { SearchSilmeControlHandler } from './search-silme-control.handler';
 import { AttributionControlHandler } from './attribution-control.handler';
 import { ThreeDControlHandler } from './threed-control.handler';
+import { DataLoaderControlHandler } from './dataloader-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -27,6 +28,7 @@ export { LegendControlHandler } from './legend-control.handler';
 export { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 export { AttributionControlHandler } from './attribution-control.handler';
 export { ThreeDControlHandler } from './threed-control.handler';
+export { DataLoaderControlHandler } from './dataloader-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -50,6 +52,7 @@ export const ALL_CONTROL_HANDLERS = [
   WorkLayerManagerControlHandler,
   AttributionControlHandler,
   ThreeDControlHandler,
+  DataLoaderControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,

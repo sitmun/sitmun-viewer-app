@@ -284,6 +284,11 @@ button.tc-ctl-fscreen-btn:hover {
     min-height: 0;
 }
 
+/* Ensure tc-ctl-tctr (in #xdata) is visible and appears last */
+.tc-panel-content > #xdata {
+    flex-shrink: 0;
+}
+
 .tc-right-panel > .tc-panel-content {
     right: 0px;
     transition: right 200ms;
@@ -346,6 +351,8 @@ button.tc-ctl-fscreen-btn:hover {
 .tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content {
     top: 0;
     bottom: 3.75em; /* Space for tab at bottom */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Override responsive breakpoint that sets height: auto */

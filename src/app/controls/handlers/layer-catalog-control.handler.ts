@@ -626,21 +626,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const self = this;
           const layerObj = layer;
 
+
           // Use layerName as the node ID to find the real layer configuration
           // AppCfg is guaranteed to be non-null (set before patches are applied)
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
             layerName,
             handler.currentAppCfg!
           );
-
-          if (!realLayerConfig) {
-            console.warn(
-              '[LayerCatalog addLayerToMap] No real config found for node: ' +
-                layerName +
-                ', cannot add layer'
-            );
-            return joinPoint.proceed();
-          }
 
           // Create layer options with real configuration
           const layerOptions = Util.extend({}, layerObj.options) as {
@@ -653,15 +645,34 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             nodeId?: string;
             [key: string]: unknown;
           };
-          layerOptions.id = self.getUID();
-          layerOptions.hideTree = true;
-          layerOptions.title = layerObj.title;
-          // realLayerConfig is typed as RealLayerConfig, so url and type are guaranteed to be strings
-          layerOptions.url = realLayerConfig.url;
-          layerOptions.type = realLayerConfig.type;
-          // layerNames should be an array, SITNA will join them internally
-          layerOptions.layerNames = realLayerConfig.layerNames;
-          layerOptions.nodeId = layerName;
+          
+        if (realLayerConfig) {
+            layerOptions.id = self.getUID();
+            layerOptions.hideTree = true;
+            layerOptions.title = layerObj.title;
+            // realLayerConfig is typed as RealLayerConfig, so url and type are guaranteed to be strings
+            layerOptions.url = realLayerConfig.url;
+            layerOptions.type = realLayerConfig.type;
+            // layerNames should be an array, SITNA will join them internally
+            layerOptions.layerNames = Array.isArray(realLayerConfig.layerNames) ? realLayerConfig.layerNames : [realLayerConfig.layerNames];
+            layerOptions.nodeId = layerName;
+        } else {
+            layerOptions.id = self.getUID();
+            layerOptions.hideTree = true;
+            layerOptions.title = layerObj.title;
+            layerOptions.url = layerObj.url;
+            layerOptions.type = layerObj.type;
+            layerOptions.layerNames = layerName;
+        }
+
+        const effectiveUrl = layerOptions.url;
+        const effectiveType = layerOptions.type;
+        const effectiveLayerNames: string[] = Array.isArray(layerOptions.layerNames)
+          ? layerOptions.layerNames.filter((name): name is string => typeof name === 'string')
+          : layerOptions.layerNames != null
+          ? [String(layerOptions.layerNames)]
+          : [];
+
 
           const Raster = TC.layer.Raster;
 
@@ -676,8 +687,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             const existingType =
               existingLayer.type != null ? String(existingLayer.type) : '';
             if (
-              existingUrl === realLayerConfig.url &&
-              existingType === realLayerConfig.type &&
+              existingUrl === effectiveUrl &&
+              existingType === effectiveType &&
               existingLayer.capabilities
             ) {
               serviceCapabilities = existingLayer.capabilities;
@@ -695,7 +706,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             if (nodeTitle && serviceCapabilities.Capability?.Layer) {
               handler.updateLayerTitleInCapabilities(
                 serviceCapabilities.Capability.Layer,
-                realLayerConfig.layerNames,
+                effectiveLayerNames,
                 nodeTitle
               );
             }
@@ -710,7 +721,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             } else {
               console.warn(
                 '[LayerCatalog addLayerToMap] No capabilities available for service: ' +
-                  realLayerConfig.url
+                  effectiveUrl
               );
             }
 
@@ -740,14 +751,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
           // If we have existing capabilities, use them immediately
           if (serviceCapabilities) {
-            proceedWithLayer(serviceCapabilities);
-            // Return undefined to prevent original method from executing
-            return undefined;
+            return Promise.resolve(serviceCapabilities).then((capabilities) => {
+                proceedWithLayer(capabilities);
+                return undefined;
+            });
           } else {
             // Load capabilities from the service
             const tempLayer = new Raster({
-              url: realLayerConfig.url,
-              type: realLayerConfig.type
+              url: effectiveUrl,
+              type: effectiveType
             });
 
             // Return a promise that resolves to undefined after layer is added
@@ -768,7 +780,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                   if (nodeTitle && loadedCapabilities.Capability?.Layer) {
                     handler.updateLayerTitleInCapabilities(
                       loadedCapabilities.Capability.Layer,
-                      realLayerConfig.layerNames,
+                      effectiveLayerNames,
                       nodeTitle
                     );
                   }
@@ -799,12 +811,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Patch LayerCatalog.addLayer to return a resolved Promise.
    */
   /**
-   * Patch LayerCatalog.addLayer to replace it with a resolved Promise.
-   * Replaces the original method entirely with a function that returns a resolved Promise.
-   * This matches the sandbox implementation.
+   * Patch LayerCatalog.addLayer to ignore calls for virtual layers (our layers)
+   * but allow external WMS layers to be added normally.
+   * Uses meld.around to intercept calls and check if layer is virtual.
    */
   private async patchLayerCatalogAddLayer(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
+      const handler = this;
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.addLayer !== 'function') {
@@ -819,10 +832,47 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       // Replace addLayer with a function that always returns a resolved Promise
       ctlProto.addLayer = function (
-        this: unknown,
-        layer: unknown
-      ): Promise<unknown> {
-        return Promise.resolve(null);
+        this: any,
+        layer: any
+      ): Promise<void> {
+        const self = this as any;
+        return new Promise<void>(function (resolve, reject) {
+            let fromLayerCatalog: any[] = [];
+
+            if (self.options?.layers && self.options.layers.length) {
+                fromLayerCatalog = self.options.layers.filter(function (l: any) {
+                    if (Array.isArray(l.url)) {
+                        return null;
+                    }
+                    if (typeof l.url === 'string' && l.url.startsWith('virtual://')) {
+                        return null;
+                    }
+                    const getMap = TC.Util.reqGetMapOnCapabilities(l.url);
+                    return getMap && getMap.replace(TC.Util.regex.PROTOCOL) === layer.url.replace(TC.Util.regex.PROTOCOL);
+                });
+            }
+
+            if (fromLayerCatalog.length === 0) {
+                fromLayerCatalog = self.layers.filter(function (l: any) {
+                    return l.url.replace(TC.Util.regex.PROTOCOL) === layer.url.replace(TC.Util.regex.PROTOCOL);
+                });
+            }
+
+            if (fromLayerCatalog.length === 0) {
+                self.layers.unshift(layer);
+                layer.getCapabilitiesPromise().then(function () {
+                    layer.compatibleLayers = layer.wrap.getCompatibleLayers(self.map.crs);
+                    layer.title = layer.title || layer.wrap.getServiceTitle();
+                    self.renderBranch(layer, function () {
+                        resolve();
+                    });
+                }).catch(function (error: any) {
+                    reject(error);
+                });
+            } else {
+                resolve();
+            }
+        });
       };
 
       // Mark as patched
@@ -855,24 +905,26 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const layerObj = layer || {};
           const result: Element[] = [];
           const rootNodes = self._roots;
-
-          if (rootNodes && layerObj.nodeId) {
-            for (let i = 0; i < rootNodes.length; i++) {
-              const rootNode = rootNodes[i];
-              const liLayer = rootNode.querySelector(
-                `li[data-layer-name="${layerObj.nodeId}"]`
-              );
-              if (liLayer) {
-                result.push(liLayer);
-                liLayer.querySelectorAll('li').forEach((li: Element) => {
-                  result.push(li);
-                });
-              }
-            }
-          }
-          return result;
+        if (!rootNodes) {
+          return [];
         }
-      );
+
+        const selector =layerObj.nodeId ? `li[data-layer-name="${layerObj.nodeId}"]` : `li[data-layer-name="${layerObj.options.layerNames}"]` ;
+
+        for (let i = 0; i < rootNodes.length; i++) {
+            const rootNode = rootNodes[i];
+            const liLayer = rootNode.querySelector(selector)
+            if (liLayer) {
+                // This is a workaround to remove the loading class from the node
+                liLayer.classList.remove(TC.Consts.classes.LOADING);
+                liLayer.querySelectorAll('li').forEach((li: Element) => {
+                    result.push(li);
+                });
+            }
+            result.push(rootNode);
+        }
+        return result;
+       });
 
       this.patchManager.add(() => meld.remove(advice));
     });

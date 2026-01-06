@@ -118,13 +118,15 @@
 .tc-ctl-lcat {
     display: flex !important;
     flex-direction: column !important;
-    height: 100% !important;
+    flex-grow: 1;
+    min-height: 0;
     overflow: hidden !important;
 }
 
 .tc-ctl-wlm h2,
 .tc-ctl-lcat h2,
-.tc-ctl-bms > h2 {
+.tc-ctl-bms > h2,
+#xdata > h2 {
     background-position: -6px 0px;
     background-repeat: no-repeat;
     background-size: 38px 38px;
@@ -142,7 +144,9 @@
 
 /* Collapsed state for layer catalog and basemap selector headers */
 .tc-ctl-lcat.tc-collapsed h2,
-#bms.tc-collapsed > h2 {
+.tc-ctl-wlm.tc-collapsed h2,
+#bms.tc-collapsed > h2,
+#xdata.tc-collapsed > h2 {
     background-image: url(./img/mapLayersStackG.png);
 }
 
@@ -746,6 +750,10 @@
 .tc-ctl-legend {
     padding: 0;
     background-color: hsl(0deg 0% 98%);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 /* Legend h2 header styling - match right panel headers with legend icon */
@@ -775,6 +783,14 @@
     }
 }
 
+/* Make legend tree fill available vertical space */
+.tc-ctl-legend-tree {
+    flex-grow: 1;
+    min-height: 0;
+    overflow: auto;
+    max-height: none !important;
+}
+
 /* Hide legend by default when panel is collapsed (unless legend is active) */
 .tc-left-panel.tc-collapsed-left:not(.left-collapsed-legend) #legend,
 .tc-left-panel.tc-collapsed:not(.left-collapsed-legend) #legend {
@@ -798,3 +814,11 @@
     display: block;
 }
 
+/* Override tc-loading to work as a tag rather than visual cue */
+.tc-ctl-lcat li.tc-ctl-lcat-node.tc-loading > span, 
+.tc-ctl-lcat-search li.tc-loading h5 {
+    color: inherit !important;
+    cursor: inherit !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+}

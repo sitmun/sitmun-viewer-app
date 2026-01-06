@@ -37,6 +37,9 @@
     "sitna.legend": {
       "div": "legend"
     },
+    "sitna.dataLoader": {
+      "div": "xdata"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },
