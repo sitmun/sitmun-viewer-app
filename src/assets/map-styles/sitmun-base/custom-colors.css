@@ -44,7 +44,7 @@ button.tc-ctl-coords-crs,
 .tc-ctl-be,
 button.tc-ctl-fscreen-btn,
 .tc-ctl-nav-home {
-    background-color: #000000cc;
+    background-color: #000000cc !important;
 }
 
 .tc-ctl-search-txt {

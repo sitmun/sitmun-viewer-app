@@ -49,6 +49,9 @@
     "sitna.drawMeasureModify.silme.extension": {
       "div": "drawmeasuremodify"
     },
+    "sitna.fullScreen": {
+      "div": "FuScreen"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

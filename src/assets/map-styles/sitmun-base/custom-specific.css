@@ -17,8 +17,9 @@
     top: 98px;
 }
 
-.tc-ctl-fscreen {
-    top: 140px !important;
+.tc-ctl.tc-ctl-fscreen {
+    top: 8.8em !important;
+    left: 20px !important;
 }
 
 .tc-ctl-sv {

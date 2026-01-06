@@ -88,18 +88,22 @@ button.tc-ctl-fscreen-btn,
 }
 
 .tc-ctl-fscreen {
-    width: 40px !important;
-    left: 20px;
-    top: 210px !important;
-    margin-top: 0px;
-    width: auto;
+    top: 0.9em !important;
+    left: 7px;
 }
 
 button.tc-ctl-fscreen-btn {
-    background-image: url(./img/mapaAmpliar.png);
+    background-image: url(./img/fullscreen.png);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
+    background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+button.tc-ctl-fscreen-btn:hover,
+button.tc-ctl-fscreen-btn:focus,
+button.tc-ctl-fscreen-btn:active {
+    background-color: rgba(0, 0, 0, 1) !important;
 }
 
 .tc-ctl-fscreen button:after {
@@ -258,7 +262,7 @@ button.tc-ctl-fscreen-btn {
 .tc-ctl-nav .tc-ctl-nav-btn-zoomout:hover,
 .tc-ctl-nav-home .tc-ctl-nav-home-btn:hover,
 button.tc-ctl-fscreen-btn:hover {
-    background-color: rgba(0, 0, 0, 1);
+    background-color: rgba(0, 0, 0, 1) !important;
     cursor: pointer;
 }
 

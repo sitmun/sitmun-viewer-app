@@ -15,6 +15,7 @@ import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
 import { SearchSilmeControlHandler } from './search-silme-control.handler';
 import { AttributionControlHandler } from './attribution-control.handler';
+import { FullScreenControlHandler } from './full-screen-control.handler';
 import { ThreeDControlHandler } from './threed-control.handler';
 import { DataLoaderControlHandler } from './dataloader-control.handler';
 import { DownloadControlHandler } from './download-control.handler';
@@ -31,6 +32,7 @@ export { BasemapSelectorControlHandler } from './basemap-selector-control.handle
 export { LegendControlHandler } from './legend-control.handler';
 export { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 export { AttributionControlHandler } from './attribution-control.handler';
+export { FullScreenControlHandler } from './full-screen-control.handler';
 export { ThreeDControlHandler } from './threed-control.handler';
 export { DataLoaderControlHandler } from './dataloader-control.handler';
 export { DownloadControlHandler } from './download-control.handler';
@@ -59,6 +61,7 @@ export const ALL_CONTROL_HANDLERS = [
   LegendControlHandler,
   WorkLayerManagerControlHandler,
   AttributionControlHandler,
+  FullScreenControlHandler,
   ThreeDControlHandler,
   DataLoaderControlHandler,
   DownloadControlHandler,
