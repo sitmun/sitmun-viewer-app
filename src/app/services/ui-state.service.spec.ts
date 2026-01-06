@@ -162,33 +162,31 @@ describe('UIStateService', () => {
         }
       };
 
-      // Skip initial emissions, wait for reset emissions
-      service.showLegend$.pipe(take(2)).subscribe((values) => {
-        // Last emission should be false
-      });
-      
-      let legendEmissions = 0;
-      service.showLegend$.subscribe((value) => {
-        legendEmissions++;
-        if (legendEmissions > 2) { // After initial and enable
+      // Subscribe and wait for reset emissions
+      let legendReceived = false;
+      let overviewReceived = false;
+      let toolsReceived = false;
+
+      service.showLegend$.pipe(take(3)).subscribe((value) => {
+        // Third emission (after initial false, enable true, reset false)
+        if (!legendReceived) {
+          legendReceived = true;
           expect(value).toBe(false);
           checkDone();
         }
       });
 
-      let overviewEmissions = 0;
-      service.showOverviewMap$.subscribe((value) => {
-        overviewEmissions++;
-        if (overviewEmissions > 2) {
+      service.showOverviewMap$.pipe(take(3)).subscribe((value) => {
+        if (!overviewReceived) {
+          overviewReceived = true;
           expect(value).toBe(false);
           checkDone();
         }
       });
 
-      let toolsEmissions = 0;
-      service.showTools$.subscribe((value) => {
-        toolsEmissions++;
-        if (toolsEmissions > 2) {
+      service.showTools$.pipe(take(3)).subscribe((value) => {
+        if (!toolsReceived) {
+          toolsReceived = true;
           expect(value).toBe(false);
           checkDone();
         }

@@ -390,7 +390,7 @@ describe('VirtualWmsCapabilitiesService', () => {
           'node-empty-root',
           configWithNoValidLayers
         );
-      }).toThrow('has no valid layers to include in capabilities');
+      }).toThrowError(/has no valid layers to include in capabilities/);
     });
 
     it('should throw error for leaf node without resource', () => {
@@ -417,7 +417,7 @@ describe('VirtualWmsCapabilitiesService', () => {
           'node-no-resource',
           configWithLeafNoResource
         );
-      }).toThrow('has no valid layers to include in capabilities');
+      }).toThrowError(/has no valid layers to include in capabilities/);
     });
   });
 

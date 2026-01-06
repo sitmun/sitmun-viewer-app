@@ -396,8 +396,10 @@ export class VirtualWmsCapabilitiesService {
     defaultCRS: string
   ): WMSLayer {
     // Root container layer (no Name property)
+    // For leaf nodes without title, use 'Untitled Layer' instead of 'Root Layer'
+    const defaultTitle = (node.resource && !node.children?.length) ? 'Untitled Layer' : 'Root Layer';
     const rootLayer: WMSLayer = {
-      Title: node.title || 'Root Layer',
+      Title: node.title || defaultTitle,
       CRS: [defaultCRS],
     };
 
@@ -534,8 +536,12 @@ export class VirtualWmsCapabilitiesService {
       return [defaultCRS];
     }
 
-    // AppService doesn't have a crs property, so always use default
-    // If CRS information is needed, it should come from the layer or be added to AppService interface
+    // Check if service has SRS in parameters
+    if (service.parameters && service.parameters.SRS) {
+      return [service.parameters.SRS];
+    }
+
+    // Fall back to default CRS
     return [defaultCRS];
   }
 
