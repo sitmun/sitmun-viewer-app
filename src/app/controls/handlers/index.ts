@@ -24,6 +24,7 @@ import { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silm
 import { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
 import { GeolocationControlHandler } from './geolocation-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
+import { ClickControlHandler } from './click-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -41,6 +42,7 @@ export { DownloadControlHandler } from './download-control.handler';
 export { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 export { GeolocationControlHandler } from './geolocation-control.handler';
 export { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
+export { ClickControlHandler } from './click-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -72,6 +74,7 @@ export const ALL_CONTROL_HANDLERS = [
   DrawMeasureModifyControlHandler,
   GeolocationControlHandler,
   LoadingIndicatorControlHandler,
+  ClickControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,
