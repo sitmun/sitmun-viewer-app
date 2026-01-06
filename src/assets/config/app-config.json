@@ -52,6 +52,9 @@
     "sitna.fullScreen": {
       "div": "FuScreen"
     },
+    "sitna.geolocation": {
+      "div": "geolocation"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

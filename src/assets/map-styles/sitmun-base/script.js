@@ -157,11 +157,13 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 }
 
                 // Check for tool controls - hide tools-tab if none are present
-                const downloadControl = leftPanel.querySelector('.tc-ctl-download');
-                const drawMeasureModifyControl = leftPanel.querySelector('.tc-ctl-dmm') || leftPanel.querySelector('#drawmeasuremodify');
-                
+                // Query for all elements marked with data-tools-tab attribute and check if SITNA has rendered controls into them
+                const toolControlDivs = leftPanel.querySelectorAll('[data-tools-tab]');
                 const toolsTab = leftPanel.querySelector('#tools-tab');
-                const hasAnyToolControl = downloadControl || drawMeasureModifyControl;
+                const hasAnyToolControl = Array.from(toolControlDivs).some(div => {
+                    // Check if SITNA has rendered a control into this div (has children with tc-ctl classes)
+                    return div.querySelector('.tc-ctl') !== null;
+                });
                 if (!hasAnyToolControl && toolsTab) {
                     toolsTab.classList.add('tc-hidden');
                 }

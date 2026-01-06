@@ -869,6 +869,38 @@
     color: #666666;
 }
 
+/* Geolocation control styling */
+.tc-ctl-geolocation {
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+/* Geolocation header styling */
+.tc-ctl-geolocation > h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/geolocationN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+}
+
+.tc-ctl-geolocation.tc-collapsed > h2 {
+    background-image: url(./img/geolocationG.png);
+    color: #666666;
+}
+
 /* Prevent tc-ctl-meas-select from overlapping the header */
 .tc-ctl-dmm .tc-ctl-meas-select {
     margin-top: 0;

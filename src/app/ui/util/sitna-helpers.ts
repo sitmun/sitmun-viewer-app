@@ -158,7 +158,6 @@ export class SitnaHelper {
       sitnaControlsFilter
     );
     this.processFullScreenControl(sitnaControls, sitnaControlsFilter);
-    this.processGeolocationControl(sitnaControls, sitnaControlsFilter);
     this.processLegendControl(sitnaControls, sitnaControlsFilter);
     this.processLoadingIndicatorControl(sitnaControls, sitnaControlsFilter);
     this.processMeasureControl(sitnaControls, sitnaControlsFilter);
@@ -419,35 +418,6 @@ export class SitnaHelper {
       sitnaControls.fullScreen = {
         div: 'FuScreen'
       };
-    }
-  }
-
-  /**
-   * Process geolocation control
-   */
-  private static processGeolocationControl(
-    sitnaControls: SitnaControls,
-    sitnaControlsFilter: any[]
-  ) {
-    if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.Geolocation)
-    ) {
-      const geolocation = this.findControl(
-        sitnaControlsFilter,
-        SitnaControlsEnum.Geolocation
-      );
-      if (geolocation) {
-        if (this.areParametersEmpty(geolocation.parameters)) {
-          sitnaControls.geolocation = {
-            div: 'geolocation'
-          };
-        } else {
-          sitnaControls.geolocation = geolocation.parameters;
-        }
-      }
-      if (SitnaHelper.instance) {
-        SitnaHelper.instance.uiState.enableToolsButton();
-      }
     }
   }
 

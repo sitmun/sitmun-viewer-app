@@ -22,6 +22,7 @@ import { DownloadControlHandler } from './download-control.handler';
 import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 import { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
 import { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
+import { GeolocationControlHandler } from './geolocation-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -37,6 +38,7 @@ export { ThreeDControlHandler } from './threed-control.handler';
 export { DataLoaderControlHandler } from './dataloader-control.handler';
 export { DownloadControlHandler } from './download-control.handler';
 export { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
+export { GeolocationControlHandler } from './geolocation-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -66,6 +68,7 @@ export const ALL_CONTROL_HANDLERS = [
   DataLoaderControlHandler,
   DownloadControlHandler,
   DrawMeasureModifyControlHandler,
+  GeolocationControlHandler,
 
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,
