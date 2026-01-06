@@ -40,6 +40,9 @@
     "sitna.dataLoader": {
       "div": "xdata"
     },
+    "sitna.download": {
+      "div": "download"
+    },
     "sitna.search.silme.extension": {
       "div": "search"
     },

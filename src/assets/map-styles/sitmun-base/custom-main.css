@@ -213,11 +213,11 @@ button.tc-ctl-fscreen-btn {
     transition: right 200ms;
 }
 
-.tc-left-panel > h1,
-.tc-left-panel .tc-ctl.tc-ctl-nav,
-.tc-left-panel .tc-ctl-sv-btn,
-.tc-left-panel .tc-ctl-be,
-.tc-left-panel .tc-ctl-fscreen {
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) > h1,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl.tc-ctl-nav,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-sv-btn,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-be,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-fscreen {
     left: 340px;
     transition: left 200ms;
     z-index: 10001;
@@ -272,7 +272,7 @@ button.tc-ctl-fscreen-btn:hover {
 .tc-left-panel.tc-collapsed-left .tc-ctl-be,
 .tc-left-panel.tc-collapsed .tc-ctl-fscreen,
 .tc-left-panel.tc-collapsed-left .tc-ctl-fscreen {
-    left: 20px;
+    left: 340px;
     transition: left 200ms;
     z-index: 10001;
 }
@@ -314,12 +314,16 @@ button.tc-ctl-fscreen-btn:hover {
 .tc-left-panel.tc-collapsed-left > .tc-panel-content {
     left: -340px;
     transition: left 200ms;
-    min-width: 0;
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
 }
 
-/* Min-width for left panel content when expanded */
+/* Fixed width for left panel content when expanded */
 .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) > .tc-panel-content {
+    width: 320px;
     min-width: 320px;
+    max-width: 320px;
 }
 
 .tc-tools-panel {

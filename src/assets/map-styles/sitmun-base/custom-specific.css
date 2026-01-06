@@ -126,7 +126,7 @@
 .tc-ctl-wlm h2,
 .tc-ctl-lcat h2,
 .tc-ctl-bms > h2,
-#xdata > h2 {
+.tc-ctl-tctr > h2 {
     background-position: -6px 0px;
     background-repeat: no-repeat;
     background-size: 38px 38px;
@@ -145,8 +145,8 @@
 /* Collapsed state for layer catalog and basemap selector headers */
 .tc-ctl-lcat.tc-collapsed h2,
 .tc-ctl-wlm.tc-collapsed h2,
-#bms.tc-collapsed > h2,
-#xdata.tc-collapsed > h2 {
+tc-ctl-bms.tc-collapsed > h2,
+tc-ctl-tctr.tc-collapsed > h2 {
     background-image: url(./img/mapLayersStackG.png);
 }
 
@@ -676,30 +676,14 @@
     text-transform: unset !important;
 }
 
-/* ============================================
-   Silme Panel Styles (from silme-base)
-   ============================================ */
-
-/* Silme panel header positioning */
-.silme-panel > h1 {
-    top: 244px;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: 40px 40px;
-}
-
-/* Legend tab positioning */
-#legend-tab {
-    top: 350px;
-}
-
-/* Silme panel tab backgrounds */
+/* Panel tab backgrounds */
 .tc-left-panel #legend-tab {
     background-image: url(./img/legendIcon.png);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
     transform: rotate(0deg);
+    top: 8em;
 }
 
 /* When panel is expanded, use close/arrow icon */
@@ -713,11 +697,23 @@
     transform: none;
 }
 
-.tc-left-panel #silme-tab {
+.tc-left-panel #tools-tab {
     background-image: url(./img/tools.png);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 40px 40px;
+    top: 4em;
+}
+
+/* When panel is expanded, use close/arrow icon */
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab {
+    background-image: url(./img/closeIcon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    background-color: #b51818;
+    transform-origin: center center;
+    transform: none;
 }
 
 /* Collapsed legend state */
@@ -733,18 +729,6 @@
     background-color: #a51818;
 }
 
-/* Collapsed silme state */
-.tc-left-panel.tc-collapsed-left.silme-active #silme-tab,
-.left-collapsed-silme #silme-tab {
-    background-image: url(./img/closeIcon.png);
-    background-color: rgba(0, 0, 0, 1);
-    background-color: #b51818;
-}
-
-.tc-left-panel.tc-collapsed-left.silme-active #silme-tab:hover,
-.left-collapsed-silme #silme-tab:hover {
-    background-color: #a51818;
-}
 
 /* Legend control styling */
 .tc-ctl-legend {
@@ -754,10 +738,11 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    flex-grow: 1;
+    min-height: 0;
 }
 
 /* Legend h2 header styling - match right panel headers with legend icon */
-#legend h2,
 .tc-ctl-legend h2 {
     background-position: -6px 0px;
     background-repeat: no-repeat;
@@ -791,27 +776,50 @@
     max-height: none !important;
 }
 
-/* Hide legend by default when panel is collapsed (unless legend is active) */
-.tc-left-panel.tc-collapsed-left:not(.left-collapsed-legend) #legend,
-.tc-left-panel.tc-collapsed:not(.left-collapsed-legend) #legend {
-    display: none;
+/* Tab switching: Use tc-hidden class to show/hide legend and download based on active tab
+ * JavaScript handles adding/removing tc-hidden class based on panel state and active tab
+ */
+
+/* Left panel content flex layout for legend and download */
+.tc-left-panel > .tc-panel-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-/* Show legend when left-collapsed-legend class is present */
-.tc-left-panel.left-collapsed-legend #legend,
-.left-collapsed-legend #legend {
+/* Download control visibility and space */
+.tc-ctl-download {
     display: block;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    box-sizing: border-box;
 }
 
-/* Silme panel content styling when expanded */
-#silme-panel:not(.tc-collapsed-left):not(.tc-collapsed) > .tc-panel-content {
-    display: block;
+/* Download header styling */
+.tc-ctl-download > h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/downloadN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
 }
 
-/* Silme panel content styling when collapsed but legend active */
-#silme-panel.tc-collapsed-left.left-collapsed-legend > .tc-panel-content,
-#silme-panel.tc-collapsed.left-collapsed-legend > .tc-panel-content {
-    display: block;
+.tc-ctl-download.tc-collapsed > h2 {
+    background-image: url(./img/downloadG.png);
+}
+
+/* Ensure download content doesn't get clipped */
+.tc-ctl-download > div {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: visible;
 }
 
 /* Override tc-loading to work as a tag rather than visual cue */

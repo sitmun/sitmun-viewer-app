@@ -47,7 +47,6 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         }
 
         map.ready(function () {
-
             // Colapsamos los controles de tipo web component, porque no los podemos colapsar por markup
             map.controls.forEach(c => {
                 if (c instanceof HTMLElement) {
@@ -90,10 +89,81 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 h1.addEventListener(SITNA.Consts.event.CLICK, function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const panel = e.target.parentElement;
-                    panel.classList.toggle(lcollapsedClass);
+                    const tab = e.target;
+                    const panel = tab.parentElement;
+                    const tabId = tab.id;
+                    
+                    // Get legend and download elements
+                    const legend = panel.querySelector('.tc-ctl-legend');
+                    const download = panel.querySelector('.tc-ctl-download');
+                    
+                    // Get tab h1 elements
+                    const legendTab = panel.querySelector('#legend-tab');
+                    const toolsTab = panel.querySelector('#tools-tab');
+                    
+                    // Handle tab switching for legend-tab and tools-tab
+                    if (tabId === 'legend-tab' || tabId === 'tools-tab') {
+                        // Toggle panel collapse
+                        const isCollapsed = panel.classList.toggle(lcollapsedClass);
+                        
+                        if (!isCollapsed) {
+                            
+                            if (tabId === 'legend-tab') {
+                                // Show legend, hide download
+                                if (legend) legend.classList.remove('tc-hidden');
+                                if (download) download.classList.add('tc-hidden');
+                                // Hide tools-tab h1, show legend-tab h1
+                                if (toolsTab) toolsTab.classList.add('tc-hidden');
+                                if (legendTab) legendTab.classList.remove('tc-hidden');
+                            } else if (tabId === 'tools-tab') {
+                                // Show download, hide legend
+                                if (download) download.classList.remove('tc-hidden');
+                                if (legend) legend.classList.add('tc-hidden');
+                                // Hide legend-tab h1, show tools-tab h1
+                                if (legendTab) legendTab.classList.add('tc-hidden');
+                                if (toolsTab) toolsTab.classList.remove('tc-hidden');
+                            }
+                        } else {
+                            // Panel is collapsing - show tabs only if their controls exist
+                            if (legendTab && legend) {
+                                legendTab.classList.remove('tc-hidden');
+                            }
+                            if (toolsTab && download) {
+                                toolsTab.classList.remove('tc-hidden');
+                            }
+                            // Show both controls when collapsed (if they exist)
+                            if (legend) legend.classList.remove('tc-hidden');
+                            if (download) download.classList.remove('tc-hidden');
+                        }
+                    } else {
+                        // For other tabs, just toggle collapse
+                        const isCollapsed = panel.classList.toggle(lcollapsedClass);
+                    }
                 });
             });
+
+            // Hide tabs if their corresponding controls are not enabled
+            const leftPanel = map.div.querySelector(`.${TC.Consts.classes.LEFT_PANEL}`);
+            if (leftPanel) {
+                // Check for legend control - hide legend-tab if not present
+                const legendControl = leftPanel.querySelector('.tc-ctl-legend');
+                const legendTab = leftPanel.querySelector('#legend-tab');
+                if (!legendControl && legendTab) {
+                    legendTab.classList.add('tc-hidden');
+                }
+
+                // Check for tool controls - hide tools-tab if none are present
+                // Currently checks for download, but can be extended for future tool controls
+                const downloadControl = leftPanel.querySelector('.tc-ctl-download');
+                // Future tool controls can be added here, e.g.:
+                // const otherToolControl = leftPanel.querySelector('.tc-ctl-other-tool');
+                
+                const toolsTab = leftPanel.querySelector('#tools-tab');
+                const hasAnyToolControl = downloadControl; // Add || otherToolControl for future controls
+                if (!hasAnyToolControl && toolsTab) {
+                    toolsTab.classList.add('tc-hidden');
+                }
+            }
 
             /* --- LEGACY --- */
             const toolsPanel = map.div.querySelector('.' + TC.Consts.classes.TOOLS_PANEL) || map.div.querySelector('#tools-panel');
