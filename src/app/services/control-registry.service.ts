@@ -187,6 +187,11 @@ export class ControlRegistryService {
     // This matches legacy behavior (line 942 in sitna-helpers.ts)
     this.ensureFeatureInfoDisabled(sitnaControls, tasks);
 
+    // Post-process: Auto-enable hidden native search if searchSilme is configured
+    // SearchSilme patch delegates search execution to native search control
+    // The patch accesses both controls via getControlsByClass('TC.control.Search')[0] and [1]
+    this.ensureHiddenNativeSearchForSilme(sitnaControls, tasks);
+
     console.log(
       `[ControlRegistry] Successfully configured ${
         Object.keys(sitnaControls).length
@@ -196,6 +201,13 @@ export class ControlRegistryService {
 
     // Validate div usage after all controls are processed
     this.validateDivUsage(sitnaControls);
+
+    // Log search-related controls specifically for debugging
+    if (sitnaControls.search || sitnaControls.searchSilme) {
+      console.log('[ControlRegistry] Search controls in final config:');
+      console.log('  - search:', sitnaControls.search);
+      console.log('  - searchSilme:', sitnaControls.searchSilme);
+    }
 
     return sitnaControls;
   }
@@ -231,7 +243,8 @@ export class ControlRegistryService {
       }
       
       // Only process if control is not already configured (no backend task)
-      if (sitnaControls[controlKey as keyof SitnaControls] === undefined) {
+      const currentValue = sitnaControls[controlKey as keyof SitnaControls];
+      if (currentValue === undefined) {
         // Call handler's getDefaultValueWhenMissing() method
         // This method MUST return a value (never undefined)
         const defaultValue = (handler as any).getDefaultValueWhenMissing?.();
@@ -246,6 +259,14 @@ export class ControlRegistryService {
           // This should never happen - all handlers must return a value
           console.warn(
             `[ControlRegistry] Handler '${controlIdentifier}' returned undefined from getDefaultValueWhenMissing(). This is not allowed.`
+          );
+        }
+      } else {
+        // Control is already configured - log for debugging
+        if (controlKey === 'searchSilme') {
+          console.log(
+            `[ControlRegistry] searchSilme already configured, skipping default value. Current value:`,
+            currentValue
           );
         }
       }
@@ -274,6 +295,45 @@ export class ControlRegistryService {
       sitnaControls.featureInfo = false;
       console.log(
         '[ControlRegistry] Disabled default featureInfo (featureInfo.silme.extension not requested)'
+      );
+    }
+  }
+
+
+  /**
+   * Auto-enable a hidden native search control if searchSilme is configured.
+   * The SearchSilme patch delegates actual search execution to the native control.
+   * It accesses controls via getControlsByClass('TC.control.Search')[0] (native) and [1] (Silme).
+   * 
+   * We configure the native search with div: null to prevent DOM rendering,
+   * but it still provides the backend search functionality.
+   *
+   * @param sitnaControls - The configured controls object (modified in place)
+   * @param tasks - Array of tasks from backend
+   */
+  private ensureHiddenNativeSearchForSilme(
+    sitnaControls: Partial<SitnaControls>,
+    tasks: AppTasks[]
+  ): void {
+    // Check if searchSilme is configured (truthy value)
+    const hasSearchSilme = !!sitnaControls.searchSilme;
+
+    // Check if native search is already configured (truthy value)
+    const hasNativeSearch = !!sitnaControls.search;
+
+    // If searchSilme is configured but native search is not, enable it in hidden mode
+    if (hasSearchSilme && !hasNativeSearch) {
+      // Copy searchSilme configuration to native search, but remove the div
+      // This gives the native search the same search types, URLs, and parameters
+      // but prevents it from rendering in the DOM
+      const searchSilmeConfig = sitnaControls.searchSilme as any;
+      const nativeSearchConfig = { ...searchSilmeConfig };
+      delete nativeSearchConfig.div; // Remove div to hide the control
+      delete nativeSearchConfig.type; // Remove type so it uses native Search class
+      
+      sitnaControls.search = nativeSearchConfig;
+      console.log(
+        '[ControlRegistry] Auto-enabled hidden native search control with searchSilme configuration (required for delegation)'
       );
     }
   }

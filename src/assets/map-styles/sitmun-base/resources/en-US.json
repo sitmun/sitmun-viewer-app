@@ -23,5 +23,6 @@
   "printMap": "Print map",
   "printPdf": "Print PDF",
   "printThisWindow": "Print this window",
-  "printPage": "Print page"
+  "printPage": "Print page",
+  "search.list.placename": "Placename"
 }

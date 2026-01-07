@@ -47,18 +47,40 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
 
     // Load the patch script
     // The patch file itself loads TC.control.Search if needed
-    await this.ensureControlLoaded({
-      controlName: 'SearchSilme',
-      checkLoaded: () => {
-        return !!(window as any).__patchesLoaded?.SearchSilme;
-      },
-      dependencies: ['TC'], // Only wait for TC - patch loads Search itself
-      loadScript: () => {
-        const script = document.createElement('script');
-        script.src = this.requiredPatches![0];
-        script.async = false;
-        document.head.appendChild(script);
-      }
+    // Use Promise to properly wait for script execution
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = this.requiredPatches![0];
+      script.async = false;
+      
+      script.onload = () => {
+        // Poll for patch to be loaded (script executes synchronously but we need to wait)
+        const pollInterval = setInterval(() => {
+          if ((window as any).__patchesLoaded?.SearchSilme) {
+            clearInterval(pollInterval);
+            console.log('[SearchSilme] Patch loaded successfully');
+            resolve();
+          }
+        }, 10);
+        
+        // Timeout after 5 seconds (increased from 2 seconds)
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          if ((window as any).__patchesLoaded?.SearchSilme) {
+            console.log('[SearchSilme] Patch loaded successfully (after timeout check)');
+            resolve();
+          } else {
+            console.error('[SearchSilme] Patch loading timeout - __patchesLoaded:', (window as any).__patchesLoaded);
+            reject(new Error('SearchSilme patch failed to load after timeout'));
+          }
+        }, 5000);
+      };
+      
+      script.onerror = () => {
+        reject(new Error(`Failed to load script: ${this.requiredPatches![0]}`));
+      };
+      
+      document.head.appendChild(script);
     });
 
     this.patchLoaded = true;
@@ -67,6 +89,7 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
   /**
    * Build configuration for SearchSilme control.
    * Uses default div and merges with backend parameters.
+   * Explicitly sets type to ensure SITNA uses SearchSilme control class.
    */
   buildConfiguration(
     task: AppTasks,
@@ -78,7 +101,14 @@ export class SearchSilmeControlHandler extends ControlHandlerBase {
     // - searchUrl: URL for search endpoint
     // - searchFields: Fields to search on
     // - etc.
-    return this.mergeWithParameters(defaultConfig, task.parameters);
+    const config = this.mergeWithParameters(defaultConfig, task.parameters);
+
+    // Explicitly set type to ensure SITNA instantiates SearchSilme control class
+    // This helps SITNA resolve the correct control type when key is 'searchSilme'
+    return {
+      ...config,
+      type: 'SearchSilme'
+    };
   }
 
   /**

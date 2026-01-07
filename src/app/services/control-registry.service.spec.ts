@@ -375,7 +375,7 @@ describe('ControlRegistryService', () => {
         'sitna.search.silme.extension',
         undefined,
         undefined,
-        'searchSilmeExtension'
+        'searchSilme'
       );
       service.register(handler);
 
@@ -386,7 +386,7 @@ describe('ControlRegistryService', () => {
 
       const result = await service.processControls(tasks, context);
 
-      expect((result as any)['searchSilmeExtension']).toBeDefined();
+      expect((result as any)['searchSilme']).toBeDefined();
     });
 
     it('should handle layerCatalog correctly', async () => {

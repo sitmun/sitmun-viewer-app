@@ -34,24 +34,29 @@
 }
 
 /* Search positioning */
-#search {
+.tc-ctl-search-content {
     position: absolute;
-    padding-left: 0.4em;
-    width: 300px;
+    top: 3.2em;
+    left:6%; 
+    padding: 0;
+    width: 340px;
     z-index: 9998;
     transition: left 200ms;
     font-size: 0.9em;
+    border-radius: 0px;
+    display: flex;
+    align-items: stretch;
+    box-sizing: border-box;
 }
-
-#search > a {
+.tc-ctl-search-content > a {
     display: none;
 }
 
-#search.tc-ctl.tc-ctl-search.search-left-collapsed {
+.tc-ctl-search-content.tc-ctl.tc-ctl-search.search-left-collapsed {
     left: 410px;
 }
 
-#search > h2 {
+.tc-ctl-search-content > h2 {
     display: none;
 }
 
@@ -61,43 +66,43 @@
 
 .tc-ctl-search-list {
     border: 0px;
-    border-radius: 0px;
+    border-radius: 0px !important;
     width: 288px;
-}
-
-.tc-ctl-search-content {
-    border-radius: 0px;
 }
 
 .tc-ctl-search .tc-ctl-search-txt,
 .tc-ctl-search-txt {
-    width: calc(100% - 32px);
-    height: 32px;
-    border: 0px;
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 40px);
+    height: 40px;
+    border-radius: 0px !important;
     padding: 0 0 0 5px;
     box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.6) inset;
+    box-sizing: border-box;
 }
 
 .tc-ctl-btn.tc-ctl-search-btn {
-    width: 32px;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    line-height: 32px;
-    height: 32px;
+    width: 40px;
+    min-width: 40px;
+    flex: 0 0 40px;
+    line-height: 40px;
+    height: 40px;
     padding: 0px;
+    border-radius: 0px !important;
     background-image: url(./img/search.png);
-    background-position: 2px 1px;
+    background-position: center;
     background-repeat: no-repeat;
     background-size: 30px 30px;
-    display: inline-block;
-    vertical-align: top;
+    display: block;
     cursor: pointer;
-    margin-left: 0;
+    margin: 0;
     overflow: hidden;
     border: 0;
     font-size: 0;
+    box-sizing: border-box;
+    background-color: #333333 !important;
+    border-color: #333333 !important;
 }
 
 /* Work layer manager and layer catalog specific styles */
@@ -312,7 +317,7 @@
         top: 84px;
     }
 
-    #search {
+    .tc-ctl-search-content {
         left: 20px;
     }
 
@@ -901,46 +906,6 @@
     color: #666666;
 }
 
-.tc-ctl-prnmap > div {
-    padding: 10px;
-}
-
-/* Print control styling */
-#print {
-    display: block;
-    flex-shrink: 0;
-    width: 100%;
-    min-width: 0;
-    overflow: visible;
-    box-sizing: border-box;
-}
-
-/* Print header styling */
-#print > h2 {
-    background-position: -6px 0px;
-    background-repeat: no-repeat;
-    background-size: 38px 38px;
-    background-image: url(./img/mapPrintN.png);
-    padding: 10px;
-    padding-left: 26px;
-    border-bottom: 1px solid #ccc;
-    font-size: 1.1em;
-    margin: 0px;
-    height: 19px;
-    font-weight: bold;
-    background-color: rgba(0, 0, 0, 0.05);
-    flex-shrink: 0 !important;
-}
-
-#print.tc-collapsed > h2 {
-    background-image: url(./img/mapPrintG.png);
-    color: #666666;
-}
-
-#print > div {
-    padding: 10px;
-}
-
 /* Measure control styling */
 .tc-ctl-meas {
     max-width: 320px;
@@ -1015,38 +980,4 @@
     cursor: inherit !important;
     animation: none !important;
     -webkit-animation: none !important;
-}
-
-/* Offline Map Maker control styling */
-#offline {
-    display: none;
-}
-
-.left-collapsed-silme #offline {
-    display: block;
-    background-color: hsl(0deg 0% 98%);
-}
-
-#offline.tc-collapsed > div {
-    display: none;
-}
-
-#offline > h2 {
-    background-position: calc(100% - 10px) 10px, 0 0;
-    background-repeat: no-repeat, no-repeat;
-    background-size: 20px 20px, 38px 38px;
-    background-color: var(--main-color);
-    padding: 10px 10px 10px 35px;
-    border-bottom: 1px solid #ccc;
-    margin: 0;
-    font-size: 1em;
-    font-weight: normal;
-}
-
-#offline.tc-collapsed > h2 {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-#offline > div {
-    padding: 10px;
 }

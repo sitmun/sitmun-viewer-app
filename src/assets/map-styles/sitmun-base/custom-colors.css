@@ -72,14 +72,22 @@ button.tc-ctl-fscreen-btn {
 }
 
 /* Button colors */
-.tc-button,
-.tc-ctl-btn.tc-ctl-search-btn {
+.tc-button {
     background-color: var(--ide-main-color);
 }
 
-.tc-button:hover,
-.tc-ctl-btn.tc-ctl-search-btn:hover {
+.tc-button:hover {
     background-color: var(--ide-main-color-light);
+}
+
+/* Search button - use neutral color like other control buttons */
+.tc-ctl-btn.tc-ctl-search-btn {
+    background-color: #333333;
+    border-top: none;
+}
+
+.tc-ctl-btn.tc-ctl-search-btn:hover {
+    background-color: #555555;
 }
 
 /* Border colors */
@@ -102,4 +110,12 @@ button.tc-ctl-fscreen-btn {
 .tc-combo {
     outline-color: var(--ide-main-color);
 }
+
+/* Search input - use neutral focus color */
+.tc-ctl-search-txt:focus,
+.tc-ctl-search-txt:focus-visible {
+    outline-color: #333333 !important;
+    border-color: #333333 !important;
+}
+
 

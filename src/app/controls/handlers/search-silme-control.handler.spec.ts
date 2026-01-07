@@ -226,10 +226,7 @@ describe('SearchSilmeControlHandler', () => {
       // Load patches
       await handler.loadPatches(context);
       
-      // Simulate script load
-      if (script.onload) {
-        script.onload();
-      }
+      // Wait for ensureControlLoaded to complete (uses timeout internally)
       await new Promise(resolve => setTimeout(resolve, 0));
 
       // Should be ready

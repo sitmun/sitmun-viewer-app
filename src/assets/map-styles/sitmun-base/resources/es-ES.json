@@ -23,5 +23,6 @@
   "printMap": "Imprimir mapa",
   "printPdf": "Descargar mapa en PDF",
   "printThisWindow": "Imprimir esta ventana",
-  "printPage": "Página de impresión"
+  "printPage": "Página de impresión",
+  "search.list.placename": "Topónimos"
 }

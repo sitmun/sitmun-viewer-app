@@ -252,7 +252,10 @@ TC.inherit(TC.control.Popup, TC.Control);
 
     const popupExt = [west, south, east, north];
     const mapExt = map.getExtent();
-    mapExt[2] = (map.getExtent()[2]) - ((map.getExtent()[2] - map.getExtent()[0]) * (map.div.querySelector('.panel-content').clientWidth / map.div.clientWidth));
+    // Check for both panel-content (silme-base) and tc-panel-content (sitmun-base)
+    const panelContent = map.div.querySelector('.panel-content') || map.div.querySelector('.tc-panel-content');
+    const panelWidth = panelContent ? panelContent.clientWidth : 0;
+    mapExt[2] = (map.getExtent()[2]) - ((map.getExtent()[2] - map.getExtent()[0]) * (panelWidth / map.div.clientWidth));
 
     const newPos = _this.wrap.popup.getPosition();
     newPos[0] = document.querySelector('.left-collapsed')
