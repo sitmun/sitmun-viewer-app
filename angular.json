@@ -64,7 +64,8 @@
               "lru-cache",
               "pbf",
               "rbush",
-              "ev-emitter/ev-emitter"
+              "ev-emitter/ev-emitter",
+              "pdfmake"
             ]
           },
           "configurations": {

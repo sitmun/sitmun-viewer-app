@@ -14,5 +14,10 @@
   "fees": "Erabilera mugapena",
   "accessConstraints": "Sarbide murriztapenak",
   "metadata": "Metadatuak",
-  "descarregadades": "Datuak deskargatu"
+  "descarregadades": "Datuak deskargatu",
+  "print": "Inprimatu",
+  "printMap": "Mapa inprimatu",
+  "printPdf": "PDF gisa deskargatu",
+  "printThisWindow": "Leiho hau inprimatu",
+  "printPage": "Inprimatzeko orria"
 }

@@ -35,7 +35,6 @@ enum SitnaControlsEnum {
   OfflineMapMaker = 'sitna.offlineMapMaker',
   PopUp = 'sitna.popup',
   PopupSilmePatch = 'sitna.popup.silme.patch',
-  PrintMap = 'sitna.printMap',
   Scale = 'sitna.scale',
   ScaleBar = 'sitna.scaleBar',
   ScaleSelector = 'sitna.scaleSelector',
@@ -164,7 +163,6 @@ export class SitnaHelper {
     this.processNavBarControl(sitnaControls, sitnaControlsFilter);
     this.processOfflineMapMakerControl(sitnaControls, sitnaControlsFilter);
     this.processPopupControl(sitnaControls, sitnaControlsFilter);
-    this.processPrintMapControl(sitnaControls, sitnaControlsFilter);
     this.processScaleControl(sitnaControls, sitnaControlsFilter);
     this.processScaleBarControl(sitnaControls, sitnaControlsFilter);
     this.processScaleSelectorControl(sitnaControls, sitnaControlsFilter);
@@ -518,39 +516,6 @@ export class SitnaHelper {
   ) {
     if (this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.PopUp)) {
       sitnaControls.popup = true;
-    }
-  }
-
-  /**
-   * Process print map control
-   */
-  private static processPrintMapControl(
-    sitnaControls: SitnaControls,
-    sitnaControlsFilter: any[]
-  ) {
-    if (
-      this.isControlPresent(sitnaControlsFilter, SitnaControlsEnum.PrintMap)
-    ) {
-      const print = this.findControl(
-        sitnaControlsFilter,
-        SitnaControlsEnum.PrintMap
-      );
-      if (print) {
-        if (this.areParametersEmpty(print.parameters)) {
-          sitnaControls.printMap = {
-            div: 'print',
-            logo: 'assets/logos/logo_black.png',
-            legend: {
-              visible: true
-            }
-          };
-        } else {
-          sitnaControls.printMap = print.parameters;
-        }
-      }
-      if (SitnaHelper.instance) {
-        SitnaHelper.instance.uiState.enableToolsButton();
-      }
     }
   }
 

@@ -27,6 +27,7 @@ import { LoadingIndicatorControlHandler } from './loading-indicator-control.hand
 import { MeasureControlHandler } from './measure-control.handler';
 import { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
+import { PrintMapControlHandler } from './print-map-control.handler';
 import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
 import { OverviewMapControlHandler } from './overview-map-control.handler';
@@ -52,6 +53,7 @@ export { LoadingIndicatorControlHandler } from './loading-indicator-control.hand
 export { MeasureControlHandler } from './measure-control.handler';
 export { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 export { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
+export { PrintMapControlHandler } from './print-map-control.handler';
 export { ClickControlHandler } from './click-control.handler';
 export { NavBarControlHandler } from './navbar-control.handler';
 export { OverviewMapControlHandler } from './overview-map-control.handler';
@@ -91,6 +93,7 @@ export const ALL_CONTROL_HANDLERS = [
   MeasureControlHandler,
   MultiFeatureInfoControlHandler,
   OfflineMapMakerControlHandler,
+  PrintMapControlHandler,
   ClickControlHandler,
   NavBarControlHandler,
   OverviewMapControlHandler,

@@ -18,5 +18,10 @@
   "changeTopic": "Change topic",
   "projSubtitle": "Choose an option to change how the layers in the tree layers are organized:",
   "cancel": "Cancel",
-  "ok": "Ok"
+  "ok": "Ok",
+  "print": "Print",
+  "printMap": "Print map",
+  "printPdf": "Print PDF",
+  "printThisWindow": "Print this window",
+  "printPage": "Print page"
 }

@@ -1,0 +1,67 @@
+import { Injectable } from '@angular/core';
+import { ControlHandlerBase } from '../control-handler-base';
+import { SitnaControlConfig } from '../control-handler.interface';
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { UIStateService } from '../../services/ui-state.service';
+
+/**
+ * Handler for the native SITNA print map control.
+ * Allows users to print the current map view with optional logo and legend.
+ *
+ * Control Type: sitna.printMap
+ * Patches: None (native SITNA control)
+ * Configuration: div + optional parameters (logo, legend)
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class PrintMapControlHandler extends ControlHandlerBase {
+  readonly controlIdentifier = 'sitna.printMap';
+  readonly sitnaConfigKey = 'printMap';
+  readonly requiredPatches = undefined; // No patches needed
+
+  constructor(
+    tcNamespaceService: TCNamespaceService,
+    private uiStateService: UIStateService
+  ) {
+    super(tcNamespaceService);
+  }
+
+  /**
+   * Build configuration for print map control.
+   * Uses default config from app-config.json if no parameters provided, otherwise merges parameters.
+   * Enables tools button when print map control is configured.
+   * Supports optional parameters: logo, legend
+   */
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
+    const defaultConfig = this.getDefaultConfig();
+    const config = this.mergeWithParameters(defaultConfig, task.parameters);
+
+    // Enable tools button when print map control is configured
+    this.uiStateService.enableToolsButton();
+
+    return config;
+  }
+
+  /**
+   * Load patches for native print map control.
+   * No patches needed - SITNA handles pdfmake loading internally.
+   * Using pdfmake 0.1.70 for compatibility with SITNA's expected module structure.
+   */
+  override async loadPatches(context: AppCfg): Promise<void> {
+    await this.tcNamespaceService.waitForTC();
+  }
+
+  /**
+   * Check if native print map control is ready.
+   */
+  override isReady(): boolean {
+    const TC = this.tcNamespaceService.getTC();
+    return !!TC?.control?.PrintMap;
+  }
+}
+

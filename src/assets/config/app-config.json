@@ -64,6 +64,13 @@
     "sitna.offlineMapMaker": {
       "div": "offline"
     },
+    "sitna.printMap": {
+      "div": "print",
+      "logo": "assets/logos/logo_orange.png",
+      "legend": {
+        "visible": true
+      }
+    },
     "sitna.navBar": {
       "div": "nav"
     },

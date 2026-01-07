@@ -901,6 +901,46 @@
     color: #666666;
 }
 
+.tc-ctl-prnmap > div {
+    padding: 10px;
+}
+
+/* Print control styling */
+#print {
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+/* Print header styling */
+#print > h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/mapPrintN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+}
+
+#print.tc-collapsed > h2 {
+    background-image: url(./img/mapPrintG.png);
+    color: #666666;
+}
+
+#print > div {
+    padding: 10px;
+}
+
 /* Measure control styling */
 .tc-ctl-meas {
     max-width: 320px;

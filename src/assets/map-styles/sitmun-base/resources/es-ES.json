@@ -18,5 +18,10 @@
   "changeTopic": "Cambiar tema",
   "projSubtitle": "Elige una opción para cambiar la forma en que están organizadas las capas del árbol de capas disponibles:",
   "cancel": "Cancelar",
-  "ok": "Aceptar"
+  "ok": "Aceptar",
+  "print": "Imprimir",
+  "printMap": "Imprimir mapa",
+  "printPdf": "Descargar mapa en PDF",
+  "printThisWindow": "Imprimir esta ventana",
+  "printPage": "Página de impresión"
 }
