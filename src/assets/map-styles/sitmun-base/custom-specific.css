@@ -822,6 +822,38 @@
     overflow-x: visible;
 }
 
+/* Print control styling */
+.tc-ctl-prnmap {
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+/* Print header styling */
+.tc-ctl-prnmap > h2 {
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    background-image: url(./img/mapPrintN.png);
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+}
+
+.tc-ctl-prnmap.tc-collapsed > h2 {
+    background-image: url(./img/mapPrintG.png);
+    color: #666666;
+}
+
 /* Draw Measure Modify control styling */
 .tc-ctl-dmm {
     max-width: 320px;
@@ -971,6 +1003,11 @@
 /* Fix positioning for control containers */
 .tc-ctl-cctr-right {
     left: 25em !important;
+}
+
+/* Attribution control styling */
+.tc-ctl-attrib > div {
+    padding: 10px;
 }
 
 /* Override tc-loading to work as a tag rather than visual cue */

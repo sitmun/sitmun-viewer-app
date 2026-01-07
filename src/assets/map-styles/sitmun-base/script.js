@@ -85,6 +85,28 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 });
             });
 
+            // Tool control selectors
+            const TOOL_CONTROL_SELECTORS = ['.tc-ctl-download', '.tc-ctl-dmm', '.tc-ctl-meas', '.tc-ctl-geolocation', '.tc-ctl-prnmap'];
+            
+            // Helper functions for control visibility
+            function toggleControlsVisibility(controls, show) {
+                controls.forEach(function(control) {
+                    if (control) {
+                        if (show) {
+                            control.classList.remove('tc-hidden');
+                        } else {
+                            control.classList.add('tc-hidden');
+                        }
+                    }
+                });
+            }
+            
+            function hasAnyControl(controls) {
+                return controls.some(function(control) {
+                    return control !== null;
+                });
+            }
+
             map.div.querySelectorAll(`.${TC.Consts.classes.LEFT_PANEL} > h1`).forEach(function (h1) {
                 h1.addEventListener(SITNA.Consts.event.CLICK, function (e) {
                     e.preventDefault();
@@ -95,10 +117,11 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                     
                     // Get legend and tool controls elements
                     const legend = panel.querySelector('.tc-ctl-legend');
-                    const download = panel.querySelector('.tc-ctl-download');
-                    const drawMeasureModify = panel.querySelector('.tc-ctl-dmm');
-                    const measure = panel.querySelector('.tc-ctl-meas');
-                    const geolocation = panel.querySelector('.tc-ctl-geolocation');
+                    const toolControls = TOOL_CONTROL_SELECTORS.map(function(selector) {
+                        return panel.querySelector(selector);
+                    }).filter(function(control) {
+                        return control !== null;
+                    });
                     
                     // Get tab h1 elements
                     const legendTab = panel.querySelector('#legend-tab');
@@ -113,21 +136,15 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                             
                             if (tabId === 'legend-tab') {
                                 // Show legend, hide tool controls
-                                if (legend) legend.classList.remove('tc-hidden');
-                                if (download) download.classList.add('tc-hidden');
-                                if (drawMeasureModify) drawMeasureModify.classList.add('tc-hidden');
-                                if (measure) measure.classList.add('tc-hidden');
-                                if (geolocation) geolocation.classList.add('tc-hidden');
+                                toggleControlsVisibility([legend], true);
+                                toggleControlsVisibility(toolControls, false);
                                 // Hide tools-tab h1, show legend-tab h1
                                 if (toolsTab) toolsTab.classList.add('tc-hidden');
                                 if (legendTab) legendTab.classList.remove('tc-hidden');
                             } else if (tabId === 'tools-tab') {
                                 // Show tool controls, hide legend
-                                if (download) download.classList.remove('tc-hidden');
-                                if (drawMeasureModify) drawMeasureModify.classList.remove('tc-hidden');
-                                if (measure) measure.classList.remove('tc-hidden');
-                                if (geolocation) geolocation.classList.remove('tc-hidden');
-                                if (legend) legend.classList.add('tc-hidden');
+                                toggleControlsVisibility(toolControls, true);
+                                toggleControlsVisibility([legend], false);
                                 // Hide legend-tab h1, show tools-tab h1
                                 if (legendTab) legendTab.classList.add('tc-hidden');
                                 if (toolsTab) toolsTab.classList.remove('tc-hidden');
@@ -137,15 +154,12 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                             if (legendTab && legend) {
                                 legendTab.classList.remove('tc-hidden');
                             }
-                            if (toolsTab && (download || drawMeasureModify || measure || geolocation)) {
+                            if (toolsTab && hasAnyControl(toolControls)) {
                                 toolsTab.classList.remove('tc-hidden');
                             }
                             // Show all controls when collapsed (if they exist)
-                            if (legend) legend.classList.remove('tc-hidden');
-                            if (download) download.classList.remove('tc-hidden');
-                            if (drawMeasureModify) drawMeasureModify.classList.remove('tc-hidden');
-                            if (measure) measure.classList.remove('tc-hidden');
-                            if (geolocation) geolocation.classList.remove('tc-hidden');
+                            toggleControlsVisibility([legend], true);
+                            toggleControlsVisibility(toolControls, true);
                         }
                     } else {
                         // For other tabs, just toggle collapse

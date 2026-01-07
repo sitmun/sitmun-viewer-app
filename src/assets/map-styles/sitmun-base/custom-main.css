@@ -42,13 +42,10 @@ html, button, input, select, textarea {
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
     right: auto;
-    opacity: 0 !important;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     height: 36px;
-}
-
-.tc-ctl-coords:hover {
-    opacity: 1 !important;
+    display: flex;
+    align-items: center;
 }
 
 .tc-ctl-coords-main {   
@@ -194,14 +191,6 @@ button.tc-ctl-fscreen-btn:active {
 
 .ol-scale-line {
     padding-top: 5px !important;
-}
-
-.tc-ctl-scl {
-    opacity: 0 !important;
-}
-
-.tc-ctl-scl:hover {
-    opacity: 1 !important;
 }
 
 .tc-ctl-sb .ol-scale-line .ol-scale-line-inner {

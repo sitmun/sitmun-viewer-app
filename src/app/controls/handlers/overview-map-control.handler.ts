@@ -116,3 +116,5 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
   }
 }
 
+
+
