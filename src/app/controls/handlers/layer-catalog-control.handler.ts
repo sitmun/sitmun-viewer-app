@@ -1,30 +1,20 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import {
-  AppCfg,
-  AppTasks,
-  AppTree,
-  AppNodeInfo,
-  AppLayer,
-  AppService
-} from '@api/model/app-cfg';
+import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
-import {
-  VirtualWmsCapabilitiesService,
-  RealLayerConfig
-} from '../../services/virtual-wms-capabilities.service';
+import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import { WMSCapabilities } from '../../types/wms-capabilities';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
-import { LanguageService } from '../../services/language.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
+import { CatalogSwitchingService } from '../../services/catalog-switching.service';
+import { RasterLayerService } from '../../services/raster-layer.service';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
 
 // meld is a CommonJS module, so we use require with proper typing
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const meld = require('meld') as Meld;
 
 /**
@@ -34,8 +24,6 @@ const meld = require('meld') as Meld;
  * Control Type: sitna.layerCatalog
  * Patches: Applied programmatically (not via JS files)
  * Configuration: Uses VirtualWmsCapabilitiesService to generate capabilities
- *
- * Note: For legacy Silme extension, see LayerCatalogSilmeControlHandler.
  */
 @Injectable({
   providedIn: 'root'
@@ -48,14 +36,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   private readonly virtualWmsService = inject(VirtualWmsCapabilitiesService);
   private readonly configLookup = inject(ConfigLookupService);
   private readonly sitnaNamespaceService = inject(SitnaNamespaceService);
-  private readonly languageService = inject(LanguageService);
+  private readonly catalogSwitching = inject(CatalogSwitchingService);
+  private readonly rasterService = inject(RasterLayerService);
 
   // Store AppCfg for use in patches
   // Set in loadPatches() before patches are applied, so it's guaranteed to be non-null when patches execute
   private currentAppCfg: AppCfg | null = null;
-
-  // Store task from buildConfiguration for use in loadPatches
-  private currentTask: AppTasks | null = null;
 
   // Track if patches have been applied to avoid reapplying on map reload
   private patchesApplied = false;
@@ -126,63 +112,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Setup global state for catalog switching.
-   * Builds catalogs array from trees and sets up window.layerCatalogsForModal.
-   * Uses tree ID as the catalog identifier (not index or root node ID).
-   *
-   * Logic:
-   * - If 1 tree: use that tree's ID as currentTreeId
-   * - If multiple trees: check global state for existing currentTreeId, validate it exists, fallback to first tree if not
-   */
-  private setupCatalogGlobalState(
-    context: AppCfg,
-    rootNodeIds: string[]
-  ): void {
-    // Get actual trees from rootNodeIds
-    const trees = rootNodeIds
-      .map((nodeId) => this.configLookup.findTreeContainingNode(nodeId))
-      .filter((tree): tree is AppTree => tree !== undefined);
-
-    if (trees.length === 0) {
-      console.warn('[LayerCatalog] No trees found for catalog setup');
-      return;
-    }
-
-    // Build catalogs array from trees - use tree ID as identifier
-    const catalogs = trees.map((tree) => ({
-      id: tree.id,
-      catalog: tree.title
-    }));
-
-    // Determine current tree ID based on tree count
-    let currentTreeId: string;
-
-    if (trees.length === 1) {
-      // Single tree: always use its ID
-      currentTreeId = trees[0].id;
-    } else {
-      // Multiple trees: check for existing selection in global state
-      const existingModal = (window as any).layerCatalogsForModal;
-      const existingTreeId = existingModal?.currentTreeId;
-
-      // Validate existing tree ID exists in available trees
-      if (existingTreeId && trees.some((tree) => tree.id === existingTreeId)) {
-        currentTreeId = existingTreeId;
-      } else {
-        // Fallback to first tree
-        currentTreeId = trees[0].id;
-      }
-    }
-
-    // Set global variable for modal (expected by catalog switching patches)
-    (window as any).layerCatalogsForModal = {
-      currentTreeId: currentTreeId,
-      catalogs: catalogs,
-      rootNodeIds: rootNodeIds
-    };
-  }
-
-  /**
    * Build configuration for standard layerCatalog.
    * Generates virtual WMS capabilities for each root tree node.
    */
@@ -195,10 +124,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     // Store AppCfg and task for use in patches
     this.currentAppCfg = context;
-    this.currentTask = task;
 
     // Get all root tree nodes first (for setting up global state)
-    const allRootNodeIds = this.getAllRootNodeIds(task, context);
+    const allRootNodeIds = this.getAllRootNodeIds(context);
 
     // Filter out empty trees before setting up global state
     // This ensures empty trees are not offered in the modal
@@ -213,11 +141,14 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     // Setup global state for catalog switching BEFORE building configuration
     // Always setup global state, even for single tree (ensures consistent behavior)
     // Use filtered list so empty trees are not shown in modal
-    this.setupCatalogGlobalState(context, nonEmptyRootNodeIds);
+    this.catalogSwitching.setupGlobalState(
+      nonEmptyRootNodeIds,
+      this.configLookup
+    );
 
     // Get root tree nodes from parameters (these are the actual root nodes of trees)
     // This will respect catalog selection if switching is enabled
-    const rootNodeIds = this.getRootNodeIds(task, context);
+    const rootNodeIds = this.getRootNodeIds(context);
 
     if (rootNodeIds.length === 0) {
       console.warn('[LayerCatalog] No root nodes found, disabling control');
@@ -294,9 +225,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     };
 
     // Merge with task parameters (allows backend to override div or add other options)
-    const config = this.mergeWithParameters(baseConfig, task.parameters);
-
-    return config;
+    return this.mergeWithParameters(baseConfig, task.parameters);
   }
 
   /**
@@ -311,22 +240,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private filterEmptyTrees(rootNodeIds: string[], context: AppCfg): string[] {
     const nonEmptyRootNodeIds: string[] = [];
-    const emptyTrees: Array<{ rootNodeId: string; reason: string }> = [];
 
     for (const rootNodeId of rootNodeIds) {
       const rootNode = this.configLookup.findNode(rootNodeId);
       if (!rootNode) {
-        emptyTrees.push({ rootNodeId, reason: 'Root node not found' });
         continue;
       }
 
       // Check if root node has children
       if (!rootNode.children || rootNode.children.length === 0) {
-        const tree = this.configLookup.findTreeContainingNode(rootNodeId);
-        emptyTrees.push({
-          rootNodeId,
-          reason: `Tree "${tree?.title || rootNodeId}" has no children`
-        });
         continue;
       }
 
@@ -340,13 +262,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       }
 
       if (!hasValidChild) {
-        const tree = this.configLookup.findTreeContainingNode(rootNodeId);
-        emptyTrees.push({
-          rootNodeId,
-          reason: `Tree "${
-            tree?.title || rootNodeId
-          }" has no children with valid capabilities`
-        });
         continue;
       }
 
@@ -361,7 +276,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Get all root node IDs (for setting up global state).
    * Returns all top-level tree root nodes.
    */
-  private getAllRootNodeIds(task: AppTasks, context: AppCfg): string[] {
+  private getAllRootNodeIds(context: AppCfg): string[] {
     return context.trees.map((tree: AppTree) => tree.rootNode);
   }
 
@@ -371,31 +286,18 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Otherwise, uses all tree root nodes.
    * Empty trees are always filtered out.
    */
-  private getRootNodeIds(task: AppTasks, context: AppCfg): string[] {
+  private getRootNodeIds(context: AppCfg): string[] {
     // Check if catalog global state is setup with a selected tree
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    if (layerCatalogsForModal?.currentTreeId) {
-      // Use only the selected tree - find tree by tree ID
-      const currentTreeId = layerCatalogsForModal.currentTreeId;
-
-      // Find the tree and return its root node
-      const selectedTree = context.trees.find(
-        (tree: AppTree) => tree.id === currentTreeId
-      );
-      if (selectedTree) {
-        // Verify the selected tree is not empty
-        const filtered = this.filterEmptyTrees(
-          [selectedTree.rootNode],
-          context
-        );
-        if (filtered.length === 0) {
-          console.warn(
-            `[LayerCatalog] Selected tree ${currentTreeId} is empty, falling back to first non-empty tree`
-          );
-          // Fall through to default behavior
-        } else {
-          return [selectedTree.rootNode];
-        }
+    const selectedRootNode =
+      this.catalogSwitching.getSelectedTreeRootNode(context);
+    if (selectedRootNode) {
+      // Verify the selected tree is not empty
+      const filtered = this.filterEmptyTrees([selectedRootNode], context);
+      if (filtered.length === 0) {
+        const currentTreeId = this.catalogSwitching.getCurrentTreeId();
+        // Fall through to default behavior
+      } else {
+        return [selectedRootNode];
       }
     }
 
@@ -417,75 +319,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     return true;
   }
 
-  /**
-   * Identify all unique services used by leaf nodes in the control.
-   * Traverses the tree structure starting from root nodes to find all leaf nodes (nodes with resources).
-   *
-   * @param context - Full application configuration
-   * @param task - Task configuration containing root node IDs
-   * @returns Map of service keys to service configurations
-   */
-  private identifyServicesFromControlLeaves(
-    context: AppCfg,
-    task: AppTasks
-  ): Map<string, { url: string; type: string }> {
-    const servicesMap = new Map<string, { url: string; type: string }>();
-
-    // Get root node IDs (same method used in buildConfiguration)
-    const rootNodeIds = this.getRootNodeIds(task, context);
-
-    // Helper function to recursively traverse nodes
-    const traverseNode = (nodeId: string): void => {
-      const node = this.configLookup.findNode(nodeId);
-      if (!node) {
-        return;
-      }
-
-      // If node has a resource, it's a leaf node - find its service
-      if (node.resource) {
-        const layer = this.configLookup.findLayer(node.resource);
-        if (layer?.service) {
-          const service = this.configLookup.findService(layer.service);
-          if (service) {
-            // Ensure url and type are strings
-            const url = service.url != null ? String(service.url) : '';
-            const type = service.type != null ? String(service.type) : '';
-
-            // Create unique key: url|type (or just url if URLs are unique)
-            const serviceKey = `${url}|${type}`;
-
-            // Store service if not already stored
-            if (!servicesMap.has(serviceKey)) {
-              servicesMap.set(serviceKey, { url, type });
-            }
-          }
-        }
-      }
-
-      // Recursively traverse children
-      if (node.children && node.children.length > 0) {
-        for (const childId of node.children) {
-          traverseNode(childId);
-        }
-      }
-    };
-
-    // Traverse from each root node
-    for (const rootNodeId of rootNodeIds) {
-      const rootNode = this.configLookup.findNode(rootNodeId);
-      if (rootNode) {
-        // Traverse root node's children (root node itself is not a leaf)
-        if (rootNode.children && rootNode.children.length > 0) {
-          for (const childId of rootNode.children) {
-            traverseNode(childId);
-          }
-        }
-      }
-    }
-
-    return servicesMap;
-  }
-
   // ============================================================================
   // PATCH METHODS - Ported from sandbox layer-catalog-control.component.ts
   // ============================================================================
@@ -495,22 +328,16 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * When a virtual service URL is detected, return generated capabilities instead of fetching from server.
    */
   private async patchLayerGetCapabilitiesOnline(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.waitForTCAndApply(async () => {
       const SITNA = await this.sitnaNamespaceService.waitForSITNA();
 
       // Try to find Layer prototype
       const LayerProto = (SITNA as any)?.layer?.Layer?.prototype;
       if (!LayerProto) {
-        console.warn(
-          '[LayerCatalog] Layer prototype not found, cannot patch getCapabilitiesOnline'
-        );
         return;
       }
 
       if (typeof LayerProto.getCapabilitiesOnline !== 'function') {
-        console.warn(
-          '[LayerCatalog] Layer.getCapabilitiesOnline not found, skipping patch'
-        );
         return;
       }
 
@@ -546,56 +373,73 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           // Check if this is a virtual service
           if (
             capabilitiesUrl &&
+            handler.currentAppCfg &&
             handler.virtualWmsService.isVirtualServiceUrl(capabilitiesUrl)
           ) {
             const nodeId =
               handler.virtualWmsService.extractNodeIdFromUrl(capabilitiesUrl);
 
-            if (!nodeId) {
-              console.error(
-                '[Virtual WMS] Cannot generate capabilities: missing nodeId'
-              );
-              // Fall back to normal fetch which will likely fail
-              return joinPoint.proceed();
-            }
-
-            if (!handler.currentAppCfg) {
-              console.error(
-                '[Virtual WMS] Cannot generate capabilities: currentAppCfg is null'
-              );
-              return joinPoint.proceed();
-            }
-
-            try {
-              // Generate virtual capabilities
-              const capabilities =
-                handler.virtualWmsService.generateCapabilities(
-                  nodeId,
-                  handler.currentAppCfg
+            if (nodeId) {
+              try {
+                // Generate virtual capabilities
+                const capabilities =
+                  handler.virtualWmsService.generateCapabilities(
+                    nodeId,
+                    handler.currentAppCfg
+                  );
+                return Promise.resolve(capabilities);
+              } catch (error) {
+                console.error(
+                  '[Virtual WMS] Failed to generate capabilities',
+                  error
                 );
-              console.info(
-                `[Virtual WMS] ✅ Generated capabilities for node: ${nodeId}`
-              );
-              return Promise.resolve(capabilities);
-            } catch (error) {
-              console.error(
-                '[Virtual WMS] Failed to generate capabilities',
-                error
-              );
-              // Fall back to normal fetch
-              return joinPoint.proceed();
+                // Fall back to normal fetch
+              }
             }
           }
 
+          // Check if this is a Raster that plans to build a WMTS
+          const isRasterWmts = handler.rasterService.isRasterWmts(
+            layer,
+            capabilitiesUrl,
+            handler.currentAppCfg || undefined
+          );
+
           // Not a virtual service, proceed with normal fetch
-          return joinPoint.proceed();
+          const proceedResult = joinPoint.proceed();
+
+          // Handle both Promise and synchronous returns
+          if (
+            proceedResult &&
+            typeof (proceedResult as any).then === 'function'
+          ) {
+            // It's a Promise
+            return (proceedResult as Promise<unknown>).then(
+              (result: unknown) => {
+                // Process WMTS capabilities if needed and get the processed result
+                result = handler.rasterService.processWmtsCapabilitiesResult(
+                  layer,
+                  capabilitiesUrl,
+                  result,
+                  handler.currentAppCfg || undefined
+                );
+
+                return result;
+              }
+            );
+          } else {
+            // Process WMTS capabilities if needed and get the processed result
+            return handler.rasterService.processWmtsCapabilitiesResult(
+              layer,
+              capabilitiesUrl,
+              proceedResult,
+              handler.currentAppCfg || undefined
+            );
+          }
         }
       );
 
       this.patchManager.add(() => meld.remove(advice));
-
-      // Mark as patched to avoid duplicate patches
-      (LayerProto as any).__getCapabilitiesOnlinePatched = true;
     });
   }
 
@@ -625,7 +469,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const layerName = joinPoint.args[1] as string;
           const self = this;
           const layerObj = layer;
-
           // Use layerName as the node ID to find the real layer configuration
           // AppCfg is guaranteed to be non-null (set before patches are applied)
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
@@ -666,74 +509,31 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.layerNames = layerName;
           }
 
-          const effectiveUrl = layerOptions.url;
-          const effectiveType = layerOptions.type;
           const effectiveLayerNames: string[] = Array.isArray(
             layerOptions.layerNames
           )
-            ? layerOptions.layerNames.filter(
-                (name): name is string => typeof name === 'string'
-              )
+            ? layerOptions.layerNames.filter((name): name is string => true)
             : layerOptions.layerNames != null
             ? [String(layerOptions.layerNames)]
             : [];
 
           const Raster = TC.layer.Raster;
 
-          // Get capabilities from existing layer if available
-          let serviceCapabilities: WMSCapabilities | null = null;
-          for (let i = 0; i < self.layers.length; i++) {
-            const existingLayer = self.layers[i];
-            // realLayerConfig is typed as RealLayerConfig, so url and type are guaranteed to be strings
-            // existingLayer comes from SITNA, so we need to ensure its url and type are strings for comparison
-            const existingUrl =
-              existingLayer.url != null ? String(existingLayer.url) : '';
-            const existingType =
-              existingLayer.type != null ? String(existingLayer.type) : '';
-            if (
-              existingUrl === effectiveUrl &&
-              existingType === effectiveType &&
-              existingLayer.capabilities
-            ) {
-              serviceCapabilities = existingLayer.capabilities;
-              break;
-            }
-          }
+          const proceedWithLayer = async () => {
+            const newLayer = new Raster(layerOptions);
+            await newLayer.getCapabilitiesPromise();
 
-          // Update layer title in capabilities to match node title
-          // currentAppCfg is guaranteed to be non-null (set before patches are applied)
-          if (serviceCapabilities) {
             const nodeTitle = handler.getNodeTitle(
               layerName,
               handler.currentAppCfg!
             );
-            if (nodeTitle && serviceCapabilities.Capability?.Layer) {
+
+            if (nodeTitle && newLayer.Capability?.Layer) {
               handler.updateLayerTitleInCapabilities(
-                serviceCapabilities.Capability.Layer,
+                newLayer.Capability.Layer,
                 effectiveLayerNames,
                 nodeTitle
               );
-            }
-          }
-
-          // Function to proceed with adding the layer once capabilities are available
-          const proceedWithLayer = (capabilities: WMSCapabilities | any) => {
-            // Set capabilities in layerOptions before creating the layer
-            // This ensures capabilities are available when isCompatible is called
-            if (capabilities) {
-              layerOptions['capabilities'] = capabilities;
-            } else {
-              console.warn(
-                '[LayerCatalog addLayerToMap] No capabilities available for service: ' +
-                  effectiveUrl
-              );
-            }
-
-            const newLayer = new Raster(layerOptions);
-
-            // Also set capabilities directly on the layer instance (in case layerOptions.capabilities isn't used)
-            if (capabilities) {
-              newLayer.capabilities = capabilities;
             }
 
             if (newLayer.isCompatible(self.map.crs)) {
@@ -743,67 +543,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                 self.showProjectionChangeDialog;
               if (typeof showProjectionChangeDialog === 'function') {
                 showProjectionChangeDialog.call(self, newLayer);
-              } else {
-                console.warn(
-                  '[LayerCatalog] Layer ' +
-                    layerName +
-                    ' is not compatible with map CRS'
-                );
               }
             }
           };
 
-          // If we have existing capabilities, use them immediately
-          if (serviceCapabilities) {
-            return Promise.resolve(serviceCapabilities).then((capabilities) => {
-              proceedWithLayer(capabilities);
-              return undefined;
-            });
-          } else {
-            // Load capabilities from the service
-            const tempLayer = new Raster({
-              url: effectiveUrl,
-              type: effectiveType
-            });
-
-            // Return a promise that resolves to undefined after layer is added
-            return tempLayer
-              .getCapabilitiesPromise()
-              .then(() => {
-                const loadedCapabilities =
-                  (tempLayer.capabilities as WMSCapabilities | undefined) ||
-                  null;
-
-                // Update layer title in capabilities
-                // currentAppCfg is guaranteed to be non-null (set before patches are applied)
-                if (loadedCapabilities) {
-                  const nodeTitle = handler.getNodeTitle(
-                    layerName,
-                    handler.currentAppCfg!
-                  );
-                  if (nodeTitle && loadedCapabilities.Capability?.Layer) {
-                    handler.updateLayerTitleInCapabilities(
-                      loadedCapabilities.Capability.Layer,
-                      effectiveLayerNames,
-                      nodeTitle
-                    );
-                  }
-                }
-
-                proceedWithLayer(loadedCapabilities);
-                // Return undefined to prevent original method from executing
-                return undefined;
-              })
-              .catch((error: any) => {
-                console.error(
-                  '[LayerCatalog addLayerToMap] Failed to load capabilities:',
-                  error
-                );
-                proceedWithLayer(null);
-                // Return undefined to prevent original method from executing
-                return undefined;
-              });
-          }
+          return proceedWithLayer();
         }
       );
 
@@ -821,7 +565,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchLayerCatalogAddLayer(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
-      const handler = this;
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.addLayer !== 'function') {
@@ -836,6 +579,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       // Replace addLayer with a function that always returns a resolved Promise
       ctlProto.addLayer = function (this: any, layer: any): Promise<void> {
+        // if layer.id is a string made only of numbers, return resolved promise without proceeding
+        if (typeof layer.id === 'string' && /^[0-9]+$/.test(layer.id)) {
+          return Promise.resolve();
+        }
         const self = this as any;
         return new Promise<void>(function (resolve, reject) {
           let fromLayerCatalog: any[] = [];
@@ -917,7 +664,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const layer = joinPoint.args[0] as any;
           const layerObj = layer || {};
           const result: Element[] = [];
-          const rootNodes = self._roots;
+          const selectors = {
+            LAYER_ROOT:
+              'div.tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch > li.tc-ctl-lcat-node'
+          };
+          const rootNodes = self.div.querySelectorAll(selectors.LAYER_ROOT);
           if (!rootNodes) {
             return [];
           }
@@ -947,103 +698,55 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Patch LayerCatalog.getLayerRootNode to return the correct root node for virtual layers.
+   * Patch LayerCatalog.getLayerRootNode to handle virtual layers by nodeId.
    */
   private async patchLayerCatalogGetLayerRootNode(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
-      const handler = this;
       const ctlProto = TC.control.LayerCatalog.prototype;
+
+      if (!ctlProto || typeof ctlProto.getLayerRootNode !== 'function') {
+        return;
+      }
 
       const advice = meld.around(
         ctlProto,
         'getLayerRootNode',
-        function (this: any, joinPoint: MeldJoinPoint): unknown {
+        function (this: any, joinPoint: MeldJoinPoint): Element | null {
           const self = this;
           const layer = joinPoint.args[0] as any;
           const layerObj = layer || {};
 
-          console.info(
-            '[LayerCatalog getLayerRootNode] Patch called for layer:',
-            layerObj
-          );
-
-          let nodeId: string | null = null;
-
-          // PRIMARY METHOD: Try reverse lookup from layer properties
-          if (layerObj.url && layerObj.type && layerObj.layerNames) {
-            nodeId = handler.virtualWmsService.findNodeIdFromLayerProperties(
-              layerObj.url,
-              layerObj.type,
-              layerObj.layerNames,
-              handler.currentAppCfg!
-            );
+          // Skip base layers
+          if (layerObj.isBase) {
+            return joinPoint.proceed() as Element | null;
           }
 
-          // FALLBACK: Try direct nodeId from layer or layer.options
-          if (!nodeId) {
-            nodeId = layerObj.nodeId || layerObj.options?.nodeId || null;
-          }
+          // For virtual layers, find by nodeId
+          const nodeId = layerObj.options?.nodeId || layerObj.nodeId;
+          if (nodeId) {
+            const selectors = {
+              LAYER_ROOT:
+                'div.tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch > li.tc-ctl-lcat-node'
+            };
+            const rootNodes = self.div.querySelectorAll(selectors.LAYER_ROOT);
 
-          if (!nodeId) {
+            for (let i = 0; i < rootNodes.length; i++) {
+              const rootNode = rootNodes[i] as Element;
+              const liLayer = rootNode.querySelector(
+                `li[data-layer-name="${nodeId}"]`
+              );
+              if (liLayer) {
+                return rootNode;
+              }
+            }
             return null;
           }
 
-          // Find the root service nodeId that contains this nodeId
-          // currentAppCfg is guaranteed to be non-null (set before patches are applied)
-          const rootServiceNodeId = handler.findRootServiceNodeId(
-            nodeId,
-            handler.currentAppCfg!
-          );
-          if (!rootServiceNodeId) {
-            return null;
-          }
-
-          // Get root nodes from _roots
-          const rootNodes = self._roots as NodeListOf<Element> | undefined;
-          if (!rootNodes) {
-            return null;
-          }
-
-          // Convert root service nodeId to virtual format (e.g., "node/tree/37" -> "virtual-node-tree-37")
-          const virtualNodeId = `virtual-${rootServiceNodeId.replace(
-            /\//g,
-            '-'
-          )}`;
-
-          // Find the root node that matches the root service nodeId
-          for (let i = 0; i < rootNodes.length; i++) {
-            const rootNode = rootNodes[i];
-            const htmlElement = rootNode as HTMLElement;
-
-            // Log root node attributes for debugging
-            const rootNodeId = rootNode.id;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const dataLayerId = (htmlElement.dataset as any)?.['layerId'];
-
-            // Check if root node's id matches the virtual format (primary check)
-            // Root nodes have id="virtual-node-tree-37" format
-            if (rootNodeId === virtualNodeId) {
-              return rootNode;
-            }
-
-            // Check if root node's data-layer-id matches the virtual format (fallback)
-            if (dataLayerId === virtualNodeId) {
-              return rootNode;
-            }
-
-            // Check if root node has data-layer-name matching the root service nodeId
-            const matchingDescendant = rootNode.querySelector(
-              `li[data-layer-name="${rootServiceNodeId}"]`
-            );
-            if (matchingDescendant) {
-              // Return the root node, not the descendant
-              return rootNode;
-            }
-          }
-
-          return null;
+          // For non-virtual layers, use original method
+          return joinPoint.proceed() as Element | null;
         }
       );
+
       this.patchManager.add(() => meld.remove(advice));
     });
   }
@@ -1069,9 +772,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         RasterProto,
         'getPath',
         function (this: any, joinPoint: MeldJoinPoint): unknown {
-          const layerName = joinPoint.args[0] as string;
-          const ignorePrefix = joinPoint.args[1] as boolean | undefined;
-
           const nodeId = this.options?.nodeId;
           // currentAppCfg is guaranteed to be non-null (set before patches are applied)
           if (nodeId) {
@@ -1095,63 +795,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   // ============================================================================
   // HELPER METHODS - Ported from sandbox
   // ============================================================================
-
-  /**
-   * Find the root service nodeId that contains the given nodeId.
-   */
-  private findRootServiceNodeId(
-    nodeId: string,
-    apiConfig: AppCfg
-  ): string | null {
-    if (!apiConfig?.trees) {
-      return null;
-    }
-
-    for (const tree of apiConfig.trees) {
-      if (!tree.nodes || !tree.rootNode) {
-        continue;
-      }
-
-      const node = tree.nodes[nodeId];
-      if (!node) {
-        continue;
-      }
-
-      const rootNode = tree.nodes[tree.rootNode];
-      if (rootNode?.children?.includes(nodeId)) {
-        return nodeId;
-      }
-
-      // Traverse up the tree
-      let currentNodeId: string | null = nodeId;
-      const visited = new Set<string>();
-
-      while (currentNodeId) {
-        if (visited.has(currentNodeId)) {
-          break;
-        }
-        visited.add(currentNodeId);
-
-        if (rootNode?.children?.includes(currentNodeId)) {
-          return currentNodeId;
-        }
-
-        // Find parent
-        let parentId: string | null = null;
-        for (const [parentNodeId, parentNode] of Object.entries(tree.nodes)) {
-          const node = parentNode as AppNodeInfo;
-          if (node.children?.includes(currentNodeId)) {
-            parentId = parentNodeId;
-            break;
-          }
-        }
-
-        currentNodeId = parentId;
-      }
-    }
-
-    return null;
-  }
 
   /**
    * Get the title of a node from apiConfig by nodeId.
@@ -1280,9 +923,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto) {
-        console.warn(
-          '[LayerCatalog] LayerCatalog prototype not found, cannot patch template'
-        );
         return;
       }
 
@@ -1334,9 +974,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto) {
-        console.warn(
-          '[LayerCatalog] LayerCatalog prototype not found, cannot patch createSearchAutocomplete'
-        );
         return;
       }
 
@@ -1366,7 +1003,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         try {
           originalCreateSearchAutocomplete.call(self);
         } catch (error) {
-          console.warn(
+          console.error(
             '[LayerCatalog] Error initializing search autocomplete:',
             error
           );
@@ -1378,184 +1015,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         ctlProto.createSearchAutocomplete = originalCreateSearchAutocomplete;
       });
     });
-  }
-
-  /**
-   * Extract language-aware text from WMS Title/Abstract fields that may have xml:lang annotations.
-   * Prefers the user's current language, falls back to default or any available language.
-   *
-   * @param textField - The Title or Abstract field (can be string, object with lang keys, or array)
-   * @param preferredLang - Preferred language code (e.g., 'es', 'en', 'ca')
-   * @returns The best matching text or null if no text available
-   */
-  private extractLanguageAwareText(
-    textField: any,
-    preferredLang: string
-  ): string | null {
-    if (!textField) {
-      return null;
-    }
-
-    // If it's a simple string, return it
-    if (typeof textField === 'string') {
-      return textField;
-    }
-
-    // If it's an object with language keys (e.g., { "en": "English", "es": "Spanish" })
-    // Or object where keys might be language codes
-    if (typeof textField === 'object' && !Array.isArray(textField)) {
-      // Try preferred language first (exact match)
-      if (textField[preferredLang]) {
-        return textField[preferredLang];
-      }
-
-      // Try language without region (e.g., 'es-ES' -> 'es')
-      const langBase = preferredLang.split('-')[0];
-      if (langBase !== preferredLang && textField[langBase]) {
-        return textField[langBase];
-      }
-
-      // Try matching any key that starts with the language base
-      const matchingKey = Object.keys(textField).find(
-        (key) =>
-          key === preferredLang ||
-          key === langBase ||
-          key.startsWith(langBase + '-')
-      );
-      if (matchingKey) {
-        return textField[matchingKey];
-      }
-
-      // Try common fallbacks in priority order
-      const fallbacks = ['es', 'en', 'ca', 'fr', 'de'];
-      for (const fallback of fallbacks) {
-        const fallbackKey = Object.keys(textField).find(
-          (key) => key === fallback || key.startsWith(fallback + '-')
-        );
-        if (fallbackKey) {
-          return textField[fallbackKey];
-        }
-      }
-
-      // Return first available value as last resort
-      const keys = Object.keys(textField);
-      if (keys.length > 0) {
-        return textField[keys[0]];
-      }
-    }
-
-    // If it's an array (e.g., [{ xml:lang: "en", _: "English" }, { xml:lang: "es", _: "Spanish" }])
-    // Or array of objects where each object represents a language variant
-    // Or array of strings (when XML parser doesn't preserve language attributes)
-    if (Array.isArray(textField)) {
-      // First, try to find items with language attributes (objects) matching preferred language
-      for (const item of textField) {
-        if (item && typeof item === 'object') {
-          // Check xml:lang attribute - try multiple possible property names
-          const lang =
-            item['xml:lang'] ||
-            item['xmlLang'] ||
-            item.xmlLang ||
-            item.lang ||
-            item['@xml:lang'] ||
-            item['@xmlLang'] ||
-            item['$']?.lang;
-
-          // Get text content - try multiple possible property names
-          const text =
-            item._ ||
-            item.value ||
-            item.text ||
-            item['#text'] ||
-            item['$']?._ ||
-            (typeof item === 'string' ? item : null);
-
-          // Exact match
-          if (lang === preferredLang && text) {
-            return text;
-          }
-        }
-      }
-
-      // Try language base match (e.g., 'es' if preferred is 'es-ES')
-      const langBase = preferredLang.split('-')[0];
-      if (langBase !== preferredLang) {
-        for (const item of textField) {
-          if (item && typeof item === 'object') {
-            const lang =
-              item['xml:lang'] ||
-              item['xmlLang'] ||
-              item.xmlLang ||
-              item.lang ||
-              item['@xml:lang'] ||
-              item['@xmlLang'] ||
-              item['$']?.lang;
-            // Match if lang starts with langBase (e.g., 'es-ES', 'es-MX' for 'es')
-            if (
-              lang &&
-              (lang === langBase || lang.startsWith(langBase + '-'))
-            ) {
-              const text =
-                item._ ||
-                item.value ||
-                item.text ||
-                item['#text'] ||
-                item['$']?._ ||
-                (typeof item === 'string' ? item : null);
-              if (text) {
-                return text;
-              }
-            }
-          }
-        }
-      }
-
-      // Try common fallback languages in order
-      const fallbacks = ['es', 'en', 'ca', 'fr', 'de'];
-      for (const fallback of fallbacks) {
-        for (const item of textField) {
-          if (item && typeof item === 'object') {
-            const lang =
-              item['xml:lang'] ||
-              item['xmlLang'] ||
-              item.xmlLang ||
-              item.lang ||
-              item['@xml:lang'] ||
-              item['@xmlLang'];
-            if (
-              lang &&
-              (lang === fallback || lang.startsWith(fallback + '-'))
-            ) {
-              const text =
-                item._ ||
-                item.value ||
-                item.text ||
-                item['#text'] ||
-                (typeof item === 'string' ? item : null);
-              if (text) {
-                return text;
-              }
-            }
-          }
-        }
-      }
-
-      // For arrays of strings (when XML parser doesn't preserve language attributes)
-      // Just use the first item if multiple are available
-      if (textField.length > 0) {
-        const first = textField[0];
-        if (typeof first === 'string') {
-          return first;
-        }
-        if (first && typeof first === 'object') {
-          return (
-            first._ || first.value || first.text || first['#text'] || first
-          );
-        }
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -1573,14 +1032,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const TCLayer = TC.layer;
 
       if (!RasterProto) {
-        console.warn(
-          '[LayerCatalog] Raster prototype not found, cannot patch getInfo'
-        );
         return;
       }
 
       if (typeof RasterProto.getInfo !== 'function') {
-        console.warn('[LayerCatalog] Raster.getInfo not found, skipping patch');
         return;
       }
 
@@ -1590,25 +1045,26 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         function (this: any, joinPoint: MeldJoinPoint): any {
           const name = joinPoint.args[0] as string;
           const layer = this;
-
           // Check if this is a virtual layer
+          // First check by URL (for layers that haven't been added to map yet)
           const layerUrl = layer.url || layer.options?.url;
-          if (
-            !layerUrl ||
-            !handler.virtualWmsService.isVirtualServiceUrl(layerUrl)
-          ) {
+          const isVirtualByUrl =
+            layerUrl && handler.virtualWmsService.isVirtualServiceUrl(layerUrl);
+
+          // Also check by nodeId (for layers already added to map with real URL)
+          const nodeIdFromOptions = layer.options?.nodeId;
+          const isVirtualByNodeId = !!nodeIdFromOptions;
+
+          if (!isVirtualByUrl && !isVirtualByNodeId) {
             // Not a virtual layer, proceed with original getInfo
             return joinPoint.proceed();
           }
 
-          // For virtual layers, name is the nodeId
-          const nodeId = name;
+          // For virtual layers, use nodeId from options if available, otherwise use name parameter
+          const nodeId = nodeIdFromOptions || name;
 
           // Ensure we have app config
           if (!handler.currentAppCfg) {
-            console.warn(
-              '[LayerCatalog getInfo] No app config available, cannot process virtual layer'
-            );
             // Return minimal structure with abstract to ensure info button is shown
             return { name: nodeId, abstract: '' };
           }
@@ -1619,9 +1075,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             handler.currentAppCfg
           );
           if (!realLayerConfig) {
-            console.warn(
-              `[LayerCatalog getInfo] Cannot find real layer config for nodeId: ${nodeId}`
-            );
             const node = handler.configLookup.findNode(nodeId);
             // Return minimal structure with abstract to ensure info button is shown
             return {
@@ -1631,304 +1084,33 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             };
           }
 
-          // Look up node, layer, and service from app config
-          const node = handler.configLookup.findNode(nodeId);
-          if (!node) {
-            console.warn(
-              `[LayerCatalog getInfo] Node ${nodeId} not found in app config`
-            );
-            // Return minimal structure with abstract to ensure info button is shown
-            return {
-              name: nodeId,
-              title: nodeId,
-              abstract: ''
-            };
-          }
+          // Get original getInfo result first
+          const originalInfo = joinPoint.proceed();
 
-          let layerConfig: AppLayer | undefined;
-          let serviceConfig: AppService | undefined;
+          // Get WMS capabilities using service
+          const rasterInstancesCache = (handler as any).rasterInstancesCache;
+          const wmsCapabilities = handler.rasterService.getRasterCapabilities(
+            realLayerConfig,
+            rasterInstancesCache,
+            TCLayer
+          );
 
-          if (node.resource) {
-            layerConfig = handler.configLookup.findLayer(node.resource);
-            if (layerConfig?.service) {
-              serviceConfig = handler.configLookup.findService(
-                layerConfig.service
-              );
-            }
-          }
+          // Enrich layer info using service
+          const enrichedInfo = handler.rasterService.enrichRasterLayerInfo(
+            nodeId,
+            realLayerConfig,
+            wmsCapabilities,
+            rasterInstancesCache,
+            TCLayer
+          );
 
-          // Initialize enrichedInfo object with app config data first (available synchronously)
-          const enrichedInfo: any = {};
-
-          // Set name from real layer config
-          if (
-            realLayerConfig.layerNames &&
-            realLayerConfig.layerNames.length > 0
-          ) {
-            const realLayerName = realLayerConfig.layerNames[0];
-            const cleanLayerName = realLayerName.includes(':')
-              ? realLayerName.substring(realLayerName.indexOf(':') + 1)
-              : realLayerName;
-            enrichedInfo.name = cleanLayerName;
-          } else {
-            enrichedInfo.name = nodeId;
-          }
-
-          // Override with app config data where available (app config takes precedence)
-          // Title: node.title
-          if (node.title) {
-            enrichedInfo.title = node.title;
-          }
-
-          // isGroup: check if node has children
-          if (node.children && node.children.length > 0) {
-            enrichedInfo.isGroup = true;
-          } else {
-            enrichedInfo.isGroup = false;
-          }
-
-          // URL: service.url from app config
-          if (serviceConfig?.url) {
-            enrichedInfo.url = serviceConfig.url;
-          } else {
-            enrichedInfo.url = realLayerConfig.url;
-          }
-
-          // Metadata: from layer.metadataUrl (if available in app config)
-          if (layerConfig && (layerConfig as any).metadataUrl) {
-            const metadataUrls = Array.isArray((layerConfig as any).metadataUrl)
-              ? (layerConfig as any).metadataUrl
-              : [(layerConfig as any).metadataUrl];
-
-            enrichedInfo.metadata = metadataUrls.map((md: any) => ({
-              format: md.format || 'text/html',
-              type: md.type || 'simple',
-              url: typeof md === 'string' ? md : md.url,
-              formatDescription: md.formatDescription || 'Metadata'
-            }));
-          }
-
-          // DataUrl: from layer.datasetURL (if available in app config)
-          if (layerConfig && (layerConfig as any).datasetURL) {
-            const dataUrls = Array.isArray((layerConfig as any).datasetURL)
-              ? (layerConfig as any).datasetURL
-              : [(layerConfig as any).datasetURL];
-
-            enrichedInfo.dataUrl = dataUrls.map((du: any) => ({
-              format: du.format || 'application/zip',
-              type: du.type || 'simple',
-              url: typeof du === 'string' ? du : du.url,
-              formatDescription: du.formatDescription || 'Download'
-            }));
-          }
-
-          // Contact information: from app config
-          if (serviceConfig) {
-            if ((serviceConfig as any).contactPerson) {
-              enrichedInfo.contactPerson = (serviceConfig as any).contactPerson;
-            }
-            if ((serviceConfig as any).contactOrganization) {
-              enrichedInfo.contactOrganization = (
-                serviceConfig as any
-              ).contactOrganization;
-            }
-            if ((serviceConfig as any).contactMail) {
-              enrichedInfo.contactMail = (serviceConfig as any).contactMail;
-            }
-            if ((serviceConfig as any).contactTelephone) {
-              enrichedInfo.contactTelephone = (
-                serviceConfig as any
-              ).contactTelephone;
-            }
-            if ((serviceConfig as any).fees) {
-              enrichedInfo.fees = (serviceConfig as any).fees;
-            }
-            if ((serviceConfig as any).accessConstraints) {
-              enrichedInfo.accessConstraints = (
-                serviceConfig as any
-              ).accessConstraints;
-            }
-          }
-
-          // ParentAbstract: from app config
-          const tree = handler.configLookup.findTreeContainingNode(nodeId);
-          if (tree && (tree as any).abstract) {
-            enrichedInfo.parentAbstract = (tree as any).abstract;
-          } else if (serviceConfig && (serviceConfig as any).abstract) {
-            enrichedInfo.parentAbstract = (serviceConfig as any).abstract;
-          }
-
-          // Try to get WMS capabilities data to enrich Abstract and other fields
-          // NOTE: For virtual layers, we cannot use layer.capabilities (they are virtual capabilities)
-          // We must always fetch from the real WMS service
-          let wmsCapabilities: WMSCapabilities | null = null;
-
-          // Skip virtual layer capabilities - always get from real service
-          try {
-            const serviceKey = `${realLayerConfig.url}|${realLayerConfig.type}`;
-            // Check if we have a cached Raster instance with capabilities
-            const cachedRaster = (handler as any).rasterInstancesCache?.get?.(
-              serviceKey
-            );
-            if (cachedRaster?.capabilities) {
-              wmsCapabilities = cachedRaster.capabilities;
-            } else {
-              // Try to get capabilities from the real service (only if already loaded)
-              try {
-                const tempRaster = new TCLayer.Raster({
-                  url: realLayerConfig.url,
-                  type: realLayerConfig.type
-                });
-                if (tempRaster.capabilities) {
-                  wmsCapabilities = tempRaster.capabilities;
-                }
-                // If capabilities are not already loaded, we skip them (they would require async loading)
-              } catch (rasterError) {
-                console.error(
-                  '[LayerCatalog getInfo] Error creating temporary Raster:',
-                  rasterError
-                );
-              }
-            }
-          } catch (error) {
-            console.warn(
-              '[LayerCatalog getInfo] Could not load WMS capabilities:',
-              error
-            );
-          }
-
-          // Merge WMS capabilities data (as fallback, app config takes precedence)
-          if (wmsCapabilities && wmsCapabilities.Capability?.Layer) {
-            const findLayerInCapabilities = (
-              capLayer: any,
-              layerName: string
-            ): any => {
-              if (capLayer.Name === layerName) {
-                return capLayer;
-              }
-              if (capLayer.Layer) {
-                for (const subLayer of capLayer.Layer) {
-                  const found = findLayerInCapabilities(subLayer, layerName);
-                  if (found) return found;
-                }
-              }
-              return null;
-            };
-
-            const realLayerName =
-              realLayerConfig.layerNames &&
-              realLayerConfig.layerNames.length > 0
-                ? realLayerConfig.layerNames[0]
-                : null;
-
-            // Get current user language preference
-            const currentLang = handler.languageService.getCurrentLanguage();
-
-            if (realLayerName) {
-              const wmsLayer = findLayerInCapabilities(
-                wmsCapabilities.Capability.Layer,
-                realLayerName
-              );
-              if (wmsLayer) {
-                // Preserve full language structure and resolve preferred language for display
-                if (!enrichedInfo.abstract && wmsLayer.Abstract) {
-                  // Store full language structure (preserve all variants)
-                  enrichedInfo.abstractAll = wmsLayer.Abstract;
-
-                  // Extract preferred language for display
-                  const abstractText = handler.extractLanguageAwareText(
-                    wmsLayer.Abstract,
-                    currentLang
-                  );
-                  if (abstractText) {
-                    enrichedInfo.abstract = abstractText;
-                  }
-                }
-              }
-            }
-
-            // Get service-level information from capabilities
-            if (wmsCapabilities.Service) {
-              // Preserve full language structure and resolve preferred language for display
-              if (
-                !enrichedInfo.parentAbstract &&
-                wmsCapabilities.Service.Abstract
-              ) {
-                // Store full language structure (preserve all variants)
-                enrichedInfo.parentAbstractAll =
-                  wmsCapabilities.Service.Abstract;
-
-                // Extract preferred language for display
-                const serviceAbstractText = handler.extractLanguageAwareText(
-                  wmsCapabilities.Service.Abstract,
-                  currentLang
-                );
-                if (serviceAbstractText) {
-                  enrichedInfo.parentAbstract = serviceAbstractText;
-                }
-              }
-
-              // Use service Title if available, with language preference
-              if (wmsCapabilities.Service.Title) {
-                const serviceTitleText = handler.extractLanguageAwareText(
-                  wmsCapabilities.Service.Title,
-                  currentLang
-                );
-                // Service title can be used as additional context if needed
-              }
-
-              // Get contact information from capabilities if not in app config
-              if (wmsCapabilities.Service.ContactInformation) {
-                const contact = wmsCapabilities.Service.ContactInformation;
-                if (
-                  !enrichedInfo.contactPerson &&
-                  contact.ContactPersonPrimary?.ContactPerson
-                ) {
-                  enrichedInfo.contactPerson =
-                    contact.ContactPersonPrimary.ContactPerson;
-                }
-                if (
-                  !enrichedInfo.contactOrganization &&
-                  contact.ContactPersonPrimary?.ContactOrganization
-                ) {
-                  enrichedInfo.contactOrganization =
-                    contact.ContactPersonPrimary.ContactOrganization;
-                }
-                if (
-                  !enrichedInfo.contactMail &&
-                  contact.ContactElectronicMailAddress
-                ) {
-                  enrichedInfo.contactMail =
-                    contact.ContactElectronicMailAddress;
-                }
-                if (
-                  !enrichedInfo.contactTelephone &&
-                  contact.ContactVoiceTelephone
-                ) {
-                  enrichedInfo.contactTelephone = contact.ContactVoiceTelephone;
-                }
-              }
-
-              // Get fees and access constraints from capabilities if not in app config
-              if (!enrichedInfo.fees && wmsCapabilities.Service.Fees) {
-                enrichedInfo.fees = wmsCapabilities.Service.Fees;
-              }
-              if (
-                !enrichedInfo.accessConstraints &&
-                wmsCapabilities.Service.AccessConstraints
-              ) {
-                enrichedInfo.accessConstraints =
-                  wmsCapabilities.Service.AccessConstraints;
-              }
-            }
-          }
-
-          // Ensure abstract is always present (even if empty) so info button shows
-          if (!enrichedInfo.abstract) {
-            enrichedInfo.abstract = '';
-          }
-
-          return enrichedInfo;
+          // Merge original result with enriched data (enriched overrides original)
+          // Ensure originalInfo is an object before spreading
+          const originalInfoObj =
+            originalInfo && typeof originalInfo === 'object'
+              ? originalInfo
+              : {};
+          return { ...originalInfoObj, ...enrichedInfo };
         }
       );
 
@@ -1946,17 +1128,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto) {
-        console.warn(
-          '[LayerCatalog] LayerCatalog prototype not found, cannot patch catalog switching injection'
-        );
         return;
       }
 
       // Patch renderData to inject button and panel after render
       if (typeof ctlProto.renderData !== 'function') {
-        console.warn(
-          '[LayerCatalog] LayerCatalog.renderData not found, cannot patch catalog switching injection'
-        );
         return;
       }
 
@@ -1967,103 +1143,57 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const result = joinPoint.proceed();
           const self = this;
 
-          // Use setTimeout to ensure DOM is ready after render
-          setTimeout(() => {
-            try {
-              const layerCatalogsForModal = (window as any)
-                .layerCatalogsForModal;
+          // Use retry mechanism to wait for DOM elements to be ready
+          // The search button might be rendered asynchronously after renderData completes
+          let retryCount = 0;
+          const maxRetries = 10;
+          const retryDelay = 50; // 50ms between retries
 
-              // Only inject if multiple catalogs exist
-              if (
-                !layerCatalogsForModal ||
-                !layerCatalogsForModal.catalogs ||
-                layerCatalogsForModal.catalogs.length <= 1
-              ) {
-                return;
-              }
-
-              if (!self.div) {
-                return;
-              }
-
-              // Find h2 element
-              const h2Element = self.div.querySelector('h2');
-              if (!h2Element) {
-                return;
-              }
-
-              // Check if search button exists (indicates search is enabled)
-              const searchButton = h2Element.querySelector(
-                'button.tc-ctl-lcat-btn-search'
-              );
-              if (!searchButton) {
-                return;
-              }
-
-              // Check if button already exists (avoid duplicates)
-              if (self.div.querySelector('#change-catalog-sitmun')) {
-                return;
-              }
-
-              // Create catalog switching button
-              const changeCatalogButton = document.createElement('label');
-              changeCatalogButton.id = 'change-catalog-sitmun';
-              changeCatalogButton.className = 'tc-ctl-lcat-btn-change-topic';
-
-              // Set tooltip with current topic name
-              const currentTopicTooltip = handler.getCurrentTopicTooltip();
-              changeCatalogButton.setAttribute('title', currentTopicTooltip);
-              changeCatalogButton.textContent =
-                self.getLocaleString('changeTopic') || 'Change topic';
-              changeCatalogButton.style.cursor = 'pointer';
-
-              // Insert after search button
-              if (searchButton.nextSibling) {
-                h2Element.insertBefore(
-                  changeCatalogButton,
-                  searchButton.nextSibling
-                );
-              } else {
-                h2Element.appendChild(changeCatalogButton);
-              }
-
-              // Create projects panel if it doesn't exist
-              let projectsPanel = document.querySelector(
-                '#catalog-projects'
-              ) as HTMLElement;
-              if (!projectsPanel) {
-                projectsPanel = document.createElement('div');
-                projectsPanel.id = 'catalog-projects';
-                projectsPanel.className = 'tc-ctl-lcat-proj tc-hidden';
-
-                // Append to body for proper fixed positioning (modal overlay)
-                // Fixed positioning works better when element is direct child of body
-                document.body.appendChild(projectsPanel);
-              }
-
-              // Attach event handlers immediately after injecting button
-              // Check if handlers already added (avoid duplicates)
-              if (
-                !(changeCatalogButton as any).__catalogSwitchingHandlersAdded
-              ) {
-                handler.attachCatalogSwitchingHandlers(
-                  self,
-                  changeCatalogButton,
-                  projectsPanel
-                );
-                (changeCatalogButton as any).__catalogSwitchingHandlersAdded =
-                  true;
-              }
-
-              // Update tooltip after button is created (in case catalog was already selected)
-              handler.updateChangeTopicButtonTooltip();
-            } catch (error) {
-              console.error(
-                '[LayerCatalog] Error injecting catalog switching elements:',
-                error
-              );
+          // Check if injection succeeded, retry if not
+          const checkAndRetry = () => {
+            // Check if button was already successfully injected
+            const buttonExists = self.div?.querySelector(
+              '#change-catalog-sitmun'
+            );
+            if (buttonExists) {
+              // Successfully injected, no need to retry
+              return;
             }
-          }, 0);
+
+            // Check if required elements exist
+            const h2Element = self.div?.querySelector('h2');
+
+            if (h2Element) {
+              // All required elements exist, try injection
+              try {
+                handler.catalogSwitching.injectCatalogSwitchingButton(
+                  self,
+                  handler
+                );
+                // Check again if injection succeeded
+                const injected = self.div?.querySelector(
+                  '#change-catalog-sitmun'
+                );
+                if (!injected && retryCount < maxRetries) {
+                  // Injection failed (might be due to other conditions), retry
+                  retryCount++;
+                  setTimeout(checkAndRetry, retryDelay);
+                }
+              } catch (error) {
+                console.error(
+                  '[LayerCatalog] Error injecting catalog switching elements:',
+                  error
+                );
+              }
+            } else if (retryCount < maxRetries) {
+              // Required elements not ready yet, wait and retry
+              retryCount++;
+              setTimeout(checkAndRetry, retryDelay);
+            }
+          };
+
+          // Start the retry mechanism
+          setTimeout(checkAndRetry, 0);
 
           return result;
         }
@@ -2071,352 +1201,5 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       this.patchManager.add(() => meld.remove(advice));
     });
-  }
-
-  /**
-   * Attach event handlers for catalog switching.
-   * This is called after the button is injected to ensure handlers are attached to existing elements.
-   */
-  private attachCatalogSwitchingHandlers(
-    control: any,
-    changeCatalogButton: HTMLElement,
-    projectsPanel: HTMLElement
-  ): void {
-    const handler = this;
-    const TC = this.tcNamespaceService.getTC();
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-
-    if (
-      !layerCatalogsForModal ||
-      !layerCatalogsForModal.catalogs ||
-      layerCatalogsForModal.catalogs.length <= 1
-    ) {
-      return;
-    }
-
-    // Click handler for catalog switching button
-    changeCatalogButton.addEventListener('click', function (e: Event) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Toggle projects panel
-      projectsPanel.classList.toggle(TC.Consts.classes.HIDDEN);
-
-      // Handle responsive behavior (mobile panel management)
-      if (window.innerWidth < 760) {
-        const toolsPanel = document.querySelector('#tools-panel');
-        const silmePanel = document.querySelector('#silme-panel');
-        const navHome = document.querySelector('.tc-ctl-nav-home');
-        const svBtn = document.querySelector('.tc-ctl-sv-btn');
-        const sb = document.querySelector('.tc-ctl-sb');
-        const scl = document.querySelector('.tc-ctl-scl');
-
-        if (toolsPanel) {
-          toolsPanel.classList.toggle('right-collapsed');
-        }
-        if (silmePanel) {
-          silmePanel.classList.remove('left-opacity');
-        }
-        if (navHome) {
-          navHome.classList.remove(TC.Consts.classes.HIDDEN);
-        }
-        if (svBtn) {
-          svBtn.classList.remove(TC.Consts.classes.HIDDEN);
-        }
-        if (sb) {
-          (sb as HTMLElement).style.visibility = 'visible';
-        }
-        if (scl) {
-          (scl as HTMLElement).style.visibility = 'visible';
-        }
-      }
-
-      // Render projects template if panel is being shown and not yet rendered
-      if (
-        !projectsPanel.classList.contains(TC.Consts.classes.HIDDEN) &&
-        !projectsPanel.querySelector('.tc-ctl-lcat-proj-content')
-      ) {
-        handler.renderProjectsPanel(control, projectsPanel);
-      }
-    });
-
-    // Use event delegation for panel buttons (they may not exist until template is rendered)
-    projectsPanel.addEventListener('click', function (e: Event) {
-      const target = e.target as HTMLElement;
-
-      // Check if click is on catalog item first (before checking buttons)
-      // This ensures catalog selection works even if clicking on label or other child elements
-      const catalogElement = target.closest(
-        '.tc-ctl-lcat-proj-catalog'
-      ) as HTMLElement;
-      if (catalogElement) {
-        // Don't process if clicking on buttons inside the catalog item
-        if (target.closest('button')) {
-          return;
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Remove selection from previously selected item
-        const selected = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-selected'
-        );
-        if (selected && selected !== catalogElement) {
-          selected.classList.remove('tc-ctl-lcat-proj-selected');
-        }
-
-        // Add selection to clicked item
-        catalogElement.classList.add('tc-ctl-lcat-proj-selected');
-        return;
-      }
-
-      // Close button
-      if (
-        target.classList.contains('tc-modal-close') ||
-        target.closest('.tc-modal-close')
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
-        projectsPanel
-          .querySelectorAll('.tc-ctl-lcat-proj-selected')
-          .forEach((item: Element) => {
-            item.classList.remove('tc-ctl-lcat-proj-selected');
-          });
-        return;
-      }
-
-      // Accept button
-      if (
-        target.classList.contains('tc-ctl-lcat-proj-accept') ||
-        target.closest('.tc-ctl-lcat-proj-accept')
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        const selectedProject = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-selected'
-        );
-        if (selectedProject) {
-          const catalogIdInput = selectedProject.querySelector(
-            '.tc-ctl-lcat-proj-catalog-id'
-          ) as HTMLInputElement;
-          if (catalogIdInput) {
-            const treeId = catalogIdInput.value; // Tree ID is stored as string
-            if (treeId !== layerCatalogsForModal.currentTreeId) {
-              handler.handleCatalogSwitch(treeId);
-            }
-          }
-        }
-        projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
-        return;
-      }
-
-      // Cancel button
-      if (
-        target.classList.contains('tc-ctl-lcat-proj-cancel') ||
-        target.closest('.tc-ctl-lcat-proj-cancel')
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
-        projectsPanel
-          .querySelectorAll('.tc-ctl-lcat-proj-selected')
-          .forEach((item: Element) => {
-            item.classList.remove('tc-ctl-lcat-proj-selected');
-          });
-        return;
-      }
-    });
-  }
-
-  /**
-   * Render the projects panel with catalog list.
-   */
-  private renderProjectsPanel(control: any, projectsPanel: Element): void {
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    if (!layerCatalogsForModal || !layerCatalogsForModal.catalogs) {
-      return;
-    }
-
-    // Load and render the projects template
-    const templateKey = control.CLASS + '-proj';
-    control
-      .getRenderedHtml(templateKey, {
-        catalogs: layerCatalogsForModal.catalogs,
-        title: 'Catalog Selection'
-      })
-      .then((html: string) => {
-        const template = document.createElement('template');
-        template.innerHTML = html;
-        const content = template.content || (template as any);
-        projectsPanel.innerHTML = '';
-        projectsPanel.appendChild(content.cloneNode(true));
-
-        // Mark current catalog as selected (by tree ID)
-        const currentTreeId = layerCatalogsForModal.currentTreeId;
-        const catalogItems = projectsPanel.querySelectorAll(
-          '.tc-ctl-lcat-proj-catalog'
-        );
-        catalogItems.forEach((item: Element) => {
-          const catalogIdInput = item.querySelector(
-            '.tc-ctl-lcat-proj-catalog-id'
-          ) as HTMLInputElement;
-          if (catalogIdInput && catalogIdInput.value === currentTreeId) {
-            item.classList.add('tc-ctl-lcat-proj-selected');
-          }
-        });
-
-        // Re-attach event handlers for newly rendered elements
-        const closeButton = projectsPanel.querySelector('.tc-modal-close');
-        const acceptButton = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-accept'
-        );
-        const cancelButton = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-cancel'
-        );
-        const catalogItemsNew = projectsPanel.querySelectorAll(
-          '.tc-ctl-lcat-proj-catalog'
-        );
-
-        if (closeButton) {
-          closeButton.addEventListener('click', function () {
-            projectsPanel.classList.add('tc-hidden');
-            projectsPanel
-              .querySelectorAll('.tc-ctl-lcat-proj-selected')
-              .forEach((item: Element) => {
-                item.classList.remove('tc-ctl-lcat-proj-selected');
-              });
-          });
-        }
-
-        if (acceptButton) {
-          const handlerInstance = this;
-          acceptButton.addEventListener('click', () => {
-            const selectedProject = projectsPanel.querySelector(
-              '.tc-ctl-lcat-proj-selected'
-            );
-            if (selectedProject) {
-              const catalogIdInput = selectedProject.querySelector(
-                '.tc-ctl-lcat-proj-catalog-id'
-              ) as HTMLInputElement;
-              if (catalogIdInput) {
-                const treeId = catalogIdInput.value; // Tree ID is stored as string
-                if (treeId !== layerCatalogsForModal.currentTreeId) {
-                  handlerInstance.handleCatalogSwitch(treeId);
-                }
-              }
-            }
-            projectsPanel.classList.add('tc-hidden');
-          });
-        }
-
-        if (cancelButton) {
-          cancelButton.addEventListener('click', function () {
-            projectsPanel.classList.add('tc-hidden');
-            projectsPanel
-              .querySelectorAll('.tc-ctl-lcat-proj-selected')
-              .forEach((item: Element) => {
-                item.classList.remove('tc-ctl-lcat-proj-selected');
-              });
-          });
-        }
-
-        catalogItemsNew.forEach((catalogElement: Element) => {
-          catalogElement.addEventListener('click', function (e: Event) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const selected = projectsPanel.querySelector(
-              '.tc-ctl-lcat-proj-selected'
-            );
-            if (selected && selected !== catalogElement) {
-              selected.classList.remove('tc-ctl-lcat-proj-selected');
-            }
-            catalogElement.classList.add('tc-ctl-lcat-proj-selected');
-          });
-        });
-      })
-      .catch((error: any) => {
-        console.error('[LayerCatalog] Error rendering projects panel:', error);
-      });
-  }
-
-  /**
-   * Get tooltip text for the changeTopic button showing current topic.
-   */
-  private getCurrentTopicTooltip(): string {
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    if (
-      !layerCatalogsForModal ||
-      !layerCatalogsForModal.catalogs ||
-      layerCatalogsForModal.catalogs.length === 0
-    ) {
-      return 'Change topic organization';
-    }
-
-    const currentTreeId = layerCatalogsForModal.currentTreeId;
-    const currentCatalogInfo = layerCatalogsForModal.catalogs.find(
-      (c: any) => c.id === currentTreeId
-    );
-    const currentTopicName = currentCatalogInfo?.catalog || 'Unknown topic';
-
-    return `Current topic: ${currentTopicName}`;
-  }
-
-  /**
-   * Update the changeTopic button tooltip with current topic name.
-   */
-  private updateChangeTopicButtonTooltip(): void {
-    const changeCatalogButton = document.querySelector(
-      '#change-catalog-sitmun'
-    ) as HTMLElement;
-    if (changeCatalogButton) {
-      const tooltip = this.getCurrentTopicTooltip();
-      changeCatalogButton.setAttribute('title', tooltip);
-    }
-  }
-
-  /**
-   * Handle catalog switching.
-   * Updates the current catalog and triggers control rebuild.
-   * @param selectedTreeId - The tree ID of the selected catalog
-   */
-  private handleCatalogSwitch(selectedTreeId: string): void {
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    if (!layerCatalogsForModal) {
-      console.warn(
-        '[LayerCatalog] layerCatalogsForModal not found, cannot switch catalog'
-      );
-      return;
-    }
-
-    if (selectedTreeId === layerCatalogsForModal.currentTreeId) {
-      return;
-    }
-
-    const selectedCatalog = layerCatalogsForModal.catalogs.find(
-      (c: any) => c.id === selectedTreeId
-    );
-
-    // Update current tree ID BEFORE calling updateCatalog
-    // This ensures the value is set when buildConfiguration is called again
-    layerCatalogsForModal.currentTreeId = selectedTreeId;
-
-    // Update button tooltip immediately
-    this.updateChangeTopicButtonTooltip();
-
-    // Trigger catalog update via AbstractMapComponent if available
-    const abstractMapObject = (window as any).abstractMapObject;
-    if (
-      abstractMapObject &&
-      typeof abstractMapObject.updateCatalog === 'function'
-    ) {
-      abstractMapObject.updateCatalog();
-    } else {
-      console.warn(
-        '[LayerCatalog] abstractMapObject.updateCatalog not available, catalog switch may require manual reload'
-      );
-    }
   }
 }

@@ -12,16 +12,14 @@ import { BasemapSelectorControlHandler } from './basemap-selector-control.handle
 import { LegendControlHandler } from './legend-control.handler';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
-import { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
-import { SearchSilmeControlHandler } from './search-silme-control.handler';
+import { SearchControlHandler } from './search-control.handler';
 import { AttributionControlHandler } from './attribution-control.handler';
 import { FullScreenControlHandler } from './full-screen-control.handler';
 import { ThreeDControlHandler } from './threed-control.handler';
 import { DataLoaderControlHandler } from './dataloader-control.handler';
 import { DownloadControlHandler } from './download-control.handler';
 import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
-import { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
-import { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
+import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { GeolocationControlHandler } from './geolocation-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 import { MeasureControlHandler } from './measure-control.handler';
@@ -32,7 +30,6 @@ import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
 import { OverviewMapControlHandler } from './overview-map-control.handler';
 import { PopupControlHandler } from './popup-control.handler';
-import { PopupSilmeControlHandler } from './popup-silme-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -48,6 +45,7 @@ export { ThreeDControlHandler } from './threed-control.handler';
 export { DataLoaderControlHandler } from './dataloader-control.handler';
 export { DownloadControlHandler } from './download-control.handler';
 export { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
+export { FeatureInfoControlHandler } from './feature-info-control.handler';
 export { GeolocationControlHandler } from './geolocation-control.handler';
 export { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 export { MeasureControlHandler } from './measure-control.handler';
@@ -58,16 +56,10 @@ export { ClickControlHandler } from './click-control.handler';
 export { NavBarControlHandler } from './navbar-control.handler';
 export { OverviewMapControlHandler } from './overview-map-control.handler';
 export { PopupControlHandler } from './popup-control.handler';
-export { PopupSilmeControlHandler } from './popup-silme-control.handler';
+export { SearchControlHandler } from './search-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
-
-// Legacy Silme Extension Controls
-export { LayerCatalogSilmeControlHandler } from './layer-catalog-silme-control.handler';
-export { SearchSilmeControlHandler } from './search-silme-control.handler';
-export { DrawMeasureModifySilmeControlHandler } from './draw-measure-modify-silme-control.handler';
-export { FeatureInfoSilmeControlHandler } from './feature-info-silme-control.handler';
 
 /**
  * Array of all handler classes for easy registration.
@@ -88,6 +80,7 @@ export const ALL_CONTROL_HANDLERS = [
   DataLoaderControlHandler,
   DownloadControlHandler,
   DrawMeasureModifyControlHandler,
+  FeatureInfoControlHandler,
   GeolocationControlHandler,
   LoadingIndicatorControlHandler,
   MeasureControlHandler,
@@ -102,10 +95,6 @@ export const ALL_CONTROL_HANDLERS = [
   // Standard with Virtual Capabilities
   LayerCatalogControlHandler,
 
-  // Legacy Silme
-  LayerCatalogSilmeControlHandler,
-  SearchSilmeControlHandler,
-  DrawMeasureModifySilmeControlHandler,
-  FeatureInfoSilmeControlHandler,
-  PopupSilmeControlHandler
+  // Native Search
+  SearchControlHandler
 ] as const;

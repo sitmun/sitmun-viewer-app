@@ -9,6 +9,8 @@ import { NavigationPath } from '@config/app.config';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
+import { MapInterfaceService } from 'src/app/services/map-interface.service';
+import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 
 @Component({
   selector: 'app-map',
@@ -28,7 +30,9 @@ export class MapComponent extends AbstractMapComponent {
     @Inject(DOCUMENT) document: Document,
     controlRegistry: ControlRegistryService,
     configLookup: ConfigLookupService,
-    mapConfig: MapConfigurationService
+    mapConfig: MapConfigurationService,
+    mapInterface: MapInterfaceService,
+    mapServiceWorker: MapServiceWorkerService
   ) {
     super(
       translate,
@@ -42,7 +46,9 @@ export class MapComponent extends AbstractMapComponent {
       document,
       controlRegistry,
       configLookup,
-      mapConfig
+      mapConfig,
+      mapInterface,
+      mapServiceWorker
     );
   }
 

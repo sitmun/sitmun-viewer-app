@@ -146,12 +146,12 @@ describe('MultiFeatureInfoControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.modes).toEqual({
+      expect(config?.['modes']).toEqual({
         point: { active: false },
         polyline: { active: true }
       });
       expect(config?.div).toBe('multifeatureinfo');
-      expect(config?.active).toBe(true);
+      expect(config?.['active']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -167,8 +167,8 @@ describe('MultiFeatureInfoControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config?.div).toBe('custom-div');
-      expect(config?.active).toBe(true);
-      expect(config?.modes).toBeDefined();
+      expect(config?.['active']).toBe(true);
+      expect(config?.['modes']).toBeDefined();
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -203,7 +203,7 @@ describe('MultiFeatureInfoControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.modes?.polygon).toEqual({
+      expect(config?.['modes']?.['polygon']).toEqual({
         active: true,
         filterStyle: {
           fillColor: '#ff0000',
@@ -264,11 +264,10 @@ describe('MultiFeatureInfoControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
       expect(config?.div).toBe('multifeatureinfo');
-      expect(config?.active).toBe(false);
+      expect(config?.['active']).toBe(false);
       expect(config?.['customOption']).toBe(true);
-      expect(config?.modes).toBeDefined();
+      expect(config?.['modes']).toBeDefined();
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
   });
 });
-

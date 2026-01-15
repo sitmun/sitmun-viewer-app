@@ -1,4 +1,4 @@
-<div class="login-page" [ngClass]="{'login-page-background': displayBackgroundImage}">
+<div class="login-page" [style.background-image]="displayBackgroundImage && backgroundImageUrl ? 'url(' + backgroundImageUrl + ')' : null">
   <div class="container">
 
     <div class="title-section">

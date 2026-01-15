@@ -1,4 +1,4 @@
-﻿
+
 // Variables globales
 var ret = false;
 var info = null;

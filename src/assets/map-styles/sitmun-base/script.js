@@ -1,6 +1,5 @@
-
 document.querySelectorAll('.tc-map').forEach(function (elm) {
-    const map = TC.Map.get(elm);
+    const map = SITNA.Map.get(elm);
 
     if (map && !map._layoutDone) {
 
@@ -22,7 +21,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 changes.forEach(function (item) {
                     var elem = item.apply;
                     var clickedElems = elem.elements instanceof Array ? elem.elements : [elem.elements];
-                    map = item.map || map || TC.Map.get(document.querySelector('.tc-map'));
+                    map = item.map || map || SITNA.Map.get(document.querySelector('.tc-map'));
                     map.div.addEventListener(elem.event, TC.EventTarget.listenerBySelector(clickedElems.join(), function () {
                         if (window.matchMedia(item.screenCondition).matches) { // si es una pantalla estrecha
                             elem.changes.forEach(function (change) {
@@ -63,6 +62,44 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
 
             const ovmap = map.getControlsByClass('TC.control.OverviewMap')[0];
 
+            /* --- SITMUN BASE --- */
+
+            /**
+             * Toggle visibility of control elements.
+             * @param {NodeList|Array|HTMLElement} elements - Elements to show/hide
+             * @param {boolean} show - true to show, false to hide
+             */
+            const toggleControlsVisibility = function (elements, show) {
+                if (!elements) return;
+                const elementArray = elements instanceof NodeList ? Array.from(elements) : 
+                                     Array.isArray(elements) ? elements : [elements];
+                elementArray.forEach(function (el) {
+                    if (el) {
+                        if (show) {
+                            el.classList.remove('tc-hidden');
+                        } else {
+                            el.classList.add('tc-hidden');
+                        }
+                    }
+                });
+            };
+
+            /**
+             * Check if any of the elements have controls rendered.
+             * @param {NodeList|Array} elements - Elements to check
+             * @returns {boolean} true if any element has a control
+             */
+            const hasAnyControl = function (elements) {
+                if (!elements || elements.length === 0) return false;
+                const elementArray = elements instanceof NodeList ? Array.from(elements) : 
+                                     Array.isArray(elements) ? elements : [elements];
+                return elementArray.some(function (div) {
+                    if (!div) return false;
+                    // Check if div itself has tc-ctl class or has children with tc-ctl classes
+                    return div.classList.contains('tc-ctl') || div.querySelector('.tc-ctl') !== null;
+                });
+            };
+
             map.div.querySelectorAll(/* --- LEGACY --- */`.${TC.Consts.classes.RIGHT_PANEL} > h1, .right-panel > h1`).forEach(function (elm) {
                 elm.addEventListener(SITNA.Consts.event.CLICK, function (e) {
                     e.preventDefault();
@@ -85,28 +122,6 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 });
             });
 
-            // Tool control selectors
-            const TOOL_CONTROL_SELECTORS = ['.tc-ctl-download', '.tc-ctl-dmm', '.tc-ctl-meas', '.tc-ctl-geolocation', '.tc-ctl-prnmap'];
-            
-            // Helper functions for control visibility
-            function toggleControlsVisibility(controls, show) {
-                controls.forEach(function(control) {
-                    if (control) {
-                        if (show) {
-                            control.classList.remove('tc-hidden');
-                        } else {
-                            control.classList.add('tc-hidden');
-                        }
-                    }
-                });
-            }
-            
-            function hasAnyControl(controls) {
-                return controls.some(function(control) {
-                    return control !== null;
-                });
-            }
-
             map.div.querySelectorAll(`.${TC.Consts.classes.LEFT_PANEL} > h1`).forEach(function (h1) {
                 h1.addEventListener(SITNA.Consts.event.CLICK, function (e) {
                     e.preventDefault();
@@ -114,15 +129,9 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                     const tab = e.target;
                     const panel = tab.parentElement;
                     const tabId = tab.id;
-                    
                     // Get legend and tool controls elements
                     const legend = panel.querySelector('.tc-ctl-legend');
-                    const toolControls = TOOL_CONTROL_SELECTORS.map(function(selector) {
-                        return panel.querySelector(selector);
-                    }).filter(function(control) {
-                        return control !== null;
-                    });
-                    
+                    const toolControls = panel.querySelectorAll('[data-tools-tab]')
                     // Get tab h1 elements
                     const legendTab = panel.querySelector('#legend-tab');
                     const toolsTab = panel.querySelector('#tools-tab');
@@ -163,64 +172,10 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                         }
                     } else {
                         // For other tabs, just toggle collapse
-                        const isCollapsed = panel.classList.toggle(lcollapsedClass);
+                        panel.classList.toggle(lcollapsedClass);
                     }
                 });
             });
-
-            // Hide tabs if their corresponding controls are not enabled
-            const leftPanel = map.div.querySelector(`.${TC.Consts.classes.LEFT_PANEL}`);
-            if (leftPanel) {
-                // Check for legend control - hide legend-tab if not present
-                const legendControl = leftPanel.querySelector('.tc-ctl-legend');
-                const legendTab = leftPanel.querySelector('#legend-tab');
-                if (!legendControl && legendTab) {
-                    legendTab.classList.add('tc-hidden');
-                }
-
-                // Check for tool controls - hide tools-tab if none are present
-                // Query for all elements marked with data-tools-tab attribute and check if SITNA has rendered controls into them
-                const toolControlDivs = leftPanel.querySelectorAll('[data-tools-tab]');
-                const toolsTab = leftPanel.querySelector('#tools-tab');
-                const hasAnyToolControl = Array.from(toolControlDivs).some(div => {
-                    // Check if SITNA has rendered a control into this div (has children with tc-ctl classes)
-                    return div.querySelector('.tc-ctl') !== null;
-                });
-                if (!hasAnyToolControl && toolsTab) {
-                    toolsTab.classList.add('tc-hidden');
-                }
-
-                // Add h2 click handling for expand/collapse of controls in tools tab
-                leftPanel.addEventListener(SITNA.Consts.event.CLICK, function (e) {
-                    let tab = e.target;
-                    if (tab.tagName === "BUTTON" && tab.closest("div.tc-ctl." + SITNA.Consts.classes.COLLAPSED)) {
-                        tab = tab.parentElement;
-                    }
-                    if (tab.tagName === 'H2') {
-                        // Only handle h2 clicks when tools tab is active
-                        const toolsTab = leftPanel.querySelector('#tools-tab');
-                        const legend = leftPanel.querySelector('.tc-ctl-legend');
-                        const isToolsTabActive = toolsTab && !toolsTab.classList.contains('tc-hidden') && 
-                                                 legend && legend.classList.contains('tc-hidden');
-                        
-                        if (isToolsTabActive) {
-                            // Find the control that contains this h2
-                            for (var i = 0; i < map.controls.length; i++) {
-                                const ctl = map.controls[i];
-                                if (ctl.div && ctl.div.contains(tab)) {
-                                    if (ctl.isHighlighted()) {
-                                        ctl.unhighlight();
-                                    }
-                                    else {
-                                        ctl.highlight();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
 
             /* --- LEGACY --- */
             const toolsPanel = map.div.querySelector('.' + TC.Consts.classes.TOOLS_PANEL) || map.div.querySelector('#tools-panel');
@@ -271,7 +226,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
 
             toolsPanel.addEventListener(SITNA.Consts.event.CLICK, function (e) {
                 let tab = e.target;
-                if (tab.tagName === "BUTTON" && tab.closest("div.tc-ctl." + SITNA.Consts.classes.COLLAPSED)) {
+                if ((tab.tagName === "BUTTON" || tab.tagName === "SITNA-BUTTON" || tab.tagName === "SITNA-TOGGLE") && tab.closest("div.tc-ctl." + SITNA.Consts.classes.COLLAPSED)) {
                     tab = tab.parentElement;
                 }
                 if (tab.tagName === ('H2')) {
@@ -346,9 +301,10 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 const addSwipe = function (direction) {
                     const selector = '.tc-' + direction + '-panel';
                     const className = 'tc-collapsed-' + direction;
-                    const options = { noSwipe: 'li,a' };
-                    options[direction] = function () {
-                        this.classList.add(className);
+                    const options = {
+                        [direction]: function () {
+                            this.classList.add(className);
+                        }
                     };
                     map.div.querySelectorAll(selector).forEach(function (panel) {
                         TC.Util.swipe(panel, options);
@@ -357,8 +313,64 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
                 addSwipe('right');
                 addSwipe('left');
             }
+
+            // Hide tabs if their corresponding controls are not enabled
+            const leftPanel = map.div.querySelector(`.${TC.Consts.classes.LEFT_PANEL}`);
+            if (leftPanel) {
+                // Check for legend control - hide legend-tab if not present
+                const legendControl = leftPanel.querySelector('.tc-ctl-legend');
+                const legendTab = leftPanel.querySelector('#legend-tab');
+                if (!legendControl && legendTab) {
+                    legendTab.classList.add('tc-hidden');
+                }
+
+                // Check for tool controls - hide tools-tab if none are present
+                // Query for all elements marked with data-tools-tab attribute and check if SITNA has rendered controls into them
+                const toolControlDivs = leftPanel.querySelectorAll('[data-tools-tab]');
+                const toolsTab = leftPanel.querySelector('#tools-tab');
+                const hasAnyToolControl = Array.from(toolControlDivs).some(div => {
+                    // Check if SITNA has rendered a control into this div (div itself has tc-ctl class or has children with tc-ctl classes)
+                    return div.classList.contains('tc-ctl') || div.querySelector('.tc-ctl') !== null;
+                });
+                if (!hasAnyToolControl && toolsTab) {
+                    toolsTab.classList.add('tc-hidden');
+                }
+
+                // Add h2 click handling for expand/collapse of controls in tools tab
+                leftPanel.addEventListener(SITNA.Consts.event.CLICK, function (e) {
+                    let tab = e.target;
+                    if (tab.tagName === "BUTTON" && tab.closest("div.tc-ctl." + SITNA.Consts.classes.COLLAPSED)) {
+                        tab = tab.parentElement;
+                    }
+                    if (tab.tagName === 'H2') {
+                        // Only handle h2 clicks when tools tab is active
+                        const toolsTab = leftPanel.querySelector('#tools-tab');
+                        const legend = leftPanel.querySelector('.tc-ctl-legend');
+                        const isToolsTabActive = toolsTab && !toolsTab.classList.contains('tc-hidden') && 
+                                                 legend && legend.classList.contains('tc-hidden');
+                        
+                        if (isToolsTabActive) {
+                            // Find the control that contains this h2
+                            for (var i = 0; i < map.controls.length; i++) {
+                                const ctl = map.controls[i];
+                                if (ctl.div && ctl.div.contains(tab)) {
+                                    if (ctl.isHighlighted()) {
+                                        ctl.unhighlight();
+                                    }
+                                    else {
+                                        ctl.highlight();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
         });
+
+        map._layoutDone = true;
     }
-    map._layoutDone = true;
 });
 

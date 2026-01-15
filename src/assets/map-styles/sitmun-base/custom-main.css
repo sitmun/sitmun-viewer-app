@@ -18,57 +18,10 @@ html, button, input, select, textarea {
     bottom: 0px;
 }
 
-/* Controls */
-.tc-ctl {
-    padding: 0px;
-}
-
-/* Coordinates control - matched to attribution control style */
-.tc-ctl-coords {
-    position: absolute;
-    left: 0px;
-    top: auto;
-    bottom: 0px;
-    background-color: rgba(255, 255, 255, 0.9);
-    z-index: 9999;
-    font-family: Arial, helvetica, sans-serif;
-    font-size: 11px !important;
-    line-height: 1.4;
-    padding: 3px 8px;
-    color: #000;
-    width: fit-content;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 4.8px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    right: auto;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    height: 36px;
-    display: flex;
-    align-items: center;
-}
-
-.tc-ctl-coords-main {   
-    display: none !important;
-}
-
-.tc-ctl-coords-x,
-.tc-ctl-coords-y,
-.tc-ctl-coords-crs {
-    color: #000;
-}
-
-button.tc-ctl-coords-crs {
-    border: 1px solid #000;
-    border-radius: 0px;
-    background-color: transparent;
-    padding: 2px;
-    margin-right: 2px;
-    font-size: 11px;
-}
 
 /* Navigation controls */
 .tc-ctl.tc-ctl-nav {
+    position: absolute;
     top: 19em;
     left: 20px;
 }
@@ -78,6 +31,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl.tc-ctl-nav-home {
+    position: absolute;
     left: 20px;
 }
 
@@ -88,6 +42,7 @@ button.tc-ctl-coords-crs {
 }
 
 .tc-ctl.tc-ctl-3d {
+    position: absolute;
     left: 20px;
     top: 36em;
 }
@@ -108,7 +63,9 @@ button.tc-ctl-fscreen-btn,
     width: 40px !important;
 }
 
+/*
 .tc-ctl-fscreen {
+    position: absolute;
     top: 0.9em !important;
     left: 7px;
 }
@@ -121,14 +78,9 @@ button.tc-ctl-fscreen-btn {
     background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
-button.tc-ctl-fscreen-btn:hover,
-button.tc-ctl-fscreen-btn:focus,
-button.tc-ctl-fscreen-btn:active {
-    background-color: rgba(0, 0, 0, 1) !important;
-}
-
+*/
 .tc-ctl-fscreen button:after {
-    content: '';
+    font-size: 1.25em;    
 }
 
 .tc-ctl-nav .tc-ctl-nav-btn-zoomin {
@@ -169,21 +121,20 @@ button.tc-ctl-fscreen-btn:active {
 }
 
 /* Scale control */
-.tc-ctl-sb, .tc-ctl-scl {
+.tc-ctl-sb, .tc-ctl-scl, .tc-ctl-ss {
+    position: absolute;
     top: auto;
     left: auto;
     right: 0px;
     bottom: 0px;
     background-color: rgba(255, 255, 255, 0.9);
     border: 0px;
-    border-radius: 0px;
-    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 4.8px;
     opacity: 1;
-    font-family: Arial, helvetica, sans-serif;
-    font-size: 11px !important;
     line-height: 1.4;
     height: 25px;
-    border-top-left-radius: 4.8px;
     padding: 5px !important;
     padding-right: 10px !important;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
@@ -300,25 +251,6 @@ button.tc-ctl-fscreen-btn:hover {
 }
 
 
-/* Ensure panel content properly constrains flex children */
-.tc-panel-content > .tc-ctl-lcat,
-.tc-panel-content > .tc-ctl-wlm {
-    min-height: 0;
-}
-
-/* Ensure tc-ctl-tctr (in #xdata) is visible and appears last */
-.tc-panel-content > #xdata {
-    flex-shrink: 0;
-}
-
-.tc-right-panel > .tc-panel-content {
-    right: 0px;
-    transition: right 200ms;
-    border-bottom-left-radius: 0px;
-    border-top-left-radius: 0px;
-    width: 420px;
-}
-
 .tc-left-panel > .tc-panel-content {
     left: 0px;
     transition: left 200ms;
@@ -389,26 +321,6 @@ button.tc-ctl-fscreen-btn:hover {
     }
 }
 
-/* Control headers */
-.tc-ctl h2 {
-    text-transform: none;
-    cursor: pointer;
-    background-position: calc(100% - 10px) 10px, 0px 0px;
-    background-repeat: no-repeat, no-repeat;
-    background-size: 20px 20px, 38px 38px;
-    padding: 10px;
-    padding-left: 35px;
-    border-bottom: 1px solid #ccc;
-    font-size: 1.1em;
-    margin: 0px;
-    height: 19px;
-}
-
-/* Control content */
-.tc-ctl {
-    padding: 0px;
-}
-
 /* Collapsed controls */
 .tc-ctl.tc-collapsed > div {
     display: none;
@@ -467,3 +379,427 @@ input[type=range]:focus {
     display: none;
 }
 
+/* Critical override: Force #FuScreen to be absolutely positioned to prevent viewport gap */
+/* This must be at the end to override upstream SITNA CSS */
+#mapa #FuScreen.tc-ctl.tc-ctl-fscreen,
+.tc-map #FuScreen.tc-ctl.tc-ctl-fscreen,
+#mapa #FuScreen,
+.tc-map #FuScreen {
+    position: absolute !important;
+}
+
+
+
+:root {
+    --sitmun-tc-tcl-padding: 0.5em;
+    --sitmun-minimal-button-text-color: var(--sitna-minimal-button-text-color);
+    --sitmun-panel-radius: 4.8px;
+    --sitmun-height-small-control: 3em;
+    --sitmun-collapsed-color: #666666;
+}
+
+/*
+ * Attribution control styling.
+ */
+
+.tc-ctl-attrib > div {
+    padding: var(--sitmun-tc-tcl-padding);
+}
+
+/*
+ * Basemap selector control styling.
+ */
+
+.tc-ctl-bms {
+    padding: 0em;
+}
+
+/*
+ * Coordinates control styling.
+ */
+
+.tc-ctl-coords {
+    top: auto;
+    bottom: 0px;
+    border-top-right-radius: var(--sitmun-panel-radius);
+    border-bottom-right-radius: 0px;
+    right: auto;
+    height: var(--sitmun-height-small-control);
+    align-items: center;
+}
+
+.tc-ctl-coords-main {   
+    display: none !important;
+}
+
+/*
+ * Multifeature info control (within tc-ctl-wlm)
+ */   
+
+ .tc-ctl-wlm .tc-ctl-m-finfo {
+    margin: 10px;
+ }
+
+/*
+ * Layer catalog control styling.
+ */
+
+/* Expanded folders/nodes */
+.tc-ctl-lcat li.tc-ctl-lcat-node {
+    background-image: url(./img/folder_open.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Collapsed folders/nodes */
+.tc-ctl-lcat li.tc-ctl-lcat-node.tc-collapsed {
+    background-image: url(./img/folder_closed.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Last node in branch (only for actual nodes, not leaves) */
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child:not(.tc-ctl-lcat-leaf) {
+    background-image: url(./img/folder_open.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-node:last-child.tc-collapsed:not(.tc-ctl-lcat-leaf) {
+    background-image: url(./img/folder_closed.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 2px !important;
+}
+
+/* Leaf items - must override any node rules, including last-child */
+.tc-ctl-lcat li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf:last-child {
+    background-image: url(./img/mapLayer.png) !important;
+    background-repeat: no-repeat !important;
+    background-size: 18px 18px !important;
+    background-position: 0 4px !important;
+}
+
+/* Hide vertical connector lines in branches */
+.tc-ctl-lcat ul.tc-ctl-lcat-branch {
+    background-image: none !important;
+    margin-left: 4px !important;
+}
+
+/* First branch: no top margin, padding, or top border */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+}
+
+/* First items in first branch: no top border */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child > li.tc-ctl-lcat-node:first-child,
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child > li.tc-ctl-lcat-leaf:first-child {
+    border-top: none !important;
+}
+
+/* Tree container padding */
+.tc-ctl-lcat .tc-ctl-lcat-tree {
+    width: 100% !important;
+    padding: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 4px !important;
+    flex: 1 !important;
+    overflow: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+/* Ensure search section is also part of flex layout when visible */
+.tc-ctl-lcat .tc-ctl-lcat-search {
+    flex-shrink: 0 !important;
+}
+
+/* Ensure internal components inherit background from container */
+.tc-ctl-lcat li.tc-ctl-lcat-node,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat li.tc-ctl-lcat-node span,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf span,
+.tc-ctl-lcat ul.tc-ctl-lcat-branch,
+.tc-ctl-lcat .tc-ctl-lcat-tree {
+    background-color: inherit !important;
+}
+
+/* Make all folder nodes bold, but not leaves */
+.tc-ctl-lcat li.tc-ctl-lcat-node > span {
+    font-weight: bold !important;
+}
+
+/* Ensure leaves are not bold */
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > span {
+    font-weight: normal !important;
+}
+
+/* Add separation lines between items */
+.tc-ctl-lcat li.tc-ctl-lcat-node,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf {
+    border-top: 1px solid #ddd !important;
+}
+
+/* Vertically center info button in list items */
+.tc-ctl-lcat li.tc-ctl-lcat-node .tc-ctl-lcat-btn-info,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf .tc-ctl-lcat-btn-info {
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
+}
+
+/* Add padding-bottom to last child of last branch */
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:last-child > li.tc-ctl-lcat-node:last-child,
+.tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:last-child > li.tc-ctl-lcat-leaf:last-child {
+    padding-bottom: 4px !important;
+}
+
+
+.tc-ctl-lcat-info .tc-modal {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Catalog projects modal - follow same pattern as info modal */
+.tc-ctl-lcat-proj .tc-modal {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.tc-ctl-lcat-proj .tc-modal-close {
+    color: var(--sitmun-minimal-button-text-color);
+    text-decoration: none;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-info-close {
+    color: var(--sitmun-minimal-button-text-color);
+    text-decoration: none;
+}
+
+.tc-ctl-lcat-info .tc-ctl-lcat-info-close:after {
+    content: '✖'; /* ✖ is the Unicode for the cross symbol */
+    font-size: unset;
+}
+
+.tc-ctl-lcat-info .tc-ctl-lcat-info-data {
+    padding: var(--sitmun-tc-tcl-padding);
+}
+ 
+.tc-ctl-lcat-info .tc-ctl-lcat-info-data-title {
+    text-transform: none;
+}
+
+.tc-ctl-lcat-info .tc-ctl-lcat-abstract {
+    background-color: white;
+}
+
+.tc-ctl-lcat-info .tc-ctl-lcat-info-data-content {
+    text-transform: none;
+}
+
+.tc-ctl-lcat-info .tc-ctl-lcat-info-data-content pre {
+    font-family: sans-serif;
+}
+
+/*
+ * Right drawer.
+ */
+
+.tc-slide-panel.tc-right-panel > .tc-panel-content {
+    right: 0px;
+    transition: right 200ms;
+    width: 420px;
+}
+
+.tc-slide-panel.tc-left-panel > .tc-panel-content {
+    left: 0px;
+    transition: left 200ms;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tc-left-panel.tc-collapsed-left.legend-active #legend-tab,
+.left-collapsed-legend #legend-tab {
+    background-image: url(./img/closeIcon.png);
+}
+
+.tc-left-panel.tc-collapsed-left.legend-active #legend-tab:hover,
+.left-collapsed-legend #legend-tab:hover {
+    background-color: #a51818;
+}
+
+.tc-slide-panel.tc-left-panel #legend-tab {
+    background-image: url(./img/legendIcon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    transform: rotate(0deg);
+    top: 7.5em;
+}
+
+
+.tc-slide-panel.tc-left-panel #tools-tab {
+    background-image: url(./img/tools.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    top: 4em;
+}
+
+/* When panel is expanded, use close/arrow icon */
+.tc-slide-panel.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab {
+    background-image: url(./img/closeIcon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    background-color: #b51818;
+    transform-origin: center center;
+    transform: none;
+}
+
+.tc-left-panel .tc-panel-content > div {
+    padding: 0;
+}
+
+.tc-left-panel .tc-panel-content > div > div {
+    width: 300px;
+    padding: 10px !important;
+}
+
+.tc-panel-content .tc-ctl-wlm > h2,
+.tc-panel-content .tc-ctl-lcat > h2,
+.tc-panel-content .tc-ctl-bms > h2,
+.tc-panel-content .tc-ctl-tctr > h2,
+.tc-panel-content .tc-ctl-legend > h2,
+.tc-panel-content .tc-ctl-download > h2,
+.tc-panel-content .tc-ctl-geolocation > h2,
+.tc-panel-content .tc-ctl-meas > h2,
+.tc-panel-content .tc-ctl-dmm > h2,
+.tc-panel-content .tc-ctl-prnmap > h2 {
+    display: flex;
+    align-items: center;
+    background-position: -6px 0px;
+    background-repeat: no-repeat;
+    background-size: 38px 38px;
+    padding: 10px;
+    padding-left: 26px;
+    border-bottom: 1px solid #ccc;
+    font-size: 1.1em;
+    margin: 0px;
+    height: 19px;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.05);
+    flex-shrink: 0 !important;
+    text-transform: none;
+}
+
+.tc-panel-content .tc-ctl-wlm > h2,
+.tc-panel-content .tc-ctl-lcat > h2,
+.tc-panel-content .tc-ctl-bms > h2,
+.tc-panel-content .tc-ctl-tctr > h2 {
+    background-image: url(./img/mapLayersStackN.png);
+}
+
+.tc-panel-content .tc-ctl-lcat-btn-change-topic {
+    height: 2em;
+}
+
+.tc-panel-content .tc-ctl-lcat-btn-search {
+    height: 2em;
+}
+
+.tc-panel-content .tc-ctl-wlm.tc-collapsed > h2,
+.tc-panel-content .tc-ctl-lcat.tc-collapsed > h2,
+.tc-panel-content .tc-ctl-bms.tc-collapsed > h2,
+.tc-panel-content .tc-ctl-tctr.tc-collapsed > h2 {
+    background-image: url(./img/mapLayersStackG.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+.tc-panel-content .tc-ctl-download > h2 {
+    background-image: url(./img/downloadN.png);
+}
+
+.tc-panel-content .tc-ctl-download.tc-collapsed > h2 {
+    background-image: url(./img/downloadG.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+.tc-panel-content .tc-ctl-geolocation > h2 {
+    background-image: url(./img/geolocationN.png);
+}
+
+.tc-panel-content .tc-ctl-geolocation.tc-collapsed > h2 {
+    background-image: url(./img/geolocationG.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+.tc-panel-content .tc-ctl-legend > h2 {
+    background-image: url(./img/legendIconN.png);
+}
+
+.tc-panel-content .tc-ctl-legend.tc-collapsed > h2 {
+    background-image: url(./img/legendIconN.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+.tc-panel-content .tc-ctl-dmm > h2,
+.tc-panel-content .tc-ctl-meas > h2 {
+    background-image: url(./img/drawMeasureN.png);
+}
+
+.tc-panel-content .tc-ctl-dmm.tc-collapsed > h2,
+    .tc-panel-content .tc-ctl-meas.tc-collapsed > h2 {
+    background-image: url(./img/drawMeasureG.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+.tc-ctl-bms-btn-view {
+    transform: translateY(-20%);
+}
+
+.tc-panel-content .tc-ctl-prnmap > h2 {
+    background-image: url(./img/mapPrintN.png);
+}
+
+.tc-panel-content .tc-ctl-prnmap.tc-collapsed > h2 {
+    background-image: url(./img/mapPrintG.png);
+    color: var(--sitmun-collapsed-color);
+}
+
+
+/* Ensure panel content properly constrains flex children */
+.tc-panel-content .tc-ctl-lcat,
+.tc-panel-content .tc-ctl-wlm {
+    min-height: 0;
+}
+
+.tc-panel-content .tc-ctl-tctr {
+    flex-shrink: 0;
+    padding: 0;
+}
+
+/* Override tc-loading to work as a tag rather than visual cue */
+.tc-ctl-lcat li.tc-ctl-lcat-node.tc-loading > span, 
+.tc-ctl-lcat-search li.tc-loading h5 {
+    color: inherit !important;
+    cursor: inherit !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+}
+
+/* Make legend tree fill available vertical space */
+.tc-ctl-legend-tree {
+    flex-grow: 1;
+    min-height: 0;
+    overflow: auto;
+    max-height: none !important;
+}

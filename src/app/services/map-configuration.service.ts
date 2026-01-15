@@ -206,13 +206,13 @@ export class MapConfigurationService {
 
   /**
    * Get attribution text from app configuration.
-   * 
+   *
    * **Note:** This is the attribution TEXT (HTML content), not the control.
    * The attribution control is handled separately by AttributionControlHandler.
    * Both are needed for attribution to display:
    * - Attribution text (this method) → SITNA map options.attribution
    * - Attribution control → SITNA controls.attribution
-   * 
+   *
    * @returns Attribution string or undefined if not configured
    */
   toAttribution(): string | undefined {

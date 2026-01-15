@@ -34,6 +34,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ErrorHandler } from '@angular/core';
 import {
   AppInitializerService,
   initializeApp
@@ -44,6 +46,12 @@ import {
 } from './services/app-config.service';
 import { ALL_CONTROL_HANDLERS } from './controls/handlers';
 import { ControlRegistryService } from './services/control-registry.service';
+import { AboutDialogComponent } from './ui/components/about-dialog/about-dialog.component';
+import { ErrorDetailsSidebarComponent } from './ui/components/error-details-sidebar/error-details-sidebar.component';
+import { GlobalErrorHandler } from './services/global-error-handler';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ErrorHandlerInterceptor } from './config/error-handler.interceptor';
+import { MessageBoxDialogComponent } from '../util/message-box-service';
 
 registerLocaleData(localeEs);
 
@@ -57,7 +65,10 @@ registerLocaleData(localeEs);
     LoginModalComponent,
     EmbeddedMapComponent,
     ErrorModalComponent,
-    WarningModalComponent
+    WarningModalComponent,
+    AboutDialogComponent,
+    ErrorDetailsSidebarComponent,
+    MessageBoxDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -86,11 +97,18 @@ registerLocaleData(localeEs);
     MatTooltipModule,
     MatButtonToggleModule,
     MatDialogModule,
-    MatListModule
+    MatListModule,
+    MatExpansionModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },
     { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorHandlerInterceptor,
+      multi: true
+    },
     // Register all control handlers
     ...ALL_CONTROL_HANDLERS,
     {
@@ -134,14 +152,7 @@ export function initializeControlHandlers(
   ...handlers: any[]
 ): () => void {
   return () => {
-    console.log(
-      `[AppModule] Registering ${handlers.length} control handlers...`
-    );
     registry.registerAll(handlers);
     const stats = registry.getStatistics();
-    console.log(`[AppModule] Registered handlers:`, stats.handlerTypes);
-    console.log(
-      `[AppModule] Handlers with patches: ${stats.handlersWithPatches}`
-    );
   };
 }

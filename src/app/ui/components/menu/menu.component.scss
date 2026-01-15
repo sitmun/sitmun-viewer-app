@@ -90,13 +90,34 @@ $menu-header-font-size: 20px; // Material headline-6
         flex-shrink: 0; // Prevent icon from shrinking
       }
       
-      span:not(.language-icon):not(.current-language-icon) {
+      span:not(.language-icon):not(.current-language-icon):not(.badge) {
         line-height: 1.5; // Material typography
         flex: 1; // Allow text to take available space
         min-width: 0; // Allow text to shrink if needed
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap; // Prevent text wrapping to keep on single line
+        margin-right: $spacing-sm; // Add spacing that will be consumed by badge's auto margin
+      }
+      
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f44336; // Material Design red
+        color: white;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-left: auto; // Push badge to the right edge (consumes text's margin-right as spacing)
+        margin-right: 0; // No right margin to align with menu item padding
+        min-width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 1;
+        flex-shrink: 0;
+        order: 1; // Ensure badge appears after text but before submenu icon
       }
       
       // Style Material's automatic submenu icon

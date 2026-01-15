@@ -60,7 +60,10 @@ export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
     };
 
     // Merge with task parameters (allows backend to override specific fields)
-    const config = this.mergeWithParameters(completeDefaultConfig, task.parameters);
+    const config = this.mergeWithParameters(
+      completeDefaultConfig,
+      task.parameters
+    );
 
     // Enable tools button when multiFeatureInfo control is configured
     this.uiStateService.enableToolsButton();
@@ -75,4 +78,3 @@ export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

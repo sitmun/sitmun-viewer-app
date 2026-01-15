@@ -85,7 +85,7 @@ describe('LoadingIndicatorControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return boolean true when default config is empty/null (no div in app-config.json)', () => {
@@ -99,7 +99,7 @@ describe('LoadingIndicatorControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return config object when custom parameters provided', () => {
@@ -116,7 +116,7 @@ describe('LoadingIndicatorControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config).not.toBe(true);
+      expect(config as any).not.toBe(true);
       expect(typeof config).toBe('object');
       expect(config?.['customOption']).toBe('value');
     });
@@ -205,7 +205,7 @@ describe('LoadingIndicatorControlHandler', () => {
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should handle full lifecycle with custom parameters', async () => {
@@ -246,4 +246,3 @@ describe('LoadingIndicatorControlHandler', () => {
     });
   });
 });
-

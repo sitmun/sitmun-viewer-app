@@ -12,6 +12,9 @@
     { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" },
     { "name": "Aranés", "shortname": "oc-aranes", "icon": "assets/flags/val-aran.svg" }
   ],
+  "enabledByDefault": [
+    "sitna.multiFeatureInfo"
+  ],
   "controlDefaults": {
     "sitna.coordinates": {
       "div": "coordinates"
@@ -29,7 +32,8 @@
       "div": "wlm"
     },
     "sitna.layerCatalog": {
-      "div": "toc"
+      "div": "toc",
+      "enableSearch": true
     },
     "sitna.basemapSelector": {
       "div": "bms"
@@ -44,9 +48,6 @@
       "div": "download"
     },
     "sitna.drawMeasureModify": {
-      "div": "drawmeasuremodify"
-    },
-    "sitna.drawMeasureModify.silme.extension": {
       "div": "drawmeasuremodify"
     },
     "sitna.fullScreen": {
@@ -77,7 +78,7 @@
     "sitna.overviewMap": {
       "div": "ovmap"
     },
-    "sitna.search.silme.extension": {
+    "sitna.search": {
       "div": "search"
     },
     "sitna.layerCatalog.silme.extension": {
@@ -88,11 +89,13 @@
     },
     "sitna.threed": {
       "controls": [
-        "sitna.threeD",
+        "sitna.threed",
         "sitna.navBar",
         "sitna.navBarHome",
         "sitna.basemapSelector",
-        "sitna.layerCatalog.silme.extension",
+        "sitna.layerCatalog",
+        "sitna.scaleSelector",
+        "sitna.printMap",
         "sitna.workLayerManager",
         "sitna.legend"
       ]

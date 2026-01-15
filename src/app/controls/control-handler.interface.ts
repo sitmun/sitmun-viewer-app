@@ -24,14 +24,14 @@ export interface SitnaControlConfig extends Record<string, any> {
 export interface ControlHandler {
   /**
    * Unique identifier matching TaskUI.name from backend.
-   * Examples: 'sitna.coordinates', 'sitna.search.silme.extension'
+   * Examples: 'sitna.coordinates', 'sitna.search'
    */
   readonly controlIdentifier: string;
 
   /**
    * Optional: Override the SITNA configuration key.
    * If not provided, the key is auto-generated from controlIdentifier.
-   * Examples: 'layerCatalogSilme', 'searchSilme', 'coordinates'
+   * Examples: 'layerCatalogSilme', 'search', 'coordinates'
    */
   readonly sitnaConfigKey?: string;
 
@@ -40,6 +40,13 @@ export interface ControlHandler {
    * Paths relative to assets directory.
    */
   readonly requiredPatches?: string[];
+
+  /**
+   * Optional dependencies on other controls.
+   * These controls will be automatically enabled when this control is configured.
+   * Example: ['sitna.modify'] for DrawMeasureModify
+   */
+  readonly dependencies?: string[];
 
   /**
    * Load required patches for this control.

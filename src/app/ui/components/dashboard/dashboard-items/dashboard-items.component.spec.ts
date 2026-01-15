@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { DashboardItemsComponent } from './dashboard-items.component';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { DashboardItem } from '@api/services/common.service';
@@ -36,7 +37,7 @@ describe('DashboardItemsComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
       declarations: [DashboardItemsComponent],
       providers: [
         { provide: Router, useValue: mockRouter },

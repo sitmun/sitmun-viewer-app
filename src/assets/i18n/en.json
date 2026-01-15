@@ -206,5 +206,22 @@
   "territory.descriptionMissing": "No description",
   "genericPrivateHeaders.changeAppOrTerritory": "Change application or territory",
   "common.filterHintSelectedApplicationAlwaysVisible": "The selected application always remains visible",
-  "common.filterHintSelectedTerritoryAlwaysVisible": "The selected territory always remains visible"
+  "common.filterHintSelectedTerritoryAlwaysVisible": "The selected territory always remains visible",
+  "systemInfo.about": "About",
+  "systemInfo.applicationName": "Visualizador SITMUN",
+  "systemInfo.application": "Application",
+  "systemInfo.version": "Version",
+  "systemInfo.environment": "Environment",
+  "systemInfo.angularVersion": "Angular Version",
+  "systemInfo.buildTimestamp": "Build Timestamp",
+  "systemInfo.sitnaVersion": "API SITNA Version",
+  "systemInfo.recentErrors": "Recent Errors",
+  "systemInfo.noErrors": "No errors recorded",
+  "systemInfo.errorDetails": "Error Details",
+  "systemInfo.errorType.http": "HTTP Error",
+  "systemInfo.errorType.logger": "Application Error",
+  "systemInfo.errorType.uncaught": "Uncaught Exception",
+  "systemInfo.copyError": "Copy Error",
+  "systemInfo.closeErrorPanel": "Close",
+  "common.button.close": "Close"
 }

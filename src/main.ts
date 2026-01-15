@@ -4,6 +4,10 @@ import { AppModule } from './app/app.module';
 async function bootstrap(): Promise<void> {
   // Define SITNA_BASE_URL before importing the API (required by SITNA documentation)
   // See: https://sitna.navarra.es/api/doc/index.html
+  // Use window explicitly to ensure it's accessible in the module context
+  (window as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
+    '/assets/js/api-sitna/';
+  // Also set on globalThis for compatibility
   (globalThis as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
     '/assets/js/api-sitna/';
 

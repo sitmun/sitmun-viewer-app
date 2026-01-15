@@ -50,4 +50,3 @@ export class LoadingIndicatorControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

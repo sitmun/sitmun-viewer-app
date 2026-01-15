@@ -6,5 +6,10 @@ export const environment = {
   // erases any other hash in that URL (a bug?)
   hideBackgroundImage: false,
   hideDNIEAccess: false,
-  apiUrl: 'https://sitmun-backend-core.herokuapp.com'
+  apiUrl: 'https://sitmun-backend-core.herokuapp.com',
+  version: '1.1.0',
+  environmentName: 'Test Deployment',
+  sitnaVersion: '4.8.0',
+  buildTimestamp: new Date().toISOString(),
+  loginBackgroundImageUrl: '/assets/logos/barcelona_background.jpg'
 };

@@ -49,4 +49,3 @@ export class ClickControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

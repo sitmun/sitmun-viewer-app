@@ -3,12 +3,14 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { LegendControlHandler } from './legend-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { AppConfigService } from '../../services/app-config.service';
+import { UIStateService } from '../../services/ui-state.service';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('LegendControlHandler', () => {
   let handler: LegendControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockUIStateService: jasmine.SpyObj<UIStateService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -22,12 +24,19 @@ describe('LegendControlHandler', () => {
     ]);
     mockAppConfigService.getControlDefault.and.returnValue({ div: 'legend' });
 
+    mockUIStateService = jasmine.createSpyObj('UIStateService', [
+      'enableLegendButton',
+      'disableLegendButton',
+      'isLegendButtonEnabled'
+    ]);
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         LegendControlHandler,
         { provide: TCNamespaceService, useValue: mockTCNamespace },
-        { provide: AppConfigService, useValue: mockAppConfigService }
+        { provide: AppConfigService, useValue: mockAppConfigService },
+        { provide: UIStateService, useValue: mockUIStateService }
       ]
     });
 
@@ -78,6 +87,7 @@ describe('LegendControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({ div: 'legend' });
+      expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
     });
 
     it('should merge task parameters', () => {
@@ -97,6 +107,7 @@ describe('LegendControlHandler', () => {
         position: 'top-left',
         collapsible: true
       });
+      expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
     });
 
     it('should allow parameters to override div', () => {
@@ -111,6 +122,19 @@ describe('LegendControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config?.div).toBe('custom-legend-div');
+      expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
+    });
+
+    it('should always call enableLegendButton', () => {
+      const task: AppTasks = {
+        'ui-control': 'sitna.legend',
+        parameters: {}
+      } as any;
+      const context: AppCfg = {} as any;
+
+      handler.buildConfiguration(task, context);
+
+      expect(mockUIStateService.enableLegendButton).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -154,6 +178,7 @@ describe('LegendControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
       expect(config?.div).toBe('legend');
+      expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
     });
   });
 });

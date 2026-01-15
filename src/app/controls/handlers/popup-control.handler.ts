@@ -58,4 +58,3 @@ export class PopupControlHandler extends ControlHandlerBase {
     return !!TC?.control?.Popup;
   }
 }
-

@@ -9,8 +9,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
-import { SitnaHelper } from '@ui/util/sitna-helpers';
 import { CommonService } from '@api/services/common.service';
+import { MapInterfaceService } from 'src/app/services/map-interface.service';
+import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -51,7 +52,9 @@ export abstract class AbstractMapComponent
     private document: Document,
     private controlRegistry: ControlRegistryService,
     private configLookup: ConfigLookupService,
-    private mapConfig: MapConfigurationService
+    private mapConfig: MapConfigurationService,
+    private mapInterface: MapInterfaceService,
+    private mapServiceWorker: MapServiceWorkerService
   ) {
     const path = this.location.path();
     this.isInEmbedded = path.includes('embedded');
@@ -155,7 +158,6 @@ export abstract class AbstractMapComponent
     );
 
     const attribution = this.mapConfig.toAttribution();
-    console.log('[AbstractMapComponent] Attribution from config:', attribution);
 
     this.currentGeneralCfg = {
       locale: this.locale,
@@ -168,24 +170,26 @@ export abstract class AbstractMapComponent
       views: this.mapConfig.toViews(appCfg)
     };
 
-    console.log(
-      '[AbstractMapComponent] Attribution in currentGeneralCfg:',
-      this.currentGeneralCfg.attribution
-    );
-    console.log(
-      '[AbstractMapComponent] Attribution control enabled:',
-      !!this.currentGeneralCfg.controls.attribution
-    );
+    // Log full map configuration (this is where the actual configuration is built)
+    const configForLogging = JSON.parse(JSON.stringify(this.currentGeneralCfg));
+    // Remove silmeSearch from controls for logging
+    if (
+      configForLogging.controls &&
+      (configForLogging.controls as any).silmeSearch
+    ) {
+      delete (configForLogging.controls as any).silmeSearch;
+    }
+    const controlsForLogging = { ...this.currentGeneralCfg.controls } as any;
+    if (controlsForLogging.silmeSearch) {
+      delete controlsForLogging.silmeSearch;
+    }
 
-    SitnaHelper.loadMiddleware(appCfg);
+    this.mapServiceWorker.loadMiddleware(appCfg);
 
     // We need to save the currentGeneralCfg and the currentAppCfg, so when the
     // catalog change, the map can be loaded again with the same configuration
 
     if (!this.currentGeneralCfg) {
-      console.error(
-        '[AbstractMapComponent] currentGeneralCfg is undefined, cannot proceed'
-      );
       return;
     }
 
@@ -200,8 +204,6 @@ export abstract class AbstractMapComponent
       });
       return;
     }
-
-    // REMOVED: Silme-specific setup now handled by LayerCatalogSilmeControlHandler
 
     if (!this.currentAppCfg || !this.currentGeneralCfg) {
       console.error(
@@ -227,11 +229,6 @@ export abstract class AbstractMapComponent
       .layerCatalogsSilmeForModal;
 
     if (layerCatalogsForModal) {
-      // Patched layer catalog - rebuild controls configuration with new tree selection
-      console.log(
-        '[AbstractMapComponent] Rebuilding controls configuration for catalog switch'
-      );
-
       // Rebuild controls to pick up the new currentTreeId
       this.controlRegistry
         .processControls(this.currentAppCfg.tasks, this.currentAppCfg)
@@ -336,27 +333,21 @@ export abstract class AbstractMapComponent
   }
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
-    console.log(
-      '[AbstractMapComponent] Loading map with attribution:',
-      cfg.attribution
-    );
-    console.log(
-      '[AbstractMapComponent] Attribution control in cfg.controls:',
-      cfg.controls.attribution
-    );
+    const cfgForLogging = JSON.parse(JSON.stringify(cfg));
+    // Remove silmeSearch from controls for logging
+    if (cfgForLogging.controls && (cfgForLogging.controls as any).silmeSearch) {
+      delete (cfgForLogging.controls as any).silmeSearch;
+    }
+
     try {
       this.map = new SitnaMap('mapa', cfg);
-      console.log(
-        '[AbstractMapComponent] Map created. Map options.attribution:',
-        this.map?.options?.attribution
-      );
     } catch (error) {
       console.error('Failed to initialize map:', error);
       return;
     }
 
-    this.map.loaded(function () {
-      SitnaHelper.toInterface();
+    this.map.loaded(() => {
+      this.mapInterface.updateInterface();
     });
   }
 
@@ -434,6 +425,7 @@ export abstract class AbstractMapComponent
   }
 
   private updateMapSize(): void {
+    return;
     if (!this.map) {
       return;
     }
@@ -461,6 +453,109 @@ export abstract class AbstractMapComponent
     } catch (error) {
       console.error('Error updating map size:', error);
     }
+  }
+
+  /**
+   * Get the last loaded blob script element (layout script from SITNA).
+   * Useful for debugging or accessing the script after SITNA loads it.
+   *
+   * @returns The script element or null if not found
+   */
+  getLastBlobScript(): HTMLScriptElement | null {
+    return (window as any).__lastLoadedBlobScript || null;
+  }
+
+  /**
+   * Get the last executed blob script with execution timing information.
+   *
+   * @returns Object with script element and execution info, or null if not found
+   */
+  getLastExecutedBlobScript(): {
+    element: HTMLScriptElement;
+    scriptInfo: any;
+  } | null {
+    return (window as any).__lastExecutedBlobScript || null;
+  }
+
+  /**
+   * Wait for the blob script to execute and then run a callback.
+   *
+   * @param callback - Function to execute after script runs
+   * @param timeout - Maximum time to wait in milliseconds (default: 5000)
+   */
+  waitForBlobScriptExecution(
+    callback: (script: HTMLScriptElement) => void,
+    timeout: number = 5000
+  ): void {
+    const startTime = Date.now();
+
+    const checkExecution = () => {
+      const executed = (window as any).__lastExecutedBlobScript;
+      if (executed && executed.scriptInfo.executed) {
+        console.log(
+          '[AbstractMapComponent] Blob script execution detected, running callback'
+        );
+        callback(executed.element);
+        return;
+      }
+
+      if (Date.now() - startTime > timeout) {
+        console.warn(
+          '[AbstractMapComponent] Timeout waiting for blob script execution'
+        );
+        return;
+      }
+
+      // Check again after a short delay
+      setTimeout(checkExecution, 100);
+    };
+
+    // Also listen for the custom event
+    const eventHandler = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail && customEvent.detail.script) {
+        console.log(
+          '[AbstractMapComponent] Blob script execution event received'
+        );
+        callback(customEvent.detail.script);
+        document.removeEventListener('blobscriptexecuted', eventHandler);
+      }
+    };
+    document.addEventListener('blobscriptexecuted', eventHandler);
+
+    // Start checking
+    checkExecution();
+  }
+
+  /**
+   * Get all blob script elements that were created.
+   *
+   * @returns Array of script elements with blob URLs
+   */
+  getAllBlobScripts(): HTMLScriptElement[] {
+    const scripts = (window as any).__blobScripts || [];
+    return scripts
+      .map((entry: any) => entry.element)
+      .filter(
+        (script: HTMLScriptElement) => script && document.head.contains(script)
+      );
+  }
+
+  /**
+   * Find a blob script by its source URL pattern.
+   *
+   * @param urlPattern - Pattern to match in the blob URL
+   * @returns The script element or null if not found
+   */
+  findBlobScript(urlPattern: string): HTMLScriptElement | null {
+    const allScripts = document.head.querySelectorAll('script[src^="blob:"]');
+    for (let i = 0; i < allScripts.length; i++) {
+      const script = allScripts[i] as HTMLScriptElement;
+      if (script.src.includes(urlPattern)) {
+        return script;
+      }
+    }
+    return null;
   }
 
   abstract navigateToDashboard(): any;

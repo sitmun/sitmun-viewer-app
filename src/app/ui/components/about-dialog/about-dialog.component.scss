@@ -1,0 +1,42 @@
+@import "../../../../styles/_colors.scss";
+
+.about-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+  min-width: 300px;
+}
+
+.about-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.about-icon {
+  color: $orange;
+  margin-top: 4px;
+}
+
+.about-info {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.about-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.about-value {
+  font-size: 14px;
+  color: $black;
+  word-break: break-word;
+}

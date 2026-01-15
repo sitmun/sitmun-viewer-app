@@ -372,21 +372,21 @@ describe('ControlRegistryService', () => {
 
     it('should convert dotted names to camelCase', async () => {
       const handler = new MockHandler(
-        'sitna.search.silme.extension',
+        'sitna.search',
         undefined,
         undefined,
-        'searchSilme'
+        'search'
       );
       service.register(handler);
 
       const tasks: AppTasks[] = [
-        { 'ui-control': 'sitna.search.silme.extension', parameters: {} } as any
+        { 'ui-control': 'sitna.search', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
 
       const result = await service.processControls(tasks, context);
 
-      expect((result as any)['searchSilme']).toBeDefined();
+      expect((result as any)['search']).toBeDefined();
     });
 
     it('should handle layerCatalog correctly', async () => {

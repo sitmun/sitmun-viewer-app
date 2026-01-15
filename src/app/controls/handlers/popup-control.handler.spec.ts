@@ -107,7 +107,7 @@ describe('PopupControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return true for undefined parameters', () => {
@@ -119,7 +119,7 @@ describe('PopupControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return config object when parameters provided', () => {
@@ -169,7 +169,7 @@ describe('PopupControlHandler', () => {
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should handle full lifecycle with custom parameters', async () => {
@@ -207,6 +207,3 @@ describe('PopupControlHandler', () => {
     });
   });
 });
-
-
-

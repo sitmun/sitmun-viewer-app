@@ -142,8 +142,8 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config?.div).toBe('custom-print-div');
-      expect(config?.logo).toBe('assets/logos/logo_orange.png');
-      expect(config?.legend).toEqual({ visible: true });
+      expect(config?.['logo']).toBe('assets/logos/logo_orange.png');
+      expect(config?.['legend']).toEqual({ visible: true });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -158,9 +158,9 @@ describe('PrintMapControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.logo).toBe('assets/logos/custom-logo.png');
+      expect(config?.['logo']).toBe('assets/logos/custom-logo.png');
       expect(config?.div).toBe('print');
-      expect(config?.legend).toEqual({ visible: true });
+      expect(config?.['legend']).toEqual({ visible: true });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -178,12 +178,12 @@ describe('PrintMapControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.legend).toEqual({
+      expect(config?.['legend']).toEqual({
         visible: false,
         orientation: 'landscape'
       });
       expect(config?.div).toBe('print');
-      expect(config?.logo).toBe('assets/logos/logo_orange.png');
+      expect(config?.['logo']).toBe('assets/logos/logo_orange.png');
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -201,7 +201,7 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       // Standard object spread merge means legend is completely replaced
-      expect(config?.legend).toEqual({
+      expect(config?.['legend']).toEqual({
         visible: false
       });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe('PrintMapControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.legend).toEqual({ visible: true });
+      expect(config?.['legend']).toEqual({ visible: true });
     });
 
     it('should completely replace legend when fully specified', () => {
@@ -249,12 +249,12 @@ describe('PrintMapControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.legend).toEqual({
+      expect(config?.['legend']).toEqual({
         visible: false,
         orientation: 'portrait'
       });
       // Should not have default visible: true
-      expect(config?.legend?.visible).toBe(false);
+      expect(config?.['legend']?.['visible']).toBe(false);
     });
 
     it('should handle legend object replacement (not deep merge)', () => {
@@ -271,8 +271,8 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       // Standard object spread means complete replacement, not deep merge
-      expect(config?.legend).toEqual({ visible: false });
-      expect(Object.keys(config?.legend || {})).toEqual(['visible']);
+      expect(config?.['legend']).toEqual({ visible: false });
+      expect(Object.keys(config?.['legend'] || {})).toEqual(['visible']);
     });
   });
 
@@ -305,18 +305,20 @@ describe('PrintMapControlHandler', () => {
     });
 
     it('should wait for TC namespace', async () => {
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve({ control: { PrintMap: {} } }));
-      
+      mockTCNamespace.waitForTC.and.returnValue(
+        Promise.resolve({ control: { PrintMap: {} } })
+      );
+
       await handler.loadPatches(mockAppCfg);
-      
+
       expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
     });
 
     it('should skip loading pdfmake if already loaded', async () => {
       (window as any).pdfMake = { vfs: {} };
-      
+
       await handler.loadPatches(mockAppCfg);
-      
+
       // Should complete without errors
       expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
     });
@@ -348,10 +350,9 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
       expect(config?.div).toBe('print');
-      expect(config?.logo).toBe('custom-logo.png');
-      expect(config?.legend).toEqual({ visible: true });
+      expect(config?.['logo']).toBe('custom-logo.png');
+      expect(config?.['legend']).toEqual({ visible: true });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
   });
 });
-

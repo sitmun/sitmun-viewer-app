@@ -7,6 +7,7 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { SitnaControls, SitnaControlOptions } from '@api/model/sitna-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
 import { AppConfigService } from './app-config.service';
+import { ControlHandlerBase } from '../controls/control-handler-base';
 
 /**
  * Registry service for control handlers.
@@ -32,11 +33,6 @@ export class ControlRegistryService {
    * @param handler - Handler instance to register
    */
   register(handler: ControlHandler): void {
-    if (this.handlers.has(handler.controlIdentifier)) {
-      console.warn(
-        `[ControlRegistry] Handler for '${handler.controlIdentifier}' already registered, replacing`
-      );
-    }
     this.handlers.set(handler.controlIdentifier, handler);
   }
 
@@ -99,38 +95,30 @@ export class ControlRegistryService {
       layerCatalogHandler &&
       tasks.some((task) => task['ui-control'] === 'sitna.layerCatalog')
     ) {
-      console.log(
-        '[ControlRegistry] Applying foundational patches for virtual WMS (preload step)'
-      );
       // Apply just the foundational patch early - full patches will be applied later if control is used
       await (layerCatalogHandler as any).applyFoundationPatch?.(context);
     }
 
     // Step 1: Identify active controls that have handlers
-    const activeControls = tasks
+    const activeControlsWithHandlers = tasks
       .filter((task) => task['ui-control']?.startsWith('sitna.'))
       .map((task) => ({
         task,
         handler: this.getHandler(task['ui-control'])
       }))
-      .filter(({ handler }) => handler !== undefined);
+      .filter(
+        (item): item is { task: AppTasks; handler: ControlHandler } =>
+          item.handler !== undefined
+      );
+
+    const activeControls: Array<{ task: AppTasks; handler: ControlHandler }> =
+      activeControlsWithHandlers;
 
     if (activeControls.length === 0) {
-      console.warn(
-        '[ControlRegistry] No active controls with registered handlers found'
-      );
       // Still set default values for missing controls (e.g., auto-enable attribution if text configured)
       this.setDefaultValuesForMissingControls(sitnaControls, context);
       return sitnaControls;
     }
-
-    console.log(
-      `[ControlRegistry] Processing ${
-        activeControls.length
-      } controls with handlers: ${activeControls
-        .map(({ task }) => task['ui-control'])
-        .join(', ')}`
-    );
 
     // Build configuration for each control and load patches only for controls that are actually used
     for (const { task, handler } of activeControls) {
@@ -139,12 +127,17 @@ export class ControlRegistryService {
         const config = handler!.buildConfiguration(task, context);
 
         if (config !== null) {
-          // Control will be used - always load patches (programmatic patches need to be applied)
-          // Note: isReady() check was for JS patch loading, but programmatic patches should always be applied
-          console.log(
-            `[ControlRegistry] Loading patches for ${task['ui-control']} (control will be used)`
-          );
-          await handler!.loadPatches(context);
+          // Control will be used - load patches only if needed
+          // Check if handler has patches to load (requiredPatches defined) or overrides loadPatches
+          const hasPatches =
+            handler!.requiredPatches !== undefined &&
+            handler!.requiredPatches.length > 0;
+          const hasCustomLoadPatches =
+            handler!.loadPatches !== ControlHandlerBase.prototype.loadPatches;
+
+          if (hasPatches || hasCustomLoadPatches) {
+            await handler!.loadPatches(context);
+          }
 
           // Use handler's explicit sitnaConfigKey (required for all handlers)
           // Support dynamic config keys via getSitnaConfigKey() method if available
@@ -160,15 +153,6 @@ export class ControlRegistryService {
             continue;
           }
           sitnaControls[controlKey as keyof SitnaControls] = config as any;
-
-          console.log(
-            `[ControlRegistry] Configured ${task['ui-control']} as '${controlKey}'`,
-            config
-          );
-        } else {
-          console.log(
-            `[ControlRegistry] Control ${task['ui-control']} returned null config, skipping (no patches loaded)`
-          );
         }
       } catch (error) {
         console.error(
@@ -179,35 +163,20 @@ export class ControlRegistryService {
       }
     }
 
+    // Post-process: Resolve control dependencies
+    // This ensures dependent controls (e.g., Modify for DrawMeasureModify) are enabled
+    this.resolveControlDependencies(sitnaControls, activeControls, context);
+
     // Post-process: Set default values for controls that are registered but NOT requested
     // Each handler can define its own default value via getDefaultValueWhenMissing()
     this.setDefaultValuesForMissingControls(sitnaControls, context);
 
     // Post-process: Disable default featureInfo if featureInfo.silme.extension is not requested
-    // This matches legacy behavior (line 942 in sitna-helpers.ts)
+    // This matches legacy behavior from sitna-helpers.ts (now integrated into this service)
     this.ensureFeatureInfoDisabled(sitnaControls, tasks);
-
-    // Post-process: Auto-enable hidden native search if searchSilme is configured
-    // SearchSilme patch delegates search execution to native search control
-    // The patch accesses both controls via getControlsByClass('TC.control.Search')[0] and [1]
-    this.ensureHiddenNativeSearchForSilme(sitnaControls, tasks);
-
-    console.log(
-      `[ControlRegistry] Successfully configured ${
-        Object.keys(sitnaControls).length
-      } controls`
-    );
-    console.log(`[ControlRegistry] Final sitnaControls object:`, sitnaControls);
 
     // Validate div usage after all controls are processed
     this.validateDivUsage(sitnaControls);
-
-    // Log search-related controls specifically for debugging
-    if (sitnaControls.search || sitnaControls.searchSilme) {
-      console.log('[ControlRegistry] Search controls in final config:');
-      console.log('  - search:', sitnaControls.search);
-      console.log('  - searchSilme:', sitnaControls.searchSilme);
-    }
 
     return sitnaControls;
   }
@@ -215,11 +184,12 @@ export class ControlRegistryService {
   /**
    * Set default values for controls that are registered but NOT requested in backend tasks.
    * Each handler must define a default value via getDefaultValueWhenMissing().
-   * 
+   *
    * This approach ensures:
    * - All controls are explicitly set to a value (never undefined)
    * - Most controls are disabled (false) when not requested
    * - Special controls (like attribution) can implement auto-enable logic
+   * - Controls listed in enabledByDefault are automatically enabled with their default config
    * - Handlers can check app-config.json for meaningful data (not just structural properties like div)
    *
    * @param sitnaControls - The configured controls object (modified in place)
@@ -241,32 +211,51 @@ export class ControlRegistryService {
         // Skip handlers without a config key
         continue;
       }
-      
-      // Only process if control is not already configured (no backend task)
+
+      // Only process if control is not already configured by backend
+      // Note: undefined = not configured by backend (we can enable it)
+      //       false = explicitly disabled by backend (we respect that)
+      //       any object = enabled by backend (we respect that)
       const currentValue = sitnaControls[controlKey as keyof SitnaControls];
       if (currentValue === undefined) {
-        // Call handler's getDefaultValueWhenMissing() method
+        // Check if this control should be enabled by default
+        // Only enable if backend hasn't configured it (either enabled or disabled)
+        if (this.appConfigService.isEnabledByDefault(controlIdentifier)) {
+          // Build configuration using handler with minimal task
+          // This will use the default config from controlDefaults in app-config.json
+          const minimalTask: AppTasks = {
+            id: '',
+            'ui-control': controlIdentifier,
+            parameters: {}
+          };
+
+          try {
+            const config = handler.buildConfiguration(minimalTask, context);
+            if (config !== null) {
+              sitnaControls[controlKey as keyof SitnaControls] = config as any;
+              console.log(
+                `[ControlRegistry] Auto-enabled '${controlIdentifier}' (listed in enabledByDefault)`
+              );
+              continue;
+            }
+          } catch (error) {
+            console.warn(
+              `[ControlRegistry] Failed to build default config for '${controlIdentifier}':`,
+              error
+            );
+          }
+        }
+
+        // Fall back to handler's getDefaultValueWhenMissing() method
         // This method MUST return a value (never undefined)
         const defaultValue = (handler as any).getDefaultValueWhenMissing?.();
-        
+
         if (defaultValue !== undefined) {
           sitnaControls[controlKey as keyof SitnaControls] = defaultValue;
-          console.log(
-            `[ControlRegistry] Set default for missing control '${controlKey}':`,
-            defaultValue
-          );
         } else {
           // This should never happen - all handlers must return a value
           console.warn(
             `[ControlRegistry] Handler '${controlIdentifier}' returned undefined from getDefaultValueWhenMissing(). This is not allowed.`
-          );
-        }
-      } else {
-        // Control is already configured - log for debugging
-        if (controlKey === 'searchSilme') {
-          console.log(
-            `[ControlRegistry] searchSilme already configured, skipping default value. Current value:`,
-            currentValue
           );
         }
       }
@@ -274,9 +263,62 @@ export class ControlRegistryService {
   }
 
   /**
+   * Resolve control dependencies by auto-enabling required controls.
+   * When a control declares dependencies (e.g., DrawMeasureModify depends on Modify),
+   * this method ensures those dependencies are enabled in the controls configuration.
+   *
+   * @param sitnaControls - The configured controls object (modified in place)
+   * @param activeControls - Array of active controls with their handlers
+   * @param context - Full application configuration context
+   */
+  private resolveControlDependencies(
+    sitnaControls: Partial<SitnaControls>,
+    activeControls: Array<{ task: AppTasks; handler: ControlHandler }>,
+    context: AppCfg
+  ): void {
+    for (const { handler } of activeControls) {
+      if (handler.dependencies && handler.dependencies.length > 0) {
+        for (const depIdentifier of handler.dependencies) {
+          const depHandler = this.getHandler(depIdentifier);
+          if (depHandler) {
+            // Get the SITNA config key for the dependency
+            let depConfigKey: string;
+            if (typeof (depHandler as any).getSitnaConfigKey === 'function') {
+              depConfigKey = (depHandler as any).getSitnaConfigKey();
+            } else if (depHandler.sitnaConfigKey) {
+              depConfigKey = depHandler.sitnaConfigKey;
+            } else {
+              continue;
+            }
+
+            // Check if dependency is already configured
+            const currentValue =
+              sitnaControls[depConfigKey as keyof SitnaControls];
+            if (currentValue === undefined) {
+              // Auto-enable dependency by building its configuration
+              const depConfig = depHandler.buildConfiguration(
+                { 'ui-control': depIdentifier } as AppTasks,
+                context
+              );
+              if (depConfig !== null) {
+                sitnaControls[depConfigKey as keyof SitnaControls] =
+                  depConfig as any;
+              }
+            }
+          } else {
+            console.warn(
+              `[ControlRegistry] No handler found for dependency '${depIdentifier}' required by '${handler.controlIdentifier}'`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Ensure featureInfo is disabled if featureInfo.silme.extension is not requested.
-   * This matches legacy behavior (line 942 in sitna-helpers.ts) where featureInfo = false
-   * is set when the control is not present to prevent default SITNA behavior.
+   * This matches legacy behavior from sitna-helpers.ts (now integrated into this service)
+   * where featureInfo = false is set when the control is not present to prevent default SITNA behavior.
    *
    * @param sitnaControls - The configured controls object (modified in place)
    * @param tasks - Array of tasks from backend
@@ -295,45 +337,6 @@ export class ControlRegistryService {
       sitnaControls.featureInfo = false;
       console.log(
         '[ControlRegistry] Disabled default featureInfo (featureInfo.silme.extension not requested)'
-      );
-    }
-  }
-
-
-  /**
-   * Auto-enable a hidden native search control if searchSilme is configured.
-   * The SearchSilme patch delegates actual search execution to the native control.
-   * It accesses controls via getControlsByClass('TC.control.Search')[0] (native) and [1] (Silme).
-   * 
-   * We configure the native search with div: null to prevent DOM rendering,
-   * but it still provides the backend search functionality.
-   *
-   * @param sitnaControls - The configured controls object (modified in place)
-   * @param tasks - Array of tasks from backend
-   */
-  private ensureHiddenNativeSearchForSilme(
-    sitnaControls: Partial<SitnaControls>,
-    tasks: AppTasks[]
-  ): void {
-    // Check if searchSilme is configured (truthy value)
-    const hasSearchSilme = !!sitnaControls.searchSilme;
-
-    // Check if native search is already configured (truthy value)
-    const hasNativeSearch = !!sitnaControls.search;
-
-    // If searchSilme is configured but native search is not, enable it in hidden mode
-    if (hasSearchSilme && !hasNativeSearch) {
-      // Copy searchSilme configuration to native search, but remove the div
-      // This gives the native search the same search types, URLs, and parameters
-      // but prevents it from rendering in the DOM
-      const searchSilmeConfig = sitnaControls.searchSilme as any;
-      const nativeSearchConfig = { ...searchSilmeConfig };
-      delete nativeSearchConfig.div; // Remove div to hide the control
-      delete nativeSearchConfig.type; // Remove type so it uses native Search class
-      
-      sitnaControls.search = nativeSearchConfig;
-      console.log(
-        '[ControlRegistry] Auto-enabled hidden native search control with searchSilme configuration (required for delegation)'
       );
     }
   }

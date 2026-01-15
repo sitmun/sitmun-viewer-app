@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { DashboardPaginationComponent } from './dashboard-pagination.component';
 
@@ -8,6 +9,7 @@ describe('DashboardPaginationComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       declarations: [DashboardPaginationComponent]
     });
     fixture = TestBed.createComponent(DashboardPaginationComponent);

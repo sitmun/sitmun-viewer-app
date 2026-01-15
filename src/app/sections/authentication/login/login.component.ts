@@ -27,6 +27,7 @@ export class LoginComponent implements OnInit {
   displayPassword: string = 'password';
   displayDNIEButton: boolean = true;
   displayBackgroundImage: boolean = true;
+  backgroundImageUrl?: string;
 
   constructor(
     private authenticationService: AuthenticationService<unknown>,
@@ -47,9 +48,15 @@ export class LoginComponent implements OnInit {
       this.router.navigateByUrl('/');
     }
     this.displayDNIEButton = !((environment as any).hideDNIEAccess ?? true);
-    this.displayBackgroundImage = !(
-      (environment as any).hideBackgroundImage ?? true
-    );
+    this.backgroundImageUrl = (environment as any).loginBackgroundImageUrl;
+    // If loginBackgroundImageUrl is null or undefined, hide the background image
+    if (!this.backgroundImageUrl) {
+      this.displayBackgroundImage = false;
+    } else {
+      this.displayBackgroundImage = !(
+        (environment as any).hideBackgroundImage ?? true
+      );
+    }
   }
 
   login() {

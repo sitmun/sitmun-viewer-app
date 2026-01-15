@@ -28,11 +28,10 @@
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
     "angular-cli-ghpages": "^1.0.6",
-    "api-sitna": "4.1.0",
+    "api-sitna": "^4.8.0",
     "jwt-decode": "^3.1.2",
     "meld": "^1.3.2",
     "ngx-pagination": "^6.0.3",
-    "pdfmake": "0.1.70",
     "rxjs": "^7.8.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.3"

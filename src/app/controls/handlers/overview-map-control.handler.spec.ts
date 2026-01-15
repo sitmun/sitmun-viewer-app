@@ -167,7 +167,8 @@ describe('OverviewMapControlHandler', () => {
       const mockService = {
         id: 'service1',
         url: 'https://example.com/wms',
-        type: 'WMS'
+        type: 'WMS',
+        parameters: {}
       };
 
       const mockLayer = {
@@ -212,7 +213,7 @@ describe('OverviewMapControlHandler', () => {
         parameters: {}
       } as any;
 
-      mockConfigLookup.findGroup.and.returnValue(null);
+      mockConfigLookup.findGroup.and.returnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -266,7 +267,7 @@ describe('OverviewMapControlHandler', () => {
       };
 
       mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(null);
+      mockConfigLookup.findLayer.and.returnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -302,7 +303,7 @@ describe('OverviewMapControlHandler', () => {
 
       mockConfigLookup.findGroup.and.returnValue(mockGroup);
       mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(null);
+      mockConfigLookup.findService.and.returnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -327,8 +328,9 @@ describe('OverviewMapControlHandler', () => {
       const mockService = {
         id: 'service1',
         url: undefined,
-        type: 'WMS'
-      };
+        type: 'WMS',
+        parameters: {}
+      } as any;
 
       const mockLayer = {
         id: 'layer1',
@@ -368,7 +370,8 @@ describe('OverviewMapControlHandler', () => {
       const mockService = {
         id: 'service1',
         url: 'https://example.com/wms',
-        type: 'WMS'
+        type: 'WMS',
+        parameters: {}
       };
 
       const mockLayer = {
@@ -398,10 +401,10 @@ describe('OverviewMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).not.toBeNull();
-      if (config && typeof config.layer === 'object') {
-        expect(config.layer.id).toBe('My Test Layer');
-        expect(config.layer.url).toBe('https://example.com/wms');
-        expect(config.layer.layerNames).toEqual(['layer1', 'layer2']);
+      if (config && typeof config['layer'] === 'object') {
+        expect(config['layer'].id).toBe('My Test Layer');
+        expect(config['layer'].url).toBe('https://example.com/wms');
+        expect(config['layer'].layerNames).toEqual(['layer1', 'layer2']);
       } else {
         fail('Expected layer to be an object');
       }
@@ -416,7 +419,8 @@ describe('OverviewMapControlHandler', () => {
       const mockService = {
         id: 'service1',
         url: 'https://example.com/wms',
-        type: 'WMS'
+        type: 'WMS',
+        parameters: {}
       };
 
       const mockLayer = {
@@ -447,8 +451,8 @@ describe('OverviewMapControlHandler', () => {
 
       expect(mockConfigLookup.findLayer).toHaveBeenCalledWith('first-layer');
       expect(config).not.toBeNull();
-      if (config && typeof config.layer === 'object') {
-        expect(config.layer.id).toBe('First Layer');
+      if (config && typeof config['layer'] === 'object') {
+        expect(config['layer'].id).toBe('First Layer');
       }
     });
   });
@@ -459,6 +463,3 @@ describe('OverviewMapControlHandler', () => {
     });
   });
 });
-
-
-

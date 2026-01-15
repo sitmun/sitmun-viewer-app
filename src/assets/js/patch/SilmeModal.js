@@ -1,4 +1,4 @@
-﻿(function() {
+(function() {
   // Execution guard: prevent duplicate execution
   if (typeof window.__patchesLoaded === 'undefined') {
     window.__patchesLoaded = {};

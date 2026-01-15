@@ -53,6 +53,22 @@
 
   <mat-divider *ngIf="showSwitchLanguageButton && (isConnected || (!isConnected && showLoginButton))"></mat-divider>
   
+  <!-- System Info Group -->
+  <!-- About button -->
+  <button mat-menu-item (click)="openAboutDialog()">
+    <mat-icon>info</mat-icon>
+    <span>{{ 'systemInfo.about' | translate }}</span>
+  </button>
+
+  <!-- Recent Errors button (only in non-production) -->
+  <button mat-menu-item *ngIf="!environment.production" (click)="openErrorSidebar()">
+    <mat-icon>bug_report</mat-icon>
+    <span>{{ 'systemInfo.recentErrors' | translate }}</span>
+    <span class="badge" *ngIf="unreviewedErrorCount > 0">{{ unreviewedErrorCount }}</span>
+  </button>
+
+  <mat-divider *ngIf="!isConnected && showLoginButton || isConnected && (showProfileButton || showLogoutButton)"></mat-divider>
+  
   <!-- Account Group -->
   <button mat-menu-item *ngIf="!isConnected && showLoginButton" (click)="sendLoginEvent()">
     <mat-icon>login</mat-icon>

@@ -13,6 +13,7 @@ bower_components/
 .idea/
 
 # misc
+.cursor/
 .sass-cache/
 connect.lock/
 coverage/

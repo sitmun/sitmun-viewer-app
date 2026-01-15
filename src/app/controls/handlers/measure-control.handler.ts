@@ -53,4 +53,3 @@ export class MeasureControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

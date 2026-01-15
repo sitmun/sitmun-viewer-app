@@ -1,0 +1,59 @@
+<h2 mat-dialog-title>{{ 'systemInfo.about' | translate }}</h2>
+
+<mat-dialog-content>
+  <div class="about-content">
+    <div class="about-item">
+      <mat-icon class="about-icon">apps</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.application' | translate }}:</span>
+        <span class="about-value">{{ data.applicationName }}</span>
+      </div>
+    </div>
+
+    <div class="about-item">
+      <mat-icon class="about-icon">build</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.version' | translate }}:</span>
+        <span class="about-value">{{ data.version }}</span>
+      </div>
+    </div>
+
+    <div class="about-item">
+      <mat-icon class="about-icon">settings</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.environment' | translate }}:</span>
+        <span class="about-value">{{ data.environmentName }}</span>
+      </div>
+    </div>
+
+    <div class="about-item">
+      <mat-icon class="about-icon">code</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.angularVersion' | translate }}:</span>
+        <span class="about-value">{{ data.angularVersion }}</span>
+      </div>
+    </div>
+
+    <div class="about-item" *ngIf="data.sitnaVersion">
+      <mat-icon class="about-icon">map</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.sitnaVersion' | translate }}:</span>
+        <span class="about-value">{{ data.sitnaVersion }}</span>
+      </div>
+    </div>
+
+    <div class="about-item" *ngIf="data.buildTimestamp">
+      <mat-icon class="about-icon">schedule</mat-icon>
+      <div class="about-info">
+        <span class="about-label">{{ 'systemInfo.buildTimestamp' | translate }}:</span>
+        <span class="about-value">{{ data.buildTimestamp }}</span>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()" color="primary">
+    {{ 'common.button.close' | translate }}
+  </button>
+</mat-dialog-actions>

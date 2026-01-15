@@ -6,29 +6,21 @@ var authToken = undefined;
 var middlewareUrl = undefined;
 
 self.addEventListener("install", (event) => {
-  console.log("Service worker installed");
   event.waitUntil(self.skipWaiting());
-});
-
-self.addEventListener("activate", (event) => {
-  console.log("Service worker activated");
 });
 
 self.addEventListener("message", (event) => {
   const eventData = event.data;
   if (eventData.type === AUTH_TOKEN_KEY) {
     authToken = eventData.token;
-    console.log("Access token received");
     return;
   }
 
   if (eventData.type === MIDDLEWARE_URL_KEY) {
     middlewareUrl = eventData.url;
-    console.log("Middleware URL received:", middlewareUrl);
     return;
   }
 
-  console.log("Unknown message received:", eventData);
 });
 
 self.addEventListener("fetch", (event) => {
@@ -51,10 +43,8 @@ self.addEventListener("fetch", (event) => {
       mode: "cors"
     });
 
-    console.log("Sending modified request to", modifiedRequest.url);
     event.respondWith(fetch(modifiedRequest));
   } else {
-    console.log("No auth token found, sending original request");
     event.respondWith(fetch(request))
   }
 });

@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
+import { PrimaryButtonComponent } from '@ui/components/primary-button/primary-button.component';
+import { FormFieldInputComponent } from '@ui/components/form-field-input/form-field-input.component';
+import { MatIconModule } from '@angular/material/icon';
 
 import { LoginComponent } from './login.component';
 
@@ -14,8 +17,16 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
-      declarations: [LoginComponent],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot(),
+        MatIconModule
+      ],
+      declarations: [
+        LoginComponent,
+        PrimaryButtonComponent,
+        FormFieldInputComponent
+      ],
       providers: [
         {
           provide: Router,

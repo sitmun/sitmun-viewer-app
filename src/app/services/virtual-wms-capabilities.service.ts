@@ -61,10 +61,6 @@ export class VirtualWmsCapabilitiesService {
    * @returns WMS GetCapabilities response representing the node's subtree
    */
   generateCapabilities(nodeId: string, apiConfig: AppCfg): WMSCapabilities {
-    console.info(
-      `[VirtualWmsCapabilities] Generating capabilities for node: ${nodeId}`
-    );
-
     // Find the tree and node
     const tree = this.findTreeContainingNode(nodeId, apiConfig);
     if (!tree) {
@@ -116,10 +112,6 @@ export class VirtualWmsCapabilitiesService {
       Service: service,
       Capability: capability
     };
-
-    console.info(
-      `[VirtualWmsCapabilities] Generated capabilities for ${nodeId} with ${layerCount} layers`
-    );
 
     return capabilities;
   }
@@ -218,27 +210,18 @@ export class VirtualWmsCapabilitiesService {
       // Step 2: Get the resource (layer ID) from the node
       const layerResourceId = node.resource;
       if (!layerResourceId) {
-        console.warn(
-          `[VirtualWmsCapabilities] Node ${nodeId} has no resource property`
-        );
         continue;
       }
 
       // Step 3: Find the layer using the resource ID
       const layer = apiConfig.layers.find((l) => l.id === layerResourceId);
       if (!layer) {
-        console.warn(
-          `[VirtualWmsCapabilities] Layer ${layerResourceId} not found for node ${nodeId}`
-        );
         continue;
       }
 
       // Step 4: Find the service using the layer's service ID
       const service = apiConfig.services.find((s) => s.id === layer.service);
       if (!service) {
-        console.warn(
-          `[VirtualWmsCapabilities] Service ${layer.service} not found for layer ${layerResourceId}`
-        );
         continue;
       }
 
@@ -252,9 +235,6 @@ export class VirtualWmsCapabilitiesService {
     }
 
     // Node not found in any tree
-    console.warn(
-      `[VirtualWmsCapabilities] Node ${nodeId} not found in any tree`
-    );
     return null;
   }
 
@@ -501,9 +481,6 @@ export class VirtualWmsCapabilitiesService {
     for (const childId of childIds) {
       const childNode = tree.nodes[childId];
       if (!childNode) {
-        console.warn(
-          `[VirtualWmsCapabilities] Child node ${childId} not found`
-        );
         continue;
       }
 
@@ -610,9 +587,6 @@ export class VirtualWmsCapabilitiesService {
     defaultCRS: string
   ): string[] {
     if (!service) {
-      console.warn(
-        `[VirtualWmsCapabilities] Service ${layer.service} not found, using default CRS`
-      );
       return [defaultCRS];
     }
 

@@ -16,6 +16,8 @@ describe('DashboardSearchboxComponent', () => {
 
     fixture = TestBed.createComponent(DashboardSearchboxComponent);
     component = fixture.componentInstance;
+    // Initialize applications array to prevent forEach error in ngOnInit
+    component.applications = [];
     fixture.detectChanges();
   });
 

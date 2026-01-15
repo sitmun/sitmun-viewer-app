@@ -19,7 +19,6 @@ export class ResetPasswordService<T> {
 
   private getHeaders(): HttpHeaders {
     const deviceId = localStorage.getItem('deviceId');
-    console.log('deviceID', deviceId);
     return new HttpHeaders({
       'X-Device-ID': deviceId || ''
     });

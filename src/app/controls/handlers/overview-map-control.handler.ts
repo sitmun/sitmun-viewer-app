@@ -31,10 +31,13 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
     super(tcNamespaceService);
   }
 
-  buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
+  buildConfiguration(
+    task: AppTasks,
+    context: AppCfg
+  ): SitnaControlConfig | null {
     // Initialize ConfigLookupService before use
     this.configLookup.initialize(context);
-    
+
     // Enable UI button (matches legacy line 582-584)
     this.uiStateService.enableOverviewMapButton();
 
@@ -78,26 +81,29 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
     }
 
     // Find group (legacy lines 537-542)
-    const group = this.configLookup.findGroup(situationMapId) ||
-      context.groups.find(g => g.id === situationMapId);
-    
+    const group =
+      this.configLookup.findGroup(situationMapId) ||
+      context.groups.find((g) => g.id === situationMapId);
+
     if (!group?.layers?.length) {
       return null;
     }
 
     // Get first layer from group (legacy line 548)
     const layerId = group.layers[0];
-    const layer = this.configLookup.findLayer(layerId) ||
-      context.layers.find(l => l.id === layerId);
-    
+    const layer =
+      this.configLookup.findLayer(layerId) ||
+      context.layers.find((l) => l.id === layerId);
+
     if (!layer) {
       return null;
     }
 
     // Get service (legacy lines 553-559)
-    const service = this.configLookup.findService(layer.service) ||
-      context.services.find(s => s.id === layer.service);
-    
+    const service =
+      this.configLookup.findService(layer.service) ||
+      context.services.find((s) => s.id === layer.service);
+
     // Validate service has URL
     if (!service?.url) {
       return null;
@@ -115,6 +121,3 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-
-
-

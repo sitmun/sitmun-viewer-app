@@ -64,4 +64,3 @@ export class PrintMapControlHandler extends ControlHandlerBase {
     return !!TC?.control?.PrintMap;
   }
 }
-

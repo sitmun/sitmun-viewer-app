@@ -35,6 +35,7 @@ export interface AppConfig {
   dashboard: DashboardConfig;
   defaultLanguage?: string; // Moved from languages.defaultLanguage
   languages?: LanguageItem[]; // Changed from object with defaultLanguages array to direct array
+  enabledByDefault?: string[]; // Array of control identifiers that should be enabled even if backend doesn't request them
   controlDefaults?: Record<string, ControlDefaultConfig>; // Control identifier to default config mapping
 }
 
@@ -160,6 +161,23 @@ export class AppConfigService {
    */
   getAttribution(): string | null {
     return this.config?.attribution || null;
+  }
+
+  /**
+   * Get the list of control identifiers that should be enabled by default
+   * @returns Array of control identifiers (e.g., ['sitna.coordinates', 'sitna.featureInfo'])
+   */
+  getEnabledByDefault(): string[] {
+    return this.config?.enabledByDefault || [];
+  }
+
+  /**
+   * Check if a control identifier is in the enabledByDefault list
+   * @param controlIdentifier Control identifier to check
+   * @returns true if the control should be enabled by default
+   */
+  isEnabledByDefault(controlIdentifier: string): boolean {
+    return this.getEnabledByDefault().includes(controlIdentifier);
   }
 }
 

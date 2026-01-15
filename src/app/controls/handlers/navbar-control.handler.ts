@@ -43,4 +43,3 @@ export class NavBarControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-

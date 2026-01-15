@@ -205,5 +205,22 @@
   "profile.territoryManagementUpdateSucess": "Los datos asociados a los territorios se han actualizado correctamente.",
   "profile.territoryManagementUpdateError": "Se produjo un error al actualizar los datos de los territorios.",
   "common.filterHintSelectedApplicationAlwaysVisible": "La aplicación seleccionada siempre permanece visible",
-  "common.filterHintSelectedTerritoryAlwaysVisible": "El territorio seleccionado siempre permanece visible"
+  "common.filterHintSelectedTerritoryAlwaysVisible": "El territorio seleccionado siempre permanece visible",
+  "systemInfo.about": "Acerca de",
+  "systemInfo.applicationName": "Visualizador SITMUN",
+  "systemInfo.application": "Aplicación",
+  "systemInfo.version": "Versión",
+  "systemInfo.environment": "Entorno",
+  "systemInfo.angularVersion": "Versión de Angular",
+  "systemInfo.buildTimestamp": "Tiempo de Compilación",
+  "systemInfo.sitnaVersion": "Versión API SITNA",
+  "systemInfo.recentErrors": "Errores Recientes",
+  "systemInfo.noErrors": "No hay errores registrados",
+  "systemInfo.errorDetails": "Detalles del Error",
+  "systemInfo.errorType.http": "Error HTTP",
+  "systemInfo.errorType.logger": "Error de Aplicación",
+  "systemInfo.errorType.uncaught": "Excepción No Capturada",
+  "systemInfo.copyError": "Copiar Error",
+  "systemInfo.closeErrorPanel": "Cerrar",
+  "common.button.close": "Cerrar"
 }

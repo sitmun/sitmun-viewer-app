@@ -54,6 +54,3 @@ export class OfflineMapMakerControlHandler extends ControlHandlerBase {
     return true;
   }
 }
-
-
-

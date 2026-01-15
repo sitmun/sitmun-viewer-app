@@ -74,9 +74,12 @@ describe('CoordinatesControlHandler', () => {
 
   describe('requiredPatches', () => {
     it('should require TCProjectionDataPatch', () => {
-      expect(handler.requiredPatches).toEqual([
-        'assets/js/patch/TCProjectionDataPatch.js'
-      ]);
+      expect(handler.requiredPatches).toBeDefined();
+      if (handler.requiredPatches) {
+        expect(handler.requiredPatches).toEqual([
+          'assets/js/patch/TCProjectionDataPatch.js'
+        ]);
+      }
     });
   });
 

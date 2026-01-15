@@ -158,7 +158,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
       if (dep === 'TC') {
         await this.tcNamespaceService.waitForTC();
       } else if (dep.includes('.')) {
-        // It's a property path like 'TC.control.SearchSilme'
+        // It's a property path like 'TC.control.Search'
         await this.tcNamespaceService.waitForTCProperty(dep);
       } else {
         // It's a global variable
@@ -246,14 +246,14 @@ export abstract class ControlHandlerBase implements ControlHandler {
   /**
    * Get the default value to use when this control's task is NOT present in backend tasks.
    * This is independent of app-config.json defaults (which are only used when task IS present).
-   * 
+   *
    * According to SITNA API, most controls are boolean properties, so false explicitly disables them.
    * Override this method in specific handlers to implement custom logic (e.g., auto-enable based on
    * app-config.json meaningful data like attribution text).
-   * 
+   *
    * **Important:** This method must always return a value (never undefined). Every control should
    * be explicitly set to some value, even when not requested by the backend.
-   * 
+   *
    * @returns Default value when task is missing (false by default to match SITNA boolean controls)
    */
   protected getDefaultValueWhenMissing(): any {

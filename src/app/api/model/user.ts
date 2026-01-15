@@ -22,7 +22,6 @@ export class UserUtils {
       parts.push(u.firstname);
       parts.push(u.lastname);
     }
-    console.log(parts.filter((s) => StringUtils.isNotEmpty(s)).join(' '));
     return parts.filter((s) => StringUtils.isNotEmpty(s)).join(' ');
   }
 

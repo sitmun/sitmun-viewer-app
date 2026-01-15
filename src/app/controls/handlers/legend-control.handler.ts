@@ -3,6 +3,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { UIStateService } from '../../services/ui-state.service';
 
 /**
  * Handler for the native SITNA legend control.
@@ -20,7 +21,10 @@ export class LegendControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'legend';
   readonly requiredPatches = undefined; // No patches needed
 
-  constructor(tcNamespaceService: TCNamespaceService) {
+  constructor(
+    tcNamespaceService: TCNamespaceService,
+    private uiStateService: UIStateService
+  ) {
     super(tcNamespaceService);
   }
 
@@ -32,6 +36,9 @@ export class LegendControlHandler extends ControlHandlerBase {
     task: AppTasks,
     context: AppCfg
   ): SitnaControlConfig | null {
+    // Enable UI button when legend control is configured
+    this.uiStateService.enableLegendButton();
+
     const defaultConfig = this.getDefaultConfig();
     return this.mergeWithParameters(defaultConfig, task.parameters);
   }

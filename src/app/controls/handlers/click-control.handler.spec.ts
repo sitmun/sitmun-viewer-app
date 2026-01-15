@@ -83,7 +83,7 @@ describe('ClickControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return true even with parameters (parameters are ignored)', () => {
@@ -97,7 +97,7 @@ describe('ClickControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
 
     it('should return true with empty parameters', () => {
@@ -109,7 +109,7 @@ describe('ClickControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
   });
 
@@ -143,8 +143,7 @@ describe('ClickControlHandler', () => {
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
-      expect(config).toBe(true);
+      expect(config as any).toBe(true);
     });
   });
 });
-

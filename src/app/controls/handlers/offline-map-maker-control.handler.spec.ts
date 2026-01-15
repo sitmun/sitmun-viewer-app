@@ -233,6 +233,3 @@ describe('OfflineMapMakerControlHandler', () => {
     });
   });
 });
-
-
-

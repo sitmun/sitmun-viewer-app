@@ -12,11 +12,23 @@ All notable changes to this project will be documented in this file. The format 
 - Territory count label displayed on application presentation page ([5e567db](https://github.com/sitmun/sitmun-viewer-app/commit/5e567db6e87b0a7eff65d5272f1dab7618fb3a31))
 - Animation modules (BrowserAnimation and MatExpansion) for enhanced user interface ([4e60c3b](https://github.com/sitmun/sitmun-viewer-app/commit/4e60c3b0ff2da584b8a21425f9110457802c5270))
 - Description max length truncation pipe for managing long text in cards ([4e60c3b](https://github.com/sitmun/sitmun-viewer-app/commit/4e60c3b0ff2da584b8a21425f9110457802c5270))
+- Error handling infrastructure with ErrorTrackingService and GlobalErrorHandler for centralized error management
+- Error details sidebar component for enhanced error reporting and debugging
+- About dialog component for displaying application information and version details
+- New services: catalog-switching, layer-info, map-interface, map-service-worker, raster-layer, sidebar-manager
+- Standard SITNA control handlers: feature-info-control and search-control (replacing custom silme implementations)
+- Search control handler with comprehensive test coverage
+- Barcelona background image asset for application branding
 
 ### Changed
+- **api-sitna upgraded from 4.1.0 to 4.8.0** - Major version update with new features and improvements
 - SITNA API upgraded to version 4.1.0 with comprehensive asset updates ([#86](https://github.com/sitmun/sitmun-viewer-app/issues/86)) ([75caae5](https://github.com/sitmun/sitmun-viewer-app/commit/75caae59ada27e84191dc5ef64e2a237ce80cfd9))
 - SITNA API version along with CRS projection data files ([d64180e](https://github.com/sitmun/sitmun-viewer-app/commit/d64180e77b0e200751ca52ddaa7450bf3fd14406))
 - API-SITNA assets override updated with latest patches ([f8fc1ad](https://github.com/sitmun/sitmun-viewer-app/commit/f8fc1ad6671dccae31a6ac45a227a0cc85130e4e))
+- Control handler architecture migrated from custom "silme" handlers to standard SITNA handlers for better maintainability
+- Refactored layer-catalog-control.handler with significant simplification (reduced from ~2,000 to ~500 lines)
+- Service Worker configuration updated for better scope handling with PUBLIC_BASE_PATH support
+- Webpack configuration updated with PUBLIC_BASE_PATH variable support for flexible deployment paths
 - Password reset flow consolidated and improved for better security ([dd571ec](https://github.com/sitmun/sitmun-viewer-app/commit/dd571ece4ec8f9cd42e21d0cfdbcf29f6db46052))
 - Application presentation page now displays territory counts with orange hover effects ([5e567db](https://github.com/sitmun/sitmun-viewer-app/commit/5e567db6e87b0a7eff65d5272f1dab7618fb3a31))
 - Territory section background changed to white for cleaner appearance ([8ecece9](https://github.com/sitmun/sitmun-viewer-app/commit/8ecece988e285e1850bae2fdec53c1d6b2ef6232))
@@ -39,6 +51,15 @@ All notable changes to this project will be documented in this file. The format 
 ### Removed
 - Unused library dependencies in basemap control ([#87](https://github.com/sitmun/sitmun-viewer-app/issues/87)) ([6bf9f62](https://github.com/sitmun/sitmun-viewer-app/commit/6bf9f62259a64a9e88d1529c216433082533aa90))
 - Reset password component in favor of consolidated forgot password flow ([dd571ec](https://github.com/sitmun/sitmun-viewer-app/commit/dd571ece4ec8f9cd42e21d0cfdbcf29f6db46052))
+- Legacy "silme" control handler implementations: draw-measure-modify-silme, feature-info-silme, layer-catalog-silme, popup-silme, search-silme (replaced with standard SITNA handlers)
+- sitna-helpers.ts utility file (1,077 lines) - functionality integrated into dedicated services
+- ExternalWMSSilme.js custom control (281 lines) - replaced with standard SITNA controls
+- Unused logo asset (bck_no_logo.jpg)
+
+### Technical Debt
+- New services and components added without test coverage (8 services, 2 components). Test files to be added in follow-up:
+  - Services: catalog-switching, error-tracking, global-error-handler, layer-info, map-interface, map-service-worker, raster-layer, sidebar-manager
+  - Components: about-dialog, error-details-sidebar
 
 ## [1.1.1] - 2025-08-28
 

@@ -59,15 +59,15 @@ export class AttributionControlHandler extends ControlHandlerBase {
   override getDefaultValueWhenMissing(): any {
     // Check if attribution TEXT is configured in app-config.json
     const attribution = this.appConfigService.getAttribution();
-    
+
     if (attribution) {
       // Attribution text exists → auto-enable control with default config
       const defaultConfig = this.getDefaultConfig(); // Gets div if configured
-      return defaultConfig && Object.keys(defaultConfig).length > 0 
-        ? defaultConfig 
+      return defaultConfig && Object.keys(defaultConfig).length > 0
+        ? defaultConfig
         : true; // Return config with div, or just true
     }
-    
+
     // No attribution text → explicitly disable control
     return false;
   }
