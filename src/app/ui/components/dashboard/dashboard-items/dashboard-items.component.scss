@@ -60,7 +60,6 @@ h3 {
   // Voir pour mettre un max width
 }
 
-
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
   .cards-container {
     display: flex;
@@ -74,7 +73,6 @@ h3 {
       min-width: 100px;
     }
   }
-
 
   .main-content {
     padding-bottom: 150px;

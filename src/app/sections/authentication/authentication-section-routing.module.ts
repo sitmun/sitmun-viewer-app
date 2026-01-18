@@ -1,8 +1,10 @@
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+
 import { RoutingDefault } from '@config/app.config';
 import { LoginComponent } from '@sections/authentication/login/login.component';
-import { NgModule } from '@angular/core';
 import { MapComponent } from '@sections/user/map/map.component';
+
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 const routes: Routes = [

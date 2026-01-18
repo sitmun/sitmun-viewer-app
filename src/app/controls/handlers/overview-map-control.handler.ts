@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { SitnaBaseLayer } from '@api/model/sitna-cfg';
+
+import { ConfigLookupService } from '../../services/config-lookup.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { UIStateService } from '../../services/ui-state.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { ConfigLookupService } from '../../services/config-lookup.service';
-import { UIStateService } from '../../services/ui-state.service';
-import { SitnaBaseLayer } from '@api/model/sitna-cfg';
 
 /**
  * Handler for the native SITNA overviewMap control.

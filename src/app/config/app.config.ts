@@ -1,6 +1,6 @@
 import { URL_AUTH_LOGIN } from '@api/api-config';
-import { AuthConfig } from '@auth/authentication.options';
 import { CustomDetails } from '@api/services/user.service';
+import { AuthConfig } from '@auth/authentication.options';
 
 export const NavigationPath = {
   Auth: {

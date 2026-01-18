@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import {
   AfterViewInit,
   Directive,
@@ -7,21 +8,20 @@ import {
   Renderer2
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
+
 import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
 import { CommonService } from '@api/services/common.service';
-import { MapInterfaceService } from 'src/app/services/map-interface.service';
-import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 import { TranslateService } from '@ngx-translate/core';
+import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import SitnaMap, { Cfg as SitnaCfg } from 'api-sitna';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Location } from '@angular/common';
-import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
-import { Cfg as SitnaCfg } from 'api-sitna';
-import SitnaMap from 'api-sitna';
-import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
+import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
+import { MapInterfaceService } from 'src/app/services/map-interface.service';
+import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 
 @Directive()
 export abstract class AbstractMapComponent
@@ -88,7 +88,7 @@ export abstract class AbstractMapComponent
     if (!this.isInEmbedded) {
       this.translate.onLangChange
         .pipe(takeUntil(this.componentDestroyed))
-        .subscribe((event) => {
+        .subscribe(() => {
           this.router.navigateByUrl('/').then(() => {
             this.navigateToMap();
           });
@@ -193,7 +193,7 @@ export abstract class AbstractMapComponent
       return;
     }
 
-    let cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
+    const cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
 
     if (!cfgCheck.ok) {
       const ref = this.modal.open(ErrorModalComponent, {
@@ -234,11 +234,15 @@ export abstract class AbstractMapComponent
         .processControls(this.currentAppCfg.tasks, this.currentAppCfg)
         .then((controls) => {
           // Update general config with new controls
-          this.currentGeneralCfg!.controls = controls as any;
+          if (this.currentGeneralCfg) {
+            this.currentGeneralCfg.controls = controls as any;
+          }
 
           // Clear and reload map with updated configuration
-          this.clearMap();
-          this.loadMap(this.currentAppCfg!, this.currentGeneralCfg!);
+          if (this.currentAppCfg && this.currentGeneralCfg) {
+            this.clearMap();
+            this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+          }
         });
     } else if (layerCatalogsSilmeForModal) {
       // Silme layer catalog - use existing logic
@@ -357,7 +361,7 @@ export abstract class AbstractMapComponent
 
     // Build the path to the root for each layer
     function buildPathToRoot(layer: any): number[] {
-      let path: number[] = [layer.order];
+      const path: number[] = [layer.order];
       let currentGroup = groupsMap.get(layer.parentGroupNode);
 
       while (currentGroup) {
@@ -485,7 +489,7 @@ export abstract class AbstractMapComponent
    */
   waitForBlobScriptExecution(
     callback: (script: HTMLScriptElement) => void,
-    timeout: number = 5000
+    timeout = 5000
   ): void {
     const startTime = Date.now();
 

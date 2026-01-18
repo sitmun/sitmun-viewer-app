@@ -7,14 +7,24 @@
   "defaultLanguage": "es",
   "languages": [
     { "name": "Español", "shortname": "es", "icon": "assets/flags/spain.svg" },
-    { "name": "English", "shortname": "en", "icon": "assets/flags/united-kingdom.svg" },
-    { "name": "Français", "shortname": "fr", "icon": "assets/flags/france.svg" },
+    {
+      "name": "English",
+      "shortname": "en",
+      "icon": "assets/flags/united-kingdom.svg"
+    },
+    {
+      "name": "Français",
+      "shortname": "fr",
+      "icon": "assets/flags/france.svg"
+    },
     { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" },
-    { "name": "Aranés", "shortname": "oc-aranes", "icon": "assets/flags/val-aran.svg" }
+    {
+      "name": "Aranés",
+      "shortname": "oc-aranes",
+      "icon": "assets/flags/val-aran.svg"
+    }
   ],
-  "enabledByDefault": [
-    "sitna.multiFeatureInfo"
-  ],
+  "enabledByDefault": ["sitna.multiFeatureInfo"],
   "controlDefaults": {
     "sitna.coordinates": {
       "div": "coordinates"

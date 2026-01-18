@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonService } from '@api/services/common.service';
 import { Router } from '@angular/router';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
+
+import { CommonService } from '@api/services/common.service';
 import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dashboard/abstract-dashboard.component';
-import { NavigationPath } from '@config/app.config';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
 
 @Component({
   selector: 'app-public-dashboard',

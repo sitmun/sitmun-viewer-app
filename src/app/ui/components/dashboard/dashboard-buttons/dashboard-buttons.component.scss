@@ -12,7 +12,7 @@ $layout-breakpoint-small: 540px;
   margin: 120px 20px 0 20px;*/
   margin-bottom: 40px;
   display: flex;
-  gap:30px;
+  gap: 30px;
 
   .selected {
     /*color: colors.$dashboard-component-button-focus;
@@ -33,7 +33,7 @@ $layout-breakpoint-small: 540px;
     border: none;
     border-bottom: dimensions.$base-border-3 solid colors.$dashboard-component-button-border;
     padding-bottom: 5px;*/
-    background-color: #FF9300;
+    background-color: #ff9300;
     color: #fff;
     border: none;
     line-height: 40px;

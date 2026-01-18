@@ -1,12 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TranslateModule } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+
 import { CommonService } from '@api/services/common.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { AppConfigService } from 'src/app/services/app-config.service';
-import { of } from 'rxjs';
 
 import { ChangeApplicationTerritoryDialogComponent } from './change-application-territory-dialog.component';
 

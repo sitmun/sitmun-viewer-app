@@ -1,12 +1,14 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
+
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { LanguageService } from '../../services/language.service';
 import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
-import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 
 describe('LayerCatalogControlHandler', () => {
   let handler: LayerCatalogControlHandler;
@@ -15,7 +17,7 @@ describe('LayerCatalogControlHandler', () => {
   let mockConfigLookup: jasmine.SpyObj<ConfigLookupService>;
   let mockLanguageService: jasmine.SpyObj<LanguageService>;
   let mockSitnaNamespace: jasmine.SpyObj<SitnaNamespaceService>;
-  let mockAppCfg: AppCfg;
+  let _mockAppCfg: AppCfg;
 
   beforeEach(() => {
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
@@ -64,7 +66,7 @@ describe('LayerCatalogControlHandler', () => {
 
     handler = TestBed.inject(LayerCatalogControlHandler);
 
-    mockAppCfg = {
+    _mockAppCfg = {
       application: {
         id: 1,
         title: 'Test App',
@@ -181,9 +183,9 @@ describe('LayerCatalogControlHandler', () => {
       expect(config).toBeDefined();
       expect(config?.div).toBe('toc');
       expect(config?.layers).toBeDefined();
-      expect(config!.layers!.length).toBe(1);
-      expect(config!.layers![0].type).toBe('WMS');
-      expect(config!.layers![0].url).toBe('virtual://sitmun/child1');
+      expect(config?.layers?.length).toBe(1);
+      expect(config?.layers?.[0]?.type).toBe('WMS');
+      expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/child1');
     });
 
     it('should skip nodes that cannot generate valid capabilities', () => {
@@ -245,8 +247,8 @@ describe('LayerCatalogControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config!.layers!.length).toBe(1); // Only node2 should be included
-      expect(config!.layers![0].title).toBe('Valid Node');
+      expect(config?.layers?.length).toBe(1); // Only node2 should be included
+      expect(config?.layers?.[0]?.title).toBe('Valid Node');
       expect(
         mockVirtualCapabilities.canGenerateCapabilities
       ).toHaveBeenCalledWith('node2', context);
@@ -294,7 +296,7 @@ describe('LayerCatalogControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config!.layers![0].title).toBe('Node Title');
+      expect(config?.layers?.[0]?.title).toBe('Node Title');
     });
 
     it('should fall back to tree title if node not found', () => {
@@ -341,7 +343,7 @@ describe('LayerCatalogControlHandler', () => {
 
       expect(config).toBeDefined();
       // When child node has no title, it falls back to default format
-      expect(config!.layers![0].title).toContain('Virtual Service');
+      expect(config?.layers?.[0]?.title).toContain('Virtual Service');
     });
 
     it('should use default title if nothing found', () => {
@@ -384,7 +386,7 @@ describe('LayerCatalogControlHandler', () => {
 
       expect(config).toBeDefined();
       // When no title is found, uses default format "Virtual Service {nodeId}"
-      expect(config!.layers![0].title).toContain('Virtual Service');
+      expect(config?.layers?.[0]?.title).toContain('Virtual Service');
     });
 
     it('should handle custom root nodes from parameters', () => {
@@ -453,7 +455,7 @@ describe('LayerCatalogControlHandler', () => {
 
       // Handler uses first non-empty tree, so should return 1 layer
       expect(config).toBeDefined();
-      expect(config!.layers!.length).toBe(1);
+      expect(config?.layers?.length).toBe(1);
     });
 
     it('should handle single root node in parameters', () => {
@@ -499,7 +501,7 @@ describe('LayerCatalogControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config!.layers!.length).toBe(1);
+      expect(config?.layers?.length).toBe(1);
     });
 
     it('should return null if no root nodes', () => {
@@ -617,8 +619,8 @@ describe('LayerCatalogControlHandler', () => {
 
       expect(config).toBeDefined();
       expect(config?.div).toBe('toc');
-      expect(config!.layers!.length).toBe(1);
-      expect(config!.layers![0].url).toBe('virtual://sitmun/child1');
+      expect(config?.layers?.length).toBe(1);
+      expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/child1');
       expect(config?.enableSearch).toBe(true);
     });
   });

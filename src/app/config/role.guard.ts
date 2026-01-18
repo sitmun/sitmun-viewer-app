@@ -6,6 +6,7 @@ import {
   RouterStateSnapshot,
   UrlTree
 } from '@angular/router';
+
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 

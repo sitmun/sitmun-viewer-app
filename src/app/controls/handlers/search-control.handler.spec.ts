@@ -1,15 +1,17 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { SearchControlHandler } from './search-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { AppConfigService } from '../../services/app-config.service';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { SearchControlHandler } from './search-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('SearchControlHandler', () => {
   let handler: SearchControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockAppConfig: jasmine.SpyObj<AppConfigService>;
-  let mockAppCfg: AppCfg;
+  let _mockAppCfg: AppCfg;
 
   beforeEach(() => {
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
@@ -39,7 +41,7 @@ describe('SearchControlHandler', () => {
 
     handler = TestBed.inject(SearchControlHandler);
 
-    mockAppCfg = {
+    _mockAppCfg = {
       application: {
         id: 1,
         title: 'Test App',

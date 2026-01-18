@@ -82,7 +82,7 @@ $spacing-xl: 32px;
     gap: $spacing-md;
     margin: 0;
 
-    button[mat-flat-button][color="primary"] {
+    button[mat-flat-button][color='primary'] {
       background-color: colors.$primary-orange !important; // Override Material defaults
       color: colors.$white !important;
       display: inline-flex;
@@ -114,7 +114,7 @@ $spacing-xl: 32px;
     // Secondary action button (if needed in future)
     button[mat-button] {
       color: colors.$primary-orange;
-      
+
       &:hover {
         background-color: rgba(0, 0, 0, 0.04);
       }
@@ -149,4 +149,3 @@ $spacing-xl: 32px;
     }
   }
 }
-

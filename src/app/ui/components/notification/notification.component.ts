@@ -1,11 +1,12 @@
 import {
   Component,
   ElementRef,
-  Input,
+  OnDestroy,
   OnInit,
   Renderer2,
   ViewChild
 } from '@angular/core';
+
 import { takeWhile } from 'rxjs';
 import { INotification } from 'src/app/notifications/models/INotification';
 import { NotificationType } from 'src/app/notifications/models/NotificationType';
@@ -16,10 +17,10 @@ import { NotificationService } from 'src/app/notifications/services/Notification
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.scss']
 })
-export class NotificationComponent implements OnInit {
+export class NotificationComponent implements OnInit, OnDestroy {
   @ViewChild('notificationContainer') container!: ElementRef<HTMLDivElement>;
 
-  private _subscribed: boolean = true;
+  private _subscribed = true;
   private classMap: Map<NotificationType, string>;
 
   constructor(
@@ -47,10 +48,10 @@ export class NotificationComponent implements OnInit {
 
   private render(notification: INotification) {
     // Notification box
-    let notificationBox = this.renderer.createElement('div');
+    const notificationBox = this.renderer.createElement('div');
     const boxColorClass = this.classMap.get(notification.type);
 
-    let classesToAdd = ['message-box', boxColorClass];
+    const classesToAdd = ['message-box', boxColorClass];
     classesToAdd.forEach((className) => {
       if (className) {
         // If the class is not undefined
@@ -67,14 +68,14 @@ export class NotificationComponent implements OnInit {
     this.renderer.setStyle(notificationBox, 'opacity', '1');
 
     // Header
-    let header = this.renderer.createElement('b');
+    const header = this.renderer.createElement('b');
     const headerText = this.renderer.createText(
       NotificationType[notification.type]
     );
     this.renderer.appendChild(header, headerText);
 
     // Content
-    let content = this.renderer.createElement('div');
+    const content = this.renderer.createElement('div');
     const text = this.renderer.createText(notification.message);
     this.renderer.appendChild(content, text);
 

@@ -23,7 +23,7 @@ export class DomUtilsService {
    * @param className - CSS class to add (default: 'tc-hidden')
    * @returns true if element was found and modified, false otherwise
    */
-  hideElementById(id: string, className: string = 'tc-hidden'): boolean {
+  hideElementById(id: string, className = 'tc-hidden'): boolean {
     const element = document.getElementById(id);
     if (element) {
       this.renderer.addClass(element, className);
@@ -39,7 +39,7 @@ export class DomUtilsService {
    * @param className - CSS class to remove (default: 'tc-hidden')
    * @returns true if element was found and modified, false otherwise
    */
-  showElementById(id: string, className: string = 'tc-hidden'): boolean {
+  showElementById(id: string, className = 'tc-hidden'): boolean {
     const element = document.getElementById(id);
     if (element) {
       this.renderer.removeClass(element, className);
@@ -57,7 +57,7 @@ export class DomUtilsService {
    */
   hideElementsByClass(
     sourceClassName: string,
-    hideClassName: string = 'tc-hidden'
+    hideClassName = 'tc-hidden'
   ): number {
     const elements = document.getElementsByClassName(sourceClassName);
     let count = 0;
@@ -77,7 +77,7 @@ export class DomUtilsService {
    */
   showElementsByClass(
     sourceClassName: string,
-    hideClassName: string = 'tc-hidden'
+    hideClassName = 'tc-hidden'
   ): number {
     const elements = document.getElementsByClassName(sourceClassName);
     let count = 0;

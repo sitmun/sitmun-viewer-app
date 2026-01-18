@@ -1,10 +1,12 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { LegendControlHandler } from './legend-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { AppConfigService } from '../../services/app-config.service';
-import { UIStateService } from '../../services/ui-state.service';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { LegendControlHandler } from './legend-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { UIStateService } from '../../services/ui-state.service';
 
 describe('LegendControlHandler', () => {
   let handler: LegendControlHandler;

@@ -2,7 +2,6 @@
 @use 'dimensions';
 
 .container {
-
   margin: dimensions.$base-margin-8 0 dimensions.$base-margin-5 0;
 
   .title {
@@ -29,14 +28,11 @@
       button:hover {
         background: colors.$login-page-button-public-hover;
       }
-
     }
   }
 
   .form {
-
     form {
-
       display: flex;
       flex-flow: column;
 
@@ -77,5 +73,4 @@
       }
     }
   }
-
 }

@@ -1,15 +1,16 @@
-import { Component, Inject, OnInit, inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Component, OnInit, inject } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+
 import {
   CommonService,
   DashboardItem,
   DashboardItemsResponse,
   DashboardTypes
 } from '@api/services/common.service';
-import { NotificationService } from 'src/app/notifications/services/NotificationService';
-import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { AppConfigService } from 'src/app/services/app-config.service';
 
 @Component({
@@ -22,8 +23,8 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   territorySelectedId!: string;
   listApplications!: Array<DashboardItem>;
   listTerritories!: Array<any>;
-  searchValueApplication: string = '';
-  searchValueTerritory: string = '';
+  searchValueApplication = '';
+  searchValueTerritory = '';
   cachedUnavailableApplicationIds: string[] = [];
   cachedUnavailableTerritoryIds: string[] = [];
 
@@ -32,7 +33,7 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
   groupedTerritories: { group?: string; items: any[] }[] = [];
 
   // Store the last selected territory to restore when territories are loaded
-  private lastSelectedTerritoryId: string = '';
+  private lastSelectedTerritoryId = '';
 
   private readonly appConfigService = inject(AppConfigService);
 

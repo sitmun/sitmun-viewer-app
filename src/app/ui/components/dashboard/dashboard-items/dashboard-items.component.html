@@ -1,31 +1,29 @@
-  <!-- Public section: single list of all items -->
-  <div *ngIf="isPublic()" class="dashboard-items-container">
-    <div class="cards-container">
-      <div *ngFor="let item of allItems" class="dashboard-item">
-        <app-dashboard-item
-          [item]="item"
-          (itemClicked)="itemClicked.emit(item)"
-          (tag)="displayTerritoriesTag($event)">
-        </app-dashboard-item>
-      </div>
+<!-- Public section: single list of all items -->
+<div *ngIf="isPublic()" class="dashboard-items-container">
+  <div class="cards-container">
+    <div *ngFor="let item of allItems" class="dashboard-item">
+      <app-dashboard-item
+        [item]="item"
+        (itemClicked)="itemClicked.emit(item)"
+        (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
+</div>
 
-  <!-- Public Applications -->
-  <div *ngIf="!isPublic() && publicItems.length > 0">
-    <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
-    <div class="cards-container">
-      <div *ngFor="let item of publicItems" class="dashboard-item">
-        <app-dashboard-item
-          [item]="item"
-          (itemClicked)="itemClicked.emit(item)"
-          (tag)="displayTerritoriesTag($event)">
-        </app-dashboard-item>
-      </div>
+<!-- Public Applications -->
+<div *ngIf="!isPublic() && publicItems.length > 0">
+  <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
+  <div class="cards-container">
+    <div *ngFor="let item of publicItems" class="dashboard-item">
+      <app-dashboard-item
+        [item]="item"
+        (itemClicked)="itemClicked.emit(item)"
+        (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
+</div>
 
-  <!-- User section: private and public separated -->
+<!-- User section: private and public separated -->
 <div *ngIf="!isPublic() && privateItems.length > 0">
   <!-- Private Applications -->
   <div *ngIf="privateItems.length > 0">
@@ -35,13 +33,13 @@
         <app-dashboard-item
           [item]="item"
           (itemClicked)="itemClicked.emit(item)"
-          (tag)="displayTerritoriesTag($event)">
-        </app-dashboard-item>
+          (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
       </div>
     </div>
   </div>
 
   <!-- Separation line -->
-  <hr *ngIf="privateItems.length > 0 && publicItems.length > 0" class="separation-line">
-
+  <hr
+    *ngIf="privateItems.length > 0 && publicItems.length > 0"
+    class="separation-line" />
 </div>

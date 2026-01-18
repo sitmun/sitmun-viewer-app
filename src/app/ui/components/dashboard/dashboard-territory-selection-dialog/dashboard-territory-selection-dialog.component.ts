@@ -1,6 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+
 import { DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 
@@ -18,7 +19,7 @@ export class DashboardTerritorySelectionDialogComponent implements OnInit {
   application: DashboardItem;
   territories: any[];
   groupedTerritories: { group?: string; items: any[] }[] = [];
-  searchValue: string = '';
+  searchValue = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DashboardTerritorySelectionDialogData,

@@ -37,10 +37,7 @@ export class TCNamespaceService {
    * @returns Promise that resolves when TC is available
    * @throws Error if TC is not available after max retries
    */
-  async waitForTC(
-    maxRetries: number = 50,
-    delayMs: number = 100
-  ): Promise<any> {
+  async waitForTC(maxRetries = 50, delayMs = 100): Promise<any> {
     for (let i = 0; i < maxRetries; i++) {
       const TC = this.getTC();
       if (TC) {
@@ -64,8 +61,8 @@ export class TCNamespaceService {
    */
   async waitForTCProperty(
     propertyPath: string,
-    maxRetries: number = 50,
-    delayMs: number = 100
+    maxRetries = 50,
+    delayMs = 100
   ): Promise<any> {
     for (let i = 0; i < maxRetries; i++) {
       const TC = this.getTC();

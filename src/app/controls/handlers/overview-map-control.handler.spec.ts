@@ -1,11 +1,13 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { OverviewMapControlHandler } from './overview-map-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { ConfigLookupService } from '../../services/config-lookup.service';
-import { UIStateService } from '../../services/ui-state.service';
-import { AppConfigService } from '../../services/app-config.service';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { OverviewMapControlHandler } from './overview-map-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
+import { ConfigLookupService } from '../../services/config-lookup.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { UIStateService } from '../../services/ui-state.service';
 
 describe('OverviewMapControlHandler', () => {
   let handler: OverviewMapControlHandler;

@@ -3,27 +3,33 @@
     <mat-card-title *ngIf="showTitle">
       {{ title }}
     </mat-card-title>
-    <button *ngIf="showCloseButton"
-            mat-icon-button
-            class="card-close-button"
-            [attr.aria-label]="'common.close' | translate"
-            (click)="onClose()">
+    <button
+      *ngIf="showCloseButton"
+      mat-icon-button
+      class="card-close-button"
+      [attr.aria-label]="'common.close' | translate"
+      (click)="onClose()">
       <mat-icon>close</mat-icon>
     </button>
   </mat-card-header>
 
   <mat-card-content>
-    <mat-form-field *ngIf="showSearch" class="search-field" appearance="outline">
+    <mat-form-field
+      *ngIf="showSearch"
+      class="search-field"
+      appearance="outline">
       <mat-icon matPrefix>search</mat-icon>
-      <input matInput
-             [placeholder]="searchPlaceholder"
-             [ngModel]="searchValue"
-             (ngModelChange)="onSearchChange($event)"
-             autocomplete="off">
-      <button *ngIf="searchValue"
-              matSuffix
-              mat-icon-button
-              (click)="clearSearch()">
+      <input
+        matInput
+        [placeholder]="searchPlaceholder"
+        [ngModel]="searchValue"
+        (ngModelChange)="onSearchChange($event)"
+        autocomplete="off" />
+      <button
+        *ngIf="searchValue"
+        matSuffix
+        mat-icon-button
+        (click)="clearSearch()">
         <mat-icon>clear</mat-icon>
       </button>
       <mat-hint *ngIf="selectedId && filterHint" class="filter-hint">
@@ -34,25 +40,32 @@
     <mat-list>
       <ng-container *ngFor="let group of items">
         <div *ngIf="group.group" class="group-header">{{ group.group }}</div>
-        <mat-list-item 
-          *ngFor="let item of group.items; trackBy: trackByItemId" 
+        <mat-list-item
+          *ngFor="let item of group.items; trackBy: trackByItemId"
           [id]="'item-' + item.id"
           [class.selected]="isItemSelected(item.id)"
           [class.unavailable]="isUnavailable(item.id)"
           [attr.aria-disabled]="isUnavailable(item.id)"
           (click)="onItemClick(item)"
           [style.cursor]="isUnavailable(item.id) ? 'not-allowed' : 'pointer'">
-          <mat-icon *ngIf="selectedId" matListItemIcon [style.visibility]="isItemSelected(item.id) ? 'visible' : 'hidden'">check_circle</mat-icon>
+          <mat-icon
+            *ngIf="selectedId"
+            matListItemIcon
+            [style.visibility]="isItemSelected(item.id) ? 'visible' : 'hidden'">
+            check_circle
+          </mat-icon>
           <span matListItemTitle [class.disabled-text]="isUnavailable(item.id)">
             {{ getItemName(item) }}
           </span>
-          <img matListItemMeta 
-            *ngIf="hasLogo(item)" 
-            [src]="item[logoProperty]" 
-            [alt]="getItemName(item)" 
+          <img
+            matListItemMeta
+            *ngIf="hasLogo(item)"
+            [src]="item[logoProperty]"
+            [alt]="getItemName(item)"
             [class.disabled-image]="isUnavailable(item.id)" />
-          <mat-icon matListItemMeta 
-            *ngIf="!hasLogo(item)" 
+          <mat-icon
+            matListItemMeta
+            *ngIf="!hasLogo(item)"
             [class.disabled-icon]="isUnavailable(item.id)">
             {{ defaultIcon }}
           </mat-icon>

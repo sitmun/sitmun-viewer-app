@@ -1,13 +1,14 @@
-import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
-import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
-import { ActivatedRoute, Router } from '@angular/router';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { DOCUMENT, Location } from '@angular/common';
+import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { CommonService } from '@api/services/common.service';
-import { TranslateService } from '@ngx-translate/core';
 import { NavigationPath } from '@config/app.config';
-import { ControlRegistryService } from 'src/app/services/control-registry.service';
+import { TranslateService } from '@ngx-translate/core';
+import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
+import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
+import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';

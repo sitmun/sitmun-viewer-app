@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+
+import { AppCfg } from '@api/model/app-cfg';
+
 import { VirtualWmsCapabilitiesService } from './virtual-wms-capabilities.service';
-import { WMSCapabilities } from '../types/wms-capabilities';
-import { AppCfg, AppTree } from '@api/model/app-cfg';
 
 describe('VirtualWmsCapabilitiesService', () => {
   let service: VirtualWmsCapabilitiesService;
@@ -116,7 +117,7 @@ describe('VirtualWmsCapabilitiesService', () => {
 
       expect(rootLayer.Title).toBe('Root Node');
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(2); // node-2 (folder) and node-3 (leaf)
+      expect(rootLayer.Layer?.length).toBe(2); // node-2 (folder) and node-3 (leaf)
     });
 
     it('should set Name only for leaf layers', () => {
@@ -127,7 +128,7 @@ describe('VirtualWmsCapabilitiesService', () => {
       expect(rootLayer.Name).toBeUndefined();
 
       // Find leaf node (has Name property)
-      const leafNode = rootLayer.Layer!.find((l) => l.Name);
+      const leafNode = rootLayer.Layer?.find((l) => l.Name);
       if (leafNode) {
         expect(leafNode.Name).toBeDefined();
       }
@@ -153,7 +154,7 @@ describe('VirtualWmsCapabilitiesService', () => {
       expect(rootLayer.Title).toBe('Folder Node');
       expect(rootLayer.Name).toBeUndefined(); // Folders don't have Name
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(1); // node-4
+      expect(rootLayer.Layer?.length).toBe(1); // node-4
     });
 
     it('should handle leaf node with resource', () => {
@@ -200,10 +201,10 @@ describe('VirtualWmsCapabilitiesService', () => {
 
       // Should only include node-2 and node-3, not node-missing
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(2); // Only node-2 and node-3
+      expect(rootLayer.Layer?.length).toBe(2); // Only node-2 and node-3
 
       // Verify node-missing is not in the tree
-      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
+      const layerTitles = rootLayer.Layer?.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Node with Missing Resource'); // node-missing should be excluded
@@ -244,9 +245,9 @@ describe('VirtualWmsCapabilitiesService', () => {
 
       // Should only include node-2 and node-3, not node-no-resource
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(2);
+      expect(rootLayer.Layer?.length).toBe(2);
 
-      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
+      const layerTitles = rootLayer.Layer?.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Leaf Without Resource'); // node-no-resource should be excluded
@@ -287,9 +288,9 @@ describe('VirtualWmsCapabilitiesService', () => {
 
       // Should only include node-2 and node-3, not node-empty-folder
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(2);
+      expect(rootLayer.Layer?.length).toBe(2);
 
-      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
+      const layerTitles = rootLayer.Layer?.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Empty Folder'); // node-empty-folder should be excluded
@@ -344,9 +345,9 @@ describe('VirtualWmsCapabilitiesService', () => {
 
       // Should only include node-2 and node-3, not node-folder-all-excluded (since all its children are excluded)
       expect(rootLayer.Layer).toBeDefined();
-      expect(rootLayer.Layer!.length).toBe(2);
+      expect(rootLayer.Layer?.length).toBe(2);
 
-      const layerTitles = rootLayer.Layer!.map((l) => l.Title);
+      const layerTitles = rootLayer.Layer?.map((l) => l.Title);
       expect(layerTitles).toContain('Folder Node'); // node-2
       expect(layerTitles).toContain('Leaf Node 1'); // node-3
       expect(layerTitles).not.toContain('Folder with All Children Excluded'); // node-folder-all-excluded should be excluded
@@ -473,9 +474,9 @@ describe('VirtualWmsCapabilitiesService', () => {
       const config = service.findRealLayerConfig('node-3', mockAppCfg);
 
       expect(config).toBeDefined();
-      expect(config!.url).toBe('http://example.com/wms');
-      expect(config!.type).toBe('WMS');
-      expect(config!.layerNames).toEqual(['wms-layer-1']);
+      expect(config?.url).toBe('http://example.com/wms');
+      expect(config?.type).toBe('WMS');
+      expect(config?.layerNames).toEqual(['wms-layer-1']);
     });
 
     it('should return null for node without resource', () => {
@@ -515,7 +516,7 @@ describe('VirtualWmsCapabilitiesService', () => {
       const config = service.findRealLayerConfig('node-100', multiTreeConfig);
 
       expect(config).toBeDefined();
-      expect(config!.layerNames).toEqual(['wms-layer-2']);
+      expect(config?.layerNames).toEqual(['wms-layer-2']);
     });
 
     it('should return null if layer not found', () => {
@@ -829,7 +830,8 @@ describe('VirtualWmsCapabilitiesService', () => {
   describe('layer ordering', () => {
     it('should order layers by order property', () => {
       const capabilities = service.generateCapabilities('node-1', mockAppCfg);
-      const children = capabilities.Capability.Layer.Layer!;
+      const children = capabilities.Capability.Layer.Layer;
+      expect(children).toBeDefined();
 
       // node-2 has order 1, node-3 has order 2
       expect(children[0].Title).toBe('Folder Node');
@@ -926,7 +928,11 @@ describe('VirtualWmsCapabilitiesService', () => {
       expect(current.Title).toBe('Level 1');
       expect(current.Layer).toBeDefined();
 
-      current = current.Layer![0];
+      if (current.Layer && current.Layer.length > 0) {
+        current = current.Layer[0];
+      } else {
+        fail('Expected Layer array to have at least one element');
+      }
       expect(current.Title).toBe('Level 2');
     });
   });

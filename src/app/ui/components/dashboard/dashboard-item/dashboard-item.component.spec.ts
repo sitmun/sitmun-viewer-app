@@ -1,12 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
-import { CommonService } from '@api/services/common.service';
-import { NotificationService } from 'src/app/notifications/services/NotificationService';
-import { MatCardModule } from '@angular/material/card';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
+
+import { CommonService } from '@api/services/common.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 import { DashboardItemComponent } from './dashboard-item.component';
 

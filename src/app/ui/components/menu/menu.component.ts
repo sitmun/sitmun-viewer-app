@@ -5,27 +5,29 @@ import {
   Input,
   Output,
   EventEmitter,
-  ViewChild
+  ViewChild,
+  VERSION
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { VERSION } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenu } from '@angular/material/menu';
+import { Router } from '@angular/router';
+
+import { CustomDetails } from '@api/services/user.service';
+import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { AuthenticationService } from '@auth/services/authentication.service';
-import { CustomDetails } from '@api/services/user.service';
 import {
   LanguageDTO,
   LanguageService
 } from 'src/app/services/language.service';
+
+import { environment } from '../../../../environments/environment';
 import { ErrorTrackingService } from '../../../services/error-tracking.service';
 import { SidebarManagerService } from '../../../services/sidebar-manager.service';
 import {
   AboutDialogComponent,
   AboutDialogData
 } from '../about-dialog/about-dialog.component';
-import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-menu',
@@ -34,7 +36,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class MenuComponent implements OnInit, OnDestroy {
   @ViewChild(MatMenu, { static: true }) menu!: MatMenu;
-  currentLang: string = '';
+  currentLang = '';
   languages!: LanguageDTO[];
   environment = environment;
   angularVersion = VERSION.full;
@@ -42,7 +44,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   private errorsSubscription?: Subscription;
 
-  @Input() username: string = '';
+  @Input() username = '';
   @Input() isConnected!: boolean;
   @Input() showSwitchLanguageButton!: boolean;
   @Input() showLogoutButton!: boolean;

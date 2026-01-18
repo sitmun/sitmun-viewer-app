@@ -8,9 +8,9 @@ $spacing-lg: 24px;
 $spacing-xl: 32px;
 
 // Material component sizes
-$menu-item-height: 48px;      // Material standard
-$menu-min-width: 360px;       // Increased to accommodate longer text like "Change application or territory"
-$menu-icon-margin: 16px;      // Material standard icon spacing
+$menu-item-height: 48px; // Material standard
+$menu-min-width: 360px; // Increased to accommodate longer text like "Change application or territory"
+$menu-icon-margin: 16px; // Material standard icon spacing
 $menu-header-font-size: 20px; // Material headline-6
 
 ::ng-deep {
@@ -18,37 +18,37 @@ $menu-header-font-size: 20px; // Material headline-6
   .cdk-overlay-container {
     z-index: 100000 !important; // Higher than toolbar (z-index: 99999)
   }
-  
+
   .cdk-overlay-pane {
     z-index: 100000 !important; // Higher than toolbar (z-index: 99999)
   }
-  
+
   // Target menu content for this component's menu
   .mat-mdc-menu-panel {
     min-width: $menu-min-width; // 280px Material minimum
     z-index: 100000 !important; // Ensure menu appears above toolbar (z-index: 99999)
   }
-  
+
   .mat-mdc-menu-content {
     padding: 0; // Reset default padding to control it per section
     background-color: colors.$white; // Changed from #2C2E30 to white
-    
+
     .menu-header {
       height: auto;
       min-height: $spacing-xl * 2; // 64px minimum header height
       padding: $spacing-lg $spacing-md; // 24px vertical, 16px horizontal
-    text-align: center;
+      text-align: center;
       cursor: default;
       pointer-events: none; // Ensure it's not interactive
-      
+
       &:hover {
         background-color: transparent !important; // No hover effect for header
       }
-      
+
       &:focus {
         outline: none; // Remove focus outline for disabled item
       }
-      
+
       span {
         font-size: $menu-header-font-size;
         font-weight: 500; // Medium weight for header
@@ -57,13 +57,16 @@ $menu-header-font-size: 20px; // Material headline-6
         display: block;
         width: 100%;
       }
-}
+    }
 
     .mat-mdc-divider {
       margin: $spacing-sm 0; // 8px vertical margin for dividers
-      border-top-color: rgba(colors.$black, 0.12); // Light divider for light theme
+      border-top-color: rgba(
+        colors.$black,
+        0.12
+      ); // Light divider for light theme
     }
-    
+
     .mat-mdc-menu-item {
       height: $menu-item-height; // 48px Material standard
       color: colors.$black; // Changed from white to black
@@ -71,15 +74,15 @@ $menu-header-font-size: 20px; // Material headline-6
       line-height: $menu-item-height;
       display: flex;
       align-items: center;
-      
+
       &:hover {
         background-color: colors.$orange-light; // Light orange background on hover
         color: colors.$primary-orange; // Orange text on hover
       }
-      
+
       &:active {
         background-color: rgba(colors.$primary-orange, 0.1);
-  }
+      }
 
       .mat-icon {
         margin-right: $menu-icon-margin; // 16px Material standard
@@ -89,7 +92,7 @@ $menu-header-font-size: 20px; // Material headline-6
         color: inherit;
         flex-shrink: 0; // Prevent icon from shrinking
       }
-      
+
       span:not(.language-icon):not(.current-language-icon):not(.badge) {
         line-height: 1.5; // Material typography
         flex: 1; // Allow text to take available space
@@ -99,7 +102,7 @@ $menu-header-font-size: 20px; // Material headline-6
         white-space: nowrap; // Prevent text wrapping to keep on single line
         margin-right: $spacing-sm; // Add spacing that will be consumed by badge's auto margin
       }
-      
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -119,40 +122,40 @@ $menu-header-font-size: 20px; // Material headline-6
         flex-shrink: 0;
         order: 1; // Ensure badge appears after text but before submenu icon
       }
-      
+
       // Style Material's automatic submenu icon
       ::ng-deep .mat-mdc-menu-submenu-icon {
         margin-left: $spacing-sm; // 8px spacing from text
         margin-right: 0;
         color: rgba(colors.$black, 0.54); // Material icon color
         flex-shrink: 0; // Prevent icon from shrinking
+      }
     }
-  }
-    
+
     // First and last items spacing
     .mat-mdc-menu-item:first-of-type {
       margin-top: $spacing-xs; // 4px top spacing
     }
-    
+
     .mat-mdc-menu-item:last-of-type {
       margin-bottom: $spacing-xs; // 4px bottom spacing
     }
   }
-  
+
   // Language sub-menu specific styles
   .language-submenu {
     z-index: 100000 !important; // Ensure submenu appears above toolbar (z-index: 99999)
-    
+
     .mat-mdc-menu-content .mat-mdc-menu-item {
       // Explicitly ensure flex layout for language menu items with higher specificity
       display: flex !important;
       align-items: center !important;
       flex-direction: row !important;
-      
+
       &.selected {
         background-color: rgba(colors.$primary-orange, 0.1);
         color: colors.$primary-orange;
-        
+
         .check-icon {
           margin-left: auto;
           margin-right: 0;
@@ -170,7 +173,7 @@ $menu-header-font-size: 20px; // Material headline-6
         height: $spacing-lg;
         flex-shrink: 0; // Prevent shrinking
         vertical-align: middle; // Ensure proper vertical alignment
-        
+
         .flag-image {
           width: 24px;
           height: 24px;
@@ -178,13 +181,13 @@ $menu-header-font-size: 20px; // Material headline-6
           display: block;
         }
       }
-      
+
       // Ensure text span stays inline and vertically centered
       > span:not(.language-icon):not(.current-language-icon) {
         line-height: $menu-item-height !important; // Match parent height for vertical centering
         align-self: center;
       }
-      
+
       // Style the check icon to take the same space as language-icon for alignment
       .check-icon {
         order: -1; // Move check icon before the text
@@ -208,7 +211,7 @@ $menu-header-font-size: 20px; // Material headline-6
     height: $spacing-lg;
     flex-shrink: 0; // Prevent shrinking
     vertical-align: middle; // Ensure proper vertical alignment
-    
+
     .flag-image-small {
       width: 24px;
       height: 24px;
@@ -216,39 +219,42 @@ $menu-header-font-size: 20px; // Material headline-6
       display: block;
     }
   }
-  
+
   // Change dropdown to light theme
   .mat-mdc-select-panel {
     background-color: colors.$white !important; // Changed from #212121 to white
-    
+
     .mat-mdc-option {
       color: colors.$black !important; // Changed from white to black
 
-  &:hover {
+      &:hover {
         background-color: colors.$orange-light !important; // Light orange on hover
       }
-      
+
       &.mdc-list-item--selected {
         background-color: rgba(colors.$primary-orange, 0.1) !important;
         color: colors.$primary-orange !important;
       }
     }
   }
-  
+
   .mdc-menu-surface {
     background-color: colors.$white !important; // Changed from #212121 to white
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); // Add shadow for depth
     border: 1px solid rgba(0, 0, 0, 0.08); // Subtle border
     z-index: 100000 !important; // Ensure menu appears above toolbar (z-index: 99999)
   }
-  
+
   // Update option text color for light theme
   .mat-mdc-option .mdc-list-item__primary-text {
     color: colors.$black !important; // Changed from white to black
   }
-  
+
   // Remove dark theme active/hover overrides - use light theme versions above
   .mat-mdc-option-active {
-    background-color: rgba(colors.$primary-orange, 0.1) !important; // Light orange for active
+    background-color: rgba(
+      colors.$primary-orange,
+      0.1
+    ) !important; // Light orange for active
   }
 }

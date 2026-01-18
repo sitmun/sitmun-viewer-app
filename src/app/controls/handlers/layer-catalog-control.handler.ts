@@ -1,15 +1,16 @@
 import { inject, Injectable } from '@angular/core';
-import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
+
 import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
+
+import { CatalogSwitchingService } from '../../services/catalog-switching.service';
+import { ConfigLookupService } from '../../services/config-lookup.service';
+import { RasterLayerService } from '../../services/raster-layer.service';
+import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
-import { WMSCapabilities } from '../../types/wms-capabilities';
-import { ConfigLookupService } from '../../services/config-lookup.service';
-import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
-import { CatalogSwitchingService } from '../../services/catalog-switching.service';
-import { RasterLayerService } from '../../services/raster-layer.service';
+import { ControlHandlerBase } from '../control-handler-base';
+import { SitnaControlConfig } from '../control-handler.interface';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
@@ -294,7 +295,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       // Verify the selected tree is not empty
       const filtered = this.filterEmptyTrees([selectedRootNode], context);
       if (filtered.length === 0) {
-        const currentTreeId = this.catalogSwitching.getCurrentTreeId();
         // Fall through to default behavior
       } else {
         return [selectedRootNode];
@@ -341,6 +341,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const advice = meld.around(
         LayerProto,
@@ -398,13 +399,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             }
           }
 
-          // Check if this is a Raster that plans to build a WMTS
-          const isRasterWmts = handler.rasterService.isRasterWmts(
-            layer,
-            capabilitiesUrl,
-            handler.currentAppCfg || undefined
-          );
-
           // Not a virtual service, proceed with normal fetch
           const proceedResult = joinPoint.proceed();
 
@@ -449,6 +443,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchLayerCatalogAddLayerToMap(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const Util = TC.Util;
       const ctlProto = TC.control.LayerCatalog.prototype;
@@ -467,13 +462,17 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           const layer = joinPoint.args[0] as any;
           const layerName = joinPoint.args[1] as string;
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const self = this;
           const layerObj = layer;
           // Use layerName as the node ID to find the real layer configuration
           // AppCfg is guaranteed to be non-null (set before patches are applied)
+          if (!handler.currentAppCfg) {
+            return joinPoint.proceed();
+          }
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
             layerName,
-            handler.currentAppCfg!
+            handler.currentAppCfg
           );
 
           // Create layer options with real configuration
@@ -519,13 +518,16 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
           const Raster = TC.layer.Raster;
 
-          const proceedWithLayer = async () => {
+          const proceedWithLayer = async (): Promise<any> => {
             const newLayer = new Raster(layerOptions);
             await newLayer.getCapabilitiesPromise();
 
+            if (!handler.currentAppCfg) {
+              return joinPoint.proceed();
+            }
             const nodeTitle = handler.getNodeTitle(
               layerName,
-              handler.currentAppCfg!
+              handler.currentAppCfg
             );
 
             if (nodeTitle && newLayer.Capability?.Layer) {
@@ -538,12 +540,14 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
             if (newLayer.isCompatible(self.map.crs)) {
               self.map.addLayer(layerOptions);
+              return newLayer;
             } else {
               const showProjectionChangeDialog =
                 self.showProjectionChangeDialog;
               if (typeof showProjectionChangeDialog === 'function') {
                 showProjectionChangeDialog.call(self, newLayer);
               }
+              return newLayer;
             }
           };
 
@@ -583,6 +587,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         if (typeof layer.id === 'string' && /^[0-9]+$/.test(layer.id)) {
           return Promise.resolve();
         }
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this as any;
         return new Promise<void>(function (resolve, reject) {
           let fromLayerCatalog: any[] = [];
@@ -660,6 +665,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         ctlProto,
         'getLayerNodes',
         function (this: any, joinPoint: MeldJoinPoint): unknown {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const self = this;
           const layer = joinPoint.args[0] as any;
           const layerObj = layer || {};
@@ -712,6 +718,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         ctlProto,
         'getLayerRootNode',
         function (this: any, joinPoint: MeldJoinPoint): Element | null {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const self = this;
           const layer = joinPoint.args[0] as any;
           const layerObj = layer || {};
@@ -756,6 +763,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchRasterGetPath(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const RasterProto =
         TC.layer?.Raster?.prototype || TC.wrap?.layer?.Raster?.prototype;
@@ -774,10 +782,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           const nodeId = this.options?.nodeId;
           // currentAppCfg is guaranteed to be non-null (set before patches are applied)
-          if (nodeId) {
+          if (nodeId && handler.currentAppCfg) {
             const parentTitles = handler.getParentNodeTitles(
               nodeId,
-              handler.currentAppCfg!
+              handler.currentAppCfg
             );
             if (parentTitles.length > 0) {
               return parentTitles;
@@ -933,6 +941,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       // Completely replace loadTemplates method (like SILME does)
       ctlProto.loadTemplates = async function (this: any) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         // Call original loadTemplates first if it exists (to load default templates)
@@ -988,6 +997,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
       // Replace with safe version that checks for null elements
       ctlProto.createSearchAutocomplete = function (this: any): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         // Try to find elements
@@ -1024,6 +1034,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchRasterGetInfo(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const RasterProto =
         TC.layer?.Raster?.prototype || TC.wrap?.layer?.Raster?.prototype;
@@ -1044,6 +1055,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         'getInfo',
         function (this: any, joinPoint: MeldJoinPoint): any {
           const name = joinPoint.args[0] as string;
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const layer = this;
           // Check if this is a virtual layer
           // First check by URL (for layers that haven't been added to map yet)
@@ -1124,6 +1136,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchLayerCatalogInjectCatalogSwitching(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const ctlProto = TC.control.LayerCatalog.prototype;
 
@@ -1141,6 +1154,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         'renderData',
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           const result = joinPoint.proceed();
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const self = this;
 
           // Use retry mechanism to wait for DOM elements to be ready

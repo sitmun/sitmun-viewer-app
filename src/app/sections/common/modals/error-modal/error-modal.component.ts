@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+
 import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 import { OpenModalConfig } from '@ui/modal/service/open-modal.config';

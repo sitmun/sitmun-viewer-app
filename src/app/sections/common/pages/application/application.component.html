@@ -1,13 +1,12 @@
 <div id="content">
   <div id="application" *ngIf="application">
-    <app-return-button> </app-return-button>
+    <app-return-button></app-return-button>
     <div id="application-title">
-      <h1> {{ application.title || application.name }} </h1>
+      <h1>{{ application.title || application.name }}</h1>
     </div>
     <div id="application-details">
       <div id="left-side">
-        <app-application-details
-        [application]="application"/>
+        <app-application-details [application]="application" />
       </div>
       <div id="right-side">
         <div id="associated-territories">
@@ -23,11 +22,12 @@
             [nameProperty]="'name'"
             [defaultIcon]="'language'"
             [showSearch]="territories.length > 1"
-            [searchPlaceholder]="'dashboardDialogTag.inputPlaceholder' | translate"
+            [searchPlaceholder]="
+              'dashboardDialogTag.inputPlaceholder' | translate
+            "
             [searchValue]="searchValue"
             (searchValueChange)="onSearchChange($event)"
-            (itemClicked)="onTerritoryClick($event)">
-          </app-selectable-list>
+            (itemClicked)="onTerritoryClick($event)"></app-selectable-list>
         </div>
       </div>
     </div>

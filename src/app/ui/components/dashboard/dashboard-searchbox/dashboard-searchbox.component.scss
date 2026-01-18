@@ -87,7 +87,6 @@ form {
   }
 }
 
-
 .suggestions-list {
   width: $layout-breakpoint-small;
   border: 1px solid #ccc;
@@ -105,7 +104,7 @@ form {
       padding-left: $padding-base;
     }
 
-    .item-app{
+    .item-app {
       display: flex;
       align-items: center;
       width: 100%;
@@ -169,7 +168,6 @@ form {
         align-items: center;
         padding-right: $padding-base;
 
-
         img {
           width: 40px;
           height: 40px;
@@ -178,7 +176,6 @@ form {
           display: block;
         }
       }
-   }
-
+    }
   }
 }

@@ -1,13 +1,12 @@
 import { Directive, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
 import {
   CommonService,
   DashboardItem,
   DashboardItemsResponse,
-  DashboardTypes,
-  ItemDto,
-  ResponseDto
+  DashboardTypes
 } from '@api/services/common.service';
-import { Router } from '@angular/router';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 
 @Directive()
@@ -15,7 +14,7 @@ export abstract class AbstractDashboardComponent implements OnInit {
   type: DashboardTypes;
 
   items: DashboardItem[];
-  totalElements: number = 0;
+  totalElements = 0;
   protected constructor(
     protected router: Router,
     protected commonService: CommonService,
@@ -29,7 +28,7 @@ export abstract class AbstractDashboardComponent implements OnInit {
     this.loadItems();
   }
 
-  loadItems(keyword: string = '') {
+  loadItems(keyword = '') {
     this.commonService
       .fetchDashboardItems(this.type, keyword)
       .subscribe((res: DashboardItemsResponse) => {

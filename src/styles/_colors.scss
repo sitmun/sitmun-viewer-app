@@ -1,33 +1,33 @@
 // Base
 $transparent: #00000000;
-$black: #1A0E00;
+$black: #1a0e00;
 $white: white;
 $gray: gray;
 $light-gray: lightgray;
 
 // Orange
-$orange:  #d79922;
-$primary-orange: #FF8C00;
-$secondary-orange: #FF6E00;
-$orange-light : #FFEED8;
+$orange: #d79922;
+$primary-orange: #ff8c00;
+$secondary-orange: #ff6e00;
+$orange-light: #ffeed8;
 $orange-transp-60percent: #ff930099;
 $orange-transp-20percent: #ff930033;
 $orange-dark: darkorange;
 $light-orange: #ffb146;
 
 // Blue
-$blue-dark: #27187E;
-$blue: #758BFD;
-$blue-light: #EBF2FB;
+$blue-dark: #27187e;
+$blue: #758bfd;
+$blue-light: #ebf2fb;
 
 // Violet
-$violet: #3A455A;
+$violet: #3a455a;
 
 // Common
 $common-color-background: $white;
-$common-color-background-with-opacity: rgba($white, .6);
+$common-color-background-with-opacity: rgba($white, 0.6);
 $common-color-background-navbar: $orange;
-$common-color-background-navbar-with-opacity: rgba($orange, .6);
+$common-color-background-navbar-with-opacity: rgba($orange, 0.6);
 $common-color-background-navbar-light: $light-orange;
 
 $common-color-font-button: $white;
@@ -74,7 +74,6 @@ $dashboard-component-button-focus: $blue;
 $dashboard-component-button-border: $blue-light;
 $dashboard-component-button-border-hover: $blue;
 $dashboard-component-button-border-focus: $blue;
-
 
 // Modals
 

@@ -1,10 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
-import { DashboardItemsComponent } from './dashboard-items.component';
-import { AppConfigService } from 'src/app/services/app-config.service';
+
 import { DashboardItem } from '@api/services/common.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { AppConfigService } from 'src/app/services/app-config.service';
+
+import { DashboardItemsComponent } from './dashboard-items.component';
 
 describe('DashboardItemsComponent', () => {
   let component: DashboardItemsComponent;
@@ -16,7 +18,7 @@ describe('DashboardItemsComponent', () => {
     id: number,
     name: string,
     type: string | null = 'I',
-    appPrivate: boolean = false
+    appPrivate = false
   ): DashboardItem => ({
     id,
     name,

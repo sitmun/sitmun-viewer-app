@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 /**
  * Handler for the native SITNA coordinates control.
@@ -28,7 +30,7 @@ export class CoordinatesControlHandler extends ControlHandlerBase {
    */
   buildConfiguration(
     task: AppTasks,
-    context: AppCfg
+    _context: AppCfg
   ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     return this.mergeWithParameters(defaultConfig, task.parameters);

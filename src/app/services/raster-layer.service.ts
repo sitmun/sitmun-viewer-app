@@ -1,13 +1,15 @@
 import { inject, Injectable } from '@angular/core';
+
 import { AppCfg, AppLayer, AppService } from '@api/model/app-cfg';
-import { WMSCapabilities } from '../types/wms-capabilities';
+
+import { ConfigLookupService } from './config-lookup.service';
+import { LanguageService } from './language.service';
+import { LayerInfoService } from './layer-info.service';
 import {
   VirtualWmsCapabilitiesService,
   RealLayerConfig
 } from './virtual-wms-capabilities.service';
-import { ConfigLookupService } from './config-lookup.service';
-import { LayerInfoService } from './layer-info.service';
-import { LanguageService } from './language.service';
+import { WMSCapabilities } from '../types/wms-capabilities';
 
 /**
  * Service for Raster layer-specific functionality.
@@ -138,14 +140,12 @@ export class RasterLayerService {
     }
 
     let processedCount = 0;
-    let totalRemovedCount = 0;
 
     // Process all layers
     for (const layer of layers) {
       const removedCount = this.normalizeLayerBoundingBox(layer);
       if (removedCount > 0 || layer['BoundingBox'] !== undefined) {
         processedCount++;
-        totalRemovedCount += removedCount;
       }
     }
 

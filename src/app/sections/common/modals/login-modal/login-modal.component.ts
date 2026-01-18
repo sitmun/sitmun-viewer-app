@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { AuthenticationRequest } from '@auth/authentication.options';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
@@ -50,11 +51,9 @@ export class LoginModalComponent extends BaseModal {
         },
         error: (error) => {
           if (error.status && error.status === 401) {
-            let traduction: string = '';
-            this.translate.get('loginPage.incorrectLogin').subscribe((trad) => {
-              traduction = trad;
+            this.translate.get('loginPage.incorrectLogin').subscribe(() => {
+              // Translation retrieved but not used (commented out alert)
             });
-            // alert(traduction);
           }
         }
       });

@@ -29,8 +29,7 @@ $base-touchable-item-size: 48px;
 // Transparency
 $modal-transparency: 0.8;
 // Shadow
-$medium-shadow: 0 1px 5px 0 rgba(0, 0, 0, .3);
-
+$medium-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.3);
 
 // Common
 $common-application-bar-height: 56px;
@@ -87,7 +86,6 @@ $card-component-img-radius: 20px;
 $dashboard-page-input-width: 400px;
 $dashboard-page-input-height: 48px;
 
-
 // Modals
 $modal-background-z-index: 10100;
 $modal-content-z-index: $modal-background-z-index + 1;
@@ -112,6 +110,7 @@ $modal-button-margin-v: $modal-padding-h;
 $modal-body-padding-xs: round($modal-padding-h * 0.25);
 $modal-body-padding-sm: round($modal-padding-h * 1.25);
 $modal-body-padding: round($modal-padding-h * 2);
-$modal-body-max-height: calc(100vh - #{($modal-margin-top * 2) + $modal-header-height});
+$modal-body-max-height: calc(
+  100vh - #{($modal-margin-top * 2) + $modal-header-height}
+);
 $modal-body-min-height: 300px;
-

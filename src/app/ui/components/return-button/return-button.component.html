@@ -1,4 +1,9 @@
-<button mat-button class="return-button" (click)="historyGoBack()" [attr.aria-label]="'profile.back' | translate" [matTooltip]="'profile.back' | translate">
+<button
+  mat-button
+  class="return-button"
+  (click)="historyGoBack()"
+  [attr.aria-label]="'profile.back' | translate"
+  [matTooltip]="'profile.back' | translate">
   <mat-icon>arrow_back</mat-icon>
-  <span>{{'profile.back' | translate }}</span>
+  <span>{{ 'profile.back' | translate }}</span>
 </button>

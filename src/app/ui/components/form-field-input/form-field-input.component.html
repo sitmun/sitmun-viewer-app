@@ -7,8 +7,7 @@
       [name]="input_name"
       [value]="input_model"
       (input)="onInputChange($event)"
-      [attr.maxlength]="input_length"
-    />
+      [attr.maxlength]="input_length" />
     <button *ngIf="input_image" type="button" (click)="onButtonClicked()">
       <img [src]="input_image" [alt]="input_title" />
     </button>

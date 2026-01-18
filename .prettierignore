@@ -1,0 +1,8 @@
+# Handlebars templates
+**/*.hbs
+
+# JavaScript files in assets (third-party/vendor code)
+src/assets/**/*.js
+
+# Service worker
+src/ServiceWorker.js

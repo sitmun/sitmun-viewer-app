@@ -4,8 +4,7 @@
   @if $vertically {
     margin-top: auto;
     margin-bottom: auto;
-  }
-  @else {
+  } @else {
     margin-left: auto;
     margin-right: auto;
   }

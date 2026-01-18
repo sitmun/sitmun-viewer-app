@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core';
+
 import { BehaviorSubject, Subject } from 'rxjs';
+
 import { INotification } from '../models/INotification';
 import { NotificationType } from '../models/NotificationType';
+
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor() {}
   private notification$: Subject<INotification | null> =
     new BehaviorSubject<INotification | null>(null);
-  private notification_duration_base: number = 2000;
+  private notification_duration_base = 2000;
   success(message: string, duration: number = this.notification_duration_base) {
     this.notify(message, NotificationType.Success, duration);
   }

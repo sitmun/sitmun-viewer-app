@@ -11,9 +11,9 @@ export class OpenModalInjector implements Injector {
     notFoundValue?: T,
     flags?: InjectFlags
   ): T;
-  // @ts-ignore
+  // @ts-expect-error - Overload signature for flexible token types
   get(token: any, notFoundValue?: any);
-  get(token: any, notFoundValue?: any, flags?: any) {
+  get(token: any, notFoundValue?: any, _flags?: any) {
     const value = this.additionalTokens.get(token);
 
     if (value) {

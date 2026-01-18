@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 /**
  * Handler for the native SITNA click control.
@@ -35,8 +37,8 @@ export class ClickControlHandler extends ControlHandlerBase {
    * Pure boolean control - no parameters are handled.
    */
   buildConfiguration(
-    task: AppTasks,
-    context: AppCfg
+    _task: AppTasks,
+    _context: AppCfg
   ): SitnaControlConfig | null {
     // Pure boolean control - just return true to enable
     return true as any;

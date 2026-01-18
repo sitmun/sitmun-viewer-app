@@ -1,9 +1,6 @@
-import {
-  CommonService,
-  DashboardItem,
-  DashboardTypes
-} from '@api/services/common.service';
 import { Component, Input } from '@angular/core';
+
+import { DashboardItem } from '@api/services/common.service';
 
 @Component({
   selector: 'app-application-details',

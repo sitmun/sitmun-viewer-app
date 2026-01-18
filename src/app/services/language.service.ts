@@ -1,12 +1,13 @@
-import { I18nService } from '@api/services/i18n.service';
-import { Injectable } from '@angular/core';
-import { catchError, map, Observable, of, switchMap } from 'rxjs';
-import { AppConfigService } from 'src/app/services/app-config.service';
-import { TranslateService } from '@ngx-translate/core';
-import { AuthenticationService } from '@auth/services/authentication.service';
-import { CustomDetails } from '@api/services/user.service';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
 import { URL_API_I18N_LANGUAGE } from '@api/api-config';
+import { I18nService } from '@api/services/i18n.service';
+import { CustomDetails } from '@api/services/user.service';
+import { AuthenticationService } from '@auth/services/authentication.service';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, Observable, of } from 'rxjs';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -52,7 +53,7 @@ export class LanguageService {
    * @param lang Language shortname (e.g., 'es', 'en')
    * @param syncBackend Whether to sync with backend (default: true if logged in)
    */
-  setLanguage(lang: string, syncBackend: boolean = true): Observable<void> {
+  setLanguage(lang: string, syncBackend = true): Observable<void> {
     // Update localStorage
     localStorage.setItem('language', lang);
 
@@ -96,7 +97,7 @@ export class LanguageService {
   getLanguages(): Observable<LanguageDTO[]> {
     return this.i18nService.availableLanguageCodes().pipe(
       map((response: any) => {
-        let languages: LanguageDTO[] = response?._embedded?.languages ?? [];
+        const languages: LanguageDTO[] = response?._embedded?.languages ?? [];
         if (!languages || languages.length === 0) {
           return this.appConfigService.getDefaultLanguages();
         }

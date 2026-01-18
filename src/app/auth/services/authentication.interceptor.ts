@@ -1,5 +1,3 @@
-import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -7,10 +5,13 @@ import {
   HttpInterceptor,
   HttpRequest
 } from '@angular/common/http';
-import { AuthenticationService } from './authentication.service';
-import { catchError } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import jwt_decode from 'jwt-decode';
+
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+import { AuthenticationService } from './authentication.service';
 
 @Injectable({
   providedIn: 'root'

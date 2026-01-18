@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
+
 import { DashboardTypes } from '@api/services/common.service';
 
 @Component({

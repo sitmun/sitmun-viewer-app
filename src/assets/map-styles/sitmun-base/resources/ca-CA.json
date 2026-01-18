@@ -39,8 +39,6 @@
   "strokeWidth": "Gruix de traç",
   "oldViewer": "Anar a l'antic visor",
 
-
-
   "abstract": "Descripció de la capa",
   "groupAbstract": "Descripció del grup de capes",
   "parentAbstract": "Descripció del servei",
@@ -658,10 +656,6 @@
   "recentFiles": "Arxius recents",
   "removeFromList": "Eliminar de la llista",
   "fileLoadedMoreThanOnce": "L'arxiu està carregat en el mapa més d'una vegada",
-
-
-
-
 
   "layers": "Capes",
   "tools": "Eines",

@@ -1,16 +1,18 @@
-import { map, Observable, of, switchMap } from 'rxjs';
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthenticationService } from '@auth/services/authentication.service';
-import { CustomDetails } from '@api/services/user.service';
-import { messages } from './messages';
+import { Injectable } from '@angular/core';
+
 import {
   URL_API_I18N_LANGUAGE,
   URL_API_I18N_MESSAGES_LIST,
   URL_API_I18N_LANGUAGES_TRANSLATED
 } from '@api/api-config';
-import { environment } from 'src/environments/environment';
+import { CustomDetails } from '@api/services/user.service';
+import { AuthenticationService } from '@auth/services/authentication.service';
+import { map, Observable, of, switchMap } from 'rxjs';
 import { LanguageDTO } from 'src/app/services/language.service';
+import { environment } from 'src/environments/environment';
+
+import { messages } from './messages';
 
 @Injectable({
   providedIn: 'root'

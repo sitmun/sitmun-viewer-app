@@ -33,13 +33,13 @@
 }
 
 .login-page::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, #0A0623 15%, transparent 100%);
+  background: linear-gradient(to right, #0a0623 15%, transparent 100%);
 }
 
 ::ng-deep .login-button {
@@ -113,7 +113,7 @@
 
   .form-section {
     p {
-      color: #B7B6BE;
+      color: #b7b6be;
       margin: 0px;
       padding-bottom: 20px;
     }
@@ -140,23 +140,21 @@
 
         a {
           text-decoration: none;
-          color: #B7B6BE;
+          color: #b7b6be;
         }
 
         a:hover {
           color: colors.$login-page-input-text;
         }
       }
-
-
     }
   }
 }
 
-
 /* Layout for phone */
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
-  html, body {
+  html,
+  body {
     height: 100%;
     margin: 0;
   }
@@ -169,16 +167,24 @@
   }
 
   .login-page::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background:
-      linear-gradient(135deg, transparent 15%, rgba(2, 0, 15, 0.568) 50%, rgba(10, 6, 35, 0.568) 85%),
-      linear-gradient(315deg, transparent 15%, rgba(10, 6, 35, 0.568) 50%, rgba(10, 6, 35, 0.568) 85%);
-
+    background: linear-gradient(
+        135deg,
+        transparent 15%,
+        rgba(2, 0, 15, 0.568) 50%,
+        rgba(10, 6, 35, 0.568) 85%
+      ),
+      linear-gradient(
+        315deg,
+        transparent 15%,
+        rgba(10, 6, 35, 0.568) 50%,
+        rgba(10, 6, 35, 0.568) 85%
+      );
   }
 
   .login-page {

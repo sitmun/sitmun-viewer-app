@@ -3,18 +3,18 @@
 @use 'dimensions';
 
 // Material spacing constants (8dp grid)
-$spacing-xs: 4px;   // 0.5× base unit
-$spacing-sm: 8px;   // 1× base unit
-$spacing-md: 16px;  // 2× base unit
-$spacing-lg: 24px;  // 3× base unit
-$spacing-xl: 32px;  // 4× base unit
+$spacing-xs: 4px; // 0.5× base unit
+$spacing-sm: 8px; // 1× base unit
+$spacing-md: 16px; // 2× base unit
+$spacing-lg: 24px; // 3× base unit
+$spacing-xl: 32px; // 4× base unit
 $spacing-xxl: 40px; // 5× base unit
 
 // Material component sizes
-$toolbar-height-desktop: 64px;  // Material standard
-$toolbar-height-mobile: 56px;   // Material standard
-$icon-size-standard: 24px;      // Material standard
-$icon-button-size: 40px;        // Material standard (touch target 48px with padding)
+$toolbar-height-desktop: 64px; // Material standard
+$toolbar-height-mobile: 56px; // Material standard
+$icon-size-standard: 24px; // Material standard
+$icon-button-size: 40px; // Material standard (touch target 48px with padding)
 
 :host {
   display: block; // Allow toolbar to collapse naturally
@@ -43,32 +43,31 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
       left: 0;
       width: 100%;
       background-color: white;
-      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 
-                  0 4px 5px 0 rgba(0, 0, 0, 0.14), 
-                  0 1px 10px 0 rgba(0, 0, 0, 0.12); // Material elevation-4
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12); // Material elevation-4
     }
-    
+
     &.login {
       padding: 0 $spacing-sm; // 8px for compact login view
       background-color: transparent !important;
     }
-    
+
     .mat-toolbar-row {
       height: 100% !important; // Fill toolbar height
       min-height: 0 !important; // Allow collapsing - override Material defaults
       padding: 0 !important; // Remove any default padding
     }
-    
+
     .toolbar-spacer {
       flex: 1 1 auto;
     }
-    
+
     .toolbar-left {
-    display: flex;
-    align-items: center;
+      display: flex;
+      align-items: center;
       gap: $spacing-md; // 16px between items
       padding-left: $spacing-sm; // 8px edge padding
-      
+
       .logo-img {
         height: $icon-button-size; // 40px for proper touch target
         width: auto; // Maintain aspect ratio
@@ -78,7 +77,7 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
         object-fit: contain; // Maintain aspect ratio and prevent distortion
         display: block; // Remove inline spacing issues
       }
-      
+
       .header-img {
         height: $spacing-xl; // 32px for custom header images
         margin: 0 $spacing-xs; // 4px horizontal margin
@@ -90,25 +89,25 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
       align-items: center;
       gap: $spacing-sm; // 8px between buttons (Material recommendation)
       padding-right: $spacing-sm; // 8px edge padding
-      
+
       .mat-mdc-icon-button {
         width: $icon-button-size;
         height: $icon-button-size;
         padding: $spacing-sm; // 8px padding = 48px touch target with icon
         border-radius: 10px !important; // Rectangular with rounded corners
-        
+
         // Override Material's circular button styling for ripple effect
         &::before,
         &::after {
           border-radius: 10px !important;
         }
-        
+
         // Override Material's internal button element
         .mat-mdc-button-persistent-ripple,
         .mdc-button__ripple {
           border-radius: 10px !important;
         }
-        
+
         &.active {
           color: colors.$orange;
         }
@@ -119,78 +118,76 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
 
         &.login-menu-button {
           color: white;
-          
+
           &:hover {
             color: white;
             opacity: 0.8;
           }
-      }
+        }
 
         .mat-icon {
           font-size: $icon-size-standard; // 24px Material standard
           width: $icon-size-standard;
           height: $icon-size-standard;
         }
-}
+      }
 
       .header-img {
         height: $spacing-xl; // 32px for custom header images
         margin: 0 $spacing-xs; // 4px horizontal margin
       }
     }
-    
   }
-  
+
   .hide-toolbar-btn {
     border-radius: 10px !important; // Rectangular with rounded corners (match orange buttons)
-    
+
     // Override Material's circular button styling for ripple effect
     &::before,
     &::after {
       border-radius: 10px !important;
     }
-    
+
     // Override Material's internal button element
     .mat-mdc-button-persistent-ripple,
     .mdc-button__ripple {
       border-radius: 10px !important;
     }
-    
+
     // Keep transparent background (inherits from Material)
   }
-  
+
   .bottom-toolbar {
     display: none;
 
     @media (max-width: dimensions.$base-layout-breakpoint-small) {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
       height: $toolbar-height-mobile; // 56px Material mobile standard
       background-color: colors.$violet;
-    justify-content: space-around;
+      justify-content: space-around;
       padding: $spacing-xs 0; // 4px vertical padding
-    z-index: 1000;
+      z-index: 1000;
 
       .mat-mdc-icon-button {
         width: $icon-button-size;
         height: $icon-button-size;
-        
+
         &.active {
           color: colors.$orange;
         }
-        
+
         .mat-icon {
           font-size: $icon-size-standard;
           width: $icon-size-standard;
           height: $icon-size-standard;
+        }
       }
     }
-    }
   }
-  
 }
 
 // Show button styles - outside ::ng-deep since button is in component template
@@ -200,8 +197,10 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
   // Center vertically: (64 - 40) / 2 = 12px from top
   top: 12px !important;
   left: 50% !important; // Horizontally centered
-  transform: translateX(-50%) !important; // Offset by half button width to center
-  
+  transform: translateX(
+    -50%
+  ) !important; // Offset by half button width to center
+
   // Required overrides (don't remove - explained below)
   z-index: 999999 !important; // Required: SITNA map controls use z-index up to 99999
   pointer-events: auto !important; // Required: Override animation's pointer-events: none on host
@@ -210,25 +209,25 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
   display: flex !important; // Ensure button is displayed
   align-items: center !important;
   justify-content: center !important;
-  
+
   // Standard Material button styling - match tools-tab button style
   width: $icon-button-size !important;
   height: $icon-button-size !important;
   padding: $spacing-sm !important;
   border-radius: 0px !important; // Square like tools-tab button
-  
+
   // Dark gray/black background like tools-tab button (rgba(0, 0, 0, 0.8))
   background-color: rgba(0, 0, 0, 0.8) !important;
-  
+
   // Shadow similar to tools-tab (0px 0px 5px rgba(0,0,0,0.2))
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2) !important;
-  
+
   &:hover {
     // Solid black on hover like tools-tab (rgba(0, 0, 0, 1))
     background-color: rgba(0, 0, 0, 1) !important;
     cursor: pointer;
   }
-  
+
   .mat-icon {
     font-size: $icon-size-standard !important;
     width: $icon-size-standard !important;
@@ -236,8 +235,8 @@ $icon-button-size: 40px;        // Material standard (touch target 48px with pad
     color: colors.$white !important; // White icon like tools-tab
     pointer-events: none; // Let clicks pass through to button
   }
-  
-  animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {

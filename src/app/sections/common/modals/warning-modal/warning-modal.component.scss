@@ -2,16 +2,13 @@
 @use 'dimensions';
 
 .modal-view-body {
-
   color: colors.$modal-blue-color;
 
   .error-description {
-
     border: 2px solid colors.$modal-blue-color;
     border-radius: 10px;
     background-color: #eeeeee;
     padding: 1rem 1rem 0 1rem;
-
   }
 }
 
@@ -29,7 +26,8 @@
     padding: dimensions.$navigation-bar-menu-button-padding;
     color: colors.$navigation-bar-menu-button-color;
     background: colors.$common-color-font-button;
-    border: dimensions.$navigation-bar-menu-button-border solid colors.$navigation-bar-menu-button-border-color;
+    border: dimensions.$navigation-bar-menu-button-border solid
+      colors.$navigation-bar-menu-button-border-color;
     border-radius: dimensions.$navigation-bar-menu-button-border-radius;
   }
 
@@ -37,4 +35,3 @@
     transform: scale(1.25);
   }
 }
-

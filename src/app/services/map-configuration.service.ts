@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
+
 import { AppCfg, AppGroup } from '@api/model/app-cfg';
-import { ConfigLookupService } from './config-lookup.service';
+import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
+
 import { AppConfigService } from './app-config.service';
+import { ConfigLookupService } from './config-lookup.service';
 import { ControlRegistryService } from './control-registry.service';
 
 /**
@@ -54,19 +56,19 @@ export class MapConfigurationService {
    * This has to be rethought from the admin, once done, the code marked with 'TODO-redo' must be reviewed.
    */
   toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
-    let baseLayers: SitnaBaseLayer[] = [];
+    const baseLayers: SitnaBaseLayer[] = [];
     if (apiConfig.backgrounds.length) {
-      let backgrounds: string[] = [];
-      let groups: AppGroup[] = [];
-      let layers: string[] = [];
-      let thumbnail: string = ''; // TODO-redo
-      for (let background of apiConfig.backgrounds) {
+      const backgrounds: string[] = [];
+      const groups: AppGroup[] = [];
+      const layers: string[] = [];
+      let thumbnail = ''; // TODO-redo
+      for (const background of apiConfig.backgrounds) {
         backgrounds.push(background.id);
         // if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
         //   thumbnail = background.thumbnail;
         // }
       }
-      for (let background of backgrounds) {
+      for (const background of backgrounds) {
         const group =
           this.configLookup.findGroup(background) ||
           apiConfig.groups.find((elem) => elem.id === background);
@@ -74,14 +76,14 @@ export class MapConfigurationService {
           groups.push(group);
         }
       }
-      for (let group of groups) {
+      for (const group of groups) {
         if (group.layers != undefined) {
-          for (let layer of group.layers) {
+          for (const layer of group.layers) {
             layers.push(layer);
           }
         }
       }
-      for (let layerElement of layers) {
+      for (const layerElement of layers) {
         const layer =
           this.configLookup.findLayer(layerElement) ||
           apiConfig.layers.find((elem) => elem.id === layerElement);
@@ -89,7 +91,7 @@ export class MapConfigurationService {
           const service =
             this.configLookup.findService(layer.service) ||
             apiConfig.services.find((service) => service.id === layer.service);
-          for (let background of apiConfig.backgrounds) {
+          for (const background of apiConfig.backgrounds) {
             thumbnail = '';
             if (
               typeof background.thumbnail != 'undefined' &&
@@ -104,7 +106,7 @@ export class MapConfigurationService {
             }
           }
           if (service != undefined) {
-            let a: SitnaBaseLayer = {
+            const a: SitnaBaseLayer = {
               id: layer.title,
               title: layer.title,
               url: service.url,

@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 /**
  * Handler for the native SITNA loadingIndicator control.
@@ -31,7 +33,7 @@ export class LoadingIndicatorControlHandler extends ControlHandlerBase {
    */
   buildConfiguration(
     task: AppTasks,
-    context: AppCfg
+    _context: AppCfg
   ): SitnaControlConfig | null {
     // If no parameters provided, return true (boolean) - matches legacy behavior
     if (this.areParametersEmpty(task.parameters)) {

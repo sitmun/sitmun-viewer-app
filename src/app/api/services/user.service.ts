@@ -1,16 +1,18 @@
-import { PositionDTO } from '@api/model/position';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
 import {
   URL_API_TERRITORIES,
   URL_API_TERRITORIES_POSITIONS,
   URL_API_USER_ACCOUNT
 } from '@api/api-config';
-import { Roles } from '@config/roles-matrix';
-import { UserDto } from '@api/model/user';
-import { environment } from '../../../environments/environment';
+import { PositionDTO } from '@api/model/position';
 import { TerritoryDTO } from '@api/model/territories';
+import { UserDto } from '@api/model/user';
+import { Roles } from '@config/roles-matrix';
+import { Observable } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

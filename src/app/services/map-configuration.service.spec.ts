@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { MapConfigurationService } from './map-configuration.service';
-import { ConfigLookupService } from './config-lookup.service';
+
+import { AppCfg } from '@api/model/app-cfg';
+
 import { AppConfigService } from './app-config.service';
+import { ConfigLookupService } from './config-lookup.service';
 import { ControlRegistryService } from './control-registry.service';
-import { AppCfg, AppLayer, AppService, AppGroup } from '@api/model/app-cfg';
-import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
+import { MapConfigurationService } from './map-configuration.service';
 
 describe('MapConfigurationService', () => {
   let service: MapConfigurationService;

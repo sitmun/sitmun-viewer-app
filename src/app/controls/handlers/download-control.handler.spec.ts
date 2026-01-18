@@ -1,10 +1,12 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
 import { DownloadControlHandler } from './download-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { UIStateService } from '../../services/ui-state.service';
-import { AppConfigService } from '../../services/app-config.service';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('DownloadControlHandler', () => {
   let handler: DownloadControlHandler;

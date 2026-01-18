@@ -1,26 +1,28 @@
-import { TranslateService } from '@ngx-translate/core';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
+
+import { PositionDTO } from '@api/model/position';
 import { TerritoryDTO } from '@api/model/territories';
 import { UserDto } from '@api/model/user';
 import { UserService } from '@api/services/user.service';
-import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { VerifyAccountService } from '@auth/services/verifyAccount.service';
-import { PositionDTO } from '@api/model/position';
+import { TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   readonly TERRITORIES_LIMIT: number = 3;
-  displayPopupProfile: boolean = false;
-  displayPopupTerritoriesProfiles: boolean = false;
+  displayPopupProfile = false;
+  displayPopupTerritoriesProfiles = false;
   fieldCurrentlyUpdating = false;
 
   territories: Array<TerritoryDTO> = [];
   selectedTerritory?: any;
-  passwordField: string = '';
+  passwordField = '';
   hidenPassword = '*************';
   copyUserProfile!: UserDto;
   userProfile: UserDto = {
@@ -44,7 +46,7 @@ export class ProfileComponent {
   constructor(
     private userService: UserService,
     private readonly notificationService: NotificationService,
-    private verificationAccountService: VerifyAccountService<unknown>,
+    private verificationAccountService: VerifyAccountService,
     private translateService: TranslateService
   ) {}
 
@@ -111,7 +113,7 @@ export class ProfileComponent {
 
   editEmailInformation(value: string) {
     const regexp = new RegExp(
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
     if (!regexp.test(value)) {
       this.translateService.get('profile.mailErrorFormat').subscribe((trad) => {
@@ -267,18 +269,18 @@ export class ProfileComponent {
    * @param type - The prefix used to locate the table cell by ID.
    */
   changeValue(id: number, value: string, type: string) {
-    let territoryTdElement: HTMLTableCellElement = document.getElementById(
+    const territoryTdElement: HTMLTableCellElement = document.getElementById(
       type + id
     ) as HTMLTableCellElement;
-    let inputPosition = territoryTdElement.querySelector('input');
+    const inputPosition = territoryTdElement.querySelector('input');
     if (!inputPosition) {
       throw Error();
     }
 
-    let paragraph = territoryTdElement.querySelector(
+    const paragraph = territoryTdElement.querySelector(
       'p'
     ) as HTMLParagraphElement;
-    let img = territoryTdElement.querySelector('button')
+    const img = territoryTdElement.querySelector('button')
       ?.children[0] as HTMLImageElement;
 
     if (inputPosition.hidden) {
@@ -294,7 +296,7 @@ export class ProfileComponent {
       img.src = 'assets/img/Icona-modificar-naranja.svg';
 
       // Update territory
-      let positionSelected: PositionDTO =
+      const positionSelected: PositionDTO =
         this.selectedTerritory?.positions.find((position: PositionDTO) => {
           return position.id == id;
         });
@@ -315,7 +317,7 @@ export class ProfileComponent {
       inputPosition.value = '';
 
       if (paragraph.textContent != baseValue) {
-        let territoryPosition: PositionTerritory = {
+        const territoryPosition: PositionTerritory = {
           territory: this.selectedTerritory,
           position: positionSelected
         };

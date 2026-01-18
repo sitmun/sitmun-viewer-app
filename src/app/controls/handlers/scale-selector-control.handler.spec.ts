@@ -1,9 +1,11 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { AppConfigService } from '../../services/app-config.service';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('ScaleSelectorControlHandler', () => {
   let handler: ScaleSelectorControlHandler;

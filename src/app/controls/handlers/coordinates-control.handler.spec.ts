@@ -1,15 +1,15 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
 import { CoordinatesControlHandler } from './coordinates-control.handler';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 describe('CoordinatesControlHandler', () => {
   let handler: CoordinatesControlHandler;
   let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
   let mockAppCfg: AppCfg;
-  let originalPatchesLoaded: any;
-
   beforeEach(() => {
     mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
       'waitForTC',
@@ -42,24 +42,6 @@ describe('CoordinatesControlHandler', () => {
       tasks: [],
       trees: []
     };
-
-    // Save and reset window.__patchesLoaded
-    originalPatchesLoaded = (window as any).__patchesLoaded;
-    (window as any).__patchesLoaded = {};
-
-    // Remove any existing script tags
-    document
-      .querySelectorAll('script[src*="TCProjectionDataPatch"]')
-      .forEach((s) => s.remove());
-  });
-
-  afterEach(() => {
-    // Restore original patches loaded state
-    (window as any).__patchesLoaded = originalPatchesLoaded;
-    // Clean up script tags
-    document
-      .querySelectorAll('script[src*="TCProjectionDataPatch"]')
-      .forEach((s) => s.remove());
   });
 
   it('should be created', () => {
@@ -73,13 +55,8 @@ describe('CoordinatesControlHandler', () => {
   });
 
   describe('requiredPatches', () => {
-    it('should require TCProjectionDataPatch', () => {
-      expect(handler.requiredPatches).toBeDefined();
-      if (handler.requiredPatches) {
-        expect(handler.requiredPatches).toEqual([
-          'assets/js/patch/TCProjectionDataPatch.js'
-        ]);
-      }
+    it('should not require patches', () => {
+      expect(handler.requiredPatches).toBeUndefined();
     });
   });
 
@@ -131,69 +108,19 @@ describe('CoordinatesControlHandler', () => {
   });
 
   describe('isReady()', () => {
-    it('should return false if patch not loaded', () => {
-      (window as any).__patchesLoaded = {};
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return true if patch is loaded', () => {
-      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
+    it('should return true by default', () => {
       expect(handler.isReady()).toBe(true);
     });
   });
 
   describe('loadPatches()', () => {
-    it('should not reload if patch already loaded', async () => {
-      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
-
-      await handler.loadPatches(mockAppCfg);
-
-      // Should not add duplicate script
-      const scripts = document.querySelectorAll(
-        'script[src*="TCProjectionDataPatch"]'
-      );
-      expect(scripts.length).toBe(0);
-    });
-
-    it('should load TCProjectionDataPatch script when not loaded', async () => {
-      (window as any).__patchesLoaded = {};
-
-      // Mock script loading by intercepting appendChild
-      const appendChildSpy = spyOn(document.head, 'appendChild').and.callFake(
-        (node: any) => {
-          // Simulate script loading by immediately calling onload
-          if (
-            node.tagName === 'SCRIPT' &&
-            node.src.includes('TCProjectionDataPatch')
-          ) {
-            // Mark patch as loaded to simulate successful load
-            (window as any).__patchesLoaded.TCProjectionDataPatch = true;
-            // Call onload if it exists
-            if (node.onload) {
-              setTimeout(() => node.onload(), 0);
-            }
-          }
-          return node;
-        }
-      );
-
-      await handler.loadPatches(mockAppCfg);
-
-      expect(appendChildSpy).toHaveBeenCalled();
-      const scriptCall = appendChildSpy.calls
-        .all()
-        .find((call: any) =>
-          call.args[0]?.src?.includes('TCProjectionDataPatch')
-        );
-      expect(scriptCall).toBeDefined();
+    it('should resolve without loading scripts', async () => {
+      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
     });
   });
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      // Mark patch as loaded for integration test
-      (window as any).__patchesLoaded = { TCProjectionDataPatch: true };
-
       // Load patches
       await handler.loadPatches(mockAppCfg);
 

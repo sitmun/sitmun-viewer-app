@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { RendererFactory2 } from '@angular/core';
+
 import { DomUtilsService } from './dom-utils.service';
 
 describe('DomUtilsService', () => {

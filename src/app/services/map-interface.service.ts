@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { UIStateService } from './ui-state.service';
+
 import { DomUtilsService } from './dom-utils.service';
+import { UIStateService } from './ui-state.service';
 
 /**
  * Service for managing map UI interface visibility.

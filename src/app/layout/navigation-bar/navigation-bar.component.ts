@@ -1,13 +1,21 @@
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate
+} from '@angular/animations';
 import { Location } from '@angular/common';
 import {
   Component,
-  HostListener,
+  HostBinding,
   OnInit,
   DoCheck,
   OnDestroy
 } from '@angular/core';
-import { NavigationStart, Router, NavigationEnd } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { Router, NavigationEnd } from '@angular/router';
+
 import {
   CommonService,
   DashboardItemsResponse,
@@ -17,16 +25,9 @@ import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
-import { LanguageService } from 'src/app/services/language.service';
-import {
-  trigger,
-  state,
-  style,
-  transition,
-  animate
-} from '@angular/animations';
-import { MatDialog } from '@angular/material/dialog';
 import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change-application-territory-dialog/change-application-territory-dialog.component';
+import { Subscription } from 'rxjs';
+import { LanguageService } from 'src/app/services/language.service';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -56,13 +57,13 @@ import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change
         animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
       ])
     ])
-  ],
-  host: {
-    '[@toolbarCollapse]': 'toolbarState'
-  }
+  ]
 })
 export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
-  username: string = '';
+  @HostBinding('@toolbarCollapse') get toolbarCollapse() {
+    return this.toolbarState;
+  }
+  username = '';
   navigationClassActive: NavigationButtonActive = NavigationButtonActive.HOME;
   private routerSubscription?: Subscription;
 
@@ -70,12 +71,12 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   headerRightSection: IconSection[] | null = null;
   headerBase: HeaderBase | null = null;
 
-  isOnAuthLogin: boolean = false;
-  showProfileButton: boolean = true;
-  showSwitchLanguageButton: boolean = true;
-  showLogoutButton: boolean = true;
-  showChangeAppOrTerritoryButton: boolean = true;
-  navigationBarIsHidden: boolean = false;
+  isOnAuthLogin = false;
+  showProfileButton = true;
+  showSwitchLanguageButton = true;
+  showLogoutButton = true;
+  showChangeAppOrTerritoryButton = true;
+  navigationBarIsHidden = false;
 
   constructor(
     private router: Router,
@@ -135,15 +136,15 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
         .fetchDashboardItems(DashboardTypes.APPLICATIONS)
         .subscribe({
           next: (res: DashboardItemsResponse) => {
-            let applicationSelectedId = this.router.url.split('/')[3];
-            let application = res.content.find(
+            const applicationSelectedId = this.router.url.split('/')[3];
+            const application = res.content.find(
               (app) => app.id.toString() == applicationSelectedId
             );
             if (application?.headerParams) {
               this.headerBase = {};
               this.headerLeftSection = [];
               this.headerRightSection = [];
-              let headerParams = application.headerParams;
+              const headerParams = application.headerParams;
               const leftBaseKeys = [NavigationBarSection.LOGO_SITMUN];
               const rightBaseKeys = [
                 NavigationBarSection.SWITCH_APP_BUTTON,
@@ -161,12 +162,12 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
               });
 
               // We overide the left side
-              let headerLeftSection = headerParams.headerLeftSection;
-              for (let key of leftBaseKeys) {
+              const headerLeftSection = headerParams.headerLeftSection;
+              for (const key of leftBaseKeys) {
                 if (headerLeftSection[key])
                   this.headerBase[key] = headerLeftSection[key]; // BaseKeys already presents in HTML
               }
-              for (let key in headerLeftSection) {
+              for (const key in headerLeftSection) {
                 if (!leftBaseKeys.includes(key as NavigationBarSection))
                   this.headerLeftSection.push(
                     toIconSection(key, headerLeftSection[key])
@@ -174,12 +175,12 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
               }
 
               // We look each button on the right side and dot not show if visible param is false
-              let headerRightSection = headerParams.headerRightSection;
-              for (let key of rightBaseKeys) {
+              const headerRightSection = headerParams.headerRightSection;
+              for (const key of rightBaseKeys) {
                 if (headerRightSection[key])
                   this.headerBase[key] = headerRightSection[key]; // BaseKeys already presents in HTML
               }
-              for (let key in headerRightSection) {
+              for (const key in headerRightSection) {
                 if (!rightBaseKeys.includes(key as NavigationBarSection))
                   this.headerRightSection.push(
                     toIconSection(key, headerRightSection[key])

@@ -1,11 +1,12 @@
+import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   Router,
   RouterStateSnapshot,
   UrlTree
 } from '@angular/router';
+
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { Injectable } from '@angular/core';
 import { NavigationPath } from '@config/app.config';
 
 @Injectable({

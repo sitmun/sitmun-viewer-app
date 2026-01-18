@@ -167,11 +167,13 @@ Icons are optional. If not specified, the language will be displayed without an 
 ### How to Apply Configuration Changes
 
 1. **Locate the configuration file** in your deployed application:
+
    ```
    /path/to/deployed/app/assets/config/app-config.json
    ```
 
 2. **Edit the file** with your desired configuration:
+
    ```bash
    # Example using a text editor
    nano /path/to/deployed/app/assets/config/app-config.json
@@ -225,6 +227,7 @@ If configuration changes don't take effect:
 ### Fallback Behavior
 
 If the configuration file fails to load or is invalid, the application will:
+
 - Log a warning to the browser console
 - Fall back to showing all items (filtering disabled)
 - Continue to function normally
@@ -238,6 +241,7 @@ If the configuration file fails to load or is invalid, the application will:
 ## Support
 
 For questions or issues with configuration:
+
 1. Check the browser console for error messages
 2. Verify the backend is returning the correct type values
 3. Contact your system administrator or development team

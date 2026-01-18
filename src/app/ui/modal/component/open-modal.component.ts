@@ -8,10 +8,11 @@ import {
   Type,
   ViewChild
 } from '@angular/core';
+
+import { InsertionDirective } from '@ui/modal/insertion-directive';
 import { Subject } from 'rxjs';
 
 import { OpenModalRef } from '../service/open-modal-ref';
-import { InsertionDirective } from '@ui/modal/insertion-directive';
 
 @Component({
   template: '<div><ng-template appInsertion></ng-template></div>'
@@ -64,7 +65,7 @@ export class OpenModalComponent implements AfterViewInit, OnDestroy {
   }
 
   close() {
-    // @ts-ignore
+    // @ts-expect-error - onCloseSubject is a Subject that may not have next method in all contexts
     this.onCloseSubject.next();
   }
 }

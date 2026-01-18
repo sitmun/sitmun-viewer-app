@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { UIStateService } from './ui-state.service';
+
 import { take } from 'rxjs/operators';
+
+import { UIStateService } from './ui-state.service';
 
 describe('UIStateService', () => {
   let service: UIStateService;

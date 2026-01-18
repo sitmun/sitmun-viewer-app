@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { AppConfigService } from './app-config.service';
 import { ControlRegistryService } from './control-registry.service';
 import {
   ControlHandler,
   SitnaControlConfig
 } from '../controls/control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { NotificationService } from '../notifications/services/NotificationService';
-import { AppConfigService } from './app-config.service';
 
 /**
  * Mock handler for testing
@@ -41,7 +43,7 @@ class MockHandler implements ControlHandler {
 
   buildConfiguration(
     task: AppTasks,
-    context: AppCfg
+    _context: AppCfg
   ): SitnaControlConfig | null {
     this.buildConfigCalled = true;
     // Use task parameters if provided, otherwise use customDiv or default
@@ -73,6 +75,7 @@ class NullConfigHandler implements ControlHandler {
   readonly controlIdentifier = 'sitna.null';
   readonly sitnaConfigKey = 'null';
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async loadPatches(): Promise<void> {}
   buildConfiguration(): null {
     return null;
@@ -482,6 +485,7 @@ describe('ControlRegistryService', () => {
     it('should handle buildConfiguration errors', async () => {
       class ThrowingHandler implements ControlHandler {
         readonly controlIdentifier = 'sitna.throwing';
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         async loadPatches() {}
         buildConfiguration(): SitnaControlConfig | null {
           throw new Error('Build error');
@@ -630,6 +634,7 @@ describe('ControlRegistryService', () => {
     it('should handle controls without div property', async () => {
       class NoDivHandler implements ControlHandler {
         readonly controlIdentifier = 'sitna.noDiv';
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         async loadPatches() {}
         buildConfiguration(): SitnaControlConfig | null {
           return { someOtherProp: 'value' } as any;
@@ -655,6 +660,7 @@ describe('ControlRegistryService', () => {
     it('should handle boolean control configs', async () => {
       class BooleanHandler implements ControlHandler {
         readonly controlIdentifier = 'sitna.boolean';
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         async loadPatches() {}
         buildConfiguration(): SitnaControlConfig | null {
           return true as any; // Some controls return boolean

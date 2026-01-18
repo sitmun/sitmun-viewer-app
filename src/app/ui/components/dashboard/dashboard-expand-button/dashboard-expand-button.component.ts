@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -6,8 +7,8 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './dashboard-expand-button.component.html',
   styleUrls: ['./dashboard-expand-button.component.scss']
 })
-export class DashboardExpandButtonComponent {
-  isExpand: boolean = false;
+export class DashboardExpandButtonComponent implements OnInit {
+  isExpand = false;
   button_img_url = '';
   button_text = '';
 

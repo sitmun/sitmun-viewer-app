@@ -1,13 +1,12 @@
-import { TestBed } from '@angular/core/testing';
-import { ControlHandlerBase } from './control-handler-base';
-import {
-  ControlHandler,
-  SitnaControlConfig
-} from './control-handler.interface';
-import { TCNamespaceService } from '../services/tc-namespace.service';
-import { AppConfigService } from '../services/app-config.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { ControlHandlerBase } from './control-handler-base';
+import { SitnaControlConfig } from './control-handler.interface';
+import { AppConfigService } from '../services/app-config.service';
+import { TCNamespaceService } from '../services/tc-namespace.service';
 
 /**
  * Concrete test implementation of ControlHandlerBase
@@ -17,8 +16,8 @@ class TestControlHandler extends ControlHandlerBase {
   readonly requiredPatches = ['assets/js/patch/test.js'];
 
   buildConfiguration(
-    task: AppTasks,
-    context: AppCfg
+    _task: AppTasks,
+    _context: AppCfg
   ): SitnaControlConfig | null {
     return { div: 'test' };
   }
@@ -32,8 +31,8 @@ class NoPatchHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined;
 
   buildConfiguration(
-    task: AppTasks,
-    context: AppCfg
+    _task: AppTasks,
+    _context: AppCfg
   ): SitnaControlConfig | null {
     return { div: 'nopatch' };
   }
@@ -282,6 +281,7 @@ describe('ControlHandlerBase', () => {
 
     it('should cache load promises', async () => {
       const loadPromise = handler['ensureControlLoaded']({
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         loadScript: () => {},
         controlName: 'TestControl'
       });
@@ -301,6 +301,7 @@ describe('ControlHandlerBase', () => {
 
       await handler['ensureControlLoaded']({
         dependencies: ['TC', 'TC.control.SearchSilme'],
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         loadScript: () => {},
         controlName: 'TestControl'
       });
@@ -319,6 +320,7 @@ describe('ControlHandlerBase', () => {
 
       await handler['ensureControlLoaded']({
         dependencies: depFunction,
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         loadScript: () => {},
         controlName: 'TestControl'
       });

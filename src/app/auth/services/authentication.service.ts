@@ -1,6 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+
+import { URL_AUTH_LOGIN } from '@api/api-config';
 import {
   AUTH_CONFIG_DI,
   AuthConfig,
@@ -8,8 +10,8 @@ import {
   AuthenticationResponse
 } from '@auth/authentication.options';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
-import { URL_AUTH_LOGIN } from '@api/api-config';
 import { tap } from 'rxjs';
+
 import { environment } from '../../../environments/environment';
 
 @Injectable({

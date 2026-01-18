@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import {
-  ControlHandler,
-  SitnaControlConfig
-} from '../controls/control-handler.interface';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { SitnaControls, SitnaControlOptions } from '@api/model/sitna-cfg';
-import { NotificationService } from '../notifications/services/NotificationService';
+import { SitnaControls } from '@api/model/sitna-cfg';
+
 import { AppConfigService } from './app-config.service';
 import { ControlHandlerBase } from '../controls/control-handler-base';
+import { ControlHandler } from '../controls/control-handler.interface';
+import { NotificationService } from '../notifications/services/NotificationService';
 
 /**
  * Registry service for control handlers.
@@ -124,19 +123,19 @@ export class ControlRegistryService {
     for (const { task, handler } of activeControls) {
       try {
         // First, build configuration to check if control will be used
-        const config = handler!.buildConfiguration(task, context);
+        const config = handler.buildConfiguration(task, context);
 
         if (config !== null) {
           // Control will be used - load patches only if needed
           // Check if handler has patches to load (requiredPatches defined) or overrides loadPatches
           const hasPatches =
-            handler!.requiredPatches !== undefined &&
-            handler!.requiredPatches.length > 0;
+            handler.requiredPatches !== undefined &&
+            handler.requiredPatches.length > 0;
           const hasCustomLoadPatches =
-            handler!.loadPatches !== ControlHandlerBase.prototype.loadPatches;
+            handler.loadPatches !== ControlHandlerBase.prototype.loadPatches;
 
           if (hasPatches || hasCustomLoadPatches) {
-            await handler!.loadPatches(context);
+            await handler.loadPatches(context);
           }
 
           // Use handler's explicit sitnaConfigKey (required for all handlers)
@@ -144,8 +143,8 @@ export class ControlRegistryService {
           let controlKey: string;
           if (typeof (handler as any).getSitnaConfigKey === 'function') {
             controlKey = (handler as any).getSitnaConfigKey(task);
-          } else if (handler!.sitnaConfigKey) {
-            controlKey = handler!.sitnaConfigKey;
+          } else if (handler.sitnaConfigKey) {
+            controlKey = handler.sitnaConfigKey;
           } else {
             console.error(
               `[ControlRegistry] Handler for '${task['ui-control']}' missing sitnaConfigKey`
@@ -360,7 +359,10 @@ export class ControlRegistryService {
         if (!divUsage.has(div)) {
           divUsage.set(div, []);
         }
-        divUsage.get(div)!.push(controlKey);
+        const divControls = divUsage.get(div);
+        if (divControls) {
+          divControls.push(controlKey);
+        }
       }
     }
 

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+
 import { AppCfg, AppTree } from '@api/model/app-cfg';
+
 import { ConfigLookupService } from './config-lookup.service';
 import { TCNamespaceService } from './tc-namespace.service';
 
@@ -290,6 +292,7 @@ export class CatalogSwitchingService {
     projectsPanel: HTMLElement,
     tcNamespaceService: TCNamespaceService
   ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const service = this;
     const TC = tcNamespaceService.getTC();
     const layerCatalogsForModal = this.getGlobalState();
@@ -458,6 +461,7 @@ export class CatalogSwitchingService {
           '.tc-ctl-lcat-proj-catalog'
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const service = this;
 
         if (closeButton) {

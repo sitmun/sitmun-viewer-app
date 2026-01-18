@@ -1,5 +1,3 @@
-import { takeUntil } from 'rxjs/operators';
-
 export enum Mode {
   Add = 'add',
   Edit = 'edit',
@@ -20,9 +18,12 @@ export type ModalModesCRU = Mode.Add | Mode.Edit | Mode.Read | Mode.ReadOnly;
  *  - ModalTabService: if using setupTabs() and isSelectedTab()
  */
 export abstract class BaseModal {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected constructor() {}
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected refresh(): void {}
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected onClose(): void {}
 }

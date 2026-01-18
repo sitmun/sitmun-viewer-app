@@ -1,13 +1,14 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
 import {
   URL_API_APPLICATIONS,
   URL_API_MAP_CONFIG,
   URL_API_TERRITORIES
 } from '@api/api-config';
-import { environment } from 'src/environments/environment';
 import { AppCfg } from '@api/model/app-cfg';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',

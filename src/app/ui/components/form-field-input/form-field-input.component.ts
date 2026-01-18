@@ -6,14 +6,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   styleUrls: ['./form-field-input.component.scss']
 })
 export class FormFieldInputComponent {
-  @Input() input_placeholder: string = '';
-  @Input() input_name: string = '';
-  @Input() input_type: string = 'text';
-  @Input() input_title: string = '';
-  @Input() input_image: string = '';
-  @Input() input_length: number = 50;
+  @Input() input_placeholder = '';
+  @Input() input_name = '';
+  @Input() input_type = 'text';
+  @Input() input_title = '';
+  @Input() input_image = '';
+  @Input() input_length = 50;
 
-  @Input() input_model: string = '';
+  @Input() input_model = '';
   @Output() output_model = new EventEmitter<string>();
   @Output() input_button_click = new EventEmitter<void>();
 

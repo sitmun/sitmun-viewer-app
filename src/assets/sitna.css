@@ -1,11 +1,11 @@
-@import url("js/api-sitna/layout/responsive/style.css");
+@import url('js/api-sitna/layout/responsive/style.css');
 
 :root {
-  --color-3: #FF9300;
+  --color-3: #ff9300;
 }
 
 .slide-panel > h1 {
-  background-color: #FF9300;
+  background-color: #ff9300;
 }
 
 .slide-panel > h1 {
@@ -27,7 +27,7 @@
 }
 
 .tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
-  border: solid 2px #FF9300;
+  border: solid 2px #ff9300;
   border-top: 0;
   text-align: center;
   color: inherit;

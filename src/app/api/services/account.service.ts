@@ -1,12 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
 import {
   URL_API_USER_ACCOUNT,
   URL_API_USER_ACCOUNT_PUBLIC
 } from '@api/api-config';
 import { UserDto } from '@api/model/user';
+import { Observable } from 'rxjs';
+
 import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })

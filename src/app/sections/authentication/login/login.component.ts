@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthenticationService } from '@auth/services/authentication.service';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { AuthenticationRequest } from '@auth/authentication.options';
+import { AuthenticationService } from '@auth/services/authentication.service';
+import { NavigationPath, QueryParam } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
-import { NavigationPath } from '@config/app.config';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { environment } from 'src/environments/environment';
-import { QueryParam } from '@config/app.config';
+
 import {
   isProblemDetail,
   extractProblemType
@@ -20,13 +21,13 @@ import {
 export class LoginComponent implements OnInit {
   authenticationRequest: AuthenticationRequest;
 
-  showPassword: boolean = false;
-  passwordImage: string = '';
-  showPasswordImage: string = 'assets/img/showPassword=Default.svg';
-  hidePasswordImage: string = 'assets/img/hidePassword=Default.svg';
-  displayPassword: string = 'password';
-  displayDNIEButton: boolean = true;
-  displayBackgroundImage: boolean = true;
+  showPassword = false;
+  passwordImage = '';
+  showPasswordImage = 'assets/img/showPassword=Default.svg';
+  hidePasswordImage = 'assets/img/hidePassword=Default.svg';
+  displayPassword = 'password';
+  displayDNIEButton = true;
+  displayBackgroundImage = true;
   backgroundImageUrl?: string;
 
   constructor(

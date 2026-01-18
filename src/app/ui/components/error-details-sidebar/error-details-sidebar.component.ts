@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+
+import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+
 import {
   ErrorTrackingService,
   ErrorEntry
 } from '../../../services/error-tracking.service';
 import { SidebarManagerService } from '../../../services/sidebar-manager.service';
-import { TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
 
 /**
  * Component for displaying error details in a sidebar.
@@ -95,7 +97,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
    * Handle ESC key to close sidebar
    */
   @HostListener('document:keydown.escape', ['$event'])
-  handleEscape(event: Event): void {
+  handleEscape(_event: Event): void {
     if (this.isOpen()) {
       this.close();
     }

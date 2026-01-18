@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import { UserDto } from '@api/model/user';
+import { AccountService } from '@api/services/account.service';
 import {
   CommonService,
   DashboardItem,
   DashboardTypes
 } from '@api/services/common.service';
-import { AccountService } from '@api/services/account.service';
-import { UserDto } from '@api/model/user';
 import { NavigationPath } from '@config/app.config';
 
 @Component({
@@ -20,7 +21,7 @@ export class ApplicationComponent implements OnInit {
   application!: DashboardItem;
   territories: any[] = [];
   groupedTerritories: { group?: string; items: any[] }[] = [];
-  searchValue: string = '';
+  searchValue = '';
 
   constructor(
     private location: Location,
@@ -29,7 +30,7 @@ export class ApplicationComponent implements OnInit {
     private router: Router,
     private accountService: AccountService
   ) {
-    let appId = this.route.snapshot.paramMap.get('applicationId');
+    const appId = this.route.snapshot.paramMap.get('applicationId');
     this.applicationId = Number(appId);
   }
 

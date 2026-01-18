@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 /**
  * Handler for the native SITNA threeD control.
@@ -40,8 +42,8 @@ export class ThreeDControlHandler extends ControlHandlerBase {
    * @returns true (enables control with auto-placement)
    */
   buildConfiguration(
-    task: AppTasks,
-    context: AppCfg
+    _task: AppTasks,
+    _context: AppCfg
   ): SitnaControlConfig | null {
     // Always return true for auto-placement (no div specification)
     // SITNA will place the control in its default location

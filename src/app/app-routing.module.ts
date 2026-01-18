@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { RoutingDefault } from '@config/app.config';
+
 import { AuthenticationGuard } from '@auth/services/authentication-guard';
+import { RoutingDefault } from '@config/app.config';
+import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
+
+import { environment } from '../environments/environment';
 import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
 import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
-import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
-import { environment } from '../environments/environment';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
@@ -53,7 +55,7 @@ const routes: Routes = [
   }
 ];
 
-let useHash = environment.hashLocationStrategy;
+const useHash = environment.hashLocationStrategy;
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: useHash })],

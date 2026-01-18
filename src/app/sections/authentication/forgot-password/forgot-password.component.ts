@@ -1,14 +1,16 @@
-import { AuthenticationService } from './../../../auth/services/authentication.service';
 import { Component } from '@angular/core';
-import { NotificationService } from 'src/app/notifications/services/NotificationService';
-import { TranslateService } from '@ngx-translate/core';
-import { ResetPasswordService } from '@auth/services/resetPassword.service';
+import { Router } from '@angular/router';
+
 import {
   RequestNewPassword,
   ResetPasswordRequest
 } from '@auth/authentication.options';
-import { Router } from '@angular/router';
+import { ResetPasswordService } from '@auth/services/resetPassword.service';
 import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
+
+import { AuthenticationService } from './../../../auth/services/authentication.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -18,19 +20,19 @@ import { NavigationPath } from '@config/app.config';
 export class ForgotPasswordComponent {
   /* Forgot Password Form */
   recoveryRequest!: RequestNewPassword;
-  codeReceived: boolean = false;
-  showResetPasswordForm: boolean = false;
+  codeReceived = false;
+  showResetPasswordForm = false;
 
   /* Reset Password Form */
   resetPasswordRequest!: ResetPasswordRequest;
-  tokenValid: boolean = false;
+  tokenValid = false;
   userTokenService: any;
-  confirmationNewPassword: string = '';
-  showResendCode: boolean = false;
-  disabledResendCode: boolean = false;
+  confirmationNewPassword = '';
+  showResendCode = false;
+  disabledResendCode = false;
 
   constructor(
-    private resetPasswordService: ResetPasswordService<unknown>,
+    private resetPasswordService: ResetPasswordService,
     private translateService: TranslateService,
     private notificationService: NotificationService,
     private router: Router,
@@ -62,6 +64,7 @@ export class ForgotPasswordComponent {
       this.resetPasswordService
         .requestNewPassword(this.recoveryRequest)
         .subscribe({
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           next: () => {}
         });
       this.codeReceived = true;
@@ -125,7 +128,7 @@ export class ForgotPasswordComponent {
             this.initRequest();
             this.authenticationService.logout();
           },
-          error: (error) => {
+          error: (error: any) => {
             if (error.status === 410) {
               this.translateService
                 .get('forgotPasswordPage.resetPasswordForm.gone')
@@ -193,7 +196,7 @@ export class ForgotPasswordComponent {
             });
           // this.disabledResendCode = true;
         },
-        error: (error) => {
+        error: (error: any) => {
           if (error.status == 429) {
             this.translateService
               .get('forgotPasswordPage.resetPasswordForm.tooManyRequest')

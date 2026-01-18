@@ -3,14 +3,17 @@ import {
   Input,
   Output,
   EventEmitter,
+  OnChanges,
+  OnInit,
   SimpleChanges,
   inject
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { Codelist } from '@api/model/app-codelist';
+import { Router } from '@angular/router';
+
 import { DashboardItem } from '@api/services/common.service';
 import { AppConfigService } from 'src/app/services/app-config.service';
+
 import { DashboardItemComponent } from '../dashboard-item/dashboard-item.component';
 import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 
@@ -19,22 +22,22 @@ import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territo
   templateUrl: './dashboard-items.component.html',
   styleUrls: ['./dashboard-items.component.scss']
 })
-export class DashboardItemsComponent {
+export class DashboardItemsComponent implements OnInit, OnChanges {
   @Input() items: DashboardItem[] = [];
-  @Input() image_src: string = '';
+  @Input() image_src = '';
   @Output() itemClicked = new EventEmitter<DashboardItem>();
 
   applicationSelected: any = null;
-  hasWarning: boolean = false;
-  isInMaintenance: boolean = false;
+  hasWarning = false;
+  isInMaintenance = false;
 
   public privateItems: DashboardItem[] = [];
   public publicItems: DashboardItem[] = [];
   public allItems: DashboardItem[] = [];
 
-  totalItems: number = 0;
-  totalPrivateItems: number = 0;
-  totalPublicItems: number = 0;
+  totalItems = 0;
+  totalPrivateItems = 0;
+  totalPublicItems = 0;
 
   readonly MAX_HIDDEN_MODE_ITEMS: number = 3;
 
@@ -64,7 +67,7 @@ export class DashboardItemsComponent {
 
   displayTerritoriesTag(
     display: any,
-    dashboardItemComponent?: DashboardItemComponent
+    _dashboardItemComponent?: DashboardItemComponent
   ) {
     if (display.application != null) {
       const dialogRef = this.dialog.open(

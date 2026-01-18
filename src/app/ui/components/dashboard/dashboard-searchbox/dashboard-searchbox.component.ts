@@ -1,24 +1,26 @@
 import {
   Component,
   EventEmitter,
+  OnInit,
   Output,
   Input,
   ElementRef,
   HostListener,
   ViewChild
 } from '@angular/core';
-import { CommonService, ResponseDto } from '@api/services/common.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
+
+import { CommonService, ResponseDto } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard-searchbox',
   templateUrl: './dashboard-searchbox.component.html',
   styleUrls: ['./dashboard-searchbox.component.scss']
 })
-export class DashboardSearchboxComponent {
+export class DashboardSearchboxComponent implements OnInit {
   @ViewChild('inputForm') inputForm!: ElementRef;
   @ViewChild('suggestionsDiv') suggestionsDiv!: ElementRef;
   @ViewChild('inputSearch') inputSearch!: ElementRef;
@@ -29,9 +31,9 @@ export class DashboardSearchboxComponent {
 
   input: string;
   territories: any = [];
-  showSuggestions: boolean = false;
+  showSuggestions = false;
   filteredSuggestions: string[] = [];
-  showDetailedSuggestions: boolean = false;
+  showDetailedSuggestions = false;
 
   constructor(
     private commonService: CommonService,

@@ -1,14 +1,17 @@
-import { TranslateService } from '@ngx-translate/core';
 import {
   Component,
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
+  OnInit,
   Output
 } from '@angular/core';
 import { Router } from '@angular/router';
+
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 /**
@@ -26,13 +29,13 @@ import { NotificationService } from 'src/app/notifications/services/Notification
   templateUrl: './dashboard-item.component.html',
   styleUrls: ['./dashboard-item.component.scss']
 })
-export class DashboardItemComponent {
+export class DashboardItemComponent implements OnInit, OnDestroy {
   @Input() item!: DashboardItem;
   @Input() itemWidth!: string;
   @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER: number = 100;
-  nbTerritory: number = 0;
-  applicationId: number = 0;
+  DESCRIPTION_MAX_CHARACTER = 100;
+  nbTerritory = 0;
+  applicationId = 0;
   listOfTerritories: any;
   mediaQueryListener: any;
 
@@ -63,7 +66,7 @@ export class DashboardItemComponent {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
+  onResize(_event: any) {
     this.checkWindowSize();
   }
 
@@ -116,7 +119,7 @@ export class DashboardItemComponent {
   }
 
   displayTerritoriesTag(application: any) {
-    let object = {
+    const object = {
       application: application,
       territories: this.listOfTerritories
     };

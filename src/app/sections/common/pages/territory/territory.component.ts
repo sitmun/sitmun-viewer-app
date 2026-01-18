@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
 import { Location } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import {
   CommonService,
   DashboardItem,
@@ -12,11 +13,11 @@ import {
   templateUrl: './territory.component.html',
   styleUrls: ['./territory.component.scss']
 })
-export class TerritoryComponent {
+export class TerritoryComponent implements OnInit {
   territoryId!: number;
   territory!: DashboardItem;
   applications!: DashboardItem[];
-  cardhWidth: string = '500px';
+  cardhWidth = '500px';
   displayTag!: boolean;
 
   applicationTag: any;
@@ -37,7 +38,7 @@ export class TerritoryComponent {
   }
 
   loadTerritory() {
-    let terrId = this.route.snapshot.paramMap.get('territoryId');
+    const terrId = this.route.snapshot.paramMap.get('territoryId');
     this.territoryId = Number(terrId);
 
     this.commonService

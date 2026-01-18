@@ -19,7 +19,7 @@
   line-height: inherit;
   margin: 5px 0;
   padding: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   opacity: 0.9;
   transition: opacity 0.3s ease;
@@ -27,6 +27,15 @@
 .message-box:hover {
   opacity: 1;
 }
-.success { background-color: #4CAF50; color: white; }
-.warning { background-color: #FFA500; color: white; }
-.error { background-color: #F44336; color: white; }
+.success {
+  background-color: #4caf50;
+  color: white;
+}
+.warning {
+  background-color: #ffa500;
+  color: white;
+}
+.error {
+  background-color: #f44336;
+  color: white;
+}

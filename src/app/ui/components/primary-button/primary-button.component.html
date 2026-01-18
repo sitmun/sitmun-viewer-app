@@ -1,5 +1,5 @@
 <button class="primary-button">
-    <img [src]="img_src" *ngIf="img_src && !mat_icon"/>
-    <mat-icon *ngIf="mat_icon">{{ mat_icon }}</mat-icon>
-    {{ button_text }}
+  <img [src]="img_src" *ngIf="img_src && !mat_icon" [alt]="button_text" />
+  <mat-icon *ngIf="mat_icon">{{ mat_icon }}</mat-icon>
+  {{ button_text }}
 </button>

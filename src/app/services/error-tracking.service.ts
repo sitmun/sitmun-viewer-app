@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface ErrorEntry {
@@ -25,6 +26,7 @@ export class ErrorTrackingService {
   private errors: ErrorEntry[] = [];
   private errorsSubject = new BehaviorSubject<ErrorEntry[]>([]);
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor() {}
 
   /**

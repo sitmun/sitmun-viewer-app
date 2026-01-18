@@ -23,22 +23,22 @@ export class SelectableListComponent {
   // Display configuration
   @Input() selectedId?: string;
   @Input() unavailableItemIds: string[] = [];
-  @Input() logoProperty: string = 'logo';
-  @Input() nameProperty: string = 'title';
-  @Input() defaultIcon: string = 'apps';
+  @Input() logoProperty = 'logo';
+  @Input() nameProperty = 'title';
+  @Input() defaultIcon = 'apps';
 
   // Header configuration
-  @Input() showTitle: boolean = false;
+  @Input() showTitle = false;
   @Input() title?: string;
-  @Input() showCloseButton: boolean = false;
-  @Input() showCount: boolean = false;
+  @Input() showCloseButton = false;
+  @Input() showCount = false;
   @Input() countLabel?: string;
-  @Input() totalCount: number = 0;
+  @Input() totalCount = 0;
 
   // Search configuration (parent handles filtering)
-  @Input() showSearch: boolean = false;
-  @Input() searchPlaceholder: string = '';
-  @Input() searchValue: string = '';
+  @Input() showSearch = false;
+  @Input() searchPlaceholder = '';
+  @Input() searchValue = '';
   @Input() filterHint?: string; // Optional hint text translation key
   @Output() searchValueChange = new EventEmitter<string>();
 

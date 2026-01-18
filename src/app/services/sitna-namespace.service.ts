@@ -42,10 +42,7 @@ export class SitnaNamespaceService {
    * @returns Promise that resolves when SITNA is available
    * @throws Error if SITNA is not available after max retries
    */
-  async waitForSITNA(
-    maxRetries: number = 50,
-    delayMs: number = 100
-  ): Promise<SitnaNamespace> {
+  async waitForSITNA(maxRetries = 50, delayMs = 100): Promise<SitnaNamespace> {
     for (let i = 0; i < maxRetries; i++) {
       const SITNA = this.getSITNA();
       if (SITNA) {

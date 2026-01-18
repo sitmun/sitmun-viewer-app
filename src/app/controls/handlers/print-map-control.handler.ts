@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { UIStateService } from '../../services/ui-state.service';
+import { ControlHandlerBase } from '../control-handler-base';
+import { SitnaControlConfig } from '../control-handler.interface';
 
 /**
  * Handler for the native SITNA print map control.
@@ -36,7 +38,7 @@ export class PrintMapControlHandler extends ControlHandlerBase {
    */
   buildConfiguration(
     task: AppTasks,
-    context: AppCfg
+    _context: AppCfg
   ): SitnaControlConfig | null {
     const defaultConfig = this.getDefaultConfig();
     const config = this.mergeWithParameters(defaultConfig, task.parameters);
@@ -52,7 +54,7 @@ export class PrintMapControlHandler extends ControlHandlerBase {
    * No patches needed - SITNA handles pdfmake loading internally.
    * Using pdfmake 0.1.70 for compatibility with SITNA's expected module structure.
    */
-  override async loadPatches(context: AppCfg): Promise<void> {
+  override async loadPatches(_context: AppCfg): Promise<void> {
     await this.tcNamespaceService.waitForTC();
   }
 

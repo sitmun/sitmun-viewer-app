@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+
 import {
   AppCfg,
   AppLayer,
@@ -6,6 +7,7 @@ import {
   AppService,
   AppTree
 } from '@api/model/app-cfg';
+
 import {
   WMSCapabilities,
   WMSCapability,
@@ -343,7 +345,7 @@ export class VirtualWmsCapabilitiesService {
    */
   private createServiceMetadata(
     node: AppNodeInfo,
-    apiConfig: AppCfg
+    _apiConfig: AppCfg
   ): WMSService {
     return {
       Name: 'WMS',

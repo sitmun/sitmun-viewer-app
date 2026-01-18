@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+
 import { DescriptionMaxLengthPipe } from './DescriptionMaxLength/description-max-length.pipe';
 
 @NgModule({

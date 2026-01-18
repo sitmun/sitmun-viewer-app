@@ -1,8 +1,19 @@
-<div class="error-sidebar-overlay" *ngIf="isOpen()" (click)="close()"></div>
+<div
+  class="error-sidebar-overlay"
+  *ngIf="isOpen()"
+  (click)="close()"
+  (keyup.enter)="close()"
+  (keyup.escape)="close()"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'systemInfo.closeErrorPanel' | translate"></div>
 <div class="error-sidebar" [class.open]="isOpen()">
   <div class="sidebar-header">
     <h3>{{ 'systemInfo.recentErrors' | translate }}</h3>
-    <button mat-icon-button (click)="close()" [attr.aria-label]="'systemInfo.closeErrorPanel' | translate">
+    <button
+      mat-icon-button
+      (click)="close()"
+      [attr.aria-label]="'systemInfo.closeErrorPanel' | translate">
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -22,7 +33,9 @@
                 <span class="error-type-badge" [attr.data-type]="error.type">
                   {{ getErrorTypeLabel(error.type) }}
                 </span>
-                <span class="error-time">{{ getRelativeTime(error.timestamp) }}</span>
+                <span class="error-time">
+                  {{ getRelativeTime(error.timestamp) }}
+                </span>
               </div>
             </mat-panel-title>
           </mat-expansion-panel-header>
@@ -35,7 +48,9 @@
 
             <div class="error-detail-row">
               <strong>{{ 'systemInfo.errorDetails' | translate }}:</strong>
-              <p class="error-message" *ngIf="hasMessage(error); else noMessage">
+              <p
+                class="error-message"
+                *ngIf="hasMessage(error); else noMessage">
                 {{ error.message }}
               </p>
               <ng-template #noMessage>
@@ -62,7 +77,9 @@
 
             <div class="error-detail-row" *ngIf="error.details">
               <strong>Details:</strong>
-              <pre class="error-details-json">{{ stringifyErrorDetails(error.details) }}</pre>
+              <pre class="error-details-json">{{
+                stringifyErrorDetails(error.details)
+              }}</pre>
             </div>
 
             <div class="error-actions">

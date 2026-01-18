@@ -1,58 +1,86 @@
 <mat-menu #appMenu="matMenu" xPosition="before">
   <!-- Welcome header as disabled menu item -->
   <button mat-menu-item class="menu-header" *ngIf="isConnected">
-    <span>{{ 'genericPrivateHeader.hi' | translate: {username: username} }}</span>
+    <span>
+      {{ 'genericPrivateHeader.hi' | translate : { username: username } }}
+    </span>
   </button>
-  
+
   <mat-divider *ngIf="isConnected"></mat-divider>
-  
+
   <!-- Navigation Group -->
   <!-- Dashboard button -->
-  <button mat-menu-item *ngIf="showDashboardButton" (click)="sendDashboardEvent()">
+  <button
+    mat-menu-item
+    *ngIf="showDashboardButton"
+    (click)="sendDashboardEvent()">
     <mat-icon>dashboard</mat-icon>
     <span>{{ 'menu.dashboard' | translate }}</span>
   </button>
 
   <!-- Change app/territory button -->
-  <button mat-menu-item *ngIf="showChangeAppButton" (click)="sendChangeAppEvent()">
+  <button
+    mat-menu-item
+    *ngIf="showChangeAppButton"
+    (click)="sendChangeAppEvent()">
     <mat-icon>swap_horiz</mat-icon>
     <span>{{ 'menu.changeApplication' | translate }}</span>
   </button>
 
-  <mat-divider *ngIf="(showDashboardButton || showChangeAppButton) && showSwitchLanguageButton"></mat-divider>
-  
+  <mat-divider
+    *ngIf="
+      (showDashboardButton || showChangeAppButton) && showSwitchLanguageButton
+    "></mat-divider>
+
   <!-- Settings Group -->
   <!-- Language selector as menu item with sub-menu -->
-  <button mat-menu-item [matMenuTriggerFor]="languageMenu" *ngIf="showSwitchLanguageButton && languages !== undefined">
+  <button
+    mat-menu-item
+    [matMenuTriggerFor]="languageMenu"
+    *ngIf="showSwitchLanguageButton && languages !== undefined">
     <!-- Flag icon instead of globe icon -->
     <span class="current-language-icon" *ngIf="getLanguageIcon(currentLang)">
-      <img *ngIf="isImageIcon(currentLang)" 
-           [src]="getLanguageIcon(currentLang)" 
-           [alt]="getCurrentLanguageName()"
-           class="flag-image-small" />
+      <img
+        *ngIf="isImageIcon(currentLang)"
+        [src]="getLanguageIcon(currentLang)"
+        [alt]="getCurrentLanguageName()"
+        class="flag-image-small" />
     </span>
     <span>{{ getCurrentLanguageName() }}</span>
   </button>
 
   <mat-menu #languageMenu="matMenu" class="language-submenu">
-    <button mat-menu-item 
-            *ngFor="let language of languages"
-            [class.selected]="currentLang === language.shortname"
-            (click)="selectLanguage(language.shortname)">
+    <button
+      mat-menu-item
+      *ngFor="let language of languages"
+      [class.selected]="currentLang === language.shortname"
+      (click)="selectLanguage(language.shortname)">
       <!-- Language icon/flag - hidden when selected -->
-      <span class="language-icon" *ngIf="getLanguageIcon(language.shortname) && currentLang !== language.shortname">
-        <img *ngIf="isImageIcon(language.shortname)" 
-             [src]="getLanguageIcon(language.shortname)" 
-             [alt]="language.name"
-             class="flag-image" />
+      <span
+        class="language-icon"
+        *ngIf="
+          getLanguageIcon(language.shortname) &&
+          currentLang !== language.shortname
+        ">
+        <img
+          *ngIf="isImageIcon(language.shortname)"
+          [src]="getLanguageIcon(language.shortname)"
+          [alt]="language.name"
+          class="flag-image" />
       </span>
       <span>{{ language.name }}</span>
-      <mat-icon *ngIf="currentLang === language.shortname" class="check-icon">check</mat-icon>
+      <mat-icon *ngIf="currentLang === language.shortname" class="check-icon">
+        check
+      </mat-icon>
     </button>
   </mat-menu>
 
-  <mat-divider *ngIf="showSwitchLanguageButton && (isConnected || (!isConnected && showLoginButton))"></mat-divider>
-  
+  <mat-divider
+    *ngIf="
+      showSwitchLanguageButton &&
+      (isConnected || (!isConnected && showLoginButton))
+    "></mat-divider>
+
   <!-- System Info Group -->
   <!-- About button -->
   <button mat-menu-item (click)="openAboutDialog()">
@@ -61,26 +89,44 @@
   </button>
 
   <!-- Recent Errors button (only in non-production) -->
-  <button mat-menu-item *ngIf="!environment.production" (click)="openErrorSidebar()">
+  <button
+    mat-menu-item
+    *ngIf="!environment.production"
+    (click)="openErrorSidebar()">
     <mat-icon>bug_report</mat-icon>
     <span>{{ 'systemInfo.recentErrors' | translate }}</span>
-    <span class="badge" *ngIf="unreviewedErrorCount > 0">{{ unreviewedErrorCount }}</span>
+    <span class="badge" *ngIf="unreviewedErrorCount > 0">
+      {{ unreviewedErrorCount }}
+    </span>
   </button>
 
-  <mat-divider *ngIf="!isConnected && showLoginButton || isConnected && (showProfileButton || showLogoutButton)"></mat-divider>
-  
+  <mat-divider
+    *ngIf="
+      (!isConnected && showLoginButton) ||
+      (isConnected && (showProfileButton || showLogoutButton))
+    "></mat-divider>
+
   <!-- Account Group -->
-  <button mat-menu-item *ngIf="!isConnected && showLoginButton" (click)="sendLoginEvent()">
+  <button
+    mat-menu-item
+    *ngIf="!isConnected && showLoginButton"
+    (click)="sendLoginEvent()">
     <mat-icon>login</mat-icon>
     <span>{{ 'loginPage.title' | translate }}</span>
   </button>
-  
-  <button mat-menu-item *ngIf="isConnected && showProfileButton" (click)="sendProfileEvent()">
+
+  <button
+    mat-menu-item
+    *ngIf="isConnected && showProfileButton"
+    (click)="sendProfileEvent()">
     <mat-icon>person</mat-icon>
     <span>{{ 'profile.myAccount' | translate }}</span>
-    </button>
-  
-  <button mat-menu-item *ngIf="isConnected && showLogoutButton" (click)="sendLogoutEvent()">
+  </button>
+
+  <button
+    mat-menu-item
+    *ngIf="isConnected && showLogoutButton"
+    (click)="sendLogoutEvent()">
     <mat-icon>logout</mat-icon>
     <span>{{ 'loginPage.logoutText' | translate }}</span>
   </button>

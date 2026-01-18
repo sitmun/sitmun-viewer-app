@@ -1,15 +1,14 @@
-
-const MIDDLEWARE_URL_KEY = "MIDDLEWARE_URL";
-const AUTH_TOKEN_KEY = "AUTH_TOKEN";
+const MIDDLEWARE_URL_KEY = 'MIDDLEWARE_URL';
+const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
 
 var authToken = undefined;
 var middlewareUrl = undefined;
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener("message", (event) => {
+self.addEventListener('message', (event) => {
   const eventData = event.data;
   if (eventData.type === AUTH_TOKEN_KEY) {
     authToken = eventData.token;
@@ -20,10 +19,9 @@ self.addEventListener("message", (event) => {
     middlewareUrl = eventData.url;
     return;
   }
-
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
   var request = event.request;
   var url = new URL(request.url);
 
@@ -37,14 +35,14 @@ self.addEventListener("fetch", (event) => {
     const modifiedRequest = new Request(request, {
       headers: new Headers({
         ...request.headers,
-        "Authorization": `Bearer ${authToken}`
+        Authorization: `Bearer ${authToken}`
       }),
-      credentials: "omit",
-      mode: "cors"
+      credentials: 'omit',
+      mode: 'cors'
     });
 
     event.respondWith(fetch(modifiedRequest));
   } else {
-    event.respondWith(fetch(request))
+    event.respondWith(fetch(request));
   }
 });

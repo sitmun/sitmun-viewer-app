@@ -1,9 +1,11 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
-import { AppConfigService } from '../../services/app-config.service';
+import { TestBed } from '@angular/core/testing';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('LoadingIndicatorControlHandler', () => {
   let handler: LoadingIndicatorControlHandler;

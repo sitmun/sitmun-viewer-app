@@ -9,12 +9,13 @@ import {
   Type
 } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
+
+import { OpenModalComponent } from '@ui/modal/component/open-modal.component';
+import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
+import { OpenModalConfig } from '@ui/modal/service/open-modal.config';
+import { OpenModalInjector } from '@ui/modal/service/open-modal.injector';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { OpenModalComponent } from '@ui/modal/component/open-modal.component';
-import { OpenModalConfig } from '@ui/modal/service/open-modal.config';
-import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
-import { OpenModalInjector } from '@ui/modal/service/open-modal.injector';
 
 @Injectable({
   providedIn: 'root'

@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 import { UIStateService } from '../../services/ui-state.service';
+import { ControlHandlerBase } from '../control-handler-base';
+import { SitnaControlConfig } from '../control-handler.interface';
 
 /**
  * Handler for the native SITNA legend control.
@@ -34,7 +36,7 @@ export class LegendControlHandler extends ControlHandlerBase {
    */
   buildConfiguration(
     task: AppTasks,
-    context: AppCfg
+    _context: AppCfg
   ): SitnaControlConfig | null {
     // Enable UI button when legend control is configured
     this.uiStateService.enableLegendButton();

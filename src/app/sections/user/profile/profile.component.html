@@ -1,9 +1,9 @@
 <div id="user-profile-section">
-  <app-return-button> </app-return-button>
-  <h1> {{'profile.myAccount' | translate }} </h1>
+  <app-return-button></app-return-button>
+  <h1>{{ 'profile.myAccount' | translate }}</h1>
 
   <div id="profile-informations">
-    <h2> {{'profile.profileInformation' | translate }} </h2>
+    <h2>{{ 'profile.profileInformation' | translate }}</h2>
     <div id="main-informations">
       <app-profile-information
         [profile_icon_url]="'assets/img/Icona-hashtag-azul.svg'"
@@ -21,30 +21,30 @@
         [profile_value]="hidenPassword"
         [is_profile_editable]="true"
         [input_type]="'password'"
-        (new_value)="editPasswordInformation($event)"/>
+        (new_value)="editPasswordInformation($event)" />
 
       <app-profile-information
         [profile_icon_url]="'assets/img/Icona-correu-azul.svg'"
         [profile_description]="'profile.mainEmail' | translate"
         [profile_value]="userProfile.email"
         [is_profile_editable]="true"
-        (new_value)="editEmailInformation($event)"/>
+        (new_value)="editEmailInformation($event)" />
     </div>
 
     <div id="saveButton">
-      <primary-button
+      <app-primary-button
         [button_text]="'profile.saveProfileSaveText' | translate"
         (click)="displayPopupSaveProfile()" />
     </div>
   </div>
 </div>
 
-<button mat-fab id="scroll-to-bottom-button" (click)="changeSection()" >
-  <img [src]="this.scrollButonIcon"/>
+<button mat-fab id="scroll-to-bottom-button" (click)="changeSection()">
+  <img [src]="this.scrollButonIcon" alt="Scroll button" />
 </button>
 
-<div id="territories-profile-section" >
-  <h2> {{'profile.territories' | translate }} </h2>
+<div id="territories-profile-section">
+  <h2>{{ 'profile.territories' | translate }}</h2>
 
   <div id="territories-informations" *ngIf="territories.length > 0">
     <!-- Select territory -->
@@ -54,7 +54,7 @@
         *ngFor="let territory of territories"
         (click)="selectTerritory(territory)"
         class="territory-button-item"
-        [ngClass]="{'selected': selectedTerritory === territory}">
+        [ngClass]="{ selected: selectedTerritory === territory }">
         {{ territory.name }}
       </button>
     </div>
@@ -74,51 +74,95 @@
     <!-- territory informations -->
     <div id="territory-informations">
       <div>
-        <p id="territoryManagement-title"> {{ 'profile.territoryManagement' | translate }} </p>
+        <p id="territoryManagement-title">
+          {{ 'profile.territoryManagement' | translate }}
+        </p>
         <div class="wrapper">
           <table class="territory-table">
             <thead>
               <tr>
-                <th scope="col" class="mail-col"> {{ 'profile.email' | translate }} </th>
-                <th scope="col" class="org-col"> {{ 'profile.organization' | translate }} </th>
-                <th scope="col" class="na-col"> {{ 'profile.name' | translate }} </th>
-                <th scope="col" class="type-col"> {{ 'profile.type' | translate }} </th>
-                <th scope="col" class="from-col"> {{ 'profile.validityFrom' | translate }} </th>
-                <th scope="col" class="to-col"> {{ 'profile.validityTo' | translate }} </th>
+                <th scope="col" class="mail-col">
+                  {{ 'profile.email' | translate }}
+                </th>
+                <th scope="col" class="org-col">
+                  {{ 'profile.organization' | translate }}
+                </th>
+                <th scope="col" class="na-col">
+                  {{ 'profile.name' | translate }}
+                </th>
+                <th scope="col" class="type-col">
+                  {{ 'profile.type' | translate }}
+                </th>
+                <th scope="col" class="from-col">
+                  {{ 'profile.validityFrom' | translate }}
+                </th>
+                <th scope="col" class="to-col">
+                  {{ 'profile.validityTo' | translate }}
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let position of selectedTerritory.positions; let i = index" [ngClass]="{'row-even': i % 2 === 0, 'row-odd': i % 2 !== 0}">
-                <td class="mail-col"> {{ position.email }} </td>
-                <td class="org-col organization-row" [attr.id]="'organization-' + position.id">
+              <tr
+                *ngFor="
+                  let position of selectedTerritory.positions;
+                  let i = index
+                "
+                [ngClass]="{ 'row-even': i % 2 === 0, 'row-odd': i % 2 !== 0 }">
+                <td class="mail-col">{{ position.email }}</td>
+                <td
+                  class="org-col organization-row"
+                  [attr.id]="'organization-' + position.id">
                   <div class="content">
-                    <p> {{ position.organization }} </p>
-                    <input hidden="true"/>
-                    <button (click)="changeValue(position.id, position.organization, 'organization-')">
-                      <img src="assets/img/Icona-modificar-naranja.svg"/>
+                    <p>{{ position.organization }}</p>
+                    <input hidden="true" />
+                    <button
+                      (click)="
+                        changeValue(
+                          position.id,
+                          position.organization,
+                          'organization-'
+                        )
+                      ">
+                      <img
+                        src="assets/img/Icona-modificar-naranja.svg"
+                        alt="Edit organization" />
                     </button>
                   </div>
                 </td>
-                <td class="name-col name-row" [attr.id]="'name-' + position.id" [ngClass]="{ 'no-type': !position.name }">
+                <td
+                  class="name-col name-row"
+                  [attr.id]="'name-' + position.id"
+                  [ngClass]="{ 'no-type': !position.name }">
                   <div class="content">
                     <p>{{ position.name ? position.name : '-' }}</p>
                     <input hidden="true" />
-                    <button (click)="changeValue(position.id, position.name, 'name-')">
-                      <img src="assets/img/Icona-modificar-naranja.svg"/>
+                    <button
+                      (click)="
+                        changeValue(position.id, position.name, 'name-')
+                      ">
+                      <img
+                        src="assets/img/Icona-modificar-naranja.svg"
+                        alt="Edit name" />
                     </button>
                   </div>
                 </td>
-                <td class="type-col" [ngClass]="{ 'no-type': !position.type }"> {{ position.type ? position.type : '-'}} </td>
-                <td class="from-col" [ngClass]="{ 'no-type': !position.createdDate }">
+                <td class="type-col" [ngClass]="{ 'no-type': !position.type }">
+                  {{ position.type ? position.type : '-' }}
+                </td>
+                <td
+                  class="from-col"
+                  [ngClass]="{ 'no-type': !position.createdDate }">
                   <ng-container *ngIf="position.createdDate; else emptyDate">
-                    {{ position.createdDate | date: 'dd/MM/yyyy' }}
+                    {{ position.createdDate | date : 'dd/MM/yyyy' }}
                   </ng-container>
                   <ng-template #emptyDate>-</ng-template>
                 </td>
 
-                <td class="to-col" [ngClass]="{ 'no-type': !position.expirationDate }">
+                <td
+                  class="to-col"
+                  [ngClass]="{ 'no-type': !position.expirationDate }">
                   <ng-container *ngIf="position.expirationDate; else emptyDate">
-                    {{ position.expirationDate | date: 'dd/MM/yyyy' }}
+                    {{ position.expirationDate | date : 'dd/MM/yyyy' }}
                   </ng-container>
                 </td>
               </tr>
@@ -128,51 +172,53 @@
       </div>
     </div>
     <div id="saveButton">
-      <primary-button
+      <app-primary-button
         [button_text]="'profile.saveProfileTerritoriesText' | translate"
         (click)="displayPopupSaveTerritoriesPositions()" />
     </div>
   </div>
 </div>
 
-<div class="popup-overlay" *ngIf="displayPopupProfile || displayPopupTerritoriesProfiles"></div>
+<div
+  class="popup-overlay"
+  *ngIf="displayPopupProfile || displayPopupTerritoriesProfiles"></div>
 
 <div id="popup-save-profile" *ngIf="displayPopupProfile">
-  <h2> {{ 'profile.saveProfilePopup' | translate}} </h2>
-  <p> {{ 'profile.saveProfileDescription' | translate}} </p>
+  <h2>{{ 'profile.saveProfilePopup' | translate }}</h2>
+  <p>{{ 'profile.saveProfileDescription' | translate }}</p>
 
   <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
 
   <div>
-    <primary-button
+    <app-primary-button
       [button_text]="'profile.saveProfileSaveText' | translate"
       (click)="saveProfile()" />
 
-    <primary-button
+    <app-primary-button
       [button_text]="'profile.saveProfileBack' | translate"
       (click)="ShowPopupSaveProfile()" />
   </div>
 </div>
 
 <div id="popup-save-territories" *ngIf="displayPopupTerritoriesProfiles">
-  <h2> {{ 'profile.saveProfilePopup' | translate}} </h2>
-  <p> {{ 'profile.saveTerritoriesDescription' | translate}} </p>
+  <h2>{{ 'profile.saveProfilePopup' | translate }}</h2>
+  <p>{{ 'profile.saveTerritoriesDescription' | translate }}</p>
 
   <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
 
   <div>
-    <primary-button
+    <app-primary-button
       [button_text]="'profile.saveProfileSaveText' | translate"
       (click)="saveTerritoriesPositions()" />
 
-    <primary-button
+    <app-primary-button
       [button_text]="'profile.saveProfileBack' | translate"
       (click)="ShowPopupSaveTerritoriesPositions()" />
   </div>
 </div>
 
 <ng-template #passwordInput>
- <app-form-field-input
+  <app-form-field-input
     [input_type]="'password'"
     [input_title]="'profile.saveProfilePasswordText' | translate"
     [input_placeholder]="'profile.saveProfilePasswordPlaceholder' | translate"

@@ -1,6 +1,5 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { VERSION } from '@angular/core';
 
 export interface AboutDialogData {
   applicationName: string;

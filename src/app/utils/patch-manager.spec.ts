@@ -150,6 +150,7 @@ describe('PatchManager', () => {
     });
 
     it('should handle multiple clears', () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       patchManager.add(() => {});
       patchManager.clear();
       patchManager.clear();

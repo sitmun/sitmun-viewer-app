@@ -1,7 +1,7 @@
 @use 'colors';
 @use 'dimensions';
 
-$padding-left-base : 15px;
+$padding-left-base: 15px;
 $page-width: 90%;
 
 h2 {
@@ -137,7 +137,7 @@ h2 {
               width: 100%;
               height: 30px;
               text-align: left;
-              background-color: #F2F2F3;
+              background-color: #f2f2f3;
               tr {
                 th {
                   width: calc(100% / 6);
@@ -146,7 +146,8 @@ h2 {
               }
             }
 
-            th, td {
+            th,
+            td {
               padding: 8px 10px;
               overflow-wrap: break-word;
             }
@@ -158,8 +159,7 @@ h2 {
               tr {
                 height: 70px;
                 display: table-row;
-                table-layout: fixed
-                td {
+                table-layout: fixed td {
                   text-align: left;
                   width: calc(100% / 6);
                   min-width: 120px;
@@ -170,7 +170,6 @@ h2 {
                 }
                 .organization-row,
                 .name-row {
-
                   .content {
                     padding-left: 0;
                     display: flex;
@@ -205,7 +204,7 @@ h2 {
               }
 
               .row-odd {
-                background-color: #F2F2F3;
+                background-color: #f2f2f3;
               }
             }
           }
@@ -263,7 +262,6 @@ h2 {
   }
 }
 
-
 @media (max-width: 900px) {
   #scroll-to-bottom-button {
     bottom: 13%;
@@ -278,17 +276,15 @@ h2 {
       display: none;
     }
   }
-  #territories-profile-section{
+  #territories-profile-section {
     h2,
     #territories-informations {
       padding-top: 5%;
       margin-bottom: 0;
       margin-left: 20px;
       width: 90%;
-
     }
   }
-
 
   .territory-button-item {
     all: unset;
@@ -330,7 +326,8 @@ h2 {
           display: block;
           white-space: nowrap;
 
-          th, td {
+          th,
+          td {
             padding: 8px 10px;
             font-size: 14px;
           }
@@ -339,4 +336,3 @@ h2 {
     }
   }
 }
-

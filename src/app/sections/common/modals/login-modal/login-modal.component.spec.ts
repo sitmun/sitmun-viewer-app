@@ -1,8 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+
 import { AuthenticationService } from '@auth/services/authentication.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 
 import { LoginModalComponent } from './login-modal.component';

@@ -1,10 +1,10 @@
 /* Custom colors adapted from sitmun-base-old theme */
 
 :root {
-    --ide-main-color: #FF9300;
-    --ide-main-color-light: #ffb100;
-    --ide-contrast-color: #080d4f;
-    --white: #ffffff;
+  --ide-main-color: #ff9300;
+  --ide-main-color-light: #ffb100;
+  --ide-contrast-color: #080d4f;
+  --white: #ffffff;
 }
 
 /* Background colors */
@@ -13,7 +13,7 @@
 .tc-alert,
 .tc-ctl-sb,
 .tc-ctl-scl {
-    background-color: #ffffff;
+  background-color: #ffffff;
 }
 
 .tc-ctl-legend,
@@ -22,42 +22,42 @@
 .tc-ctl-download,
 .tc-ctl-wlm,
 .tc-ctl-lcat {
-    background-color: #fafafa;
+  background-color: #fafafa;
 }
 
 .tc-panel-content {
-    background-color: #fffffff2;
-    color: #666666;
+  background-color: #fffffff2;
+  color: #666666;
 }
 
 .tc-ctl-popup {
-    background-color: #ffffffe6;
+  background-color: #ffffffe6;
 }
 
 button.tc-ctl-coords-crs,
 .tc-ctl-search-content {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 .tc-ctl-nav .tc-ctl-nav-btn,
 .tc-ctl-sv-btn,
 .tc-ctl-be,
 button.tc-ctl-fscreen-btn {
-    background-color: #000000cc !important;
+  background-color: #000000cc !important;
 }
 
 .tc-ctl-search-txt {
-    background-color: #ffffffcc;
+  background-color: #ffffffcc;
 }
 
 .tc-ctl h2 {
-    background-color: #0000001a;
-    color: black;
+  background-color: #0000001a;
+  color: black;
 }
 
 .tc-ctl.tc-collapsed > h2 {
-    background-color: #0000000d;
-    color: #666666;
+  background-color: #0000000d;
+  color: #666666;
 }
 
 /* Text colors */
@@ -68,54 +68,52 @@ button.tc-ctl-fscreen-btn {
 .tc-ctl-sb,
 .tc-ctl-scl,
 .tc-ctl-sb .ol-scale-line .ol-scale-line-inner {
-    color: #000000;
+  color: #000000;
 }
 
 /* Button colors */
 .tc-button {
-    background-color: var(--ide-main-color);
+  background-color: var(--ide-main-color);
 }
 
 .tc-button:hover {
-    background-color: var(--ide-main-color-light);
+  background-color: var(--ide-main-color-light);
 }
 
 /* Search button - use neutral color like other control buttons */
 .tc-ctl-btn.tc-ctl-search-btn {
-    background-color: #333333;
-    border-top: none;
+  background-color: #333333;
+  border-top: none;
 }
 
 .tc-ctl-btn.tc-ctl-search-btn:hover {
-    background-color: #555555;
+  background-color: #555555;
 }
 
 /* Border colors */
 .tc-ctl-scl input,
 .tc-ctl-ss input {
-    border: 1px #333 solid;
-    color: #333;
+  border: 1px #333 solid;
+  color: #333;
 }
 
 /* Accent colors for active/checked states */
-.tc-ctl-meas-select input[type=radio]:checked ~ span,
-.tc-ctl-share-select input[type=radio]:checked ~ span {
-    background-color: #ffffff;
-    color: var(--ide-main-color);
-    border-color: var(--ide-main-color);
+.tc-ctl-meas-select input[type='radio']:checked ~ span,
+.tc-ctl-share-select input[type='radio']:checked ~ span {
+  background-color: #ffffff;
+  color: var(--ide-main-color);
+  border-color: var(--ide-main-color);
 }
 
 /* Input focus */
 .tc-map input:focus-visible,
 .tc-combo {
-    outline-color: var(--ide-main-color);
+  outline-color: var(--ide-main-color);
 }
 
 /* Search input - use neutral focus color */
 .tc-ctl-search-txt:focus,
 .tc-ctl-search-txt:focus-visible {
-    outline-color: #333333 !important;
-    border-color: #333333 !important;
+  outline-color: #333333 !important;
+  border-color: #333333 !important;
 }
-
-

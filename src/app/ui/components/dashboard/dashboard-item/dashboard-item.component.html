@@ -1,37 +1,41 @@
-<mat-card class="dashboard-item" [ngClass]="{'dashboard-item-maintenance': item.isUnavailable}">
+<mat-card
+  class="dashboard-item"
+  [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }">
   <!-- Left side: Image -->
   <div class="dashboard-item-image-container">
-    <img mat-card-image
-         class="dashboard-item-image-clickable"
-         [class.disabled]="item.isUnavailable"
-         role="button"
-         [attr.tabindex]="item.isUnavailable ? -1 : 0"
-         [attr.aria-label]="'dashboardPage.openMap' | translate"
-         [attr.aria-disabled]="item.isUnavailable"
-         [src]="item.logo || 'assets/img/card-no-image.svg'" 
-         [alt]="item.title || item.name"
-         (click)="!item.isUnavailable && navigateToMap(item.id)"
-         (keydown.enter)="!item.isUnavailable && navigateToMap(item.id)"
-         (keydown.space)="!item.isUnavailable && navigateToMap(item.id)" />
+    <img
+      mat-card-image
+      class="dashboard-item-image-clickable"
+      [class.disabled]="item.isUnavailable"
+      role="button"
+      [attr.tabindex]="item.isUnavailable ? -1 : 0"
+      [attr.aria-label]="'dashboardPage.openMap' | translate"
+      [attr.aria-disabled]="item.isUnavailable"
+      [src]="item.logo || 'assets/img/card-no-image.svg'"
+      [alt]="item.title || item.name"
+      (click)="!item.isUnavailable && navigateToMap(item.id)"
+      (keydown.enter)="!item.isUnavailable && navigateToMap(item.id)"
+      (keydown.space)="!item.isUnavailable && navigateToMap(item.id)" />
   </div>
 
   <!-- Right side: Header and Content -->
   <div class="dashboard-item-right-section">
     <mat-card-header>
       <mat-card-title>
-        <button class="title-button"
-                [disabled]="item.isUnavailable"
-                [attr.aria-label]="'dashboardPage.access' | translate"
-                (click)="navigateToMap(item.id)">
-          {{item.title || item.name}}
+        <button
+          class="title-button"
+          [disabled]="item.isUnavailable"
+          [attr.aria-label]="'dashboardPage.access' | translate"
+          (click)="navigateToMap(item.id)">
+          {{ item.title || item.name }}
         </button>
       </mat-card-title>
     </mat-card-header>
     <mat-card-content [class.maintenance-content]="item.isUnavailable">
       <ng-container *ngIf="item.isUnavailable; else showDescription">
-        {{item.maintenanceInformation}}
+        {{ item.maintenanceInformation }}
       </ng-container>
-      <ng-template #showDescription>{{item.description}}</ng-template>
+      <ng-template #showDescription>{{ item.description }}</ng-template>
     </mat-card-content>
     <div class="spacer"></div>
     <mat-card-actions align="start">
@@ -42,17 +46,21 @@
         </div>
       </ng-container>
       <ng-template #normalActions>
-        <button mat-flat-button 
-                class="primary-button"
-                [attr.aria-label]="'dashboardPage.access' | translate"
-                (click)="navigateToMap(item.id)">
+        <button
+          mat-flat-button
+          class="primary-button"
+          [attr.aria-label]="'dashboardPage.access' | translate"
+          (click)="navigateToMap(item.id)">
           <mat-icon>map</mat-icon>
-          <span class="button-text">{{ 'dashboardPage.access' | translate }}</span>
+          <span class="button-text">
+            {{ 'dashboardPage.access' | translate }}
+          </span>
         </button>
-        <button mat-icon-button 
-                class="secondary-button"
-                [attr.aria-label]="'dashboardPage.viewDetails' | translate"
-                (click)="navigateToApplicationDetails(item.id)">
+        <button
+          mat-icon-button
+          class="secondary-button"
+          [attr.aria-label]="'dashboardPage.viewDetails' | translate"
+          (click)="navigateToApplicationDetails(item.id)">
           <mat-icon>info</mat-icon>
         </button>
       </ng-template>

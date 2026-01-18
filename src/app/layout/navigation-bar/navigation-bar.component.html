@@ -2,68 +2,83 @@
   <mat-toolbar-row>
     <!-- Left section -->
     <div class="toolbar-left">
-      <img src="assets/logos/logo_orange.png" 
-           alt="logo" 
-           class="logo-img"
-           *ngIf="!isOnAuthLogin && (!isOnMap() || (headerBase?.logoSitmun?.visible !== false))"/>
-      
+      <img
+        src="assets/logos/logo_orange.png"
+        alt="logo"
+        class="logo-img"
+        *ngIf="
+          !isOnAuthLogin &&
+          (!isOnMap() || headerBase?.logoSitmun?.visible !== false)
+        " />
+
       <div *ngIf="headerLeftSection">
-      <div *ngFor="let item of headerLeftSection">
-          <img class="header-img" *ngIf="item?.visible && item?.url" 
-               [src]="item?.url" [alt]="item?.alt" />
+        <div *ngFor="let item of headerLeftSection">
+          <img
+            class="header-img"
+            *ngIf="item?.visible && item?.url"
+            [src]="item?.url"
+            [alt]="item?.alt" />
         </div>
       </div>
     </div>
 
     <span class="toolbar-spacer"></span>
-    
+
     <!-- Right section -->
     <div class="toolbar-right">
       <div *ngIf="headerRightSection">
-      <div *ngFor="let item of headerRightSection">
-          <img class="header-img" *ngIf="item?.visible && item?.url" 
-               [src]="item?.url" [alt]="item?.alt" />
+        <div *ngFor="let item of headerRightSection">
+          <img
+            class="header-img"
+            *ngIf="item?.visible && item?.url"
+            [src]="item?.url"
+            [alt]="item?.alt" />
+        </div>
       </div>
-</div>
 
       <!-- Hide navbar button for map view -->
-      <button mat-icon-button 
-              class="hide-toolbar-btn" 
-              (click)="navigationBarIsHidden = true" 
-              *ngIf="isOnMap() && !navigationBarIsHidden"
-              aria-label="Hide toolbar">
+      <button
+        mat-icon-button
+        class="hide-toolbar-btn"
+        (click)="navigationBarIsHidden = true"
+        *ngIf="isOnMap() && !navigationBarIsHidden"
+        aria-label="Hide toolbar">
         <mat-icon>expand_less</mat-icon>
       </button>
 
-      <app-menu #menuComponent
-  [username]="username"
-  [isConnected]="isConnected()"
-  [showLogoutButton]="showLogoutButton"
-  [showSwitchLanguageButton]="showSwitchLanguageButton"
-  [showProfileButton]="showProfileButton"
-  [showLoginButton]="!isOnAuthLogin"
-                [showDashboardButton]="shouldShowDashboardButton()"
-                [showChangeAppButton]="shouldShowChangeAppButton()"
-  (loginEvent)="loginRedirect()"
-  (logoutEvent)="logoutRedirect()"
-  (profileEvent)="profileRedirect()"
-                (languageEvent)="changeLanguage($event)"
-                (dashboardEvent)="homeRedirect()"
-                (changeAppEvent)="openTerritoriesDialog()">
-</app-menu>
+      <app-menu
+        #menuComponent
+        [username]="username"
+        [isConnected]="isConnected()"
+        [showLogoutButton]="showLogoutButton"
+        [showSwitchLanguageButton]="showSwitchLanguageButton"
+        [showProfileButton]="showProfileButton"
+        [showLoginButton]="!isOnAuthLogin"
+        [showDashboardButton]="shouldShowDashboardButton()"
+        [showChangeAppButton]="shouldShowChangeAppButton()"
+        (loginEvent)="loginRedirect()"
+        (logoutEvent)="logoutRedirect()"
+        (profileEvent)="profileRedirect()"
+        (languageEvent)="changeLanguage($event)"
+        (dashboardEvent)="homeRedirect()"
+        (changeAppEvent)="openTerritoriesDialog()"></app-menu>
 
-      <button mat-icon-button [matMenuTriggerFor]="menuComponent.menu" [class.login-menu-button]="isOnAuthLogin">
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menuComponent.menu"
+        [class.login-menu-button]="isOnAuthLogin">
         <mat-icon>menu</mat-icon>
-  </button>
-</div>
+      </button>
+    </div>
   </mat-toolbar-row>
 </mat-toolbar>
 
 <!-- Show navbar button when hidden -->
-<button mat-icon-button 
-        class="show-toolbar-btn" 
-        *ngIf="isOnMap() && navigationBarIsHidden"
-        (click)="navigationBarIsHidden = false"
-        aria-label="Show toolbar">
+<button
+  mat-icon-button
+  class="show-toolbar-btn"
+  *ngIf="isOnMap() && navigationBarIsHidden"
+  (click)="navigationBarIsHidden = false"
+  aria-label="Show toolbar">
   <mat-icon>expand_more</mat-icon>
 </button>

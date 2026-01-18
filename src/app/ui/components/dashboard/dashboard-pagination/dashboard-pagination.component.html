@@ -2,8 +2,6 @@
   <pagination-controls
     id="pagination_dashboard"
     (pageChange)="handlePageChange($event)"
-    previousLabel="{{'paginate.previous' | translate}}"
-    nextLabel="{{'paginate.next' | translate}}"
-  >
-  </pagination-controls>
+    previousLabel="{{ 'paginate.previous' | translate }}"
+    nextLabel="{{ 'paginate.next' | translate }}"></pagination-controls>
 </div>

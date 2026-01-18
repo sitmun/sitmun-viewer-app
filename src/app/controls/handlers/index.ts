@@ -4,32 +4,32 @@
  * Exports all control handlers for easy registration.
  */
 
-import { CoordinatesControlHandler } from './coordinates-control.handler';
-import { ScaleControlHandler } from './scale-control.handler';
-import { ScaleBarControlHandler } from './scale-bar-control.handler';
-import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
-import { BasemapSelectorControlHandler } from './basemap-selector-control.handler';
-import { LegendControlHandler } from './legend-control.handler';
-import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
-import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
-import { SearchControlHandler } from './search-control.handler';
 import { AttributionControlHandler } from './attribution-control.handler';
-import { FullScreenControlHandler } from './full-screen-control.handler';
-import { ThreeDControlHandler } from './threed-control.handler';
+import { BasemapSelectorControlHandler } from './basemap-selector-control.handler';
+import { ClickControlHandler } from './click-control.handler';
+import { CoordinatesControlHandler } from './coordinates-control.handler';
 import { DataLoaderControlHandler } from './dataloader-control.handler';
 import { DownloadControlHandler } from './download-control.handler';
 import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.handler';
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
+import { FullScreenControlHandler } from './full-screen-control.handler';
 import { GeolocationControlHandler } from './geolocation-control.handler';
+import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
+import { LegendControlHandler } from './legend-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 import { MeasureControlHandler } from './measure-control.handler';
 import { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
-import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
-import { PrintMapControlHandler } from './print-map-control.handler';
-import { ClickControlHandler } from './click-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
+import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 import { OverviewMapControlHandler } from './overview-map-control.handler';
 import { PopupControlHandler } from './popup-control.handler';
+import { PrintMapControlHandler } from './print-map-control.handler';
+import { ScaleBarControlHandler } from './scale-bar-control.handler';
+import { ScaleControlHandler } from './scale-control.handler';
+import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
+import { SearchControlHandler } from './search-control.handler';
+import { ThreeDControlHandler } from './threed-control.handler';
+import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';

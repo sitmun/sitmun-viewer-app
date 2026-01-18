@@ -1,16 +1,20 @@
-<div class="login-page" [style.background-image]="displayBackgroundImage && backgroundImageUrl ? 'url(' + backgroundImageUrl + ')' : null">
+<div
+  class="login-page"
+  [style.background-image]="
+    displayBackgroundImage && backgroundImageUrl
+      ? 'url(' + backgroundImageUrl + ')'
+      : null
+  ">
   <div class="container">
-
     <div class="title-section">
       <div class="logo-sitmun"></div>
-      <h1> {{'loginPage.title' | translate }} </h1>
+      <h1>{{ 'loginPage.title' | translate }}</h1>
       <div class="public-dashboard">
-        <p> {{'loginPage.noConnexionDetails' | translate }} </p>
-        <primary-button
+        <p>{{ 'loginPage.noConnexionDetails' | translate }}</p>
+        <app-primary-button
           [button_text]="'loginPage.publicDashboardButton' | translate"
           [mat_icon]="'public'"
-          (click)="publicDashboard()"
-          />
+          (click)="publicDashboard()" />
       </div>
     </div>
 
@@ -31,16 +35,20 @@
           [input_image]="passwordImage"
           [input_model]="authenticationRequest.password"
           (output_model)="authenticationRequest.password = $event"
-          (input_button_click)="showOrHidePassword()"/>
+          (input_button_click)="showOrHidePassword()" />
         <p>
-          <a href="auth/forgot-password"> {{'loginPage.passwordForgotten' | translate }} </a>
+          <a href="auth/forgot-password">
+            {{ 'loginPage.passwordForgotten' | translate }}
+          </a>
         </p>
-        <primary-button
+        <app-primary-button
           class="login-button"
           [button_text]="'loginPage.submit' | translate"
           [mat_icon]="'login'" />
       </form>
-      <secondary-button [button_text]="'loginPage.DNIE' | translate" *ngIf="displayDNIEButton"/>
+      <app-secondary-button
+        [button_text]="'loginPage.DNIE' | translate"
+        *ngIf="displayDNIEButton" />
     </div>
   </div>
 </div>

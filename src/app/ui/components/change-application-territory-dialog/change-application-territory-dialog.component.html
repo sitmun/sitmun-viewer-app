@@ -1,62 +1,68 @@
 <div class="applicationAndTerritoriesList">
-  <h2 mat-dialog-title>{{ 'map.territoriesApplication.mainTitle' | translate }}</h2>
+  <h2 mat-dialog-title>
+    {{ 'map.territoriesApplication.mainTitle' | translate }}
+  </h2>
   <button mat-icon-button class="dialog-close-button" [mat-dialog-close]="null">
     <mat-icon>close</mat-icon>
   </button>
 
   <div mat-dialog-content>
-  <div class="selection-grid">
-    <div class="selection-section">
-      <h3 class="mat-subtitle-1">{{ 'map.territoriesApplication.applicationsTitle' | translate }}</h3>
-      <app-selectable-list
-        *ngIf="listApplications && listApplications.length > 0"
-        [items]="groupedApplications"
-        [selectedId]="applicationSelectedId"
-        [showSearch]="true"
-        [searchPlaceholder]="'map.applicationsListFilter' | translate"
-        [searchValue]="searchValueApplication"
-        [filterHint]="'common.filterHintSelectedApplicationAlwaysVisible'"
-        (searchValueChange)="onApplicationSearchChange($event)"
-        [unavailableItemIds]="cachedUnavailableApplicationIds"
-        [logoProperty]="'logo'"
-        [nameProperty]="'title'"
-        [defaultIcon]="'apps'"
-        [showTitle]="false"
-        [showCloseButton]="false"
-        [showCount]="false"
-        (itemClicked)="onApplicationClick($event)">
-      </app-selectable-list>
-    </div>
+    <div class="selection-grid">
+      <div class="selection-section">
+        <h3 class="mat-subtitle-1">
+          {{ 'map.territoriesApplication.applicationsTitle' | translate }}
+        </h3>
+        <app-selectable-list
+          *ngIf="listApplications && listApplications.length > 0"
+          [items]="groupedApplications"
+          [selectedId]="applicationSelectedId"
+          [showSearch]="true"
+          [searchPlaceholder]="'map.applicationsListFilter' | translate"
+          [searchValue]="searchValueApplication"
+          [filterHint]="'common.filterHintSelectedApplicationAlwaysVisible'"
+          (searchValueChange)="onApplicationSearchChange($event)"
+          [unavailableItemIds]="cachedUnavailableApplicationIds"
+          [logoProperty]="'logo'"
+          [nameProperty]="'title'"
+          [defaultIcon]="'apps'"
+          [showTitle]="false"
+          [showCloseButton]="false"
+          [showCount]="false"
+          (itemClicked)="onApplicationClick($event)"></app-selectable-list>
+      </div>
 
-    <div class="selection-section">
-      <h3 class="mat-subtitle-1">{{ 'map.territoriesApplication.territoriesTitle' | translate }}</h3>
-      <app-selectable-list
-        [items]="groupedTerritories"
-        [selectedId]="territorySelectedId"
-        [showSearch]="true"
-        [searchPlaceholder]="'map.territoriesListFilter' | translate"
-        [searchValue]="searchValueTerritory"
-        [filterHint]="'common.filterHintSelectedTerritoryAlwaysVisible'"
-        (searchValueChange)="onTerritorySearchChange($event)"
-        [unavailableItemIds]="[]"
-        [logoProperty]="'territorialAuthorityLogo'"
-        [nameProperty]="'name'"
-        [defaultIcon]="'language'"
-        [showTitle]="false"
-        [showCloseButton]="false"
-        [showCount]="false"
-        (itemClicked)="onTerritoryClick($event)">
-      </app-selectable-list>
+      <div class="selection-section">
+        <h3 class="mat-subtitle-1">
+          {{ 'map.territoriesApplication.territoriesTitle' | translate }}
+        </h3>
+        <app-selectable-list
+          [items]="groupedTerritories"
+          [selectedId]="territorySelectedId"
+          [showSearch]="true"
+          [searchPlaceholder]="'map.territoriesListFilter' | translate"
+          [searchValue]="searchValueTerritory"
+          [filterHint]="'common.filterHintSelectedTerritoryAlwaysVisible'"
+          (searchValueChange)="onTerritorySearchChange($event)"
+          [unavailableItemIds]="[]"
+          [logoProperty]="'territorialAuthorityLogo'"
+          [nameProperty]="'name'"
+          [defaultIcon]="'language'"
+          [showTitle]="false"
+          [showCloseButton]="false"
+          [showCount]="false"
+          (itemClicked)="onTerritoryClick($event)"></app-selectable-list>
+      </div>
     </div>
-  </div>
   </div>
 
   <mat-dialog-actions>
-  <button mat-flat-button color="primary"
-          [disabled]="!isSelectionValid()"
-          (click)="apply()">
-    <mat-icon>check</mat-icon>
-    <span>{{ 'map.territoriesApplication.save' | translate }}</span>
-  </button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="!isSelectionValid()"
+      (click)="apply()">
+      <mat-icon>check</mat-icon>
+      <span>{{ 'map.territoriesApplication.save' | translate }}</span>
+    </button>
   </mat-dialog-actions>
 </div>

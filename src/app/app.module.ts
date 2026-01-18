@@ -1,57 +1,64 @@
-import { SharedPipesModule } from './../util/pipe/SharedPipesModule';
-import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import {
+  HttpClient,
+  HttpClientModule,
+  HTTP_INTERCEPTORS
+} from '@angular/common/http';
+import localeEs from '@angular/common/locales/es';
+import {
+  APP_INITIALIZER,
+  LOCALE_ID,
+  NgModule,
+  ErrorHandler
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
-import { NavigationBarComponent } from './layout/navigation-bar/navigation-bar.component';
-import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
-import { FooterComponent } from './layout/footer/footer.component';
-import { AuthenticationModule } from '@auth/auth.module';
-import { UiModule } from '@ui/ui.module';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { AUTH_CONFIG_DI } from '@auth/authentication.options';
-import { UserService } from '@api/services/user.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import { AuthenticationModule } from '@auth/auth.module';
+import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
-import { FormsModule } from '@angular/forms';
-import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
-import { NgxPaginationModule } from 'ngx-pagination';
-import localeEs from '@angular/common/locales/es';
-import { registerLocaleData } from '@angular/common';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
+import { LoginModalComponent } from '@sections/common/modals/login-modal/login-modal.component';
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatListModule } from '@angular/material/list';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { ErrorHandler } from '@angular/core';
-import {
-  AppInitializerService,
-  initializeApp
-} from './services/app-initializer.service';
+import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
+import { UiModule } from '@ui/ui.module';
+import { NgxPaginationModule } from 'ngx-pagination';
+
+import { SharedPipesModule } from './../util/pipe/SharedPipesModule';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { ErrorHandlerInterceptor } from './config/error-handler.interceptor';
+import { ALL_CONTROL_HANDLERS } from './controls/handlers';
+import { MessageBoxDialogComponent } from '../util/message-box-service';
+import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
+import { FooterComponent } from './layout/footer/footer.component';
+import { NavigationBarComponent } from './layout/navigation-bar/navigation-bar.component';
+import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
 import {
   AppConfigService,
   initializeAppConfig
 } from './services/app-config.service';
-import { ALL_CONTROL_HANDLERS } from './controls/handlers';
+import {
+  AppInitializerService,
+  initializeApp
+} from './services/app-initializer.service';
 import { ControlRegistryService } from './services/control-registry.service';
+import { GlobalErrorHandler } from './services/global-error-handler';
 import { AboutDialogComponent } from './ui/components/about-dialog/about-dialog.component';
 import { ErrorDetailsSidebarComponent } from './ui/components/error-details-sidebar/error-details-sidebar.component';
-import { GlobalErrorHandler } from './services/global-error-handler';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ErrorHandlerInterceptor } from './config/error-handler.interceptor';
-import { MessageBoxDialogComponent } from '../util/message-box-service';
 
 registerLocaleData(localeEs);
 
@@ -153,6 +160,5 @@ export function initializeControlHandlers(
 ): () => void {
   return () => {
     registry.registerAll(handlers);
-    const stats = registry.getStatistics();
   };
 }

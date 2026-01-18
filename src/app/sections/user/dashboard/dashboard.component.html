@@ -1,7 +1,10 @@
 <div class="dashboard-container">
-  <h1> {{ 'dashboardPage.applicationsTitle' | translate }} </h1>
+  <h1>{{ 'dashboardPage.applicationsTitle' | translate }}</h1>
   <div id="research">
-    <app-dashboard-searchbox (keywords)="onKeywordsSearch($event)" *ngIf="items.length > 0" [applications]="items"/>
+    <app-dashboard-searchbox
+      (keywords)="onKeywordsSearch($event)"
+      *ngIf="items.length > 0"
+      [applications]="items" />
   </div>
-  <app-dashboard-items [items]="items"/>
+  <app-dashboard-items [items]="items" />
 </div>

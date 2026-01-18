@@ -1,13 +1,15 @@
+import { inject } from '@angular/core';
+
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
 import {
   ControlHandler,
   SitnaControlConfig,
   ControlLoadOptions
 } from './control-handler.interface';
-import { PatchManager, createPatchManager } from '../utils/patch-manager';
-import { TCNamespaceService } from '../services/tc-namespace.service';
 import { AppConfigService } from '../services/app-config.service';
-import { inject } from '@angular/core';
+import { TCNamespaceService } from '../services/tc-namespace.service';
+import { PatchManager, createPatchManager } from '../utils/patch-manager';
 
 /**
  * Base class for control handlers providing common functionality.
@@ -41,7 +43,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
    *
    * @param context - Full application configuration context (required, must not be null)
    */
-  async loadPatches(context: AppCfg): Promise<void> {
+  async loadPatches(_context: AppCfg): Promise<void> {
     // Default: no patches to load (all patches must be applied programmatically)
     return Promise.resolve();
   }
@@ -86,8 +88,9 @@ export abstract class ControlHandlerBase implements ControlHandler {
     const { checkLoaded, dependencies, loadScript, controlName } = options;
 
     // Return cached promise if already loading
-    if (this.loadPromiseCache.has(controlName)) {
-      return this.loadPromiseCache.get(controlName)!;
+    const cachedPromise = this.loadPromiseCache.get(controlName);
+    if (cachedPromise) {
+      return cachedPromise;
     }
 
     // Check if already loaded
@@ -176,8 +179,8 @@ export abstract class ControlHandlerBase implements ControlHandler {
    */
   private async waitForGlobal(
     globalName: string,
-    maxRetries: number = 50,
-    delayMs: number = 100
+    maxRetries = 50,
+    delayMs = 100
   ): Promise<void> {
     for (let i = 0; i < maxRetries; i++) {
       if ((window as any)[globalName] !== undefined) {

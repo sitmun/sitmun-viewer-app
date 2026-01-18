@@ -1,14 +1,16 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { UserRoutingModule } from '@sections/user/user-section-routing.module';
-import { TranslateModule } from '@ngx-translate/core';
-import { MapComponent } from './map/map.component';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { TranslateModule } from '@ngx-translate/core';
+import { UserRoutingModule } from '@sections/user/user-section-routing.module';
 import { UiModule } from '@ui/ui.module';
+
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { MapComponent } from './map/map.component';
+import { ProfileComponent } from './profile/profile.component';
 import { ApplicationComponent } from '../common/pages/application/application.component';
 import { TerritoryComponent } from '../common/pages/territory/territory.component';
-import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   declarations: [
