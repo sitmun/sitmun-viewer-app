@@ -9,20 +9,25 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('WorkLayerManagerControlHandler', () => {
   let handler: WorkLayerManagerControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfig: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfig: jest.Mocked<AppConfigService>;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
-    mockAppConfig = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfig.getControlDefault.and.returnValue({
-      div: 'workLayerManager'
-    });
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
+    mockAppConfig = {
+      getControlDefault: jest.fn().mockReturnValue({
+        div: 'workLayerManager'
+      })
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

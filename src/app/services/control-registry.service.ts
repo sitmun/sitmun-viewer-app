@@ -125,7 +125,12 @@ export class ControlRegistryService {
         // First, build configuration to check if control will be used
         const config = handler.buildConfiguration(task, context);
 
-        if (config !== null) {
+        if (config === null) {
+          console.log(
+            `[ControlRegistry] Handler for '${task['ui-control']}' returned null config, skipping`
+          );
+          continue;
+        } else {
           // Control will be used - load patches only if needed
           // Check if handler has patches to load (requiredPatches defined) or overrides loadPatches
           const hasPatches =

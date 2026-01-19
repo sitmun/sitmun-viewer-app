@@ -9,6 +9,10 @@ describe('VirtualWmsCapabilitiesService', () => {
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
+    // Suppress console.error for all tests (these are expected errors from error handling tests)
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
     TestBed.configureTestingModule({});
     service = TestBed.inject(VirtualWmsCapabilitiesService);
 
@@ -36,6 +40,18 @@ describe('VirtualWmsCapabilitiesService', () => {
           title: 'Layer 2',
           layers: ['wms-layer-2'],
           service: 'service-1'
+        },
+        {
+          id: 'layer-3',
+          title: 'Layer 3',
+          layers: ['wms-layer-1', 'wms-layer-2'],
+          service: 'service-1'
+        },
+        {
+          id: 'layer-4',
+          title: 'Layer 4',
+          layers: ['wms-layer-3'],
+          service: 'service-2'
         }
       ],
       services: [
@@ -75,6 +91,13 @@ describe('VirtualWmsCapabilitiesService', () => {
               children: [],
               order: 2
             },
+            'node-5': {
+              title: 'Leaf Node 3',
+              resource: 'layer-3',
+              isRadio: false,
+              children: [],
+              order: 3
+            },
             'node-4': {
               title: 'Leaf Node 2',
               resource: 'layer-2',
@@ -86,6 +109,10 @@ describe('VirtualWmsCapabilitiesService', () => {
         }
       ]
     };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -578,7 +605,7 @@ describe('VirtualWmsCapabilitiesService', () => {
         mockAppCfg
       );
 
-      expect(nodeId).toBe('node-3');
+      expect(nodeId).toBe('node-5');
     });
 
     it('should use set-based comparison (order independent)', () => {
@@ -597,8 +624,8 @@ describe('VirtualWmsCapabilitiesService', () => {
         mockAppCfg
       );
 
-      expect(nodeId1).toBe('node-3');
-      expect(nodeId2).toBe('node-3');
+      expect(nodeId1).toBe('node-5');
+      expect(nodeId2).toBe('node-5');
       expect(nodeId1).toBe(nodeId2);
     });
 
@@ -806,7 +833,7 @@ describe('VirtualWmsCapabilitiesService', () => {
               },
               'node-5': {
                 title: 'Leaf 3',
-                resource: 'layer-3',
+                resource: 'layer-4',
                 isRadio: false,
                 children: [],
                 order: 3
@@ -834,8 +861,10 @@ describe('VirtualWmsCapabilitiesService', () => {
       expect(children).toBeDefined();
 
       // node-2 has order 1, node-3 has order 2
-      expect(children[0].Title).toBe('Folder Node');
-      expect(children[1].Title).toBe('Leaf Node 1');
+      expect(children).toBeDefined();
+      expect(children?.length).toBeGreaterThan(0);
+      expect(children?.[0]?.Title).toBe('Folder Node');
+      expect(children?.[1]?.Title).toBe('Leaf Node 1');
     });
   });
 

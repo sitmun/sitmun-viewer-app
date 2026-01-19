@@ -1,9 +1,12 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 import { DashboardItem } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { DashboardItemComponent } from '@ui/components/dashboard/dashboard-item/dashboard-item.component';
+import { DashboardTerritorySelectionDialogComponent } from '@ui/components/dashboard/dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 import { AppConfigService } from 'src/app/services/app-config.service';
 
 import { DashboardItemsComponent } from './dashboard-items.component';
@@ -11,8 +14,8 @@ import { DashboardItemsComponent } from './dashboard-items.component';
 describe('DashboardItemsComponent', () => {
   let component: DashboardItemsComponent;
   let fixture: ComponentFixture<DashboardItemsComponent>;
-  let mockRouter: jasmine.SpyObj<Router>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockRouter: jest.Mocked<Router>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
 
   const createMockItem = (
     id: number,
@@ -32,15 +35,27 @@ describe('DashboardItemsComponent', () => {
   });
 
   beforeEach(async () => {
-    mockRouter = jasmine.createSpyObj('Router', [], { url: '/user/dashboard' });
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'isFilteringEnabled',
-      'getAllowedTypes'
-    ]);
+    mockRouter = {
+      url: '/user/dashboard'
+    } as Partial<Router> as jest.Mocked<Router>;
+    mockAppConfigService = {
+      isFilteringEnabled: jest.fn(),
+      getAllowedTypes: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
-      declarations: [DashboardItemsComponent],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot(),
+        MatDialogModule
+      ],
+      declarations: [
+        DashboardItemsComponent,
+        DashboardItemComponent,
+        DashboardTerritorySelectionDialogComponent
+      ],
       providers: [
         { provide: Router, useValue: mockRouter },
         { provide: AppConfigService, useValue: mockAppConfigService }
@@ -57,7 +72,7 @@ describe('DashboardItemsComponent', () => {
 
   describe('filterByType', () => {
     it('should return all items when filtering is disabled', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(false);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(false);
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
@@ -72,8 +87,8 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should filter items by allowed types when filtering is enabled', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
@@ -89,8 +104,8 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should filter out items with null type when filtering is enabled', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
@@ -106,8 +121,8 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should return empty array when no items match allowed types', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['P']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['P']);
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
@@ -120,8 +135,8 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should handle multiple allowed types', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I', 'E', 'P']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I', 'E', 'P']);
 
       const items: DashboardItem[] = [
         createMockItem(1, 'App1', 'I'),
@@ -139,8 +154,8 @@ describe('DashboardItemsComponent', () => {
 
   describe('displayAllApplications', () => {
     it('should apply type filtering before displaying applications', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
 
       component.items = [
         createMockItem(1, 'App1', 'I'),
@@ -157,8 +172,8 @@ describe('DashboardItemsComponent', () => {
 
   describe('displayAllApplicationsPrivate', () => {
     it('should apply type filtering before filtering by private/public', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
 
       component.items = [
         createMockItem(1, 'App1', 'I', true),
@@ -175,8 +190,8 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should handle public items with type filtering', () => {
-      mockAppConfigService.isFilteringEnabled.and.returnValue(true);
-      mockAppConfigService.getAllowedTypes.and.returnValue(['I']);
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
+      mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
 
       component.items = [
         createMockItem(1, 'App1', 'I', true),

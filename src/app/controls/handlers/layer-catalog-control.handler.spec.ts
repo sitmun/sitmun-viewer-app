@@ -12,42 +12,53 @@ import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabi
 
 describe('LayerCatalogControlHandler', () => {
   let handler: LayerCatalogControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockVirtualCapabilities: jasmine.SpyObj<VirtualWmsCapabilitiesService>;
-  let mockConfigLookup: jasmine.SpyObj<ConfigLookupService>;
-  let mockLanguageService: jasmine.SpyObj<LanguageService>;
-  let mockSitnaNamespace: jasmine.SpyObj<SitnaNamespaceService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockVirtualCapabilities: jest.Mocked<VirtualWmsCapabilitiesService>;
+  let mockConfigLookup: jest.Mocked<ConfigLookupService>;
+  let mockLanguageService: jest.Mocked<LanguageService>;
+  let mockSitnaNamespace: jest.Mocked<SitnaNamespaceService>;
   let _mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    // Suppress console.warn for all tests except those that explicitly test it
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
     const mockTC = {
       Util: {},
       control: {
         LayerCatalog: class LayerCatalog {}
       }
     };
-    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
-    mockTCNamespace.getTC.and.returnValue(mockTC as any);
-    mockVirtualCapabilities = jasmine.createSpyObj(
-      'VirtualWmsCapabilitiesService',
-      ['generateVirtualUrl', 'canGenerateCapabilities']
-    );
-    mockConfigLookup = jasmine.createSpyObj('ConfigLookupService', [
-      'initialize',
-      'findTreeContainingNode',
-      'findNode'
-    ]);
-    mockLanguageService = jasmine.createSpyObj('LanguageService', [
-      'getCurrentLanguage'
-    ]);
-    mockSitnaNamespace = jasmine.createSpyObj('SitnaNamespaceService', [
-      'waitForSITNA'
-    ]);
-    mockSitnaNamespace.waitForSITNA.and.returnValue(Promise.resolve({} as any));
+    mockTCNamespace = {
+      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC as any)),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn().mockReturnValue(mockTC as any),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
+    mockVirtualCapabilities = {
+      generateVirtualUrl: jest.fn(),
+      canGenerateCapabilities: jest.fn()
+    } as Partial<
+      jest.Mocked<VirtualWmsCapabilitiesService>
+    > as jest.Mocked<VirtualWmsCapabilitiesService>;
+    mockConfigLookup = {
+      initialize: jest.fn(),
+      findTreeContainingNode: jest.fn(),
+      findNode: jest.fn()
+    } as Partial<
+      jest.Mocked<ConfigLookupService>
+    > as jest.Mocked<ConfigLookupService>;
+    mockLanguageService = {
+      getCurrentLanguage: jest.fn()
+    } as Partial<jest.Mocked<LanguageService>> as jest.Mocked<LanguageService>;
+    mockSitnaNamespace = {
+      waitForSITNA: jest.fn().mockReturnValue(Promise.resolve({} as any))
+    } as Partial<
+      jest.Mocked<SitnaNamespaceService>
+    > as jest.Mocked<SitnaNamespaceService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -82,6 +93,10 @@ describe('LayerCatalogControlHandler', () => {
       tasks: [],
       trees: []
     };
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -128,14 +143,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       handler.buildConfiguration(task, context);
 
@@ -169,14 +184,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://sitmun/child1'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -227,18 +242,18 @@ describe('LayerCatalogControlHandler', () => {
         parameters: {}
       } as any;
 
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockConfigLookup.findTreeContainingNode.and.returnValue(
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(
         context.trees[0] as AppTree
       );
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
 
       // node2 can generate capabilities, node3 cannot
-      mockVirtualCapabilities.canGenerateCapabilities.and.callFake(
+      mockVirtualCapabilities.canGenerateCapabilities.mockImplementation(
         (nodeId: string) => {
           return nodeId === 'node2';
         }
@@ -284,14 +299,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -326,18 +341,18 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         if (nodeId === 'node1') {
           return context.trees[0].nodes[nodeId] as AppNodeInfo;
         }
         // Return child node without title
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -373,14 +388,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -435,10 +450,12 @@ describe('LayerCatalogControlHandler', () => {
         }
       } as any;
 
-      mockConfigLookup.findTreeContainingNode.and.callFake((nodeId: string) => {
-        return context.trees.find((t) => t.rootNode === nodeId) as AppTree;
-      });
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockImplementation(
+        (nodeId: string) => {
+          return context.trees.find((t) => t.rootNode === nodeId) as AppTree;
+        }
+      );
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         for (const tree of context.trees) {
           if (tree.nodes[nodeId]) {
             return tree.nodes[nodeId] as AppNodeInfo;
@@ -446,10 +463,10 @@ describe('LayerCatalogControlHandler', () => {
         }
         return undefined;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.callFake(
+      mockVirtualCapabilities.generateVirtualUrl.mockImplementation(
         (nodeId) => `virtual://${nodeId}`
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -489,14 +506,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -510,12 +527,13 @@ describe('LayerCatalogControlHandler', () => {
         'ui-control': 'sitna.layerCatalog',
         parameters: {}
       } as any;
-      spyOn(console, 'warn');
+      // console.warn is already mocked by beforeEach, just verify it's called
+      const consoleWarnSpy = jest.spyOn(console, 'warn');
 
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeNull();
-      expect(console.warn).toHaveBeenCalled();
+      expect(consoleWarnSpy).toHaveBeenCalled();
     });
 
     it('should merge task parameters', () => {
@@ -548,14 +566,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://test'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       const config = handler.buildConfiguration(task, context);
 
@@ -599,14 +617,14 @@ describe('LayerCatalogControlHandler', () => {
       } as any;
 
       const mockTree = context.trees[0] as AppTree;
-      mockConfigLookup.findTreeContainingNode.and.returnValue(mockTree);
-      mockConfigLookup.findNode.and.callFake((nodeId: string) => {
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
         return context.trees[0].nodes[nodeId] as AppNodeInfo;
       });
-      mockVirtualCapabilities.generateVirtualUrl.and.returnValue(
+      mockVirtualCapabilities.generateVirtualUrl.mockReturnValue(
         'virtual://sitmun/child1'
       );
-      mockVirtualCapabilities.canGenerateCapabilities.and.returnValue(true);
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
 
       // Load patches (no-op)
       await handler.loadPatches(context);
@@ -622,24 +640,6 @@ describe('LayerCatalogControlHandler', () => {
       expect(config?.layers?.length).toBe(1);
       expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/child1');
       expect(config?.enableSearch).toBe(true);
-    });
-  });
-
-  describe('Language extraction from WMS capabilities', () => {
-    // Test to understand how XML parsers structure Abstract fields with xml:lang attributes
-    // Based on real WMS capabilities: https://sitmun.diba.cat/wms/servlet/CAE1M?service=wms&request=getcapabilities
-    // Which has: <Abstract xml:lang="ca-ES">...</Abstract><Abstract xml:lang="es-ES">...</Abstract>
-    // NOTE: These tests are skipped because extractLanguageAwareText is in LayerInfoService, not the handler
-    // These tests should be moved to LayerInfoService tests
-
-    xit('should test different XML parser structures for language-aware Abstract fields', () => {
-      // This test is skipped - extractLanguageAwareText is in LayerInfoService, not LayerCatalogControlHandler
-      // Move this test to LayerInfoService tests
-    });
-
-    xit('should log actual WMS capabilities structure when available', async () => {
-      // This test is skipped - extractLanguageAwareText is in LayerInfoService, not LayerCatalogControlHandler
-      // Move this test to LayerInfoService tests
     });
   });
 });

@@ -8,6 +8,7 @@ app/**/*.js.map
 # dependencies
 node_modules/
 bower_components/
+.npm-cache/
 
 # IDEs and editors
 .idea/

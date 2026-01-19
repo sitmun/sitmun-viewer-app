@@ -4,7 +4,14 @@ describe('PatchManager', () => {
   let patchManager: PatchManager;
 
   beforeEach(() => {
+    // Suppress console.error for all tests except those that explicitly test it
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     patchManager = createPatchManager();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should create patch manager', () => {
@@ -104,14 +111,23 @@ describe('PatchManager', () => {
       });
       patchManager.add(() => restored.push('third'));
 
-      // Should log error but continue with other patches
-      const consoleErrorSpy = spyOn(console, 'error');
+      // Restore console.error for this test to verify it's called, but still suppress output
+      jest.restoreAllMocks();
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .mockImplementation(() => {});
 
       patchManager.restoreAll();
 
       expect(restored).toContain('first');
       expect(restored).toContain('third');
       expect(consoleErrorSpy).toHaveBeenCalled();
+
+      // Restore mock for other tests
+      consoleErrorSpy.mockRestore();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     it('should restore in FIFO order', () => {
@@ -346,7 +362,7 @@ describe('PatchManager', () => {
       });
       patchManager.add(() => restored.push('fifth'));
 
-      spyOn(console, 'error'); // Suppress error output
+      // console.error is already suppressed by beforeEach
 
       patchManager.restoreAll();
 
@@ -358,10 +374,20 @@ describe('PatchManager', () => {
         (null as any).someProperty = 'value'; // Will throw TypeError
       });
 
-      const consoleErrorSpy = spyOn(console, 'error');
+      // Restore console.error for this test to verify it's called, but still suppress output
+      jest.restoreAllMocks();
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .mockImplementation(() => {});
 
       expect(() => patchManager.restoreAll()).not.toThrow();
       expect(consoleErrorSpy).toHaveBeenCalled();
+
+      // Restore mock for other tests
+      consoleErrorSpy.mockRestore();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(console, 'error').mockImplementation(() => {});
     });
   });
 });

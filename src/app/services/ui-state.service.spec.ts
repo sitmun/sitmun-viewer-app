@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
+import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { UIStateService } from './ui-state.service';
@@ -151,50 +152,22 @@ describe('UIStateService', () => {
       expect(service.isToolsButtonEnabled()).toBe(false);
     });
 
-    it('should emit false from all observables after reset', (done) => {
+    it('should emit false from all observables after reset', async () => {
       service.enableLegendButton();
       service.enableOverviewMapButton();
       service.enableToolsButton();
 
-      let emissionCount = 0;
-      const checkDone = () => {
-        emissionCount++;
-        if (emissionCount === 3) {
-          done();
-        }
-      };
-
-      // Subscribe and wait for reset emissions
-      let legendReceived = false;
-      let overviewReceived = false;
-      let toolsReceived = false;
-
-      service.showLegend$.pipe(take(3)).subscribe((value) => {
-        // Third emission (after initial false, enable true, reset false)
-        if (!legendReceived) {
-          legendReceived = true;
-          expect(value).toBe(false);
-          checkDone();
-        }
-      });
-
-      service.showOverviewMap$.pipe(take(3)).subscribe((value) => {
-        if (!overviewReceived) {
-          overviewReceived = true;
-          expect(value).toBe(false);
-          checkDone();
-        }
-      });
-
-      service.showTools$.pipe(take(3)).subscribe((value) => {
-        if (!toolsReceived) {
-          toolsReceived = true;
-          expect(value).toBe(false);
-          checkDone();
-        }
-      });
-
+      // Reset should emit false values
       service.reset();
+
+      // Use firstValueFrom to get the current value after reset
+      const legendValue = await firstValueFrom(service.showLegend$);
+      const overviewValue = await firstValueFrom(service.showOverviewMap$);
+      const toolsValue = await firstValueFrom(service.showTools$);
+
+      expect(legendValue).toBe(false);
+      expect(overviewValue).toBe(false);
+      expect(toolsValue).toBe(false);
     });
   });
 

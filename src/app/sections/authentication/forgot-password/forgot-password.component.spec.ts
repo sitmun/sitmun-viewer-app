@@ -31,35 +31,35 @@ describe('ForgotPasswordComponent', () => {
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj('Router', [
-            'navigate',
-            'navigateByUrl'
-          ])
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn()
+          }
         },
         {
           provide: ResetPasswordService,
-          useValue: jasmine.createSpyObj('ResetPasswordService', [
-            'requestNewPassword',
-            'resetPassword',
-            'validateToken'
-          ])
+          useValue: {
+            requestNewPassword: jest.fn(),
+            resetPassword: jest.fn(),
+            validateToken: jest.fn()
+          }
         },
         {
           provide: AuthenticationService,
-          useValue: jasmine.createSpyObj('AuthenticationService', [
-            'login',
-            'isLoggedIn',
-            'getAuthConfig'
-          ])
+          useValue: {
+            login: jest.fn(),
+            isLoggedIn: jest.fn(),
+            getAuthConfig: jest.fn()
+          }
         },
         {
           provide: NotificationService,
-          useValue: jasmine.createSpyObj('NotificationService', [
-            'error',
-            'success',
-            'info',
-            'warning'
-          ])
+          useValue: {
+            error: jest.fn(),
+            success: jest.fn(),
+            info: jest.fn(),
+            warning: jest.fn()
+          }
         }
       ]
     });

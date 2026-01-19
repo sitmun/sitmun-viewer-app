@@ -26,7 +26,10 @@ describe('ReturnButtonComponent', () => {
       providers: [
         {
           provide: Location,
-          useValue: jasmine.createSpyObj('Location', ['back', 'forward'])
+          useValue: {
+            back: jest.fn(),
+            forward: jest.fn()
+          }
         },
         TranslateService
       ]

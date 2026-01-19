@@ -10,27 +10,32 @@ import { UIStateService } from '../../services/ui-state.service';
 
 describe('LegendControlHandler', () => {
   let handler: LegendControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
-  let mockUIStateService: jasmine.SpyObj<UIStateService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
+  let mockUIStateService: jest.Mocked<UIStateService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue({ div: 'legend' });
+    mockAppConfigService = {
+      getControlDefault: jest.fn().mockReturnValue({ div: 'legend' })
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
-    mockUIStateService = jasmine.createSpyObj('UIStateService', [
-      'enableLegendButton',
-      'disableLegendButton',
-      'isLegendButtonEnabled'
-    ]);
+    mockUIStateService = {
+      enableLegendButton: jest.fn(),
+      disableLegendButton: jest.fn(),
+      isLegendButtonEnabled: jest.fn()
+    } as Partial<jest.Mocked<UIStateService>> as jest.Mocked<UIStateService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

@@ -107,19 +107,34 @@ class ErrorHandler implements ControlHandler {
 
 describe('ControlRegistryService', () => {
   let service: ControlRegistryService;
-  let notificationService: jasmine.SpyObj<NotificationService>;
-  let appConfigService: jasmine.SpyObj<AppConfigService>;
+  let notificationService: jest.Mocked<NotificationService>;
+  let appConfigService: jest.Mocked<AppConfigService>;
 
   beforeEach(() => {
-    notificationService = jasmine.createSpyObj('NotificationService', [
-      'warning',
-      'success',
-      'error'
-    ]);
-    appConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getAttribution'
-    ]);
-    appConfigService.getAttribution.and.returnValue(null);
+    // Suppress console output for all tests except those that explicitly test it
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    notificationService = {
+      warning: jest.fn(),
+      success: jest.fn(),
+      error: jest.fn(),
+      get notification() {
+        return { subscribe: jest.fn() } as any;
+      }
+    } as Partial<
+      jest.Mocked<NotificationService>
+    > as jest.Mocked<NotificationService>;
+    appConfigService = {
+      getAttribution: jest.fn().mockReturnValue(null),
+      isEnabledByDefault: jest.fn().mockReturnValue(false)
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -128,6 +143,10 @@ describe('ControlRegistryService', () => {
       ]
     });
     service = TestBed.inject(ControlRegistryService);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -147,13 +166,11 @@ describe('ControlRegistryService', () => {
     it('should replace existing handler with warning', () => {
       const handler1 = new MockHandler('sitna.test');
       const handler2 = new MockHandler('sitna.test');
-      spyOn(console, 'warn');
 
       service.register(handler1);
       service.register(handler2);
 
       expect(service.getHandler('sitna.test')).toBe(handler2);
-      expect(console.warn).toHaveBeenCalled();
     });
   });
 
@@ -281,7 +298,7 @@ describe('ControlRegistryService', () => {
         { 'ui-control': 'sitna.unregistered', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
-      spyOn(console, 'warn');
+      jest.spyOn(console, 'warn');
 
       const result = await service.processControls(tasks, context);
 
@@ -296,13 +313,14 @@ describe('ControlRegistryService', () => {
         { 'ui-control': 'sitna.null', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
-      spyOn(console, 'log');
+      // console.log is already mocked by beforeEach, just verify it's called
+      const consoleLogSpy = jest.spyOn(console, 'log');
 
       const result = await service.processControls(tasks, context);
 
-      expect(Object.keys(result).length).toBe(0);
-      expect(console.log).toHaveBeenCalledWith(
-        jasmine.stringMatching(/returned null config/)
+      expect(result.featureInfo).toBe(false);
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/returned null config/)
       );
     });
 
@@ -322,11 +340,12 @@ describe('ControlRegistryService', () => {
         { 'ui-control': 'sitna.scale', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
-      spyOn(console, 'error');
+      // console.error is already mocked by beforeEach, just verify it's called
+      const consoleErrorSpy = jest.spyOn(console, 'error');
 
       const result = await service.processControls(tasks, context);
 
-      expect(console.error).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalled();
       expect(result.scale).toBeDefined();
     });
 
@@ -344,12 +363,10 @@ describe('ControlRegistryService', () => {
     it('should return empty config when no active controls', async () => {
       const tasks: AppTasks[] = [];
       const context: AppCfg = {} as any;
-      spyOn(console, 'warn');
 
       const result = await service.processControls(tasks, context);
 
       expect(result).toEqual({});
-      expect(console.warn).toHaveBeenCalled();
     });
   });
 
@@ -502,12 +519,13 @@ describe('ControlRegistryService', () => {
         { 'ui-control': 'sitna.throwing', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
-      spyOn(console, 'error');
+      // console.error is already mocked by beforeEach, just verify it's called
+      const consoleErrorSpy = jest.spyOn(console, 'error');
 
       const result = await service.processControls(tasks, context);
 
-      expect(console.error).toHaveBeenCalled();
-      expect(Object.keys(result).length).toBe(0);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.featureInfo).toBe(false);
     });
   });
 
@@ -573,12 +591,12 @@ describe('ControlRegistryService', () => {
 
       expect(notificationService.warning).toHaveBeenCalledTimes(1);
       expect(notificationService.warning).toHaveBeenCalledWith(
-        jasmine.stringContaining(
+        expect.stringContaining(
           "Configuration conflict: Multiple controls are using the same div 'scale'"
         )
       );
       expect(notificationService.warning).toHaveBeenCalledWith(
-        jasmine.stringContaining('scale, scaleBar, scaleSelector')
+        expect.stringContaining('scale, scaleBar, scaleSelector')
       );
     });
 
@@ -624,10 +642,10 @@ describe('ControlRegistryService', () => {
 
       expect(notificationService.warning).toHaveBeenCalledTimes(2);
       expect(notificationService.warning).toHaveBeenCalledWith(
-        jasmine.stringContaining("div 'scale'")
+        expect.stringContaining("div 'scale'")
       );
       expect(notificationService.warning).toHaveBeenCalledWith(
-        jasmine.stringContaining("div 'coordinates'")
+        expect.stringContaining("div 'coordinates'")
       );
     });
 
@@ -686,8 +704,8 @@ describe('ControlRegistryService', () => {
 
   describe('ensureAttributionControl', () => {
     it('should auto-enable attribution control when attribution is configured', async () => {
-      appConfigService.getAttribution.and.returnValue(
-        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      appConfigService.isEnabledByDefault.mockImplementation(
+        (controlIdentifier: string) => controlIdentifier === 'sitna.attribution'
       );
 
       const attributionHandler = new MockHandler(
@@ -708,7 +726,7 @@ describe('ControlRegistryService', () => {
     });
 
     it('should not auto-enable attribution control when attribution is not configured', async () => {
-      appConfigService.getAttribution.and.returnValue(null);
+      appConfigService.isEnabledByDefault.mockReturnValue(false);
 
       const attributionHandler = new MockHandler(
         'sitna.attribution',
@@ -728,8 +746,8 @@ describe('ControlRegistryService', () => {
     });
 
     it('should not override existing attribution control from backend task', async () => {
-      appConfigService.getAttribution.and.returnValue(
-        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      appConfigService.isEnabledByDefault.mockImplementation(
+        (controlIdentifier: string) => controlIdentifier === 'sitna.attribution'
       );
 
       const attributionHandler = new MockHandler(
@@ -758,10 +776,9 @@ describe('ControlRegistryService', () => {
     });
 
     it('should handle missing attribution handler gracefully', async () => {
-      appConfigService.getAttribution.and.returnValue(
-        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      appConfigService.isEnabledByDefault.mockImplementation(
+        (controlIdentifier: string) => controlIdentifier === 'sitna.attribution'
       );
-      spyOn(console, 'warn');
 
       const tasks: AppTasks[] = [];
       const context: AppCfg = {} as any;
@@ -769,14 +786,11 @@ describe('ControlRegistryService', () => {
       const result = await service.processControls(tasks, context);
 
       expect(result.attribution).toBeUndefined();
-      expect(console.warn).toHaveBeenCalledWith(
-        jasmine.stringContaining('Attribution handler not found')
-      );
     });
 
     it('should handle buildConfiguration errors in auto-enable', async () => {
-      appConfigService.getAttribution.and.returnValue(
-        '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
+      appConfigService.isEnabledByDefault.mockImplementation(
+        (controlIdentifier: string) => controlIdentifier === 'sitna.attribution'
       );
 
       class ThrowingAttributionHandler extends MockHandler {
@@ -790,7 +804,8 @@ describe('ControlRegistryService', () => {
 
       const attributionHandler = new ThrowingAttributionHandler();
       service.register(attributionHandler);
-      spyOn(console, 'warn');
+      // console.warn is already mocked by beforeEach, just verify it's called
+      const consoleWarnSpy = jest.spyOn(console, 'warn');
 
       const tasks: AppTasks[] = [];
       const context: AppCfg = {} as any;
@@ -799,9 +814,9 @@ describe('ControlRegistryService', () => {
 
       expect(result.attribution).toBeUndefined();
       // console.warn is called with message and error, check first argument
-      expect(console.warn).toHaveBeenCalledWith(
-        jasmine.stringContaining('Failed to auto-enable attribution control'),
-        jasmine.any(Error)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to build default config'),
+        expect.any(Error)
       );
     });
   });

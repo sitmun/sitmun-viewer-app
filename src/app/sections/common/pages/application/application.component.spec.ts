@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AccountService } from '@api/services/account.service';
 import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 
 import { ApplicationComponent } from './application.component';
 
@@ -20,13 +21,11 @@ describe('ApplicationComponent', () => {
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj(
-            'Router',
-            ['navigate', 'navigateByUrl'],
-            {
-              url: '/user/application/1'
-            }
-          )
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn(),
+            url: '/user/application/1'
+          }
         },
         {
           provide: ActivatedRoute,
@@ -40,21 +39,30 @@ describe('ApplicationComponent', () => {
         },
         {
           provide: Location,
-          useValue: jasmine.createSpyObj('Location', ['back'])
+          useValue: {
+            back: jest.fn()
+          }
         },
         {
           provide: CommonService,
-          useValue: jasmine.createSpyObj('CommonService', [
-            'fetchDashboardItems',
-            'fetchTerritoriesByApplication'
-          ])
+          useValue: {
+            fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [] })),
+            fetchTerritoriesByApplication: jest
+              .fn()
+              .mockReturnValue(of({ content: [] })),
+            message$: of(null)
+          }
         },
         {
           provide: AccountService,
-          useValue: jasmine.createSpyObj('AccountService', [
-            'getUserByID',
-            'getUserByIDPublic'
-          ])
+          useValue: {
+            getUserByID: jest
+              .fn()
+              .mockReturnValue(of({ username: 'test' } as any)),
+            getUserByIDPublic: jest
+              .fn()
+              .mockReturnValue(of({ username: 'test' } as any))
+          }
         }
       ]
     });

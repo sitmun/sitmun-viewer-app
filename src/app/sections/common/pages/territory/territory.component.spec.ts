@@ -13,14 +13,12 @@ describe('TerritoryComponent', () => {
   let fixture: ComponentFixture<TerritoryComponent>;
 
   beforeEach(() => {
-    const mockCommonService = jasmine.createSpyObj('CommonService', [
-      'fetchDashboardItems',
-      'fetchApplicationsByTerritory'
-    ]);
-    mockCommonService.fetchDashboardItems.and.returnValue(of({ content: [] }));
-    mockCommonService.fetchApplicationsByTerritory.and.returnValue(
-      of({ content: [] })
-    );
+    const mockCommonService = {
+      fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [] })),
+      fetchApplicationsByTerritory: jest
+        .fn()
+        .mockReturnValue(of({ content: [] }))
+    };
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -28,10 +26,10 @@ describe('TerritoryComponent', () => {
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj('Router', [
-            'navigate',
-            'navigateByUrl'
-          ])
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn()
+          }
         },
         {
           provide: ActivatedRoute,
@@ -42,7 +40,9 @@ describe('TerritoryComponent', () => {
         },
         {
           provide: Location,
-          useValue: jasmine.createSpyObj('Location', ['back'])
+          useValue: {
+            back: jest.fn()
+          }
         },
         { provide: CommonService, useValue: mockCommonService }
       ]

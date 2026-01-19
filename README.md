@@ -240,21 +240,52 @@ npm run watch
 
 ## Testing
 
-### Unit Testing
+The viewer application uses **Jest** as the test runner, aligned with the admin application configuration. Tests are configured to run in a jsdom environment with Angular testing utilities.
+
+### Test Configuration
+
+- **Test Runner**: Jest (via `@angular-builders/jest`)
+- **Test Framework**: Jest with `jest-preset-angular`
+- **Environment**: jsdom (browser-like environment)
+- **Coverage**: v8 provider
+- **Configuration**: `jest.config.ts`
+
+### Running Tests
 
 ```bash
-# Run tests once
+# Run all tests once
 npm test
 
-# Run tests with coverage
-npm test -- --code-coverage
-
 # Run tests in watch mode
-npm test -- --watch
+npm test:watch
 
-# Run linting
-npm run lint
+# Run tests with coverage report
+npm test -- --coverage
+
+# Run specific test file
+npm test -- path/to/file.spec.ts
 ```
+
+### Test Setup
+
+The test environment is configured in `setup-jest.ts`, which includes:
+- Angular TestBed initialization
+- Global mocks for localStorage, sessionStorage, matchMedia
+- IntersectionObserver mock
+- WebGL/Canvas mocks for api-sitna library
+- SITNA_BASE_URL configuration
+
+### Path Aliases
+
+Tests use the same TypeScript path aliases as the application:
+- `@auth/*` → `src/app/auth/*`
+- `@config/*` → `src/app/config/*`
+- `@api/*` → `src/app/api/*`
+- `@sections/*` → `src/app/sections/*`
+- `@shared/*` → `src/app/shared/*`
+- `@ui/*` → `src/app/ui/*`
+
+These are automatically resolved by Jest's `moduleNameMapper` configuration.
 
 ## Deployment
 

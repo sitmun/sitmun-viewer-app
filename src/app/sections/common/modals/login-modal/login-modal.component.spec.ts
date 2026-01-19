@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthenticationService } from '@auth/services/authentication.service';
@@ -14,23 +15,31 @@ describe('LoginModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, TranslateModule.forRoot()],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot(),
+        FormsModule
+      ],
       declarations: [LoginModalComponent],
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj('Router', [
-            'navigate',
-            'navigateByUrl'
-          ])
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn()
+          }
         },
         {
           provide: AuthenticationService,
-          useValue: jasmine.createSpyObj('AuthenticationService', ['login'])
+          useValue: {
+            login: jest.fn()
+          }
         },
         {
           provide: OpenModalRef,
-          useValue: jasmine.createSpyObj('OpenModalRef', ['close'])
+          useValue: {
+            close: jest.fn()
+          }
         }
       ]
     }).compileComponents();

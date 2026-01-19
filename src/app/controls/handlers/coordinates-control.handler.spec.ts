@@ -4,23 +4,39 @@ import { TestBed } from '@angular/core/testing';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { CoordinatesControlHandler } from './coordinates-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('CoordinatesControlHandler', () => {
   let handler: CoordinatesControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
   let mockAppCfg: AppCfg;
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
+
+    const mockAppConfigService = {
+      getControlDefault: jest.fn().mockReturnValue({
+        div: 'coordinates',
+        position: 'bottom-right',
+        showElevation: true
+      })
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         CoordinatesControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace }
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 
@@ -70,7 +86,11 @@ describe('CoordinatesControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'coordinates' });
+      expect(config).toEqual({
+        div: 'coordinates',
+        position: 'bottom-right',
+        showElevation: true
+      });
     });
 
     it('should merge task parameters', () => {
@@ -115,7 +135,7 @@ describe('CoordinatesControlHandler', () => {
 
   describe('loadPatches()', () => {
     it('should resolve without loading scripts', async () => {
-      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 

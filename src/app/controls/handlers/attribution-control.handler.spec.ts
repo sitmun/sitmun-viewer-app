@@ -9,20 +9,26 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('AttributionControlHandler', () => {
   let handler: AttributionControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue(null);
+    mockAppConfigService = {
+      getControlDefault: jest.fn().mockReturnValue(null),
+      getAttribution: jest.fn().mockReturnValue(null)
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -71,7 +77,7 @@ describe('AttributionControlHandler', () => {
 
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'attribution'
       });
 
@@ -88,7 +94,7 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should return empty config when no default div configured', () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const task: AppTasks = {
         'ui-control': 'sitna.attribution',
@@ -103,7 +109,7 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should merge task parameters', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'attribution'
       });
 
@@ -124,7 +130,7 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should allow parameters to override default div', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'default-attribution'
       });
 
@@ -150,7 +156,7 @@ describe('AttributionControlHandler', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'attribution'
       });
 
@@ -175,7 +181,7 @@ describe('AttributionControlHandler', () => {
 
   describe('getDefaultValueWhenMissing()', () => {
     it('should return false when attribution text is not configured', () => {
-      mockAppConfigService.getAttribution.and.returnValue(null);
+      mockAppConfigService.getAttribution.mockReturnValue(null);
 
       const defaultValue = (handler as any).getDefaultValueWhenMissing();
 
@@ -183,10 +189,10 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should return true when attribution text is configured but no default div', () => {
-      mockAppConfigService.getAttribution.and.returnValue(
+      mockAppConfigService.getAttribution.mockReturnValue(
         '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
       );
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const defaultValue = (handler as any).getDefaultValueWhenMissing();
 
@@ -194,10 +200,10 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should return config object when attribution text is configured with default div', () => {
-      mockAppConfigService.getAttribution.and.returnValue(
+      mockAppConfigService.getAttribution.mockReturnValue(
         '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
       );
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'attribution'
       });
 
@@ -209,7 +215,7 @@ describe('AttributionControlHandler', () => {
     });
 
     it('should return false when attribution text is empty string', () => {
-      mockAppConfigService.getAttribution.and.returnValue('');
+      mockAppConfigService.getAttribution.mockReturnValue('');
 
       const defaultValue = (handler as any).getDefaultValueWhenMissing();
 

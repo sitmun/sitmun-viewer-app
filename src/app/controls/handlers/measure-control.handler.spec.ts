@@ -10,25 +10,31 @@ import { UIStateService } from '../../services/ui-state.service';
 
 describe('MeasureControlHandler', () => {
   let handler: MeasureControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockUIStateService: jasmine.SpyObj<UIStateService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockUIStateService: jest.Mocked<UIStateService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockUIStateService = jasmine.createSpyObj('UIStateService', [
-      'enableToolsButton'
-    ]);
+    mockUIStateService = {
+      enableToolsButton: jest.fn()
+    } as Partial<jest.Mocked<UIStateService>> as jest.Mocked<UIStateService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue({
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue({
       div: 'measure'
     });
 

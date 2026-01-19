@@ -9,26 +9,31 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('SearchControlHandler', () => {
   let handler: SearchControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfig: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfig: jest.Mocked<AppConfigService>;
   let _mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
-    mockAppConfig = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfig.getControlDefault.and.returnValue({ div: 'search' });
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
+    mockAppConfig = {
+      getControlDefault: jest.fn().mockReturnValue({ div: 'search' })
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     const mockTC = {
       control: { Search: {} }
     };
     (window as any).TC = mockTC;
-    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC as any));
-    mockTCNamespace.getTC.and.returnValue(mockTC as any);
+    mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC as any));
+    mockTCNamespace.getTC.mockReturnValue(mockTC as any);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -65,7 +70,7 @@ describe('SearchControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control type', () => {
-      expect(handler.controlIdentifier).toBe('sitna.search');
+      expect(handler.controlIdentifier).toBe('sitna.search.silme.extension');
     });
   });
 
@@ -130,13 +135,13 @@ describe('SearchControlHandler', () => {
     });
 
     it('should return false when native control missing', () => {
-      mockTCNamespace.getTC.and.returnValue({ control: {} } as any);
+      mockTCNamespace.getTC.mockReturnValue({ control: {} } as any);
 
       expect(handler.isReady()).toBe(false);
     });
 
     it('should return false when TC namespace not available', () => {
-      mockTCNamespace.getTC.and.returnValue(null);
+      mockTCNamespace.getTC.mockReturnValue(null);
 
       expect(handler.isReady()).toBe(false);
     });

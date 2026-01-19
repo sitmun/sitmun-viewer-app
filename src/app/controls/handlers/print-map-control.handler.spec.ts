@@ -10,25 +10,36 @@ import { UIStateService } from '../../services/ui-state.service';
 
 describe('PrintMapControlHandler', () => {
   let handler: PrintMapControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockUIStateService: jasmine.SpyObj<UIStateService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockUIStateService: jest.Mocked<UIStateService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    const mockTC = {
+      control: {
+        PrintMap: {}
+      }
+    };
+    mockTCNamespace = {
+      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC)),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn().mockReturnValue(mockTC),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockUIStateService = jasmine.createSpyObj('UIStateService', [
-      'enableToolsButton'
-    ]);
+    mockUIStateService = {
+      enableToolsButton: jest.fn()
+    } as Partial<jest.Mocked<UIStateService>> as jest.Mocked<UIStateService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue({
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue({
       div: 'print',
       logo: 'assets/logos/logo_orange.png',
       legend: {
@@ -280,20 +291,19 @@ describe('PrintMapControlHandler', () => {
 
   describe('isReady()', () => {
     it('should return false when TC is not available', () => {
-      (window as any).TC = undefined;
-      (window as any).pdfMake = undefined;
+      mockTCNamespace.getTC.mockReturnValue(undefined);
       expect(handler.isReady()).toBe(false);
     });
 
-    it('should return false when pdfMake is not available', () => {
-      (window as any).TC = { control: { PrintMap: {} } };
-      (window as any).pdfMake = undefined;
+    it('should return false when PrintMap control is not available', () => {
+      mockTCNamespace.getTC.mockReturnValue({ control: {} } as any);
       expect(handler.isReady()).toBe(false);
     });
 
     it('should return true when both TC and pdfMake are available', () => {
-      (window as any).TC = { control: { PrintMap: {} } };
-      (window as any).pdfMake = {};
+      mockTCNamespace.getTC.mockReturnValue({
+        control: { PrintMap: {} }
+      } as any);
       expect(handler.isReady()).toBe(true);
     });
   });
@@ -307,7 +317,7 @@ describe('PrintMapControlHandler', () => {
     });
 
     it('should wait for TC namespace', async () => {
-      mockTCNamespace.waitForTC.and.returnValue(
+      mockTCNamespace.waitForTC.mockReturnValue(
         Promise.resolve({ control: { PrintMap: {} } })
       );
 

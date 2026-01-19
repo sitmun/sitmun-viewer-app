@@ -1,6 +1,11 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { AuthorizedLayoutComponent } from './authorized-layout.component';
+
+@Component({ selector: 'app-navigation-bar', template: '' })
+class StubNavigationBarComponent {}
 
 describe('AuthorizedLayoutComponent', () => {
   let component: AuthorizedLayoutComponent;
@@ -8,7 +13,8 @@ describe('AuthorizedLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AuthorizedLayoutComponent]
+      imports: [RouterTestingModule],
+      declarations: [AuthorizedLayoutComponent, StubNavigationBarComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AuthorizedLayoutComponent);

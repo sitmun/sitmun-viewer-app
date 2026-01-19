@@ -18,6 +18,10 @@ describe('AppConfigService', () => {
   };
 
   beforeEach(() => {
+    // Suppress console.warn for all tests except the one that explicitly tests it
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [AppConfigService]
@@ -28,6 +32,7 @@ describe('AppConfigService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    jest.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -49,7 +54,12 @@ describe('AppConfigService', () => {
     });
 
     it('should use default config when loading fails', async () => {
-      const consoleWarnSpy = spyOn(console, 'warn');
+      // Restore console.warn for this test to verify it's called, but still suppress output
+      jest.restoreAllMocks();
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        .mockImplementation(() => {});
 
       const loadPromise = service.loadConfig();
 
@@ -61,6 +71,11 @@ describe('AppConfigService', () => {
       expect(consoleWarnSpy).toHaveBeenCalled();
       expect(service.getAllowedTypes()).toEqual([]);
       expect(service.isFilteringEnabled()).toBe(false);
+
+      // Restore mock for other tests
+      consoleWarnSpy.mockRestore();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(console, 'warn').mockImplementation(() => {});
     });
 
     it('should cache configuration after loading', async () => {

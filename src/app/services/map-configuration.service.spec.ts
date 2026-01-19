@@ -10,22 +10,23 @@ import { MapConfigurationService } from './map-configuration.service';
 describe('MapConfigurationService', () => {
   let service: MapConfigurationService;
   let configLookup: ConfigLookupService;
-  let appConfigService: jasmine.SpyObj<AppConfigService>;
-  let controlRegistry: jasmine.SpyObj<ControlRegistryService>;
+  let appConfigService: jest.Mocked<AppConfigService>;
+  let controlRegistry: jest.Mocked<ControlRegistryService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    appConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getAttribution',
-      'getControlDefault'
-    ]);
-    appConfigService.getAttribution.and.returnValue(null);
-    appConfigService.getControlDefault.and.returnValue(null);
+    appConfigService = {
+      getAttribution: jest.fn().mockReturnValue(null),
+      getControlDefault: jest.fn().mockReturnValue(null)
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
-    controlRegistry = jasmine.createSpyObj('ControlRegistryService', [
-      'getHandler'
-    ]);
-    controlRegistry.getHandler.and.returnValue(undefined);
+    controlRegistry = {
+      getHandler: jest.fn().mockReturnValue(undefined)
+    } as Partial<
+      jest.Mocked<ControlRegistryService>
+    > as jest.Mocked<ControlRegistryService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -207,12 +208,12 @@ describe('MapConfigurationService', () => {
 
     it('should return 3D view configuration if 3D task present', () => {
       // Mock app-config with controls array
-      appConfigService.getControlDefault.and.returnValue({
+      appConfigService.getControlDefault.mockReturnValue({
         controls: ['sitna.threeD', 'sitna.basemapSelector', 'sitna.legend']
       });
 
       // Mock handlers with sitnaConfigKey
-      controlRegistry.getHandler.and.callFake((name: string) => {
+      controlRegistry.getHandler.mockImplementation((name: string) => {
         const handlers: any = {
           'sitna.threeD': { sitnaConfigKey: 'threeD' },
           'sitna.basemapSelector': { sitnaConfigKey: 'basemapSelector' },
@@ -239,11 +240,11 @@ describe('MapConfigurationService', () => {
     });
 
     it('should use div from task parameters if provided', () => {
-      appConfigService.getControlDefault.and.returnValue({
+      appConfigService.getControlDefault.mockReturnValue({
         controls: ['sitna.threeD']
       });
 
-      controlRegistry.getHandler.and.returnValue({
+      controlRegistry.getHandler.mockReturnValue({
         sitnaConfigKey: 'threeD'
       } as any);
 
@@ -265,12 +266,12 @@ describe('MapConfigurationService', () => {
     });
 
     it('should use div from default config if not in parameters', () => {
-      appConfigService.getControlDefault.and.returnValue({
+      appConfigService.getControlDefault.mockReturnValue({
         div: 'config-view3d',
         controls: ['sitna.threeD']
       });
 
-      controlRegistry.getHandler.and.returnValue({
+      controlRegistry.getHandler.mockReturnValue({
         sitnaConfigKey: 'threeD'
       } as any);
 
@@ -286,12 +287,12 @@ describe('MapConfigurationService', () => {
     });
 
     it('should prioritize task parameters over default config', () => {
-      appConfigService.getControlDefault.and.returnValue({
+      appConfigService.getControlDefault.mockReturnValue({
         div: 'config-view3d',
         controls: ['sitna.threeD']
       });
 
-      controlRegistry.getHandler.and.returnValue({
+      controlRegistry.getHandler.mockReturnValue({
         sitnaConfigKey: 'threeD'
       } as any);
 
@@ -315,7 +316,7 @@ describe('MapConfigurationService', () => {
 
     it('should omit controls array if empty/not configured', () => {
       // Mock app-config without controls
-      appConfigService.getControlDefault.and.returnValue({});
+      appConfigService.getControlDefault.mockReturnValue({});
 
       const cfgWith3D: AppCfg = {
         ...mockAppCfg,
@@ -428,12 +429,18 @@ describe('MapConfigurationService', () => {
     });
 
     it('should use ConfigLookupService when available', () => {
-      const findGroupSpy = spyOn(configLookup, 'findGroup').and.callThrough();
-      const findLayerSpy = spyOn(configLookup, 'findLayer').and.callThrough();
-      const findServiceSpy = spyOn(
-        configLookup,
-        'findService'
-      ).and.callThrough();
+      const originalFindGroup = configLookup.findGroup.bind(configLookup);
+      const originalFindLayer = configLookup.findLayer.bind(configLookup);
+      const originalFindService = configLookup.findService.bind(configLookup);
+      const findGroupSpy = jest
+        .spyOn(configLookup, 'findGroup')
+        .mockImplementation((...args) => originalFindGroup(...args));
+      const findLayerSpy = jest
+        .spyOn(configLookup, 'findLayer')
+        .mockImplementation((...args) => originalFindLayer(...args));
+      const findServiceSpy = jest
+        .spyOn(configLookup, 'findService')
+        .mockImplementation((...args) => originalFindService(...args));
 
       service.toBaseLayers(mockAppCfg);
 
@@ -455,7 +462,7 @@ describe('MapConfigurationService', () => {
 
   describe('toAttribution', () => {
     it('should return attribution from app config service', () => {
-      appConfigService.getAttribution.and.returnValue(
+      appConfigService.getAttribution.mockReturnValue(
         '<a href="https://github.com/sitmun" target="_blank">SITMUN</a>'
       );
 
@@ -468,7 +475,7 @@ describe('MapConfigurationService', () => {
     });
 
     it('should return undefined when attribution not configured', () => {
-      appConfigService.getAttribution.and.returnValue(null);
+      appConfigService.getAttribution.mockReturnValue(null);
 
       const result = service.toAttribution();
 
@@ -476,7 +483,7 @@ describe('MapConfigurationService', () => {
     });
 
     it('should return undefined when attribution is empty string', () => {
-      appConfigService.getAttribution.and.returnValue('');
+      appConfigService.getAttribution.mockReturnValue('');
 
       const result = service.toAttribution();
 

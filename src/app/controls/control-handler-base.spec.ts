@@ -41,21 +41,25 @@ class NoPatchHandler extends ControlHandlerBase {
 describe('ControlHandlerBase', () => {
   let handler: TestControlHandler;
   let noPatchHandler: NoPatchHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
     // Create spy
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'waitForTCProperty',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    const mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue(null);
+    const mockAppConfigService = {
+      getControlDefault: jest.fn().mockReturnValue(null)
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -120,7 +124,7 @@ describe('ControlHandlerBase', () => {
 
     it('should require context parameter', async () => {
       // TypeScript will catch this, but we test runtime behavior
-      await expectAsync(handler.loadPatches(mockAppCfg)).toBeResolved();
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
     it('should work with multi-patch handler', async () => {
@@ -168,7 +172,7 @@ describe('ControlHandlerBase', () => {
 
   describe('cleanup()', () => {
     it('should restore all patches', () => {
-      spyOn(handler['patchManager'], 'restoreAll');
+      jest.spyOn(handler['patchManager'], 'restoreAll');
 
       handler.cleanup();
 
@@ -245,7 +249,7 @@ describe('ControlHandlerBase', () => {
   describe('ensureControlLoaded()', () => {
     it('should load control with dependencies', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
+      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
 
       let scriptLoaded = false;
       await handler['ensureControlLoaded']({
@@ -296,8 +300,8 @@ describe('ControlHandlerBase', () => {
 
     it('should handle array of dependencies', async () => {
       const mockTC = { control: { SearchSilme: {} } };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-      mockTCNamespace.waitForTCProperty.and.returnValue(Promise.resolve({}));
+      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
+      mockTCNamespace.waitForTCProperty.mockReturnValue(Promise.resolve({}));
 
       await handler['ensureControlLoaded']({
         dependencies: ['TC', 'TC.control.SearchSilme'],
@@ -332,7 +336,7 @@ describe('ControlHandlerBase', () => {
   describe('waitForTCAndApply()', () => {
     it('should wait for TC and execute callback', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
+      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
 
       let callbackExecuted = false;
       let receivedTC: any;
@@ -349,13 +353,13 @@ describe('ControlHandlerBase', () => {
 
     it('should handle callback errors', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
+      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
 
-      await expectAsync(
+      await expect(
         handler['waitForTCAndApply'](async () => {
           throw new Error('Callback error');
         })
-      ).toBeRejected();
+      ).rejects.toThrow();
     });
   });
 
@@ -377,7 +381,7 @@ describe('ControlHandlerBase', () => {
       expect(config).toEqual({ div: 'test' });
 
       // Cleanup
-      spyOn(handler['patchManager'], 'restoreAll');
+      jest.spyOn(handler['patchManager'], 'restoreAll');
       handler.cleanup();
       expect(handler['patchManager'].restoreAll).toHaveBeenCalled();
     });

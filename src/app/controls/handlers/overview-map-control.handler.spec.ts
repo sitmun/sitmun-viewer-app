@@ -11,33 +11,41 @@ import { UIStateService } from '../../services/ui-state.service';
 
 describe('OverviewMapControlHandler', () => {
   let handler: OverviewMapControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockConfigLookup: jasmine.SpyObj<ConfigLookupService>;
-  let mockUIStateService: jasmine.SpyObj<UIStateService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockConfigLookup: jest.Mocked<ConfigLookupService>;
+  let mockUIStateService: jest.Mocked<UIStateService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockConfigLookup = jasmine.createSpyObj('ConfigLookupService', [
-      'initialize',
-      'findGroup',
-      'findLayer',
-      'findService'
-    ]);
+    mockConfigLookup = {
+      initialize: jest.fn(),
+      findGroup: jest.fn(),
+      findLayer: jest.fn(),
+      findService: jest.fn()
+    } as Partial<
+      jest.Mocked<ConfigLookupService>
+    > as jest.Mocked<ConfigLookupService>;
 
-    mockUIStateService = jasmine.createSpyObj('UIStateService', [
-      'enableOverviewMapButton'
-    ]);
+    mockUIStateService = {
+      enableOverviewMapButton: jest.fn()
+    } as Partial<jest.Mocked<UIStateService>> as jest.Mocked<UIStateService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue({
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue({
       div: 'ovmap'
     });
 
@@ -185,9 +193,9 @@ describe('OverviewMapControlHandler', () => {
         layers: ['layer1']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(mockService);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -215,7 +223,7 @@ describe('OverviewMapControlHandler', () => {
         parameters: {}
       } as any;
 
-      mockConfigLookup.findGroup.and.returnValue(undefined);
+      mockConfigLookup.findGroup.mockReturnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -242,7 +250,7 @@ describe('OverviewMapControlHandler', () => {
         layers: []
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -268,8 +276,8 @@ describe('OverviewMapControlHandler', () => {
         layers: ['nonexistent-layer']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(undefined);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -303,9 +311,9 @@ describe('OverviewMapControlHandler', () => {
         layers: ['layer1']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(undefined);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(undefined);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -346,9 +354,9 @@ describe('OverviewMapControlHandler', () => {
         layers: ['layer1']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(mockService);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -388,9 +396,9 @@ describe('OverviewMapControlHandler', () => {
         layers: ['layer1']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(mockService);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -437,9 +445,9 @@ describe('OverviewMapControlHandler', () => {
         layers: ['first-layer', 'second-layer', 'third-layer']
       };
 
-      mockConfigLookup.findGroup.and.returnValue(mockGroup);
-      mockConfigLookup.findLayer.and.returnValue(mockLayer);
-      mockConfigLookup.findService.and.returnValue(mockService);
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,

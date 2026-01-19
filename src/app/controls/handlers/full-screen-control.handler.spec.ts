@@ -9,20 +9,26 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('FullScreenControlHandler', () => {
   let handler: FullScreenControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue(null);
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue(null);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -77,7 +83,7 @@ describe('FullScreenControlHandler', () => {
 
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'FuScreen'
       });
 
@@ -94,7 +100,7 @@ describe('FullScreenControlHandler', () => {
     });
 
     it('should return empty config when no default div configured', () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const task: AppTasks = {
         'ui-control': 'sitna.fullScreen',
@@ -109,7 +115,7 @@ describe('FullScreenControlHandler', () => {
     });
 
     it('should merge task parameters', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'FuScreen'
       });
 
@@ -130,7 +136,7 @@ describe('FullScreenControlHandler', () => {
     });
 
     it('should allow parameters to override default div', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'FuScreen'
       });
 
@@ -156,7 +162,7 @@ describe('FullScreenControlHandler', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'FuScreen'
       });
 

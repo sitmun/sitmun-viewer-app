@@ -169,42 +169,9 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular-builders/jest:run",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/ServiceWorker.js",
-              {
-                "glob": "**/*",
-                "input": "node_modules/api-sitna",
-                "output": "assets/js/api-sitna"
-              },
-              {
-                "glob": "**/*",
-                "input": "node_modules/cesium/Build/Cesium",
-                "output": "assets/js/api-sitna/lib/cesium/build"
-              },
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              }
-            ],
-            "styles": [
-              "src/styles/main.scss"
-            ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles",
-                "node_modules"
-              ]
-            },
-            "scripts": []
+            "configPath": "./jest.config.ts"
           }
         },
         "lint": {

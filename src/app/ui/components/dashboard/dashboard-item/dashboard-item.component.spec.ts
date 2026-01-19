@@ -6,7 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
 import { CommonService } from '@api/services/common.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+  TranslateFakeLoader
+} from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 import { DashboardItemComponent } from './dashboard-item.component';
@@ -19,7 +24,9 @@ describe('DashboardItemComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: TranslateFakeLoader }
+        }),
         MatCardModule,
         MatButtonModule,
         MatIconModule
@@ -28,30 +35,28 @@ describe('DashboardItemComponent', () => {
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj(
-            'Router',
-            ['navigate', 'navigateByUrl'],
-            { url: '/user/dashboard' }
-          )
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn(),
+            url: '/user/dashboard'
+          }
         },
         {
           provide: CommonService,
-          useValue: jasmine.createSpyObj('CommonService', [
-            'fetchTerritoriesByApplication'
-          ])
+          useValue: {
+            fetchTerritoriesByApplication: jest
+              .fn()
+              .mockReturnValue(of({ content: [] }))
+          }
         },
         {
           provide: NotificationService,
-          useValue: jasmine.createSpyObj('NotificationService', [
-            'error',
-            'success',
-            'info',
-            'warning'
-          ])
-        },
-        {
-          provide: TranslateService,
-          useValue: jasmine.createSpyObj('TranslateService', ['get', 'instant'])
+          useValue: {
+            error: jest.fn(),
+            success: jest.fn(),
+            info: jest.fn(),
+            warning: jest.fn()
+          }
         }
       ]
     });

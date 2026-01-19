@@ -9,8 +9,8 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('PopupControlHandler', () => {
   let handler: PopupControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
   let mockTC: any;
 
@@ -21,16 +21,20 @@ describe('PopupControlHandler', () => {
       }
     };
 
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
-    mockTCNamespace.waitForTC.and.returnValue(Promise.resolve(mockTC));
-    mockTCNamespace.getTC.and.returnValue(mockTC);
+    mockTCNamespace = {
+      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC)),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn().mockReturnValue(mockTC),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -91,7 +95,7 @@ describe('PopupControlHandler', () => {
     });
 
     it('should not load any patch scripts', async () => {
-      const createElementSpy = spyOn(document, 'createElement');
+      const createElementSpy = jest.spyOn(document, 'createElement');
 
       await handler.loadPatches(mockAppCfg);
 

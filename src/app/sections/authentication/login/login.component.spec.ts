@@ -7,6 +7,7 @@ import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormFieldInputComponent } from '@ui/components/form-field-input/form-field-input.component';
 import { PrimaryButtonComponent } from '@ui/components/primary-button/primary-button.component';
+import { SecondaryButtonComponent } from '@ui/components/secondary-button/secondary-button.component';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 import { LoginComponent } from './login.component';
@@ -25,15 +26,16 @@ describe('LoginComponent', () => {
       declarations: [
         LoginComponent,
         PrimaryButtonComponent,
+        SecondaryButtonComponent,
         FormFieldInputComponent
       ],
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj('Router', [
-            'navigate',
-            'navigateByUrl'
-          ])
+          useValue: {
+            navigate: jest.fn(),
+            navigateByUrl: jest.fn()
+          }
         },
         {
           provide: ActivatedRoute,
@@ -41,21 +43,21 @@ describe('LoginComponent', () => {
         },
         {
           provide: AuthenticationService,
-          useValue: jasmine.createSpyObj('AuthenticationService', [
-            'login',
-            'isLoggedIn',
-            'getAuthConfig',
-            'getLoggedDetails'
-          ])
+          useValue: {
+            login: jest.fn(),
+            isLoggedIn: jest.fn(),
+            getAuthConfig: jest.fn(),
+            getLoggedDetails: jest.fn()
+          }
         },
         {
           provide: NotificationService,
-          useValue: jasmine.createSpyObj('NotificationService', [
-            'error',
-            'success',
-            'info',
-            'warning'
-          ])
+          useValue: {
+            error: jest.fn(),
+            success: jest.fn(),
+            info: jest.fn(),
+            warning: jest.fn()
+          }
         }
       ]
     }).compileComponents();

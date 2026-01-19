@@ -1,6 +1,5 @@
 import { Location } from '@angular/common';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -11,11 +10,18 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { CommonService } from '@api/services/common.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import {
+  TranslateLoader,
+  TranslateModule,
+  TranslateFakeLoader
+} from '@ngx-translate/core';
+import { MenuComponent } from '@ui/components/menu/menu.component';
+import { of } from 'rxjs';
+import { ErrorTrackingService } from 'src/app/services/error-tracking.service';
 import { LanguageService } from 'src/app/services/language.service';
 
 import { NavigationBarComponent } from './navigation-bar.component';
@@ -23,24 +29,24 @@ import { NavigationBarComponent } from './navigation-bar.component';
 describe('NavigationBarComponent', () => {
   let component: NavigationBarComponent;
   let fixture: ComponentFixture<NavigationBarComponent>;
-  let router: jasmine.SpyObj<Router>;
+  let router: jest.Mocked<Router>;
 
   beforeEach(async () => {
-    const routerSpy = jasmine.createSpyObj(
-      'Router',
-      ['navigate', 'navigateByUrl'],
-      {
-        url: '/user/dashboard',
-        events: jasmine.createSpyObj('events', ['subscribe', 'forEach'])
-      }
-    );
+    const routerSpy = {
+      navigate: jest.fn(),
+      navigateByUrl: jest.fn(),
+      url: '/user/dashboard',
+      events: of({} as any)
+    } as Partial<Router> as Router;
 
     await TestBed.configureTestingModule({
-      declarations: [NavigationBarComponent],
+      declarations: [NavigationBarComponent, MenuComponent],
       imports: [
         BrowserAnimationsModule,
         HttpClientTestingModule,
-        TranslateModule.forRoot(),
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: TranslateFakeLoader }
+        }),
         MatToolbarModule,
         MatMenuModule,
         MatButtonModule,
@@ -48,48 +54,61 @@ describe('NavigationBarComponent', () => {
         MatDividerModule,
         MatTooltipModule,
         MatButtonToggleModule,
-        MatDialogModule
+        MatDialogModule,
+        RouterModule
       ],
       providers: [
         { provide: Router, useValue: routerSpy },
         {
           provide: CommonService,
-          useValue: jasmine.createSpyObj('CommonService', [
-            'fetchDashboardItems',
-            'message$'
-          ])
+          useValue: {
+            fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [] })),
+            message$: of(null)
+          }
         },
         {
           provide: AuthenticationService,
-          useValue: jasmine.createSpyObj('AuthenticationService', [
-            'getLoggedUsername',
-            'logout'
-          ])
+          useValue: {
+            getLoggedUsername: jest.fn(),
+            logout: jest.fn()
+          }
         },
         {
           provide: Location,
-          useValue: jasmine.createSpyObj('Location', ['back', 'forward'])
+          useValue: {
+            back: jest.fn(),
+            forward: jest.fn()
+          }
         },
         {
           provide: LanguageService,
-          useValue: jasmine.createSpyObj('LanguageService', [
-            'setLanguage',
-            'getCurrentLanguage',
-            'getLanguagesTranslatedSorted'
-          ])
+          useValue: {
+            setLanguage: jest.fn().mockReturnValue(of(null)),
+            getCurrentLanguage: jest.fn().mockReturnValue('en'),
+            getLanguagesTranslatedSorted: jest.fn().mockReturnValue(of([])),
+            getLanguageName: jest.fn().mockReturnValue('English'),
+            getLanguageIcon: jest.fn().mockReturnValue('assets/flags/en.svg')
+          }
+        },
+        {
+          provide: ErrorTrackingService,
+          useValue: {
+            errors$: of([]),
+            getUnreviewedCount: jest.fn().mockReturnValue(0)
+          }
         },
         {
           provide: MatDialog,
-          useValue: jasmine.createSpyObj('MatDialog', ['open'])
-        },
-        TranslateService
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
+          useValue: {
+            open: jest.fn()
+          }
+        }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavigationBarComponent);
     component = fixture.componentInstance;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    router = TestBed.inject(Router) as jest.Mocked<Router>;
     fixture.detectChanges();
   });
 
@@ -110,36 +129,57 @@ describe('NavigationBarComponent', () => {
   });
 
   it('should return correct toolbar class for login route', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/auth/login');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/auth/login'),
+      configurable: true
+    });
     const className = component.getToolbarClass();
     expect(className).toBe('login');
   });
 
   it('should return correct toolbar class for map route', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/user/map/123');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/user/map/123'),
+      configurable: true
+    });
     const className = component.getToolbarClass();
     expect(className).toBe('pet');
   });
 
   it('should return empty string for default route', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/user/dashboard'),
+      configurable: true
+    });
     const className = component.getToolbarClass();
     expect(className).toBe('');
   });
 
   it('should check if connected correctly', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/public/dashboard');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/public/dashboard'),
+      configurable: true
+    });
     expect(component.isConnected()).toBe(false);
 
-    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/user/dashboard'),
+      configurable: true
+    });
     expect(component.isConnected()).toBe(true);
   });
 
   it('should check if on map correctly', () => {
-    spyOnProperty(router, 'url', 'get').and.returnValue('/user/map/123');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/user/map/123'),
+      configurable: true
+    });
     expect(component.isOnMap()).toBe(true);
 
-    spyOnProperty(router, 'url', 'get').and.returnValue('/user/dashboard');
+    Object.defineProperty(router, 'url', {
+      get: jest.fn().mockReturnValue('/user/dashboard'),
+      configurable: true
+    });
     expect(component.isOnMap()).toBe(false);
   });
 });

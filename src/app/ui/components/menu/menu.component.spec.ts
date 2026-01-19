@@ -2,6 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +28,7 @@ describe('MenuComponent', () => {
         HttpClientTestingModule,
         TranslateModule.forRoot(),
         FormsModule,
+        MatDialogModule,
         MatMenuModule,
         MatButtonModule,
         MatIconModule,
@@ -37,11 +39,15 @@ describe('MenuComponent', () => {
       providers: [
         {
           provide: Router,
-          useValue: jasmine.createSpyObj('Router', ['navigate'])
+          useValue: {
+            navigate: jest.fn()
+          }
         },
         {
           provide: AuthenticationService,
-          useValue: jasmine.createSpyObj('AuthenticationService', ['logout'])
+          useValue: {
+            logout: jest.fn()
+          }
         },
         TranslateService
       ]
@@ -62,19 +68,19 @@ describe('MenuComponent', () => {
   });
 
   it('should emit login event', () => {
-    spyOn(component.loginEvent, 'emit');
+    jest.spyOn(component.loginEvent, 'emit');
     component.sendLoginEvent();
     expect(component.loginEvent.emit).toHaveBeenCalled();
   });
 
   it('should emit profile event', () => {
-    spyOn(component.profileEvent, 'emit');
+    jest.spyOn(component.profileEvent, 'emit');
     component.sendProfileEvent();
     expect(component.profileEvent.emit).toHaveBeenCalled();
   });
 
   it('should emit logout event', () => {
-    spyOn(component.logoutEvent, 'emit');
+    jest.spyOn(component.logoutEvent, 'emit');
     component.sendLogoutEvent();
     expect(component.logoutEvent.emit).toHaveBeenCalled();
   });

@@ -9,20 +9,26 @@ import { TCNamespaceService } from '../../services/tc-namespace.service';
 
 describe('LoadingIndicatorControlHandler', () => {
   let handler: LoadingIndicatorControlHandler;
-  let mockTCNamespace: jasmine.SpyObj<TCNamespaceService>;
-  let mockAppConfigService: jasmine.SpyObj<AppConfigService>;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = jasmine.createSpyObj('TCNamespaceService', [
-      'waitForTC',
-      'getTC'
-    ]);
+    mockTCNamespace = {
+      waitForTC: jest.fn(),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn(),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
 
-    mockAppConfigService = jasmine.createSpyObj('AppConfigService', [
-      'getControlDefault'
-    ]);
-    mockAppConfigService.getControlDefault.and.returnValue(null);
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue(null);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -77,7 +83,7 @@ describe('LoadingIndicatorControlHandler', () => {
 
   describe('buildConfiguration()', () => {
     it('should return boolean true when no parameters provided (default case)', () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const task: AppTasks = {
         'ui-control': 'sitna.loadingIndicator',
@@ -91,7 +97,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should return boolean true when default config is empty/null (no div in app-config.json)', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({});
+      mockAppConfigService.getControlDefault.mockReturnValue({});
 
       const task: AppTasks = {
         'ui-control': 'sitna.loadingIndicator',
@@ -105,7 +111,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should return config object when custom parameters provided', () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const task: AppTasks = {
         'ui-control': 'sitna.loadingIndicator',
@@ -124,7 +130,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should support optional div property if included in parameters', () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       const task: AppTasks = {
         'ui-control': 'sitna.loadingIndicator',
@@ -142,7 +148,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should merge default config with task parameters when both provided', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'default-loading-indicator'
       });
 
@@ -163,7 +169,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should allow parameters to override default config', () => {
-      mockAppConfigService.getControlDefault.and.returnValue({
+      mockAppConfigService.getControlDefault.mockReturnValue({
         div: 'default-loading-indicator'
       });
 
@@ -191,7 +197,7 @@ describe('LoadingIndicatorControlHandler', () => {
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
@@ -211,7 +217,7 @@ describe('LoadingIndicatorControlHandler', () => {
     });
 
     it('should handle full lifecycle with custom parameters', async () => {
-      mockAppConfigService.getControlDefault.and.returnValue(null);
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
 
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
