@@ -9,29 +9,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Use Node.js 18
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 18
-    - name: Cache node modules
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+        node-version: '18'
+        cache: 'npm'
+        
     - name: Before install
       run: npm set //npm.pkg.github.com/:_authToken ${{secrets.TOKEN_FOR_WORKFLOWS}}
+    
     - name: Install dependencies
       run: npm ci
-    # Uncomment this when the karma tests are in green
-    # - name: Unit tests
-    #  run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadless --code-coverage
-    - name: Build and deploy to GitHub pages
+    
+    - name: Unit tests
+      run: npm run test -- --watch=false --coverage
+      continue-on-error: true
+    
+    - name: Build for deployment
+      run: npm run build -- --configuration=testdeployment --base-href=/sitmun-viewer-app/
       env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      run: npm run deploy -- --name=${{secrets.USERNAME_FOR_WORKFLOWS}} --email="<>" --base-href=/sitmun-viewer-app/ --build-target=viewer-app:build:testdeployment
+        NODE_OPTIONS: "--openssl-legacy-provider --max-old-space-size=8192"
+    
+    - name: Validate build artifacts
+      run: |
+        if [ ! -d "dist/viewer-app" ]; then
+          echo "ERROR: Build artifacts not found"
+          exit 1
+        fi
+        if [ -z "$(ls -A dist/viewer-app)" ]; then
+          echo "ERROR: Build directory is empty"
+          exit 1
+        fi
+        echo "✓ Build artifacts validated"
+    
+    - name: Deploy to GitHub pages
+      env:
+        USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
+        GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
+        GITHUB_WORKSPACE: ${{github.workspace}}
+        CI: true
+      run: ./scripts/deploy.sh
+      shell: bash
 

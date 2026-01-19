@@ -10,7 +10,10 @@
     "test:watch": "jest --watch",
     "lint": "ng lint",
     "format": "npx prettier --write src",
-    "deploy": "ng deploy"
+    "deploy": "ng deploy",
+    "clean": "bash scripts/clean.sh",
+    "clean:force": "bash scripts/clean.sh --force",
+    "clean:build": "bash scripts/clean.sh --build-only"
   },
   "private": true,
   "engines": {

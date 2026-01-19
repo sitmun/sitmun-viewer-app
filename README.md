@@ -93,7 +93,7 @@ git clone https://github.com/sitmun/sitmun-application-stack.git
 cd sitmun-application-stack/front/viewer/sitmun-viewer-app
 ```
 
-2. **Install Dependencies**
+1. **Install Dependencies**
 
 ```bash
 # Install all dependencies (recommended for CI/CD)
@@ -103,7 +103,7 @@ npm ci
 npm install
 ```
 
-3. **Verify Installation**
+1. **Verify Installation**
 
 ```bash
 # Check Angular CLI version
@@ -141,10 +141,11 @@ The application supports multiple environment configurations:
 
 | Environment                | File                            | API Base URL                                | Hash Strategy | Production |
 | -------------------------- | ------------------------------- | ------------------------------------------- | ------------- | ---------- |
-| **Default**                | `environment.ts`                | `https://sitmun-backend-core.herokuapp.com` | true          | false      |
-| **Development**            | `environment.development.ts`    | `http://localhost:8080`                     | false         | false      |
+| **Default**                | `environment.ts`                | `https://sitmun-backend-core.herokuapp.com` | true          | true       |
+| **Development**            | `environment.development.ts`    | `http://localhost:9000/backend`             | false         | false      |
 | **Development API Heroku** | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com` | false         | false      |
 | **Test Deployment**        | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com` | false         | true       |
+| **Production**             | `environment.prod.ts`           | `https://sitmun-backend-core.herokuapp.com` | true          | true       |
 
 ### Environment Variables
 
@@ -236,6 +237,15 @@ npm test
 
 # Build with watch mode
 npm run watch
+
+# Clean build artifacts
+npm run clean
+
+# Clean build artifacts (non-interactive)
+npm run clean:force
+
+# Clean only build artifacts (keep node_modules)
+npm run clean:build
 ```
 
 ## Testing
@@ -269,6 +279,7 @@ npm test -- path/to/file.spec.ts
 ### Test Setup
 
 The test environment is configured in `setup-jest.ts`, which includes:
+
 - Angular TestBed initialization
 - Global mocks for localStorage, sessionStorage, matchMedia
 - IntersectionObserver mock
@@ -278,6 +289,7 @@ The test environment is configured in `setup-jest.ts`, which includes:
 ### Path Aliases
 
 Tests use the same TypeScript path aliases as the application:
+
 - `@auth/*` → `src/app/auth/*`
 - `@config/*` → `src/app/config/*`
 - `@api/*` → `src/app/api/*`
@@ -303,51 +315,82 @@ These are automatically resolved by Jest's `moduleNameMapper` configuration.
 When serving the app at `https://host/BASE_PATH/`, update all of the following to use `BASE_PATH/` explicitly:
 
 1) Angular build base href
+
 ```bash
 ng build --configuration=production --base-href=/BASE_PATH/
 ```
 
-2) HTML base href (src/index.html)
+1) HTML base href (src/index.html)
+
 ```html
 <base href="/BASE_PATH/">
 ```
 
-3) SITNA base URL (runtime, in src/index.html)
+1) SITNA base URL (runtime, in src/index.html)
+
 ```html
 <script>
   window.SITNA_BASE_URL = '/BASE_PATH/assets/js/api-sitna/';
 </script>
 ```
 
-4) Service Worker scope (src/index.html)
+1) Service Worker scope (src/index.html)
+
 ```js
 navigator.serviceWorker.register('ServiceWorker.js', { scope: '/BASE_PATH/' })
 ```
 
-5) Runtime asset loads (src/index.html)
+1) Runtime asset loads (src/index.html)
+
 - Patch loader script:
+
 ```js
 script.src = '/BASE_PATH/assets/js/patch/patch_main.js';
 ```
+
 - Toastr assets:
+
 ```html
 <link rel="stylesheet" href="/BASE_PATH/assets/js/toastr/toastr.min.css" />
 <script src="/BASE_PATH/assets/js/toastr/toastr.min.js"></script>
 ```
 
-6) SITNA base URL (compile-time, webpack.config.js)
+1) SITNA base URL (compile-time, webpack.config.js)
+
 ```js
 const apiSitnaDestiny = '/BASE_PATH/assets/js/api-sitna';
 new webpack.DefinePlugin({ SITNA_BASE_URL: JSON.stringify(apiSitnaDestiny) })
 ```
 
-7) Web server routing
+1) Web server routing
+
 - Serve the built app under `/BASE_PATH/` in your web server (e.g., Nginx location block).
 
 Notes & pitfalls:
 
 - All of the above must agree: `<base href>`, runtime `SITNA_BASE_URL`, ServiceWorker `scope`, webpack `DefinePlugin` value, and the CLI `--base-href`.
 - If you see JSON parsing errors like `Unexpected token '<'`, paths likely point to HTML (e.g., index.html). Re-check the base path.
+
+### Deployment Scripts
+
+The project includes deployment scripts in the `scripts/` directory:
+
+```bash
+# Deploy to GitHub Pages (requires GITHUB_API_KEY and USERNAME env vars)
+./scripts/deploy.sh
+
+# For local testing, copy scripts/env.example to scripts/.env and configure
+cp scripts/env.example scripts/.env
+# Edit scripts/.env with your credentials
+```
+
+The deployment script:
+
+- Validates build artifacts exist
+- Clones the GitHub Pages repository
+- Copies build artifacts
+- Commits and pushes changes with deployment metadata
+- Handles credentials securely
 
 ## API Integration
 
@@ -531,7 +574,7 @@ npm run build -- --configuration=production
 
 **Note**: The build script automatically sets `NODE_OPTIONS=--openssl-legacy-provider` for Node.js compatibility. This is required due to SITNA library dependencies and cryptographic operations that use legacy OpenSSL algorithms.
 
-6. **Submit a pull request** with a clear description
+1. **Submit a pull request** with a clear description
 
 ### Conventional Commits
 
@@ -577,7 +620,7 @@ git commit -m "style(formatting): apply prettier formatting"
 **Development Issues**
 
 - **Hot Reload Not Working**: Check file watching limits on your system
-- **Test Failures**: Ensure Chrome headless is available for Karma tests
+- **Test Failures**: Ensure Jest is properly configured and dependencies are installed
 - **Linting Errors**: Run `npm run lint` to auto-fix formatting issues
 
 ### Getting Help
