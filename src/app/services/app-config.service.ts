@@ -17,6 +17,7 @@ export interface DashboardConfig {
 export interface LanguageItem {
   name: string;
   shortname: string;
+  locale?: string;
   icon?: string; // Optional icon (emoji or image path)
 }
 
@@ -33,10 +34,12 @@ export interface ControlDefaultConfig {
  */
 export interface AppConfig {
   attribution?: string;
+  testConfigFile?: string | null; // Path to test configuration file (relative to assets/config), null to disable
   dashboard: DashboardConfig;
   defaultLanguage?: string; // Moved from languages.defaultLanguage
   languages?: LanguageItem[]; // Changed from object with defaultLanguages array to direct array
   enabledByDefault?: string[]; // Array of control identifiers that should be enabled even if backend doesn't request them
+  disabledControls?: string[]; // Array of control identifiers that should be disabled even if backend or enabledByDefault requests them (takes precedence)
   controlDefaults?: Record<string, ControlDefaultConfig>; // Control identifier to default config mapping
 }
 
@@ -126,6 +129,32 @@ export class AppConfigService {
   }
 
   /**
+   * Get a locale string (e.g., 'es-ES') for a language shortname.
+   * Falls back to configured default language if no locale is found.
+   */
+  getLocaleForLanguage(shortname: string): string {
+    const language = shortname || this.getDefaultLanguage();
+    const languages = this.config?.languages;
+    const configured = Array.isArray(languages)
+      ? languages.find((lang) => lang.shortname === language)
+      : undefined;
+    if (configured?.locale) {
+      return configured.locale;
+    }
+    if (language.includes('-')) {
+      return language;
+    }
+    const fallbackLanguage = this.getDefaultLanguage();
+    const fallbackConfigured = Array.isArray(languages)
+      ? languages.find((lang) => lang.shortname === fallbackLanguage)
+      : undefined;
+    if (fallbackConfigured?.locale) {
+      return fallbackConfigured.locale;
+    }
+    return fallbackLanguage;
+  }
+
+  /**
    * Get the icon/flag for a language by its shortname
    * @param shortname Language shortname (e.g., 'es', 'en', 'oc-aranes')
    * @returns Icon string (emoji or image path) or empty string if not found
@@ -179,6 +208,32 @@ export class AppConfigService {
    */
   isEnabledByDefault(controlIdentifier: string): boolean {
     return this.getEnabledByDefault().includes(controlIdentifier);
+  }
+
+  /**
+   * Get the list of control identifiers that should be disabled
+   * @returns Array of control identifiers (e.g., ['sitna.WFSEdit', 'sitna.measure'])
+   */
+  getDisabledControls(): string[] {
+    return this.config?.disabledControls || [];
+  }
+
+  /**
+   * Check if a control identifier is in the disabledControls list
+   * This takes precedence over backend configuration and enabledByDefault
+   * @param controlIdentifier Control identifier to check
+   * @returns true if the control should be disabled
+   */
+  isDisabled(controlIdentifier: string): boolean {
+    return this.getDisabledControls().includes(controlIdentifier);
+  }
+
+  /**
+   * Get the test configuration file path if configured
+   * @returns Path to test config file or null if not configured
+   */
+  getTestConfigFile(): string | null {
+    return this.config?.testConfigFile || null;
   }
 }
 

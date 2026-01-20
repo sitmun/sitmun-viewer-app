@@ -84,7 +84,7 @@ describe('NavBarControlHandler', () => {
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'nav'
+        div: 'tc-slot-nav'
       });
 
       const task: AppTasks = {
@@ -96,7 +96,7 @@ describe('NavBarControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config?.div).toBe('nav');
+      expect(config?.div).toBe('tc-slot-nav');
     });
 
     it('should return empty config when no default div configured', () => {
@@ -116,7 +116,7 @@ describe('NavBarControlHandler', () => {
 
     it('should merge task parameters', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'nav'
+        div: 'tc-slot-nav'
       });
 
       const task: AppTasks = {
@@ -137,7 +137,7 @@ describe('NavBarControlHandler', () => {
 
     it('should allow parameters to override default div', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'nav'
+        div: 'tc-slot-nav'
       });
 
       const task: AppTasks = {
@@ -163,7 +163,7 @@ describe('NavBarControlHandler', () => {
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'nav'
+        div: 'tc-slot-nav'
       });
 
       // Load patches (no-op for native control)

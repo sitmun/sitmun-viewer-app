@@ -32,6 +32,11 @@
                 "output": "assets/js/api-sitna"
               },
               {
+                "glob": "d3.js",
+                "input": "node_modules/d3",
+                "output": "assets/js/d3"
+              },
+              {
                 "glob": "**/*",
                 "input": "node_modules/cesium/Build/Cesium",
                 "output": "assets/js/api-sitna/lib/cesium/build"

@@ -40,7 +40,7 @@ describe('PrintMapControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockAppConfigService.getControlDefault.mockReturnValue({
-      div: 'print',
+      div: 'tc-slot-print',
       logo: 'assets/logos/logo_orange.png',
       legend: {
         visible: true
@@ -110,7 +110,7 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'print',
+        div: 'tc-slot-print',
         logo: 'assets/logos/logo_orange.png',
         legend: {
           visible: true
@@ -132,7 +132,7 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'print',
+        div: 'tc-slot-print',
         logo: 'assets/logos/logo_orange.png',
         legend: {
           visible: true
@@ -172,7 +172,7 @@ describe('PrintMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config?.['logo']).toBe('assets/logos/custom-logo.png');
-      expect(config?.div).toBe('print');
+      expect(config?.div).toBe('tc-slot-print');
       expect(config?.['legend']).toEqual({ visible: true });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
@@ -195,7 +195,7 @@ describe('PrintMapControlHandler', () => {
         visible: false,
         orientation: 'landscape'
       });
-      expect(config?.div).toBe('print');
+      expect(config?.div).toBe('tc-slot-print');
       expect(config?.['logo']).toBe('assets/logos/logo_orange.png');
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
@@ -361,7 +361,7 @@ describe('PrintMapControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('print');
+      expect(config?.div).toBe('tc-slot-print');
       expect(config?.['logo']).toBe('custom-logo.png');
       expect(config?.['legend']).toEqual({ visible: true });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();

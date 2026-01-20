@@ -3,14 +3,16 @@ import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { CoordinatesControlHandler } from './coordinates-control.handler';
+import { ShareControlHandler } from './share-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
 import { TCNamespaceService } from '../../services/tc-namespace.service';
 
-describe('CoordinatesControlHandler', () => {
-  let handler: CoordinatesControlHandler;
+describe('ShareControlHandler', () => {
+  let handler: ShareControlHandler;
   let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
+
   beforeEach(() => {
     mockTCNamespace = {
       waitForTC: jest.fn(),
@@ -21,26 +23,23 @@ describe('CoordinatesControlHandler', () => {
       jest.Mocked<TCNamespaceService>
     > as jest.Mocked<TCNamespaceService>;
 
-    const mockAppConfigService = {
-      getControlDefault: jest.fn().mockReturnValue({
-        div: 'tc-slot-coordinates',
-        position: 'bottom-right',
-        showElevation: true
-      })
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue(null);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
-        CoordinatesControlHandler,
+        ShareControlHandler,
         { provide: TCNamespaceService, useValue: mockTCNamespace },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 
-    handler = TestBed.inject(CoordinatesControlHandler);
+    handler = TestBed.inject(ShareControlHandler);
 
     mockAppCfg = {
       application: {
@@ -66,97 +65,123 @@ describe('CoordinatesControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control identifier', () => {
-      expect(handler.controlIdentifier).toBe('sitna.coordinates');
+      expect(handler.controlIdentifier).toBe('sitna.share');
+    });
+  });
+
+  describe('sitnaConfigKey', () => {
+    it('should have correct sitna config key', () => {
+      expect(handler.sitnaConfigKey).toBe('share');
     });
   });
 
   describe('requiredPatches', () => {
-    it('should not require patches', () => {
+    it('should have no required patches', () => {
       expect(handler.requiredPatches).toBeUndefined();
     });
   });
 
   describe('buildConfiguration()', () => {
-    it('should return configuration with default div', () => {
+    it('should return configuration with default div when available', () => {
+      mockAppConfigService.getControlDefault.mockReturnValue({
+        div: 'share'
+      });
+
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.share',
         parameters: {}
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({
-        div: 'tc-slot-coordinates',
-        position: 'bottom-right',
-        showElevation: true
-      });
+      expect(config).toBeDefined();
+      expect(config?.div).toBe('share');
+    });
+
+    it('should return empty config when no default div configured', () => {
+      mockAppConfigService.getControlDefault.mockReturnValue(null);
+
+      const task: AppTasks = {
+        'ui-control': 'sitna.share',
+        parameters: {}
+      } as any;
+      const context: AppCfg = {} as any;
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toBeDefined();
+      expect(config).toEqual({});
     });
 
     it('should merge task parameters', () => {
+      mockAppConfigService.getControlDefault.mockReturnValue({
+        div: 'share'
+      });
+
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.share',
         parameters: {
-          position: 'bottom-right',
-          showElevation: true
+          div: 'custom-share-div',
+          customOption: 'value'
         }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({
-        div: 'tc-slot-coordinates',
-        position: 'bottom-right',
-        showElevation: true
-      });
+      expect(config).toBeDefined();
+      expect(config?.div).toBe('custom-share-div');
+      expect(config?.['customOption']).toBe('value');
     });
 
-    it('should allow parameters to override div', () => {
+    it('should allow parameters to override default div', () => {
+      mockAppConfigService.getControlDefault.mockReturnValue({
+        div: 'share'
+      });
+
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.share',
         parameters: {
-          div: 'custom-div'
+          div: 'overridden-share-div'
         }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.div).toBe('custom-div');
+      expect(config?.div).toBe('overridden-share-div');
     });
   });
 
   describe('isReady()', () => {
-    it('should return true by default', () => {
+    it('should always return true (no patches)', () => {
       expect(handler.isReady()).toBe(true);
-    });
-  });
-
-  describe('loadPatches()', () => {
-    it('should resolve without loading scripts', async () => {
-      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      // Load patches
+      mockAppConfigService.getControlDefault.mockReturnValue({
+        div: 'share'
+      });
+
+      // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
 
-      // Should be ready after patch is loaded
+      // Should be ready immediately
       expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {
-        'ui-control': 'sitna.coordinates',
+        'ui-control': 'sitna.share',
         parameters: { custom: 'value' }
       } as any;
       const context: AppCfg = {} as any;
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('tc-slot-coordinates');
+      expect(config?.['custom']).toBe('value');
     });
   });
 });

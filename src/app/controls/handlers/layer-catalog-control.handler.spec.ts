@@ -196,7 +196,7 @@ describe('LayerCatalogControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config?.div).toBe('toc');
+      expect(config?.div).toBe('tc-slot-toc');
       expect(config?.layers).toBeDefined();
       expect(config?.layers?.length).toBe(1);
       expect(config?.layers?.[0]?.type).toBe('WMS');
@@ -527,13 +527,10 @@ describe('LayerCatalogControlHandler', () => {
         'ui-control': 'sitna.layerCatalog',
         parameters: {}
       } as any;
-      // console.warn is already mocked by beforeEach, just verify it's called
-      const consoleWarnSpy = jest.spyOn(console, 'warn');
 
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeNull();
-      expect(consoleWarnSpy).toHaveBeenCalled();
     });
 
     it('should merge task parameters', () => {
@@ -636,7 +633,7 @@ describe('LayerCatalogControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config?.div).toBe('toc');
+      expect(config?.div).toBe('tc-slot-toc');
       expect(config?.layers?.length).toBe(1);
       expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/child1');
       expect(config?.enableSearch).toBe(true);

@@ -26,7 +26,7 @@ describe('LegendControlHandler', () => {
     > as jest.Mocked<TCNamespaceService>;
 
     mockAppConfigService = {
-      getControlDefault: jest.fn().mockReturnValue({ div: 'legend' })
+      getControlDefault: jest.fn().mockReturnValue({ div: 'tc-slot-legend' })
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
@@ -93,7 +93,7 @@ describe('LegendControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'legend' });
+      expect(config).toEqual({ div: 'tc-slot-legend' });
       expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
     });
 
@@ -110,7 +110,7 @@ describe('LegendControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'legend',
+        div: 'tc-slot-legend',
         position: 'top-left',
         collapsible: true
       });
@@ -184,7 +184,7 @@ describe('LegendControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('legend');
+      expect(config?.div).toBe('tc-slot-legend');
       expect(mockUIStateService.enableLegendButton).toHaveBeenCalled();
     });
   });

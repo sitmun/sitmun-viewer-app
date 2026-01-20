@@ -145,13 +145,13 @@ describe('ConfigLookupService', () => {
       expect(service.findLayer('non-existent')).toBeUndefined();
     });
 
-    it('should have O(1) lookup time', () => {
-      // This is a conceptual test - Map.get() is O(1)
-      const start = performance.now();
-      service.findLayer('layer-3');
-      const end = performance.now();
+    it('should return cached layer references', () => {
+      const first = service.findLayer('layer-3');
+      const second = service.findLayer('layer-3');
 
-      expect(end - start).toBeLessThan(1); // Should be near instant
+      expect(first).toBeDefined();
+      expect(first).toBe(second);
+      expect(first).toBe(mockAppCfg.layers[2]);
     });
   });
 

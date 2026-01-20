@@ -299,12 +299,12 @@ describe('ControlHandlerBase', () => {
     });
 
     it('should handle array of dependencies', async () => {
-      const mockTC = { control: { SearchSilme: {} } };
+      const mockTC = { control: { Search: {} } };
       mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
       mockTCNamespace.waitForTCProperty.mockReturnValue(Promise.resolve({}));
 
       await handler['ensureControlLoaded']({
-        dependencies: ['TC', 'TC.control.SearchSilme'],
+        dependencies: ['TC', 'TC.control.Search'],
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         loadScript: () => {},
         controlName: 'TestControl'
@@ -312,7 +312,7 @@ describe('ControlHandlerBase', () => {
 
       expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
       expect(mockTCNamespace.waitForTCProperty).toHaveBeenCalledWith(
-        'TC.control.SearchSilme'
+        'TC.control.Search'
       );
     });
 

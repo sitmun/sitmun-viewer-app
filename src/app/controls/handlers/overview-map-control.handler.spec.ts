@@ -46,7 +46,7 @@ describe('OverviewMapControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockAppConfigService.getControlDefault.mockReturnValue({
-      div: 'ovmap'
+      div: 'tc-slot-ovmap'
     });
 
     TestBed.configureTestingModule({
@@ -147,24 +147,60 @@ describe('OverviewMapControlHandler', () => {
       expect(config?.div).toBe('custom-div');
     });
 
-    it('should return default mapabase when no situation-map and no parameters', () => {
+    it('should return first basemap when no situation-map and no parameters', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
       } as any;
+
+      const mockService = {
+        id: 'service1',
+        url: 'https://example.com/wms',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const mockLayer = {
+        id: 'baselayer1',
+        title: 'Base Layer',
+        service: 'service1',
+        layers: ['baselayer1']
+      };
+
+      const mockGroup = {
+        id: 'background1',
+        layers: ['baselayer1']
+      };
+
+      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
+
       const context: AppCfg = {
         ...mockAppCfg,
         application: {
           ...mockAppCfg.application,
           'situation-map': undefined
-        }
+        },
+        backgrounds: [
+          { id: 'background1', title: 'Background 1', thumbnail: '' }
+        ],
+        groups: [mockGroup],
+        layers: [mockLayer],
+        services: [mockService]
       };
 
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'ovmap',
-        layer: 'mapabase'
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Base Layer',
+          title: 'Base Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['baselayer1']
+        }
       });
     });
 
@@ -208,16 +244,18 @@ describe('OverviewMapControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'ovmap',
+        div: 'tc-slot-ovmap',
         layer: {
           id: 'Test Layer',
+          title: 'Test Layer',
           url: 'https://example.com/wms',
+          type: 'WMS',
           layerNames: ['layer1']
         }
       });
     });
 
-    it('should return null when group not found', () => {
+    it('should return first basemap when group not found', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
@@ -225,21 +263,60 @@ describe('OverviewMapControlHandler', () => {
 
       mockConfigLookup.findGroup.mockReturnValue(undefined);
 
+      const mockService = {
+        id: 'service1',
+        url: 'https://example.com/wms',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const mockLayer = {
+        id: 'baselayer1',
+        title: 'Base Layer',
+        service: 'service1',
+        layers: ['baselayer1']
+      };
+
+      const mockBasemapGroup = {
+        id: 'background1',
+        layers: ['baselayer1']
+      };
+
+      mockConfigLookup.findGroup
+        .mockReturnValueOnce(undefined) // situation-map group not found
+        .mockReturnValueOnce(mockBasemapGroup); // basemap group found
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
+
       const context: AppCfg = {
         ...mockAppCfg,
         application: {
           ...mockAppCfg.application,
           'situation-map': 'nonexistent-group'
         },
-        groups: []
+        backgrounds: [
+          { id: 'background1', title: 'Background 1', thumbnail: '' }
+        ],
+        groups: [mockBasemapGroup],
+        layers: [mockLayer],
+        services: [mockService]
       };
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBeNull();
+      expect(config).toEqual({
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Base Layer',
+          title: 'Base Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['baselayer1']
+        }
+      });
     });
 
-    it('should return null when group has no layers', () => {
+    it('should return first basemap when group has no layers', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
@@ -250,22 +327,60 @@ describe('OverviewMapControlHandler', () => {
         layers: []
       };
 
-      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
+      const mockService = {
+        id: 'service1',
+        url: 'https://example.com/wms',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const mockLayer = {
+        id: 'baselayer1',
+        title: 'Base Layer',
+        service: 'service1',
+        layers: ['baselayer1']
+      };
+
+      const mockBasemapGroup = {
+        id: 'background1',
+        layers: ['baselayer1']
+      };
+
+      mockConfigLookup.findGroup
+        .mockReturnValueOnce(mockGroup) // situation-map group found but empty
+        .mockReturnValueOnce(mockBasemapGroup); // basemap group found
+      mockConfigLookup.findLayer.mockReturnValue(mockLayer);
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,
         application: {
           ...mockAppCfg.application,
           'situation-map': 'group1'
-        }
+        },
+        backgrounds: [
+          { id: 'background1', title: 'Background 1', thumbnail: '' }
+        ],
+        groups: [mockGroup, mockBasemapGroup],
+        layers: [mockLayer],
+        services: [mockService]
       };
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBeNull();
+      expect(config).toEqual({
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Base Layer',
+          title: 'Base Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['baselayer1']
+        }
+      });
     });
 
-    it('should return null when layer not found', () => {
+    it('should return first basemap when layer not found', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
@@ -276,8 +391,32 @@ describe('OverviewMapControlHandler', () => {
         layers: ['nonexistent-layer']
       };
 
-      mockConfigLookup.findGroup.mockReturnValue(mockGroup);
-      mockConfigLookup.findLayer.mockReturnValue(undefined);
+      const mockService = {
+        id: 'service1',
+        url: 'https://example.com/wms',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const mockLayer = {
+        id: 'baselayer1',
+        title: 'Base Layer',
+        service: 'service1',
+        layers: ['baselayer1']
+      };
+
+      const mockBasemapGroup = {
+        id: 'background1',
+        layers: ['baselayer1']
+      };
+
+      mockConfigLookup.findGroup
+        .mockReturnValueOnce(mockGroup) // situation-map group
+        .mockReturnValueOnce(mockBasemapGroup); // basemap group
+      mockConfigLookup.findLayer
+        .mockReturnValueOnce(undefined) // situation-map layer not found
+        .mockReturnValueOnce(mockLayer); // basemap layer found
+      mockConfigLookup.findService.mockReturnValue(mockService);
 
       const context: AppCfg = {
         ...mockAppCfg,
@@ -285,15 +424,29 @@ describe('OverviewMapControlHandler', () => {
           ...mockAppCfg.application,
           'situation-map': 'group1'
         },
-        layers: []
+        backgrounds: [
+          { id: 'background1', title: 'Background 1', thumbnail: '' }
+        ],
+        groups: [mockGroup, mockBasemapGroup],
+        layers: [mockLayer],
+        services: [mockService]
       };
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBeNull();
+      expect(config).toEqual({
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Base Layer',
+          title: 'Base Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['baselayer1']
+        }
+      });
     });
 
-    it('should return null when service not found', () => {
+    it('should return null when service not found and no basemap fallback', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
@@ -329,7 +482,7 @@ describe('OverviewMapControlHandler', () => {
       expect(config).toBeNull();
     });
 
-    it('should return null when service has no URL', () => {
+    it('should return minimal config with div when service has no URL', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',
         parameters: {}
@@ -358,17 +511,61 @@ describe('OverviewMapControlHandler', () => {
       mockConfigLookup.findLayer.mockReturnValue(mockLayer);
       mockConfigLookup.findService.mockReturnValue(mockService);
 
+      const mockBasemapService = {
+        id: 'basemapService',
+        url: 'https://example.com/wms',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const mockBasemapLayer = {
+        id: 'baselayer1',
+        title: 'Base Layer',
+        service: 'basemapService',
+        layers: ['baselayer1']
+      };
+
+      const mockBasemapGroup = {
+        id: 'background1',
+        layers: ['baselayer1']
+      };
+
+      mockConfigLookup.findGroup
+        .mockReturnValueOnce(mockGroup) // situation-map group
+        .mockReturnValueOnce(mockBasemapGroup); // basemap group
+      mockConfigLookup.findLayer
+        .mockReturnValueOnce(mockLayer) // situation-map layer
+        .mockReturnValueOnce(mockBasemapLayer); // basemap layer
+      mockConfigLookup.findService
+        .mockReturnValueOnce(mockService) // situation-map service (no URL)
+        .mockReturnValueOnce(mockBasemapService); // basemap service
+
       const context: AppCfg = {
         ...mockAppCfg,
         application: {
           ...mockAppCfg.application,
           'situation-map': 'group1'
-        }
+        },
+        backgrounds: [
+          { id: 'background1', title: 'Background 1', thumbnail: '' }
+        ],
+        groups: [mockGroup, mockBasemapGroup],
+        layers: [mockLayer, mockBasemapLayer],
+        services: [mockService, mockBasemapService]
       };
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toBeNull();
+      expect(config).toEqual({
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Base Layer',
+          title: 'Base Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['baselayer1']
+        }
+      });
     });
 
     it('should build correct SitnaBaseLayer structure', () => {
@@ -412,9 +609,13 @@ describe('OverviewMapControlHandler', () => {
 
       expect(config).not.toBeNull();
       if (config && typeof config['layer'] === 'object') {
-        expect(config['layer'].id).toBe('My Test Layer');
-        expect(config['layer'].url).toBe('https://example.com/wms');
-        expect(config['layer'].layerNames).toEqual(['layer1', 'layer2']);
+        expect(config['layer']).toEqual({
+          id: 'My Test Layer',
+          title: 'My Test Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['layer1', 'layer2']
+        });
       } else {
         fail('Expected layer to be an object');
       }
@@ -462,7 +663,13 @@ describe('OverviewMapControlHandler', () => {
       expect(mockConfigLookup.findLayer).toHaveBeenCalledWith('first-layer');
       expect(config).not.toBeNull();
       if (config && typeof config['layer'] === 'object') {
-        expect(config['layer'].id).toBe('First Layer');
+        expect(config['layer']).toEqual({
+          id: 'First Layer',
+          title: 'First Layer',
+          url: 'https://example.com/wms',
+          type: 'WMS',
+          layerNames: ['first-layer']
+        });
       }
     });
   });

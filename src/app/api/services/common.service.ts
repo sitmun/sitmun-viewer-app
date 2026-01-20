@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import {
   URL_API_APPLICATIONS,
@@ -9,6 +9,8 @@ import {
 import { AppCfg } from '@api/model/app-cfg';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
+
+import { AppConfigService } from '../../services/app-config.service';
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',
@@ -82,6 +84,8 @@ export class CommonService {
   public message$: Observable<{ theme: string }> =
     this.messageSubject.asObservable();
 
+  private appConfigService = inject(AppConfigService);
+
   constructor(private http: HttpClient) {}
 
   fetchDashboardItems(dashboardType: DashboardTypes, keywords?: string) {
@@ -117,6 +121,13 @@ export class CommonService {
   }
 
   fetchMapConfiguration(appId: number, territoryId: number) {
+    // Check if test config file is configured
+    const testConfigFile = this.appConfigService.getTestConfigFile();
+    if (testConfigFile) {
+      return this.http.get<AppCfg>(`assets/config/${testConfigFile}`);
+    }
+
+    // Normal backend call
     return this.http.get<AppCfg>(
       environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId)
     );

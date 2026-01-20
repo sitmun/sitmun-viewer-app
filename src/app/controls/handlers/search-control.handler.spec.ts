@@ -23,7 +23,7 @@ describe('SearchControlHandler', () => {
       jest.Mocked<TCNamespaceService>
     > as jest.Mocked<TCNamespaceService>;
     mockAppConfig = {
-      getControlDefault: jest.fn().mockReturnValue({ div: 'search' })
+      getControlDefault: jest.fn().mockReturnValue({ div: 'tc-slot-search' })
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
@@ -70,7 +70,7 @@ describe('SearchControlHandler', () => {
 
   describe('controlIdentifier', () => {
     it('should have correct control type', () => {
-      expect(handler.controlIdentifier).toBe('sitna.search.silme.extension');
+      expect(handler.controlIdentifier).toBe('sitna.search');
     });
   });
 
@@ -90,7 +90,7 @@ describe('SearchControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'search' });
+      expect(config).toEqual({ div: 'tc-slot-search' });
     });
 
     it('should merge search-specific parameters', () => {
@@ -107,7 +107,7 @@ describe('SearchControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'search',
+        div: 'tc-slot-search',
         searchUrl: 'https://api.example.com/search',
         searchFields: ['name', 'description'],
         minLength: 3
@@ -165,7 +165,7 @@ describe('SearchControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config?.div).toBe('search');
+      expect(config?.div).toBe('tc-slot-search');
       expect(config?.searchUrl).toBe('https://api.example.com/search');
       expect(config?.minLength).toBe(3);
     });

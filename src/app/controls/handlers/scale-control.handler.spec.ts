@@ -28,7 +28,9 @@ describe('ScaleControlHandler', () => {
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
-    mockAppConfigService.getControlDefault.mockReturnValue({ div: 'scale' });
+    mockAppConfigService.getControlDefault.mockReturnValue({
+      div: 'tc-slot-scale'
+    });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],

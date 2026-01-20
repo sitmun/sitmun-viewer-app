@@ -131,7 +131,9 @@ describe('ControlRegistryService', () => {
     > as jest.Mocked<NotificationService>;
     appConfigService = {
       getAttribution: jest.fn().mockReturnValue(null),
-      isEnabledByDefault: jest.fn().mockReturnValue(false)
+      isEnabledByDefault: jest.fn().mockReturnValue(false),
+      isDisabled: jest.fn().mockReturnValue(false),
+      getControlDefault: jest.fn().mockReturnValue(null)
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
@@ -248,7 +250,7 @@ describe('ControlRegistryService', () => {
       const handler = new MockHandler(
         'sitna.coordinates',
         undefined,
-        undefined,
+        'tc-slot-coordinates',
         'coordinates'
       );
       service.register(handler);
@@ -262,20 +264,20 @@ describe('ControlRegistryService', () => {
 
       expect(handler.loadPatchesCalled).toBe(true);
       expect(handler.buildConfigCalled).toBe(true);
-      expect(result.coordinates).toEqual({ div: 'coordinates' });
+      expect(result.coordinates).toEqual({ div: 'tc-slot-coordinates' });
     });
 
     it('should handle multiple controls', async () => {
       const handler1 = new MockHandler(
         'sitna.coordinates',
         undefined,
-        undefined,
+        'tc-slot-coordinates',
         'coordinates'
       );
       const handler2 = new MockHandler(
         'sitna.scale',
         undefined,
-        undefined,
+        'tc-slot-scale',
         'scale'
       );
       service.register(handler1);
@@ -313,15 +315,10 @@ describe('ControlRegistryService', () => {
         { 'ui-control': 'sitna.null', parameters: {} } as any
       ];
       const context: AppCfg = {} as any;
-      // console.log is already mocked by beforeEach, just verify it's called
-      const consoleLogSpy = jest.spyOn(console, 'log');
 
       const result = await service.processControls(tasks, context);
 
-      expect(result.featureInfo).toBe(false);
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/returned null config/)
-      );
+      expect(result.featureInfo).toBeUndefined();
     });
 
     it('should continue on patch loading errors', async () => {
@@ -329,7 +326,7 @@ describe('ControlRegistryService', () => {
       const goodHandler = new MockHandler(
         'sitna.scale',
         undefined,
-        undefined,
+        'tc-slot-scale',
         'scale'
       );
       service.register(errorHandler);
@@ -375,7 +372,7 @@ describe('ControlRegistryService', () => {
       const handler = new MockHandler(
         'sitna.coordinates',
         undefined,
-        undefined,
+        'tc-slot-coordinates',
         'coordinates'
       );
       service.register(handler);
@@ -394,7 +391,7 @@ describe('ControlRegistryService', () => {
       const handler = new MockHandler(
         'sitna.search',
         undefined,
-        undefined,
+        'tc-slot-search',
         'search'
       );
       service.register(handler);
@@ -525,7 +522,7 @@ describe('ControlRegistryService', () => {
       const result = await service.processControls(tasks, context);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(result.featureInfo).toBe(false);
+      expect(result.featureInfo).toBeUndefined();
     });
   });
 
@@ -534,13 +531,13 @@ describe('ControlRegistryService', () => {
       const handler1 = new MockHandler(
         'sitna.scale',
         undefined,
-        'scale',
+        'tc-slot-scale',
         'scale'
       );
       const handler2 = new MockHandler(
         'sitna.coordinates',
         undefined,
-        'coordinates',
+        'tc-slot-coordinates',
         'coordinates'
       );
       service.register(handler1);
@@ -561,19 +558,19 @@ describe('ControlRegistryService', () => {
       const handler1 = new MockHandler(
         'sitna.scale',
         undefined,
-        'scale',
-        'scale'
+        'tc-slot-scale',
+        'tc-slot-scale'
       );
       const handler2 = new MockHandler(
         'sitna.scaleBar',
         undefined,
-        'scale',
+        'tc-slot-scale',
         'scaleBar'
       );
       const handler3 = new MockHandler(
         'sitna.scaleSelector',
         undefined,
-        'scale',
+        'tc-slot-scale',
         'scaleSelector'
       );
       service.register(handler1);
@@ -592,7 +589,7 @@ describe('ControlRegistryService', () => {
       expect(notificationService.warning).toHaveBeenCalledTimes(1);
       expect(notificationService.warning).toHaveBeenCalledWith(
         expect.stringContaining(
-          "Configuration conflict: Multiple controls are using the same div 'scale'"
+          "Configuration conflict: Multiple controls are using the same div 'tc-slot-scale'"
         )
       );
       expect(notificationService.warning).toHaveBeenCalledWith(
@@ -604,25 +601,25 @@ describe('ControlRegistryService', () => {
       const handler1 = new MockHandler(
         'sitna.scale',
         undefined,
-        'scale',
+        'tc-slot-scale',
         'scale'
       );
       const handler2 = new MockHandler(
         'sitna.scaleBar',
         undefined,
-        'scale',
+        'tc-slot-scale',
         'scaleBar'
       );
       const handler3 = new MockHandler(
         'sitna.coordinates',
         undefined,
-        'coordinates',
+        'tc-slot-coordinates',
         'coordinates'
       );
       const handler4 = new MockHandler(
         'sitna.legend',
         undefined,
-        'coordinates',
+        'tc-slot-coordinates',
         'legend'
       );
       service.register(handler1);
@@ -642,10 +639,10 @@ describe('ControlRegistryService', () => {
 
       expect(notificationService.warning).toHaveBeenCalledTimes(2);
       expect(notificationService.warning).toHaveBeenCalledWith(
-        expect.stringContaining("div 'scale'")
+        expect.stringContaining("div 'tc-slot-scale'")
       );
       expect(notificationService.warning).toHaveBeenCalledWith(
-        expect.stringContaining("div 'coordinates'")
+        expect.stringContaining("div 'tc-slot-coordinates'")
       );
     });
 
@@ -818,6 +815,130 @@ describe('ControlRegistryService', () => {
         expect.stringContaining('Failed to build default config'),
         expect.any(Error)
       );
+    });
+  });
+
+  describe('displayElevation configuration', () => {
+    it('should include displayElevation from default config when featureInfo is auto-enabled', async () => {
+      // Mock that featureInfo is enabled by default
+      appConfigService.isEnabledByDefault.mockImplementation(
+        (controlIdentifier: string) => controlIdentifier === 'sitna.featureInfo'
+      );
+
+      // Mock getControlDefault to return config with displayElevation
+      appConfigService.getControlDefault.mockImplementation(
+        (controlIdentifier: string) => {
+          if (controlIdentifier === 'sitna.featureInfo') {
+            return {
+              displayElevation: true,
+              persistentHighlights: true
+            };
+          }
+          return null;
+        }
+      );
+
+      // Create a handler that properly uses getDefaultConfig
+      class FeatureInfoMockHandler implements ControlHandler {
+        readonly controlIdentifier = 'sitna.featureInfo';
+        readonly sitnaConfigKey = 'featureInfo';
+        private appConfigService: AppConfigService;
+
+        constructor(appConfigService: AppConfigService) {
+          this.appConfigService = appConfigService;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        async loadPatches(): Promise<void> {}
+
+        buildConfiguration(
+          task: AppTasks,
+          _context: AppCfg
+        ): SitnaControlConfig | null {
+          const defaultConfig =
+            this.appConfigService.getControlDefault(this.controlIdentifier) ||
+            {};
+          const params = task.parameters || {};
+          return { ...defaultConfig, ...params };
+        }
+
+        isReady(): boolean {
+          return true;
+        }
+      }
+
+      const featureInfoHandler = new FeatureInfoMockHandler(appConfigService);
+      service.register(featureInfoHandler);
+
+      const tasks: AppTasks[] = [];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.featureInfo).toBeDefined();
+      expect(result.featureInfo).toHaveProperty('displayElevation', true);
+      expect(result.featureInfo).toHaveProperty('persistentHighlights', true);
+    });
+
+    it('should include displayElevation when featureInfo task is provided with empty parameters', async () => {
+      // Mock getControlDefault to return config with displayElevation
+      appConfigService.getControlDefault.mockImplementation(
+        (controlIdentifier: string) => {
+          if (controlIdentifier === 'sitna.featureInfo') {
+            return {
+              displayElevation: true,
+              persistentHighlights: true
+            };
+          }
+          return null;
+        }
+      );
+
+      // Create a handler that properly uses getDefaultConfig
+      class FeatureInfoMockHandler implements ControlHandler {
+        readonly controlIdentifier = 'sitna.featureInfo';
+        readonly sitnaConfigKey = 'featureInfo';
+        private appConfigService: AppConfigService;
+
+        constructor(appConfigService: AppConfigService) {
+          this.appConfigService = appConfigService;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        async loadPatches(): Promise<void> {}
+
+        buildConfiguration(
+          task: AppTasks,
+          _context: AppCfg
+        ): SitnaControlConfig | null {
+          const defaultConfig =
+            this.appConfigService.getControlDefault(this.controlIdentifier) ||
+            {};
+          const params = task.parameters || {};
+          return { ...defaultConfig, ...params };
+        }
+
+        isReady(): boolean {
+          return true;
+        }
+      }
+
+      const featureInfoHandler = new FeatureInfoMockHandler(appConfigService);
+      service.register(featureInfoHandler);
+
+      const tasks: AppTasks[] = [
+        {
+          'ui-control': 'sitna.featureInfo',
+          parameters: {}
+        } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(result.featureInfo).toBeDefined();
+      expect(result.featureInfo).toHaveProperty('displayElevation', true);
+      expect(result.featureInfo).toHaveProperty('persistentHighlights', true);
     });
   });
 });

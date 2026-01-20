@@ -35,7 +35,7 @@ describe('MeasureControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockAppConfigService.getControlDefault.mockReturnValue({
-      div: 'measure'
+      div: 'tc-slot-measure'
     });
 
     TestBed.configureTestingModule({
@@ -100,7 +100,7 @@ describe('MeasureControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'measure' });
+      expect(config).toEqual({ div: 'tc-slot-measure' });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -117,7 +117,7 @@ describe('MeasureControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'measure',
+        div: 'tc-slot-measure',
         customOption: 'value',
         anotherOption: true
       });
@@ -199,7 +199,7 @@ describe('MeasureControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('measure');
+      expect(config?.div).toBe('tc-slot-measure');
       expect(config?.['customOption']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });

@@ -15,17 +15,6 @@
   left: 20px !important;
 }
 
-.tc-ctl-sv {
-  top: 268px !important;
-  left: 20px;
-  position: absolute;
-}
-
-.tc-ctl-sv-btn {
-  left: 20px;
-  top: 338px;
-  margin-top: 0px;
-}
 
 .tc-ctl-be {
   left: 20px;
@@ -37,7 +26,7 @@
 /* Search positioning */
 .tc-ctl-search-content {
   position: absolute;
-  top: 3.2em;
+  top: 3.7em;
   left: 6%;
   padding: 0;
   width: 340px;
@@ -53,8 +42,17 @@
   display: none;
 }
 
-.tc-ctl-search-content.tc-ctl.tc-ctl-search.search-left-collapsed {
-  left: 410px;
+/* Move search control right when left panel is expanded */
+/* CSS :has() selector for modern browsers */
+.tc-map:has(.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left)) .tc-ctl-search-content {
+  left: 410px; /* 320px panel width + 20px margin + 70px spacing */
+  transition: left 200ms;
+}
+
+/* JavaScript fallback class for browsers without :has() support */
+.tc-ctl-search-content.search-left-expanded {
+  left: 410px; /* 320px panel width + 20px margin + 70px spacing */
+  transition: left 200ms;
 }
 
 .tc-ctl-search-content > h2 {
@@ -169,7 +167,7 @@
   }
 
   /* Hide coordinates on mobile */
-  #coordinates {
+  #tc-slot-coordinates {
     display: none;
   }
 }

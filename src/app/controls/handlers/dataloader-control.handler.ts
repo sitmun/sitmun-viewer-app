@@ -32,7 +32,7 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
 
   /**
    * Build configuration for dataLoader control.
-   * Always sets div to 'xdata' and handles optional parameters:
+   * Always sets div to 'tc-slot-xdata' and handles optional parameters:
    * - wmsSuggestions: Array of WMS group options
    * - enableDragAndDrop: Boolean (defaults to true if not specified)
    */
@@ -40,9 +40,9 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
-    // Always set div to 'xdata' (required by SITNA)
+    // Always set div to 'tc-slot-xdata' (required by SITNA)
     const config: SitnaControlConfig = {
-      div: 'xdata'
+      div: 'tc-slot-xdata'
     };
 
     // If parameters are empty, return minimal config

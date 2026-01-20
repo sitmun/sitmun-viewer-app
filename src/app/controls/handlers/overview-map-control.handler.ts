@@ -11,7 +11,8 @@ import { SitnaControlConfig } from '../control-handler.interface';
 
 /**
  * Handler for the native SITNA overviewMap control.
- * Requires layer resolution from situation-map configuration.
+ * Resolves layer from application situation-map: uses first layer from the group.
+ * Falls back to first basemap from backgrounds when situation-map is not configured.
  *
  * Control Type: sitna.overviewMap
  * Patches: None (native SITNA control)
@@ -51,25 +52,90 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
     }
 
     // Parameters empty - check situation-map (legacy line 535)
-    if (!context.application?.['situation-map']) {
-      // No situation-map: use default 'mapabase' (legacy lines 573-576)
-      return {
-        div: defaultConfig.div,
-        layer: 'mapabase'
-      };
+    const situationMapId = context.application?.['situation-map'];
+
+    if (!situationMapId) {
+      // No situation-map: use first basemap from backgrounds
+      const defaultLayer = this.resolveFirstBasemap(context);
+      if (defaultLayer) {
+        return {
+          div: defaultConfig['div'],
+          layer: defaultLayer
+        };
+      }
+      // No basemaps available: disable control
+      return null;
     }
 
     // Situation-map exists: try to resolve (legacy lines 536-568)
     const resolvedLayer = this.resolveLayerFromSituationMap(context);
     if (resolvedLayer) {
       return {
-        div: defaultConfig.div,
+        div: defaultConfig['div'],
         layer: resolvedLayer
       };
     }
 
-    // Resolution failed: disable control (legacy behavior)
+    // Resolution failed: try first basemap as fallback
+    const fallbackLayer = this.resolveFirstBasemap(context);
+    if (fallbackLayer) {
+      return {
+        div: defaultConfig['div'],
+        layer: fallbackLayer
+      };
+    }
+
+    // No basemaps available: disable control
     return null;
+  }
+
+  /**
+   * Resolve first basemap from backgrounds configuration.
+   * Used as fallback when situation-map is not configured.
+   */
+  private resolveFirstBasemap(context: AppCfg): SitnaBaseLayer | null {
+    if (!context.backgrounds?.length) {
+      return null;
+    }
+
+    // Get first background
+    const firstBackground = context.backgrounds[0];
+    const group =
+      this.configLookup.findGroup(firstBackground.id) ||
+      context.groups.find((g) => g.id === firstBackground.id);
+
+    if (!group?.layers?.length) {
+      return null;
+    }
+
+    // Get first layer from first background group
+    const layerId = group.layers[0];
+    const layer =
+      this.configLookup.findLayer(layerId) ||
+      context.layers.find((l) => l.id === layerId);
+
+    if (!layer) {
+      return null;
+    }
+
+    // Get service
+    const service =
+      this.configLookup.findService(layer.service) ||
+      context.services.find((s) => s.id === layer.service);
+
+    if (!service?.url) {
+      return null;
+    }
+
+    // Build SitnaBaseLayer matching LayerCatalog.addLayerToMap structure
+    const result: SitnaBaseLayer = {
+      id: layer.title,
+      title: layer.title,
+      url: service.url,
+      type: service.type,
+      layerNames: layer.layers
+    };
+    return result;
   }
 
   /**
@@ -111,12 +177,15 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
       return null;
     }
 
-    // Build SitnaBaseLayer (legacy lines 563-567)
-    return {
+    // Build SitnaBaseLayer matching LayerCatalog.addLayerToMap structure
+    const result: SitnaBaseLayer = {
       id: layer.title,
+      title: layer.title,
       url: service.url,
+      type: service.type,
       layerNames: layer.layers
     };
+    return result;
   }
 
   override isReady(): boolean {

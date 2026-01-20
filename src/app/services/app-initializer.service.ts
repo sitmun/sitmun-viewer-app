@@ -16,7 +16,6 @@ export class AppInitializerService {
     try {
       // Wait for SITNA script to load
       await this.sitnaNamespaceService.waitForSITNA(50, 100);
-      console.log('[AppInitializer] SITNA loaded successfully');
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
       // eslint-disable-next-line no-console

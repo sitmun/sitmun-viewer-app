@@ -220,14 +220,15 @@ export abstract class ControlHandlerBase implements ControlHandler {
    *
    * @returns Default configuration object from app-config.json, or empty object if not found
    */
-  protected getDefaultConfig(): { div: string } {
+  protected getDefaultConfig(): Record<string, any> {
     // Get configuration from app-config.json
     const configDefault = this.appConfigService.getControlDefault(
       this.controlIdentifier
     );
 
     // Return config default or empty object
-    return (configDefault || {}) as { div: string };
+    // Use Record<string, any> to preserve all properties (div, displayElevation, etc.)
+    return configDefault || {};
   }
 
   /**

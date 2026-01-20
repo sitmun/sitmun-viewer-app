@@ -14,9 +14,10 @@ import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import SitnaMap, { Cfg as SitnaCfg } from 'api-sitna';
+import SitnaMap from 'api-sitna';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
@@ -29,13 +30,11 @@ export abstract class AbstractMapComponent
 {
   private componentDestroyed = new Subject<void>();
   private isInEmbedded: boolean;
-  private layerCatalogsSilme: any;
   private currentCatalogIdx: number;
   private currentGeneralCfg: GeneralCfg | undefined;
   private currentAppCfg: AppCfg | undefined;
   private commonServiceSubscription: Subscription | undefined;
   private map: any;
-  private resizeObserver: ResizeObserver | undefined;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -54,7 +53,8 @@ export abstract class AbstractMapComponent
     private configLookup: ConfigLookupService,
     private mapConfig: MapConfigurationService,
     private mapInterface: MapInterfaceService,
-    private mapServiceWorker: MapServiceWorkerService
+    private mapServiceWorker: MapServiceWorkerService,
+    private appConfigService: AppConfigService
   ) {
     const path = this.location.path();
     this.isInEmbedded = path.includes('embedded');
@@ -103,16 +103,11 @@ export abstract class AbstractMapComponent
   ngAfterViewInit() {
     // Wait for SITNA to be available before initializing map
     this.waitForSITNAAndInitialize();
-    // Setup ResizeObserver to detect when map container size changes
-    this.setupResizeObserver();
   }
 
   ngOnDestroy() {
     if (this.commonServiceSubscription) {
       this.commonServiceSubscription.unsubscribe();
-    }
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
     }
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
@@ -170,20 +165,6 @@ export abstract class AbstractMapComponent
       views: this.mapConfig.toViews(appCfg)
     };
 
-    // Log full map configuration (this is where the actual configuration is built)
-    const configForLogging = JSON.parse(JSON.stringify(this.currentGeneralCfg));
-    // Remove silmeSearch from controls for logging
-    if (
-      configForLogging.controls &&
-      (configForLogging.controls as any).silmeSearch
-    ) {
-      delete (configForLogging.controls as any).silmeSearch;
-    }
-    const controlsForLogging = { ...this.currentGeneralCfg.controls } as any;
-    if (controlsForLogging.silmeSearch) {
-      delete controlsForLogging.silmeSearch;
-    }
-
     this.mapServiceWorker.loadMiddleware(appCfg);
 
     // We need to save the currentGeneralCfg and the currentAppCfg, so when the
@@ -223,10 +204,7 @@ export abstract class AbstractMapComponent
       return; // This is a safeguard, but it should never happen
     }
 
-    // Support both Silme and patched layer catalog
     const layerCatalogsForModal = (window as any).layerCatalogsForModal;
-    const layerCatalogsSilmeForModal = (window as any)
-      .layerCatalogsSilmeForModal;
 
     if (layerCatalogsForModal) {
       // Rebuild controls to pick up the new currentTreeId
@@ -244,17 +222,6 @@ export abstract class AbstractMapComponent
             this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
           }
         });
-    } else if (layerCatalogsSilmeForModal) {
-      // Silme layer catalog - use existing logic
-      this.currentCatalogIdx = layerCatalogsSilmeForModal.currentCatalog;
-      SitnaCfg.controls.layerCatalogSilmeFolders =
-        this.layerCatalogsSilme[this.currentCatalogIdx].catalog;
-      this.clearMap();
-      this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
-    } else {
-      console.warn(
-        '[AbstractMapComponent] No catalog modal state found, cannot update catalog'
-      );
     }
   }
 
@@ -297,16 +264,7 @@ export abstract class AbstractMapComponent
   }
 
   parseLang(lang: string): string {
-    switch (lang) {
-      case 'es':
-        return lang.concat('-ES');
-      case 'en':
-        return lang.concat('-US');
-      case 'ca':
-        return lang.concat('-CA');
-      default:
-        return 'es-ES';
-    }
+    return this.appConfigService.getLocaleForLanguage(lang);
   }
 
   checkConfiguration(cfg: GeneralCfg) {
@@ -337,12 +295,6 @@ export abstract class AbstractMapComponent
   }
 
   private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
-    const cfgForLogging = JSON.parse(JSON.stringify(cfg));
-    // Remove silmeSearch from controls for logging
-    if (cfgForLogging.controls && (cfgForLogging.controls as any).silmeSearch) {
-      delete (cfgForLogging.controls as any).silmeSearch;
-    }
-
     try {
       this.map = new SitnaMap('mapa', cfg);
     } catch (error) {
@@ -410,156 +362,6 @@ export abstract class AbstractMapComponent
     };
 
     checkSITNA();
-  }
-
-  private setupResizeObserver(): void {
-    const mapContainer = this.el.nativeElement.querySelector('.map-container');
-    if (!mapContainer) {
-      return;
-    }
-
-    // Create ResizeObserver to watch for container size changes
-    this.resizeObserver = new ResizeObserver(() => {
-      // Trigger map resize when container size changes
-      this.updateMapSize();
-    });
-
-    // Start observing the map container
-    this.resizeObserver.observe(mapContainer);
-  }
-
-  private updateMapSize(): void {
-    return;
-    if (!this.map) {
-      return;
-    }
-
-    try {
-      // Call SITNA map's updateSize method
-      if (this.map.updateSize) {
-        this.map.updateSize();
-      }
-
-      // Also update the underlying OpenLayers map if accessible
-      if (this.map.wrap) {
-        const olMap =
-          this.map.wrap.map || this.map.wrap._map || this.map.wrap.getMap?.();
-
-        if (olMap) {
-          if (olMap.updateSize) {
-            olMap.updateSize();
-          }
-          if (olMap.render) {
-            olMap.render();
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error updating map size:', error);
-    }
-  }
-
-  /**
-   * Get the last loaded blob script element (layout script from SITNA).
-   * Useful for debugging or accessing the script after SITNA loads it.
-   *
-   * @returns The script element or null if not found
-   */
-  getLastBlobScript(): HTMLScriptElement | null {
-    return (window as any).__lastLoadedBlobScript || null;
-  }
-
-  /**
-   * Get the last executed blob script with execution timing information.
-   *
-   * @returns Object with script element and execution info, or null if not found
-   */
-  getLastExecutedBlobScript(): {
-    element: HTMLScriptElement;
-    scriptInfo: any;
-  } | null {
-    return (window as any).__lastExecutedBlobScript || null;
-  }
-
-  /**
-   * Wait for the blob script to execute and then run a callback.
-   *
-   * @param callback - Function to execute after script runs
-   * @param timeout - Maximum time to wait in milliseconds (default: 5000)
-   */
-  waitForBlobScriptExecution(
-    callback: (script: HTMLScriptElement) => void,
-    timeout = 5000
-  ): void {
-    const startTime = Date.now();
-
-    const checkExecution = () => {
-      const executed = (window as any).__lastExecutedBlobScript;
-      if (executed && executed.scriptInfo.executed) {
-        console.log(
-          '[AbstractMapComponent] Blob script execution detected, running callback'
-        );
-        callback(executed.element);
-        return;
-      }
-
-      if (Date.now() - startTime > timeout) {
-        console.warn(
-          '[AbstractMapComponent] Timeout waiting for blob script execution'
-        );
-        return;
-      }
-
-      // Check again after a short delay
-      setTimeout(checkExecution, 100);
-    };
-
-    // Also listen for the custom event
-    const eventHandler = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail && customEvent.detail.script) {
-        console.log(
-          '[AbstractMapComponent] Blob script execution event received'
-        );
-        callback(customEvent.detail.script);
-        document.removeEventListener('blobscriptexecuted', eventHandler);
-      }
-    };
-    document.addEventListener('blobscriptexecuted', eventHandler);
-
-    // Start checking
-    checkExecution();
-  }
-
-  /**
-   * Get all blob script elements that were created.
-   *
-   * @returns Array of script elements with blob URLs
-   */
-  getAllBlobScripts(): HTMLScriptElement[] {
-    const scripts = (window as any).__blobScripts || [];
-    return scripts
-      .map((entry: any) => entry.element)
-      .filter(
-        (script: HTMLScriptElement) => script && document.head.contains(script)
-      );
-  }
-
-  /**
-   * Find a blob script by its source URL pattern.
-   *
-   * @param urlPattern - Pattern to match in the blob URL
-   * @returns The script element or null if not found
-   */
-  findBlobScript(urlPattern: string): HTMLScriptElement | null {
-    const allScripts = document.head.querySelectorAll('script[src^="blob:"]');
-    for (let i = 0; i < allScripts.length; i++) {
-      const script = allScripts[i] as HTMLScriptElement;
-      if (script.src.includes(urlPattern)) {
-        return script;
-      }
-    }
-    return null;
   }
 
   abstract navigateToDashboard(): any;

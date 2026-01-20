@@ -84,7 +84,7 @@ describe('FullScreenControlHandler', () => {
   describe('buildConfiguration()', () => {
     it('should return configuration with default div when available', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'FuScreen'
+        div: 'tc-slot-fullscreen'
       });
 
       const task: AppTasks = {
@@ -96,7 +96,7 @@ describe('FullScreenControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toBeDefined();
-      expect(config?.div).toBe('FuScreen');
+      expect(config?.div).toBe('tc-slot-fullscreen');
     });
 
     it('should return empty config when no default div configured', () => {
@@ -116,7 +116,7 @@ describe('FullScreenControlHandler', () => {
 
     it('should merge task parameters', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'FuScreen'
+        div: 'tc-slot-fullscreen'
       });
 
       const task: AppTasks = {
@@ -137,7 +137,7 @@ describe('FullScreenControlHandler', () => {
 
     it('should allow parameters to override default div', () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'FuScreen'
+        div: 'tc-slot-fullscreen'
       });
 
       const task: AppTasks = {
@@ -163,7 +163,7 @@ describe('FullScreenControlHandler', () => {
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
-        div: 'FuScreen'
+        div: 'tc-slot-fullscreen'
       });
 
       // Load patches (no-op for native control)

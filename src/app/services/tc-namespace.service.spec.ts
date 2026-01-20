@@ -153,15 +153,11 @@ describe('TCNamespaceService', () => {
       (window as any).TC = { control: {} };
 
       // Start waiting
-      const waitPromise = service.waitForTCProperty(
-        'control.SearchSilme',
-        10,
-        10
-      );
+      const waitPromise = service.waitForTCProperty('control.Search', 10, 10);
 
       // Add property after 50ms
       setTimeout(() => {
-        (window as any).TC.control.SearchSilme = class SearchSilme {};
+        (window as any).TC.control.Search = class Search {};
       }, 50);
 
       const result = await waitPromise;

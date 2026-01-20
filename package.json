@@ -13,12 +13,16 @@
     "deploy": "ng deploy",
     "clean": "bash scripts/clean.sh",
     "clean:force": "bash scripts/clean.sh --force",
-    "clean:build": "bash scripts/clean.sh --build-only"
+    "clean:build": "bash scripts/clean.sh --build-only",
+    "postinstall": "node scripts/patch-printmap-logo.js"
   },
   "private": true,
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
+  },
+  "overrides": {
+    "pdfmake": "0.1.70"
   },
   "dependencies": {
     "@angular/animations": "^16.2.12",

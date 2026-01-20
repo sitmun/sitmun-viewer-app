@@ -50,6 +50,12 @@ textarea {
   top: 36em;
 }
 
+.tc-ctl.tc-ctl-sv {
+  position: absolute;
+  left: 20px;
+  top: 11.7em !important;
+}
+
 .tc-ctl-nav .tc-ctl-nav-btn-zoomin,
 .tc-ctl-nav .tc-ctl-nav-btn-zoomout,
 .tc-ctl-nav-home-btn,
@@ -208,6 +214,11 @@ button.tc-ctl-fscreen-btn {
   background-color: rgba(0, 0, 0, 1);
 }
 
+.tc-ovmap-panel > h1 {
+  background-color: rgba(0, 0, 0, 1);
+  top: auto !important;
+}
+
 /* When collapsed, hide the text and show icon */
 .tc-tools-panel.tc-collapsed-right > h1 {
   text-indent: -999em;
@@ -218,17 +229,43 @@ button.tc-ctl-fscreen-btn {
   transform: rotate(0deg);
 }
 
+.tc-ovmap-panel.tc-collapsed-right > h1 {
+  text-indent: -999em;
+  background-image: none;
+  transform: rotate(0deg);
+  left: -30px;
+  right: auto;
+}
+
+.tc-ovmap-panel.tc-collapsed-right > h1::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  -webkit-mask: url(./img/overview-map.svg) center/20px 20px no-repeat;
+  mask: url(./img/overview-map.svg) center/20px 20px no-repeat;
+  border-radius: 0 !important;
+}
+
 .tc-right-panel.tc-collapsed > h1,
 .tc-right-panel.tc-collapsed-right > h1 {
   left: -20px;
   right: 20px;
   transition: right 200ms, left 200ms;
   background-color: rgba(0, 0, 0, 0.8);
-  border-bottom-left-radius: 0px !important;
+  border-radius: 0px !important;
 }
 
 /* When expanded, show text and hide icon */
 .tc-tools-panel:not(.tc-collapsed-right) > h1 {
+  background-image: none;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1 {
   background-image: none;
 }
 
@@ -290,11 +327,17 @@ button.tc-ctl-fscreen-btn:hover {
   max-height: 100%;
 }
 
+.tc-ovmap-panel:not(.tc-collapsed-right) {
+  left: calc(100% - 220px);
+  right: 0px;
+  height: 15%;
+}
+
 /* When panel is expanded (not collapsed) */
-.tc-tools-panel:not(.tc-collapsed-right) > h1 {
+.tc-tools-panel:not(.tc-collapsed-right) > h1 {  
   position: absolute;
   bottom: 0;
-  top: auto;
+  top: 0;
   width: 40px;
   height: 40px;
   opacity: 1;
@@ -311,7 +354,37 @@ button.tc-ctl-fscreen-btn:hover {
   left: 10px !important;
 }
 
+.tc-ctl-ovmap {
+  width: 115%;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1 {
+  top: 0;
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  opacity: 1;
+  text-indent: -999em;
+  background-image: url(./img/closeIcon.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 40px 40px !important;
+  background-color: #b51818;
+  transform-origin: center center;
+  transform: rotate(180deg) !important;
+  width: 40px !important;
+  border-radius: 0px !important;
+  left: -30px !important;
+}
+
 .tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content {
+  top: 0;
+  bottom: 3.75em; /* Space for tab at bottom */
+  display: flex;
+  flex-direction: column;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) > .tc-panel-content {
   top: 0;
   bottom: 3.75em; /* Space for tab at bottom */
   display: flex;
@@ -381,16 +454,16 @@ input[type='range']:focus {
 
 /* Hide controls when map is collapsed */
 .tc-map.tc-collapsed .tc-tools-panel,
-.tc-map.tc-collapsed #search {
+.tc-map.tc-collapsed #tc-slot-search {
   display: none;
 }
 
-/* Critical override: Force #FuScreen to be absolutely positioned to prevent viewport gap */
+/* Critical override: Force #tc-slot-fullscreen to be absolutely positioned to prevent viewport gap */
 /* This must be at the end to override upstream SITNA CSS */
-#mapa #FuScreen.tc-ctl.tc-ctl-fscreen,
-.tc-map #FuScreen.tc-ctl.tc-ctl-fscreen,
-#mapa #FuScreen,
-.tc-map #FuScreen {
+#mapa #tc-slot-fullscreen.tc-ctl.tc-ctl-fscreen,
+.tc-map #tc-slot-fullscreen.tc-ctl.tc-ctl-fscreen,
+#mapa #tc-slot-fullscreen,
+.tc-map #tc-slot-fullscreen {
   position: absolute !important;
 }
 
@@ -702,7 +775,8 @@ input[type='range']:focus {
 .tc-panel-content .tc-ctl-geolocation > h2,
 .tc-panel-content .tc-ctl-meas > h2,
 .tc-panel-content .tc-ctl-dmm > h2,
-.tc-panel-content .tc-ctl-prnmap > h2 {
+.tc-panel-content .tc-ctl-prnmap > h2,
+.tc-panel-content .tc-ctl-share > h2 {
   display: flex;
   align-items: center;
   background-position: -6px 0px;
@@ -743,11 +817,13 @@ input[type='range']:focus {
   color: var(--sitmun-collapsed-color);
 }
 
-.tc-panel-content .tc-ctl-download > h2 {
+.tc-panel-content .tc-ctl-download > h2,
+.tc-panel-content .tc-ctl-share > h2 {
   background-image: url(./img/downloadN.png);
 }
 
-.tc-panel-content .tc-ctl-download.tc-collapsed > h2 {
+.tc-panel-content .tc-ctl-download.tc-collapsed > h2,
+.tc-panel-content .tc-ctl-share.tc-collapsed > h2 {
   background-image: url(./img/downloadG.png);
   color: var(--sitmun-collapsed-color);
 }
@@ -805,6 +881,11 @@ input[type='range']:focus {
   padding: 0;
 }
 
+/* Ensure data loader container doesn't force stacking over info modal */
+.tc-ctl-tctr-datldr {
+  z-index: auto;
+}
+
 /* Override tc-loading to work as a tag rather than visual cue */
 .tc-ctl-lcat li.tc-ctl-lcat-node.tc-loading > span,
 .tc-ctl-lcat-search li.tc-loading h5 {
@@ -820,4 +901,11 @@ input[type='range']:focus {
   min-height: 0;
   overflow: auto;
   max-height: none !important;
+}
+
+/* Right panel positioning - horizontally centered */
+.tc-map div.tc-ctl-rpanel.tc-resizable {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 3.2em;
 }

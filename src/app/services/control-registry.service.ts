@@ -99,8 +99,16 @@ export class ControlRegistryService {
     }
 
     // Step 1: Identify active controls that have handlers
+    // Filter out disabled controls first (takes precedence over backend configuration)
     const activeControlsWithHandlers = tasks
       .filter((task) => task['ui-control']?.startsWith('sitna.'))
+      .filter((task) => {
+        // Skip if control is disabled in app-config.json
+        if (this.appConfigService.isDisabled(task['ui-control'])) {
+          return false;
+        }
+        return true;
+      })
       .map((task) => ({
         task,
         handler: this.getHandler(task['ui-control'])
@@ -126,9 +134,6 @@ export class ControlRegistryService {
         const config = handler.buildConfiguration(task, context);
 
         if (config === null) {
-          console.log(
-            `[ControlRegistry] Handler for '${task['ui-control']}' returned null config, skipping`
-          );
           continue;
         } else {
           // Control will be used - load patches only if needed
@@ -156,7 +161,7 @@ export class ControlRegistryService {
             );
             continue;
           }
-          sitnaControls[controlKey as keyof SitnaControls] = config as any;
+          (sitnaControls as any)[controlKey] = config;
         }
       } catch (error) {
         console.error(
@@ -167,6 +172,26 @@ export class ControlRegistryService {
       }
     }
 
+    // Post-process: Remove any disabled controls that may have been added
+    // This ensures disabledControls takes precedence over everything
+    for (const [controlIdentifier, handler] of this.handlers.entries()) {
+      if (this.appConfigService.isDisabled(controlIdentifier)) {
+        let controlKey: string;
+        if (typeof (handler as any).getSitnaConfigKey === 'function') {
+          controlKey = (handler as any).getSitnaConfigKey();
+        } else if (handler.sitnaConfigKey) {
+          controlKey = handler.sitnaConfigKey;
+        } else {
+          continue;
+        }
+
+        // Remove disabled control from configuration
+        if (sitnaControls[controlKey as keyof SitnaControls] !== undefined) {
+          delete (sitnaControls as any)[controlKey];
+        }
+      }
+    }
+
     // Post-process: Resolve control dependencies
     // This ensures dependent controls (e.g., Modify for DrawMeasureModify) are enabled
     this.resolveControlDependencies(sitnaControls, activeControls, context);
@@ -174,10 +199,6 @@ export class ControlRegistryService {
     // Post-process: Set default values for controls that are registered but NOT requested
     // Each handler can define its own default value via getDefaultValueWhenMissing()
     this.setDefaultValuesForMissingControls(sitnaControls, context);
-
-    // Post-process: Disable default featureInfo if featureInfo.silme.extension is not requested
-    // This matches legacy behavior from sitna-helpers.ts (now integrated into this service)
-    this.ensureFeatureInfoDisabled(sitnaControls, tasks);
 
     // Validate div usage after all controls are processed
     this.validateDivUsage(sitnaControls);
@@ -222,6 +243,11 @@ export class ControlRegistryService {
       //       any object = enabled by backend (we respect that)
       const currentValue = sitnaControls[controlKey as keyof SitnaControls];
       if (currentValue === undefined) {
+        // Skip if control is disabled in app-config.json (takes precedence over enabledByDefault)
+        if (this.appConfigService.isDisabled(controlIdentifier)) {
+          continue;
+        }
+
         // Check if this control should be enabled by default
         // Only enable if backend hasn't configured it (either enabled or disabled)
         if (this.appConfigService.isEnabledByDefault(controlIdentifier)) {
@@ -236,10 +262,7 @@ export class ControlRegistryService {
           try {
             const config = handler.buildConfiguration(minimalTask, context);
             if (config !== null) {
-              sitnaControls[controlKey as keyof SitnaControls] = config as any;
-              console.log(
-                `[ControlRegistry] Auto-enabled '${controlIdentifier}' (listed in enabledByDefault)`
-              );
+              (sitnaControls as any)[controlKey] = config;
               continue;
             }
           } catch (error) {
@@ -255,7 +278,7 @@ export class ControlRegistryService {
         const defaultValue = (handler as any).getDefaultValueWhenMissing?.();
 
         if (defaultValue !== undefined) {
-          sitnaControls[controlKey as keyof SitnaControls] = defaultValue;
+          (sitnaControls as any)[controlKey] = defaultValue;
         } else {
           // This should never happen - all handlers must return a value
           console.warn(
@@ -283,6 +306,11 @@ export class ControlRegistryService {
     for (const { handler } of activeControls) {
       if (handler.dependencies && handler.dependencies.length > 0) {
         for (const depIdentifier of handler.dependencies) {
+          // Skip if dependency is disabled in app-config.json
+          if (this.appConfigService.isDisabled(depIdentifier)) {
+            continue;
+          }
+
           const depHandler = this.getHandler(depIdentifier);
           if (depHandler) {
             // Get the SITNA config key for the dependency
@@ -305,8 +333,7 @@ export class ControlRegistryService {
                 context
               );
               if (depConfig !== null) {
-                sitnaControls[depConfigKey as keyof SitnaControls] =
-                  depConfig as any;
+                (sitnaControls as any)[depConfigKey] = depConfig;
               }
             }
           } else {
@@ -316,32 +343,6 @@ export class ControlRegistryService {
           }
         }
       }
-    }
-  }
-
-  /**
-   * Ensure featureInfo is disabled if featureInfo.silme.extension is not requested.
-   * This matches legacy behavior from sitna-helpers.ts (now integrated into this service)
-   * where featureInfo = false is set when the control is not present to prevent default SITNA behavior.
-   *
-   * @param sitnaControls - The configured controls object (modified in place)
-   * @param tasks - Array of tasks from backend
-   */
-  private ensureFeatureInfoDisabled(
-    sitnaControls: Partial<SitnaControls>,
-    tasks: AppTasks[]
-  ): void {
-    // Check if featureInfo.silme.extension is requested
-    const hasFeatureInfoSilme = tasks.some(
-      (task) => task['ui-control'] === 'sitna.featureInfo.silme.extension'
-    );
-
-    // If not requested and featureInfo is not already configured, disable it
-    if (!hasFeatureInfoSilme && sitnaControls.featureInfo === undefined) {
-      sitnaControls.featureInfo = false;
-      console.log(
-        '[ControlRegistry] Disabled default featureInfo (featureInfo.silme.extension not requested)'
-      );
     }
   }
 
@@ -357,8 +358,11 @@ export class ControlRegistryService {
     // Iterate through all configured controls
     for (const [controlKey, config] of Object.entries(sitnaControls)) {
       // Extract div from config (handle both string and object configs)
+      // Some control types (like WFSQuery) don't have a div property
       const div =
-        typeof config === 'object' && config !== null ? config.div : null;
+        typeof config === 'object' && config !== null && 'div' in config
+          ? (config as { div?: string }).div
+          : null;
 
       if (div && typeof div === 'string') {
         if (!divUsage.has(div)) {

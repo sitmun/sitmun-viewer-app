@@ -35,7 +35,7 @@ describe('OfflineMapMakerControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockAppConfigService.getControlDefault.mockReturnValue({
-      div: 'offline'
+      div: 'tc-slot-offline'
     });
 
     TestBed.configureTestingModule({
@@ -100,7 +100,7 @@ describe('OfflineMapMakerControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'offline' });
+      expect(config).toEqual({ div: 'tc-slot-offline' });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -117,7 +117,7 @@ describe('OfflineMapMakerControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'offline',
+        div: 'tc-slot-offline',
         averageTileSize: 50000,
         offlineMapHintDiv: 'hint-div'
       });
@@ -150,7 +150,7 @@ describe('OfflineMapMakerControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.div).toBe('offline');
+      expect(config?.div).toBe('tc-slot-offline');
       expect(config?.['averageTileSize']).toBe(75000);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
@@ -166,7 +166,7 @@ describe('OfflineMapMakerControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config?.div).toBe('offline');
+      expect(config?.div).toBe('tc-slot-offline');
       expect(config?.['offlineMapHintDiv']).toBe('custom-hint');
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
@@ -234,7 +234,7 @@ describe('OfflineMapMakerControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('offline');
+      expect(config?.div).toBe('tc-slot-offline');
       expect(config?.['averageTileSize']).toBe(60000);
       expect(config?.['offlineMapHintDiv']).toBe('hint');
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();

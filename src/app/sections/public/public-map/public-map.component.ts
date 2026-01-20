@@ -7,6 +7,7 @@ import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
@@ -33,7 +34,8 @@ export class PublicMapComponent extends AbstractMapComponent {
     configLookup: ConfigLookupService,
     mapConfig: MapConfigurationService,
     mapInterface: MapInterfaceService,
-    mapServiceWorker: MapServiceWorkerService
+    mapServiceWorker: MapServiceWorkerService,
+    appConfigService: AppConfigService
   ) {
     super(
       translate,
@@ -49,7 +51,8 @@ export class PublicMapComponent extends AbstractMapComponent {
       configLookup,
       mapConfig,
       mapInterface,
-      mapServiceWorker
+      mapServiceWorker,
+      appConfigService
     );
   }
 

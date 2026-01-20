@@ -43,7 +43,7 @@ function ensureString(value: unknown): string {
  * Creates WMS capabilities documents that represent SITMUN tree structures as WMS layer hierarchies.
  *
  * This enables standard SITNA controls (like layerCatalog) to work with SITMUN's tree-based
- * configuration without requiring custom Silme extensions.
+ * configuration.
  */
 @Injectable({
   providedIn: 'root'

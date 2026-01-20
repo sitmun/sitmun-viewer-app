@@ -35,7 +35,7 @@ describe('GeolocationControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockAppConfigService.getControlDefault.mockReturnValue({
-      div: 'geolocation'
+      div: 'tc-slot-geolocation'
     });
 
     TestBed.configureTestingModule({
@@ -100,7 +100,7 @@ describe('GeolocationControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'geolocation' });
+      expect(config).toEqual({ div: 'tc-slot-geolocation' });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -117,7 +117,7 @@ describe('GeolocationControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'geolocation',
+        div: 'tc-slot-geolocation',
         customOption: 'value',
         anotherOption: 123
       });
@@ -191,7 +191,7 @@ describe('GeolocationControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('geolocation');
+      expect(config?.div).toBe('tc-slot-geolocation');
       expect(config?.['customOption']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });

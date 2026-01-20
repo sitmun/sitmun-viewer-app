@@ -8,7 +8,6 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 export interface SitnaControlConfig extends Record<string, any> {
   div?: string;
   layers?: any[];
-  silmeNodes?: any[];
   enableSearch?: boolean;
   collapsed?: boolean;
   searchUrl?: string;
@@ -31,7 +30,7 @@ export interface ControlHandler {
   /**
    * Optional: Override the SITNA configuration key.
    * If not provided, the key is auto-generated from controlIdentifier.
-   * Examples: 'layerCatalogSilme', 'search', 'coordinates'
+   * Examples: 'layerCatalog', 'search', 'coordinates'
    */
   readonly sitnaConfigKey?: string;
 

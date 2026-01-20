@@ -83,6 +83,10 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         TC.Consts.classes.COLLAPSED_LEFT || 'left-collapsed';
 
       const ovmap = map.getControlsByClass('TC.control.OverviewMap')[0];
+      const rightPanel = map.div.querySelector(
+        `.${TC.Consts.classes.RIGHT_PANEL}, .right-panel`
+      );
+      const rightToolControls = rightPanel?.querySelectorAll('[data-tools-tab]');
 
       /* --- SITMUN BASE --- */
 
@@ -133,6 +137,119 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         });
       };
 
+      /**
+       * Enable mouse drag for resizable panels.
+       * Uses pointer events to move the panel body.
+       * @param {HTMLElement} panel - Panel root element.
+       */
+      const attachPanelDrag = function (panel) {
+        if (!panel) return;
+        const dragTarget =
+          panel.querySelector('.tc-ctl-rpanel-grp') ||
+          panel.querySelector('.tc-ctl-rpanel-main');
+        if (!dragTarget || dragTarget.dataset.dragInit) return;
+        dragTarget.dataset.dragInit = 'true';
+
+        const handle =
+          dragTarget.querySelector('.tc-ctl-rpanel-heading') || dragTarget;
+
+        const ensureAbsolutePosition = function () {
+          if (dragTarget.dataset.dragPositioned) return;
+          const mapRect = map.div.getBoundingClientRect();
+          const rect = dragTarget.getBoundingClientRect();
+          dragTarget.style.position = 'absolute';
+          dragTarget.style.left = `${rect.left - mapRect.left}px`;
+          dragTarget.style.top = `${rect.top - mapRect.top}px`;
+          dragTarget.dataset.dragPositioned = 'true';
+        };
+
+        const getPosition = function () {
+          const x = parseFloat(dragTarget.style.left || '0');
+          const y = parseFloat(dragTarget.style.top || '0');
+          return { x: isNaN(x) ? 0 : x, y: isNaN(y) ? 0 : y };
+        };
+
+        let startX = 0;
+        let startY = 0;
+        let originX = 0;
+        let originY = 0;
+        let dragging = false;
+
+        const onPointerMove = function (event) {
+          if (!dragging) return;
+          const dx = event.clientX - startX;
+          const dy = event.clientY - startY;
+          dragTarget.style.left = `${originX + dx}px`;
+          dragTarget.style.top = `${originY + dy}px`;
+          event.preventDefault();
+        };
+
+        const stopDrag = function (event) {
+          if (!dragging) return;
+          dragging = false;
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', stopDrag);
+          window.removeEventListener('pointercancel', stopDrag);
+          try {
+            handle.releasePointerCapture(event.pointerId);
+          } catch (_err) {
+            // No-op: pointer capture may already be released.
+          }
+        };
+
+        handle.addEventListener('pointerdown', function (event) {
+          const target = event.target;
+          if (
+            target &&
+            (target.closest('button') ||
+              target.closest('sitna-button') ||
+              target.closest('input') ||
+              target.closest('select') ||
+              target.closest('textarea'))
+          ) {
+            return;
+          }
+          ensureAbsolutePosition();
+          dragging = true;
+          handle.setPointerCapture(event.pointerId);
+          const pos = getPosition();
+          originX = pos.x;
+          originY = pos.y;
+          startX = event.clientX;
+          startY = event.clientY;
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', stopDrag);
+          window.addEventListener('pointercancel', stopDrag);
+          event.preventDefault();
+        });
+      };
+
+      const attachResizablePanelDrag = function () {
+        map.div
+          .querySelectorAll('.tc-ctl-rpanel.tc-resizable, .tc-ctl-wfsquery-results')
+          .forEach(function (panel) {
+            attachPanelDrag(panel);
+          });
+      };
+
+      const setRightPanelView = function (isCollapsed) {
+        toggleControlsVisibility(rightToolControls, true);
+        if (ovmap) {
+          if (isCollapsed) {
+            ovmap.disable();
+          } else {
+            ovmap.enable();
+          }
+        }
+      };
+
+      if (rightPanel) {
+        const initialCollapsed =
+          rightPanel.classList.contains(rcollapsedClass) ||
+          rightPanel.classList.contains(TC.Consts.classes.COLLAPSED);
+        setRightPanelView(initialCollapsed);
+      }
+
       map.div
         .querySelectorAll(
           /* --- LEGACY --- */ `.${TC.Consts.classes.RIGHT_PANEL} > h1, .right-panel > h1`
@@ -144,17 +261,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             const tab = e.target;
             const panel = tab.parentElement;
             const isCollapsed = panel.classList.toggle(rcollapsedClass);
-            if (map && panel === ovPanel) {
-              if (ovmap) {
-                if (isCollapsed) {
-                  ovmap.disable();
-                } else {
-                  setTimeout(function () {
-                    ovmap.enable();
-                  }, 250);
-                }
-              }
-            }
+            setRightPanelView(isCollapsed);
           });
         });
 
@@ -178,6 +285,21 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             if (tabId === 'legend-tab' || tabId === 'tools-tab') {
               // Toggle panel collapse
               const isCollapsed = panel.classList.toggle(lcollapsedClass);
+
+              // Update search control position based on left panel state
+              const searchControl = map.getControlsByClass(TC.control.Search)[0];
+              if (searchControl && searchControl.div) {
+                const searchContent = searchControl.div.querySelector('.tc-ctl-search-content');
+                if (searchContent) {
+                  if (isCollapsed) {
+                    // Left panel collapsed - remove class to use default position
+                    searchContent.classList.remove('search-left-expanded');
+                  } else {
+                    // Left panel expanded - add class to move search right
+                    searchContent.classList.add('search-left-expanded');
+                  }
+                }
+              }
 
               if (!isCollapsed) {
                 if (tabId === 'legend-tab') {
@@ -209,7 +331,22 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
               }
             } else {
               // For other tabs, just toggle collapse
-              panel.classList.toggle(lcollapsedClass);
+              const isCollapsed = panel.classList.toggle(lcollapsedClass);
+
+              // Update search control position based on left panel state
+              const searchControl = map.getControlsByClass(TC.control.Search)[0];
+              if (searchControl && searchControl.div) {
+                const searchContent = searchControl.div.querySelector('.tc-ctl-search-content');
+                if (searchContent) {
+                  if (isCollapsed) {
+                    // Left panel collapsed - remove class to use default position
+                    searchContent.classList.remove('search-left-expanded');
+                  } else {
+                    // Left panel expanded - add class to move search right
+                    searchContent.classList.add('search-left-expanded');
+                  }
+                }
+              }
             }
           });
         });
@@ -287,11 +424,31 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
       });
 
       map.loaded(function () {
+        // Initialize search control position based on left panel state
+        const leftPanel = map.div.querySelector(
+          `.${TC.Consts.classes.LEFT_PANEL}`
+        );
+        const searchControl = map.getControlsByClass(TC.control.Search)[0];
+        if (leftPanel && searchControl && searchControl.div) {
+          const searchContent = searchControl.div.querySelector('.tc-ctl-search-content');
+          if (searchContent) {
+            const isLeftPanelCollapsed =
+              leftPanel.classList.contains(lcollapsedClass) ||
+              leftPanel.classList.contains(TC.Consts.classes.COLLAPSED);
+            if (isLeftPanelCollapsed) {
+              searchContent.classList.remove('search-left-expanded');
+            } else {
+              searchContent.classList.add('search-left-expanded');
+            }
+          }
+        }
+
         const ovmap = map.getControlsByClass('TC.control.OverviewMap')[0];
-        if (ovmap) {
-          ovmap.loaded(function () {
-            ovmap.disable();
-          });
+        if (ovmap && rightPanel) {
+          const isCollapsed =
+            rightPanel.classList.contains(rcollapsedClass) ||
+            rightPanel.classList.contains(TC.Consts.classes.COLLAPSED);
+          setRightPanelView(isCollapsed);
         }
         //mover el Multifeature info dentro del TOC
         const toc = map.getControlsByClass('TC.control.WorkLayerManager')[0];
@@ -326,6 +483,13 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           }
         ]);
       });
+
+      // Observe results panel creation to attach dragging.
+      attachResizablePanelDrag();
+      const panelObserver = new MutationObserver(function () {
+        attachResizablePanelDrag();
+      });
+      panelObserver.observe(map.div, { childList: true, subtree: true });
 
       SITNA.Consts.event.TOOLSCLOSE =
         SITNA.Consts.event.TOOLSCLOSE || 'toolsclose.tc';

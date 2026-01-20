@@ -1,101 +1,171 @@
 {
   "attribution": "<a href=\"https://github.com/sitmun\" target=\"_blank\">SITMUN</a>",
+  "testConfigFile": "test.json",
   "dashboard": {
     "allowedTypes": ["I"],
     "filteringEnabled": true
   },
   "defaultLanguage": "es",
   "languages": [
-    { "name": "Español", "shortname": "es", "icon": "assets/flags/spain.svg" },
+    {
+      "name": "Español",
+      "shortname": "es",
+      "locale": "es-ES",
+      "icon": "assets/flags/spain.svg"
+    },
     {
       "name": "English",
       "shortname": "en",
+      "locale": "en-US",
       "icon": "assets/flags/united-kingdom.svg"
     },
     {
       "name": "Français",
       "shortname": "fr",
+      "locale": "fr-FR",
       "icon": "assets/flags/france.svg"
     },
-    { "name": "Català", "shortname": "ca", "icon": "assets/flags/catalan.svg" },
+    {
+      "name": "Català",
+      "shortname": "ca",
+      "locale": "ca-CA",
+      "icon": "assets/flags/catalan.svg"
+    },
     {
       "name": "Aranés",
       "shortname": "oc-aranes",
+      "locale": "oc-aranes-ES",
       "icon": "assets/flags/val-aran.svg"
     }
   ],
-  "enabledByDefault": ["sitna.multiFeatureInfo"],
+  "enabledByDefault": [
+    "sitna.attribution",
+    "sitna.basemapSelector",
+    "sitna.click",
+    "sitna.coordinates",
+    "sitna.dataLoader",
+    "sitna.download",
+    "sitna.drawMeasureModify",
+    "sitna.featureInfo",
+    "sitna.fullScreen",
+    "sitna.geolocation",
+    "sitna.layerCatalog",
+    "sitna.legend",
+    "sitna.loadingIndicator",
+    "sitna.measure",
+    "sitna.multiFeatureInfo",
+    "sitna.navBar",
+    "sitna.overviewMap",
+    "sitna.popup",
+    "sitna.printMap",
+    "sitna.search",
+    "sitna.share",
+    "sitna.streetView",
+    "sitna.threed",
+    "sitna.WFSQuery",
+    "sitna.workLayerManager"
+  ],
+  "disabledControls": [
+    "sitna.WFSEdit",
+    "sitna.offlineMapMaker"
+  ],
   "controlDefaults": {
     "sitna.coordinates": {
-      "div": "coordinates"
+      "div": "tc-slot-coordinates"
     },
     "sitna.scale": {
-      "div": "scale"
+      "div": "tc-slot-scale"
     },
     "sitna.scaleBar": {
-      "div": "scale"
+      "div": "tc-slot-scale"
     },
     "sitna.scaleSelector": {
-      "div": "scale"
+      "div": "tc-slot-scale"
     },
     "sitna.workLayerManager": {
-      "div": "wlm"
+      "div": "tc-slot-wlm"
     },
     "sitna.layerCatalog": {
-      "div": "toc",
+      "div": "tc-slot-toc",
       "enableSearch": true
     },
     "sitna.basemapSelector": {
-      "div": "bms"
+      "div": "tc-slot-bms"
     },
     "sitna.legend": {
-      "div": "legend"
+      "div": "tc-slot-legend"
     },
     "sitna.dataLoader": {
-      "div": "xdata"
+      "div": "tc-slot-xdata"
     },
     "sitna.download": {
-      "div": "download"
+      "div": "tc-slot-download",
+      "deselectableTabs": false
     },
     "sitna.drawMeasureModify": {
-      "div": "drawmeasuremodify"
+      "div": "tc-slot-drawmeasuremodify",
+      "displayElevation": {
+        "resolution": 100
+      }
     },
     "sitna.fullScreen": {
-      "div": "FuScreen"
+      "div": "tc-slot-fullscreen"
     },
     "sitna.geolocation": {
-      "div": "geolocation"
+      "div": "tc-slot-geolocation",
+      "displayElevation": {
+        "resolution": 100
+      }
     },
     "sitna.measure": {
-      "div": "measure"
+      "div": "tc-slot-measure",
+      "displayElevation": {
+        "resolution": 100
+      }
+    },
+    "sitna.featureInfo": {
+      "displayElevation": {
+        "resolution": 100
+      },
+      "persistentHighlights": true
     },
     "sitna.multiFeatureInfo": {
-      "div": "multifeatureinfo"
+      "div": "tc-slot-multifeatureinfo",
+      "displayElevation": {
+        "resolution": 100
+      }
     },
     "sitna.offlineMapMaker": {
-      "div": "offline"
+      "div": "tc-slot-offline"
     },
     "sitna.printMap": {
-      "div": "print",
+      "div": "tc-slot-print",
       "logo": "assets/logos/logo_orange.png",
       "legend": {
         "visible": true
       }
     },
     "sitna.navBar": {
-      "div": "nav"
+      "div": "tc-slot-nav"
     },
     "sitna.overviewMap": {
-      "div": "ovmap"
+      "div": "tc-slot-ovmap"
     },
     "sitna.search": {
-      "div": "search"
+      "div": "tc-slot-search"
     },
-    "sitna.layerCatalog.silme.extension": {
-      "div": "catalog"
+    "sitna.share": {
+      "div": "tc-slot-share"
     },
-    "sitna.featureInfo.silme.extension": {
-      "persistentHighlights": true
+    "sitna.streetView": {
+      "div": "tc-slot-streetview"
+    },
+    "sitna.WFSEdit": {
+      "div": "tc-slot-wfsedit",
+      "downloadElevation": true
+    },
+    "sitna.WFSQuery": {
+      "div": "tc-slot-wfsquery"
     },
     "sitna.threed": {
       "controls": [

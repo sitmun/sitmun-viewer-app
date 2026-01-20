@@ -31,7 +31,7 @@ describe('MultiFeatureInfoControlHandler', () => {
 
     mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue({
-        div: 'multifeatureinfo'
+        div: 'tc-slot-multifeatureinfo'
       })
     } as Partial<
       jest.Mocked<AppConfigService>
@@ -100,7 +100,7 @@ describe('MultiFeatureInfoControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'multifeatureinfo',
+        div: 'tc-slot-multifeatureinfo',
         active: true,
         persistentHighlights: true,
         share: true,
@@ -126,7 +126,7 @@ describe('MultiFeatureInfoControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'multifeatureinfo',
+        div: 'tc-slot-multifeatureinfo',
         active: false, // Overridden
         persistentHighlights: true, // Kept from default
         share: false, // Overridden
@@ -157,7 +157,7 @@ describe('MultiFeatureInfoControlHandler', () => {
         point: { active: false },
         polyline: { active: true }
       });
-      expect(config?.div).toBe('multifeatureinfo');
+      expect(config?.div).toBe('tc-slot-multifeatureinfo');
       expect(config?.['active']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
@@ -270,7 +270,7 @@ describe('MultiFeatureInfoControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('multifeatureinfo');
+      expect(config?.div).toBe('tc-slot-multifeatureinfo');
       expect(config?.['active']).toBe(false);
       expect(config?.['customOption']).toBe(true);
       expect(config?.['modes']).toBeDefined();

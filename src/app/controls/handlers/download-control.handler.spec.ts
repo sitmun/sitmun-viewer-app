@@ -34,7 +34,9 @@ describe('DownloadControlHandler', () => {
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
-    mockAppConfigService.getControlDefault.mockReturnValue({ div: 'download' });
+    mockAppConfigService.getControlDefault.mockReturnValue({
+      div: 'tc-slot-download'
+    });
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -92,7 +94,7 @@ describe('DownloadControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
 
-      expect(config).toEqual({ div: 'download' });
+      expect(config).toEqual({ div: 'tc-slot-download' });
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });
 
@@ -109,7 +111,7 @@ describe('DownloadControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({
-        div: 'download',
+        div: 'tc-slot-download',
         deselectableTab: true,
         customOption: 'value'
       });
@@ -183,7 +185,7 @@ describe('DownloadControlHandler', () => {
 
       const config = handler.buildConfiguration(task, context);
       expect(config).toBeDefined();
-      expect(config?.div).toBe('download');
+      expect(config?.div).toBe('tc-slot-download');
       expect(config?.['deselectableTab']).toBe(true);
       expect(mockUIStateService.enableToolsButton).toHaveBeenCalled();
     });

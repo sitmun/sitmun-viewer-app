@@ -3,7 +3,7 @@ export const environment = {
   hashLocationStrategy: true,
   hideBackgroundImage: false,
   hideDNIEAccess: false,
-  apiUrl: 'http://localhost:8080',  // Change this when there is a real production environment
+  apiUrl: 'http://localhost:8080', // Change this when there is a real production environment
   version: '1.1.0',
   environmentName: 'Production',
   sitnaVersion: '4.8.0',

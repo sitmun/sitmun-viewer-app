@@ -28,7 +28,11 @@ import { ScaleBarControlHandler } from './scale-bar-control.handler';
 import { ScaleControlHandler } from './scale-control.handler';
 import { ScaleSelectorControlHandler } from './scale-selector-control.handler';
 import { SearchControlHandler } from './search-control.handler';
+import { ShareControlHandler } from './share-control.handler';
+import { StreetViewControlHandler } from './street-view-control.handler';
 import { ThreeDControlHandler } from './threed-control.handler';
+import { WFSEditControlHandler } from './wfs-edit-control.handler';
+import { WFSQueryControlHandler } from './wfs-query-control.handler';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 
 // Native SITNA Controls
@@ -57,6 +61,10 @@ export { NavBarControlHandler } from './navbar-control.handler';
 export { OverviewMapControlHandler } from './overview-map-control.handler';
 export { PopupControlHandler } from './popup-control.handler';
 export { SearchControlHandler } from './search-control.handler';
+export { ShareControlHandler } from './share-control.handler';
+export { StreetViewControlHandler } from './street-view-control.handler';
+export { WFSEditControlHandler } from './wfs-edit-control.handler';
+export { WFSQueryControlHandler } from './wfs-query-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -96,5 +104,17 @@ export const ALL_CONTROL_HANDLERS = [
   LayerCatalogControlHandler,
 
   // Native Search
-  SearchControlHandler
+  SearchControlHandler,
+
+  // Native Share
+  ShareControlHandler,
+
+  // Native StreetView
+  StreetViewControlHandler,
+
+  // Native WFSEdit
+  WFSEditControlHandler,
+
+  // Native WFSQuery
+  WFSQueryControlHandler
 ] as const;

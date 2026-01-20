@@ -33,7 +33,7 @@ export class MapInterfaceService {
       this.domUtils.hideElementById('ovmap-tab');
     }
     if (!this.uiState.isToolsButtonEnabled()) {
-      this.domUtils.hideElementById('silme-tab');
+      this.domUtils.hideElementById('tools-tab');
     }
   }
 }

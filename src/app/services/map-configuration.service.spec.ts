@@ -180,14 +180,14 @@ describe('MapConfigurationService', () => {
     it('should return layout for custom theme', () => {
       const cfgWithTheme: AppCfg = {
         ...mockAppCfg,
-        application: { ...mockAppCfg.application, theme: 'silme-base' }
+        application: { ...mockAppCfg.application, theme: 'sitmun-base' }
       };
       const result = service.toLayout(cfgWithTheme);
-      expect(result.config).toContain('silme-base');
-      expect(result.markup).toContain('silme-base');
-      expect(result.style).toContain('silme-base');
-      expect(result.script).toContain('silme-base');
-      expect(result.i18n).toContain('silme-base');
+      expect(result.config).toContain('sitmun-base');
+      expect(result.markup).toContain('sitmun-base');
+      expect(result.style).toContain('sitmun-base');
+      expect(result.script).toContain('sitmun-base');
+      expect(result.i18n).toContain('sitmun-base');
     });
 
     it('should use default theme if theme is not specified', () => {
@@ -231,7 +231,7 @@ describe('MapConfigurationService', () => {
 
       expect(result.threeD).toBeDefined();
       // Should use fallback 'view3d' when no div in params or config
-      expect(result.threeD?.div).toBe('view3d');
+      expect(result.threeD?.div).toBe('tc-slot-threed');
 
       // Controls should be translated from backend to SITNA names using handlers' sitnaConfigKey
       expect(result.threeD?.controls).toContain('threeD'); // Not 'sitna.threeD'
@@ -326,7 +326,7 @@ describe('MapConfigurationService', () => {
       const result = service.toViews(cfgWith3D);
 
       expect(result.threeD).toBeDefined();
-      expect(result.threeD?.div).toBe('view3d');
+      expect(result.threeD?.div).toBe('tc-slot-threed');
       expect(result.threeD?.controls).toBeUndefined(); // Let SITNA use defaults
     });
   });

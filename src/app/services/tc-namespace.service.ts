@@ -53,7 +53,7 @@ export class TCNamespaceService {
   /**
    * Wait for a specific property path in TC namespace to become available.
    *
-   * @param propertyPath - Dot-separated property path (e.g., 'control.FeatureInfoSilme')
+   * @param propertyPath - Dot-separated property path (e.g., 'control.FeatureInfo')
    * @param maxRetries - Maximum number of retry attempts (default: 50)
    * @param delayMs - Delay between retries in milliseconds (default: 100)
    * @returns Promise that resolves with the property value when available

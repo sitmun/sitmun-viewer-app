@@ -135,7 +135,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     // If all trees are empty, disable the control
     if (nonEmptyRootNodeIds.length === 0) {
-      console.warn('[LayerCatalog] All trees are empty, disabling control');
       return null;
     }
 
@@ -152,7 +151,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     const rootNodeIds = this.getRootNodeIds(context);
 
     if (rootNodeIds.length === 0) {
-      console.warn('[LayerCatalog] No root nodes found, disabling control');
       return null;
     }
 
@@ -209,9 +207,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
 
     if (wmsLayers.length === 0) {
-      console.warn(
-        '[LayerCatalog] No child nodes found for root nodes, disabling control'
-      );
       return null;
     }
 
@@ -221,7 +216,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     // Build base configuration with default + layers + specific div override
     const baseConfig: SitnaControlConfig = {
       ...defaultConfig,
-      div: 'toc', // Override default div with the expected slot
+      div: 'tc-slot-toc', // Override default div with the expected slot
       layers: wmsLayers
     };
 
@@ -449,9 +444,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.addLayerToMap !== 'function') {
-        console.warn(
-          '[LayerCatalog] LayerCatalog.addLayerToMap not found, cannot patch'
-        );
         return;
       }
 
@@ -572,9 +564,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.addLayer !== 'function') {
-        console.warn(
-          '[LayerCatalog] LayerCatalog.addLayer not found, cannot patch'
-        );
         return;
       }
 
@@ -924,7 +913,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   /**
    * Patch LayerCatalog to use custom info template.
    * Overrides the template path to use LayerCatalogInfoSitmun.hbs instead of default.
-   * Similar to SILME approach - completely replaces loadTemplates method.
+   * Completely replaces loadTemplates method to customize template loading.
    */
   private async patchLayerCatalogTemplate(): Promise<void> {
     await this.waitForTCAndApply(async (TC) => {
@@ -939,7 +928,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const hasOriginalLoadTemplates =
         typeof originalLoadTemplates === 'function';
 
-      // Completely replace loadTemplates method (like SILME does)
+      // Completely replace loadTemplates method to customize template loading
       ctlProto.loadTemplates = async function (this: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
