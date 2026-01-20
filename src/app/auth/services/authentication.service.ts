@@ -89,7 +89,6 @@ export class AuthenticationService<T> {
   private clearStorage = (): void => {
     localStorage.removeItem(this.AUTH_TOKEN);
     localStorage.removeItem(this.AUTH_DETAILS);
-    localStorage.clear();
   };
 
   private getToken = (): string | null => {

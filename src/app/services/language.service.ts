@@ -19,13 +19,14 @@ export class LanguageService {
     private authenticationService: AuthenticationService<CustomDetails>,
     private http: HttpClient
   ) {}
+  readonly STORED_LANGUAGE: string = 'language';
 
   /**
    * Get the current language from localStorage or default from configuration
    * This is the preferred method over getDefaultLanguage() as it's more explicit
    */
   getCurrentLanguage(): string {
-    const storedLang = localStorage.getItem('language');
+    const storedLang = localStorage.getItem(this.STORED_LANGUAGE);
     return storedLang ?? this.appConfigService.getDefaultLanguage();
   }
 
@@ -54,8 +55,7 @@ export class LanguageService {
    */
   setLanguage(lang: string, syncBackend: boolean = true): Observable<void> {
     // Update localStorage
-    localStorage.setItem('language', lang);
-
+    localStorage.setItem(this.STORED_LANGUAGE, lang);
     // Update TranslateService
     this.translateService.use(lang);
 
