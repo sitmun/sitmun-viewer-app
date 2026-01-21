@@ -1,12 +1,15 @@
+// Development environment configuration.
+// Uses the local docker-compose stack backend URL.
+
 export const environment = {
-  production: true,
-  hashLocationStrategy: true,
+  production: false,
+  hashLocationStrategy: false,
   hideBackgroundImage: false,
-  hideDNIEAccess: false,
-  apiUrl: 'https://sitmun-backend-core.herokuapp.com',
-  version: '1.1.0',
-  environmentName: 'Production',
+  hideDNIEAccess: true,
+  apiUrl: 'http://localhost:9000/backend',
+  version: '1.2.0-rc.1',
+  environmentName: 'Development',
   sitnaVersion: '4.8.0',
-  buildTimestamp: undefined as string | undefined,
+  buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: '/assets/logos/barcelona_background.jpg'
 };

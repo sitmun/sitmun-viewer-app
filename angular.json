@@ -105,61 +105,27 @@
                 }
               ]
             },
+            "docker-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ]
-            },
-            "development-api-remote": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.testdeployment.ts"
-                }
-              ]
-            },
-            "testdeployment": {
-              "baseHref": "https://sitmun.github.io/sitmun-viewer-app/",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.testdeployment.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
-                }
-              ]
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "development"
@@ -171,14 +137,11 @@
             "production": {
               "browserTarget": "viewer-app:build:production"
             },
+            "docker-dev": {
+              "browserTarget": "viewer-app:build:docker-dev"
+            },
             "development": {
               "browserTarget": "viewer-app:build:development"
-            },
-            "development-api-remote": {
-              "browserTarget": "viewer-app:build:development-api-remote"
-            },
-            "testdeployment": {
-              "browserTarget": "viewer-app:build:testdeployment"
             }
           },
           "defaultConfiguration": "development"

@@ -123,20 +123,23 @@ Builds require the legacy OpenSSL provider because api-sitna bundles libraries t
 
 ### Environment Configuration
 
-The application supports multiple environment configurations:
+The application supports three build configurations:
 
-| Environment                        | File                            | API Base URL                                 | Hash Strategy | Production |
-| ---------------------------------- | ------------------------------- | -------------------------------------------- | ------------- | ---------- |
-| **Default (no replacement)**       | `environment.ts`                | `https://sitmun-backend-core.herokuapp.com`  | true          | true       |
-| **Development**                    | `environment.development.ts`    | `http://localhost:9000/backend`              | false         | false      |
-| **Development API Remote**         | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com`  | false         | false      |
-| **Test Deployment (GitHub Pages)** | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com`  | false         | false      |
-| **Production**                     | `environment.prod.ts`           | `https://sitmun-backend-core.herokuapp.com`  | true          | true       |
+| Configuration | Use Case | API URL | Source Maps | Production |
+|---------------|----------|---------|-------------|------------|
+| **development** | Local `ng serve` | `http://localhost:9000/backend` | Yes | false |
+| **docker-dev** | Docker debugging | Template-based (`${PUBLIC_BASE_PATH}backend`) | Yes | false |
+| **production** | Docker production | Template-based (`${PUBLIC_BASE_PATH}backend`) | No | true |
 
-Notes:
+#### Environment Files
 
-- `development-api-remote` and `testdeployment` both use `environment.testdeployment.ts`.
-- The `testdeployment` build adds `baseHref` and production optimizations in `angular.json`.
+```
+src/environments/
+├── environment.ts        # Local development (default)
+└── environment.prod.ts   # Production/Docker builds
+```
+
+The `docker-dev` and `production` configurations both use `environment.prod.ts`, which is generated from `environment.prod.ts.template` during Docker builds via `envsubst`.
 
 ### Environment Variables
 
@@ -153,23 +156,32 @@ export const environment = {
 
 ### Build Configuration
 
-Build for specific environments:
+Build for specific configurations:
 
 ```bash
-# Development build
+# Local development (uses environment.ts)
+npm start
+# Or explicitly:
 npm run build -- --configuration=development
 
-# Development with remote API
-npm run build -- --configuration=development-api-remote
+# Docker debugging (uses environment.prod.ts, with source maps)
+npm run build -- --configuration=docker-dev
 
-# Test deployment build
-npm run build -- --configuration=testdeployment
-
-# Production build
+# Production build (uses environment.prod.ts, optimized)
 npm run build -- --configuration=production
 
 # Production build with custom base href
 npm run build -- --configuration=production --base-href=/viewer/
+```
+
+For Docker builds, use the parent stack's docker-compose:
+
+```bash
+# Production Docker build (default)
+docker compose build front
+
+# Docker build with source maps for debugging
+BUILD_MODE=docker-dev docker compose build front
 ```
 
 ### Build Process Details
@@ -187,15 +199,8 @@ The build process automatically handles:
 ### Development Server
 
 ```bash
-# Start development server
+# Start development server (uses environment.ts)
 npm start
-
-# Start with specific configuration
-npm run build -- --configuration=development
-ng serve --configuration=development
-
-# Start with remote API configuration
-ng serve --configuration=development-api-remote
 
 # Start with custom port
 ng serve --port 4300
