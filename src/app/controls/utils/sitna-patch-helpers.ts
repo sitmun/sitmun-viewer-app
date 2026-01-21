@@ -81,7 +81,7 @@ export function applyFeatureStylerPatches(
 ): PatchResult {
   const FeatureStylerProto = TC?.control?.FeatureStyler?.prototype;
   if (!FeatureStylerProto) {
-    return { cleanup: () => {}, applied: false };
+    return { cleanup: () => undefined, applied: false };
   }
 
   // Track original methods for cleanup
@@ -147,17 +147,17 @@ export function applyModifyPatches(
 ): PatchResult {
   const ModifyProto = TC?.control?.Modify?.prototype;
   if (!ModifyProto) {
-    return { cleanup: () => {}, applied: false };
+    return { cleanup: () => undefined, applied: false };
   }
 
   // Skip if already patched
   if ((ModifyProto as any).__sitmunModifyPatched) {
-    return { cleanup: () => {}, applied: false };
+    return { cleanup: () => undefined, applied: false };
   }
 
   const originalRenderPromise = ModifyProto.renderPromise;
   if (!originalRenderPromise) {
-    return { cleanup: () => {}, applied: false };
+    return { cleanup: () => undefined, applied: false };
   }
 
   // Wrap renderPromise to intercept .then() callbacks
