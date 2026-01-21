@@ -1,6 +1,9 @@
 import 'zone.js/bundles/zone-testing-bundle.umd.js';
 import { getTestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting
+} from '@angular/platform-browser-dynamic/testing';
 
 // Initialize TestBed for all tests
 try {
@@ -15,7 +18,7 @@ try {
 
 // Global mocks for jsdom
 const mock = () => {
-  let storage: {[key: string]: string} = {};
+  let storage: { [key: string]: string } = {};
   return {
     getItem: (key: string) => (key in storage ? storage[key] : null),
     setItem: (key: string, value: string) => (storage[key] = value || ''),
@@ -24,8 +27,8 @@ const mock = () => {
   };
 };
 
-Object.defineProperty(window, 'localStorage', {value: mock()});
-Object.defineProperty(window, 'sessionStorage', {value: mock()});
+Object.defineProperty(window, 'localStorage', { value: mock() });
+Object.defineProperty(window, 'sessionStorage', { value: mock() });
 Object.defineProperty(window, 'getComputedStyle', {
   value: () => ['-webkit-appearance']
 });
@@ -43,7 +46,10 @@ if (!document.body.style.transform) {
       })
     });
   } catch (e) {
-    console.log('Cannot define transform property, it may already be defined:', e);
+    console.log(
+      'Cannot define transform property, it may already be defined:',
+      e
+    );
   }
 }
 
@@ -57,8 +63,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
-    dispatchEvent: () => false,
-  }),
+    dispatchEvent: () => false
+  })
 });
 
 // Polyfill structuredClone for older Node.js versions
@@ -74,7 +80,10 @@ class MockIntersectionObserver {
   readonly rootMargin: string;
   readonly thresholds: ReadonlyArray<number>;
 
-  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+  constructor(
+    callback: IntersectionObserverCallback,
+    options?: IntersectionObserverInit
+  ) {
     this.root = options?.root || null;
     this.rootMargin = options?.rootMargin || '0px';
     if (options?.threshold !== undefined) {
@@ -109,13 +118,19 @@ class MockIntersectionObserver {
 global.IntersectionObserver = MockIntersectionObserver as any;
 
 // Mock SITNA_BASE_URL for api-sitna library
-(globalThis as { SITNA_BASE_URL?: string }).SITNA_BASE_URL = '/assets/js/api-sitna/';
-(window as { SITNA_BASE_URL?: string }).SITNA_BASE_URL = '/assets/js/api-sitna/';
+(globalThis as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
+  '/assets/js/api-sitna/';
+(window as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
+  '/assets/js/api-sitna/';
 
 // Mock WebGL and Canvas APIs that may be required by api-sitna
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
-  value: function(contextType: string) {
-    if (contextType === 'webgl' || contextType === 'webgl2' || contextType === '2d') {
+  value: function (contextType: string) {
+    if (
+      contextType === 'webgl' ||
+      contextType === 'webgl2' ||
+      contextType === '2d'
+    ) {
       return {
         canvas: this,
         drawingBufferWidth: 800,
@@ -140,7 +155,7 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
         drawArrays: () => {},
         clear: () => {},
         clearColor: () => {},
-        viewport: () => {},
+        viewport: () => {}
       };
     }
     return null;

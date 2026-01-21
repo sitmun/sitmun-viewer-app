@@ -25,11 +25,9 @@ export class ForgotPasswordComponent {
 
   /* Reset Password Form */
   resetPasswordRequest!: ResetPasswordRequest;
-  tokenValid = false;
-  userTokenService: any;
+
   confirmationNewPassword = '';
   showResendCode = false;
-  disabledResendCode = false;
 
   constructor(
     private resetPasswordService: ResetPasswordService,
@@ -169,7 +167,7 @@ export class ForgotPasswordComponent {
 
   previous() {
     if (!this.showResetPasswordForm) {
-      this.router.navigateByUrl(NavigationPath.Auth.Login); // redirect to login page if we are on the forgot password form
+      void this.router.navigateByUrl(NavigationPath.Auth.Login); // redirect to login page if we are on the forgot password form
     } else {
       this.showResetPasswordForm = false; // redirect to the forgot password form if we are on the reset password form
       this.showResendCode = false;
@@ -194,7 +192,6 @@ export class ForgotPasswordComponent {
             .subscribe((trad) => {
               this.notificationService.success(trad);
             });
-          // this.disabledResendCode = true;
         },
         error: (error: any) => {
           if (error.status == 429) {

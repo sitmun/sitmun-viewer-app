@@ -247,25 +247,3 @@ export interface WMSCapabilities {
    */
   Capability: WMSCapability;
 }
-
-/**
- * Type guard to check if response is WMS capabilities
- */
-export function isWMSCapabilities(
-  response: unknown
-): response is WMSCapabilities {
-  if (typeof response !== 'object' || response === null) {
-    return false;
-  }
-
-  const caps = response as Partial<WMSCapabilities>;
-  return (
-    typeof caps.version === 'string' &&
-    typeof caps.Service === 'object' &&
-    caps.Service !== null &&
-    typeof caps.Capability === 'object' &&
-    caps.Capability !== null &&
-    typeof caps.Capability.Layer === 'object' &&
-    caps.Capability.Layer !== null
-  );
-}

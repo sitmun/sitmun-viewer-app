@@ -104,10 +104,7 @@ export class ControlRegistryService {
       .filter((task) => task['ui-control']?.startsWith('sitna.'))
       .filter((task) => {
         // Skip if control is disabled in app-config.json
-        if (this.appConfigService.isDisabled(task['ui-control'])) {
-          return false;
-        }
-        return true;
+        return !this.appConfigService.isDisabled(task['ui-control']);
       })
       .map((task) => ({
         task,
@@ -133,9 +130,7 @@ export class ControlRegistryService {
         // First, build configuration to check if control will be used
         const config = handler.buildConfiguration(task, context);
 
-        if (config === null) {
-          continue;
-        } else {
+        if (config !== null) {
           // Control will be used - load patches only if needed
           // Check if handler has patches to load (requiredPatches defined) or overrides loadPatches
           const hasPatches =
@@ -364,7 +359,7 @@ export class ControlRegistryService {
           ? (config as { div?: string }).div
           : null;
 
-      if (div && typeof div === 'string') {
+      if (div) {
         if (!divUsage.has(div)) {
           divUsage.set(div, []);
         }

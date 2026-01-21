@@ -10,13 +10,6 @@ export interface SitnaBaseLayer {
   isBase?: boolean;
 }
 
-export interface OverviewMapLayer {
-  id: string;
-  type: string;
-  url: string;
-  layerNames: [string];
-}
-
 //WorkLayers
 export interface SitnaWorkLayers {
   workLayers: SitnaLayerOptions[];
@@ -384,38 +377,9 @@ export interface SitnaStreetViewOptions extends SitnaControlOptions {
   viewDiv?: string;
 }
 
-export interface SitnaControlsShare {
-  share: boolean;
-  div: string;
-}
-
 export interface SitnaControlsTOC {
   TOC: boolean;
   div: string;
-}
-
-export interface SitnaWorkLayerManager {
-  workLayerManager: boolean;
-  div: string;
-}
-
-export interface SitnaControlsContainer {
-  div: string;
-  controls: [SitnaElementsContainer?];
-}
-
-export interface SitnaControlsLayerCatalog {
-  div: string;
-  enableSearch: boolean;
-  layers: SitnaWorkLayers[];
-}
-
-export interface SitnaControlsMultiFeatureInfo {
-  active: true;
-}
-
-export interface SitnaControlsFeatureInfo {
-  persistentHighlights: boolean;
 }
 
 export interface SitnaViews {

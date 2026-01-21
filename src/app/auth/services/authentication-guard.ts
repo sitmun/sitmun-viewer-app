@@ -41,7 +41,7 @@ export class AuthenticationGuard {
 
     if (isPublicUrl && isAuthenticated) {
       // Send to default user page (if authenticated, cannot access to login, register...)
-      this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+      void this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
     }
 
     //  isAuthenticated && !isPublicUrl => OK

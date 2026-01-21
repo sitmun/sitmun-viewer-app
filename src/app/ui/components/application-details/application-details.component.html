@@ -2,10 +2,12 @@
   <div id="application-informations">
     <div id="application-information-logo">
       <img
-        [src]="
+        [ngSrc]="
           application.logo ? application.logo : 'assets/img/card-no-image.svg'
         "
-        alt="" />
+        alt=""
+        width="150"
+        height="150" />
     </div>
     <div id="application-information-details">
       <p [ngClass]="{ 'value-missing': !application.updateDate }">

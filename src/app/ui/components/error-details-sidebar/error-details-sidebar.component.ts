@@ -133,11 +133,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
 
     // Safely format timestamp
     try {
-      if (
-        error.timestamp &&
-        error.timestamp instanceof Date &&
-        !isNaN(error.timestamp.getTime())
-      ) {
+      if (error.timestamp && !isNaN(error.timestamp.getTime())) {
         text += `Timestamp: ${error.timestamp.toISOString()}\n`;
       } else {
         text += `Timestamp: Invalid timestamp\n`;
@@ -180,11 +176,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
    * Format timestamp as relative time
    */
   getRelativeTime(timestamp: Date): string {
-    if (
-      !timestamp ||
-      !(timestamp instanceof Date) ||
-      isNaN(timestamp.getTime())
-    ) {
+    if (!timestamp || isNaN(timestamp.getTime())) {
       return 'Unknown time';
     }
     const now = new Date();
@@ -209,11 +201,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
    * Format full timestamp
    */
   getFullTimestamp(timestamp: Date): string {
-    if (
-      !timestamp ||
-      !(timestamp instanceof Date) ||
-      isNaN(timestamp.getTime())
-    ) {
+    if (!timestamp || isNaN(timestamp.getTime())) {
       return 'Invalid timestamp';
     }
     try {

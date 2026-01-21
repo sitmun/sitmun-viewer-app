@@ -61,7 +61,7 @@ describe('UIStateService', () => {
 
     it('should emit true when enabled', (done) => {
       service.showLegend$.pipe(take(2)).subscribe((value) => {
-        if (value === true) {
+        if (value) {
           expect(value).toBe(true);
           done();
         }
@@ -209,14 +209,14 @@ describe('UIStateService', () => {
       let subscription2Called = false;
 
       service.showLegend$.pipe(take(2)).subscribe((value) => {
-        if (value === true) {
+        if (value) {
           subscription1Called = true;
           checkBoth();
         }
       });
 
       service.showLegend$.pipe(take(2)).subscribe((value) => {
-        if (value === true) {
+        if (value) {
           subscription2Called = true;
           checkBoth();
         }

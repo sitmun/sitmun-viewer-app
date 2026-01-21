@@ -37,9 +37,9 @@ export class ThreeDControlHandler extends ControlHandlerBase {
    * Build configuration for threeD control.
    * Returns true to enable with auto-placement (SITNA decides where it goes).
    *
-   * @param task - Task from backend
-   * @param context - Full app configuration
-   * @returns true (enables control with auto-placement)
+   * @param _context
+   * @param _task
+   * @param _context
    */
   buildConfiguration(
     _task: AppTasks,

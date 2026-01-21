@@ -41,7 +41,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
         }
 
         // Let the app keep running by returning an empty result
-        return throwError(err);
+        return throwError(() => err);
       })
     );
   }

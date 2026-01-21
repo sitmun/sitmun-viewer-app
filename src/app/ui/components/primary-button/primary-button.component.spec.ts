@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PrimaryButtonComponent } from './primary-button.component';
@@ -8,7 +9,8 @@ describe('PrimaryButtonComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PrimaryButtonComponent]
+      declarations: [PrimaryButtonComponent],
+      imports: [NgOptimizedImage]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PrimaryButtonComponent);

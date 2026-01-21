@@ -1,4 +1,4 @@
-import { InjectFlags, InjectionToken, Injector, Type } from '@angular/core';
+import { InjectOptions, InjectionToken, Injector, Type } from '@angular/core';
 
 export class OpenModalInjector implements Injector {
   constructor(
@@ -9,7 +9,7 @@ export class OpenModalInjector implements Injector {
   get<T>(
     token: Type<T> | InjectionToken<T>,
     notFoundValue?: T,
-    flags?: InjectFlags
+    options?: InjectOptions
   ): T;
   // @ts-expect-error - Overload signature for flexible token types
   get(token: any, notFoundValue?: any);

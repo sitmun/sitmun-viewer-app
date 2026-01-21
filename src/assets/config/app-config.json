@@ -1,6 +1,6 @@
 {
   "attribution": "<a href=\"https://github.com/sitmun\" target=\"_blank\">SITMUN</a>",
-  "testConfigFile": "test.json",
+  "testConfigFile": null,
   "dashboard": {
     "allowedTypes": ["I"],
     "filteringEnabled": true
@@ -39,31 +39,7 @@
     }
   ],
   "enabledByDefault": [
-    "sitna.attribution",
-    "sitna.basemapSelector",
-    "sitna.click",
-    "sitna.coordinates",
-    "sitna.dataLoader",
-    "sitna.download",
-    "sitna.drawMeasureModify",
-    "sitna.featureInfo",
-    "sitna.fullScreen",
-    "sitna.geolocation",
-    "sitna.layerCatalog",
-    "sitna.legend",
-    "sitna.loadingIndicator",
-    "sitna.measure",
-    "sitna.multiFeatureInfo",
-    "sitna.navBar",
-    "sitna.overviewMap",
-    "sitna.popup",
-    "sitna.printMap",
-    "sitna.search",
-    "sitna.share",
-    "sitna.streetView",
-    "sitna.threed",
-    "sitna.WFSQuery",
-    "sitna.workLayerManager"
+    "sitna.loadingIndicator"
   ],
   "disabledControls": [
     "sitna.WFSEdit",
@@ -168,6 +144,7 @@
       "div": "tc-slot-wfsquery"
     },
     "sitna.threed": {
+      "div": "tc-slot-threed",
       "controls": [
         "sitna.threed",
         "sitna.navBar",

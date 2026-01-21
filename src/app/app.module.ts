@@ -1,4 +1,4 @@
-import { registerLocaleData } from '@angular/common';
+import { NgOptimizedImage, registerLocaleData } from '@angular/common';
 import {
   HttpClient,
   HttpClientModule,
@@ -105,7 +105,10 @@ registerLocaleData(localeEs);
     MatButtonToggleModule,
     MatDialogModule,
     MatListModule,
-    MatExpansionModule
+    MatExpansionModule,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es-ES' },

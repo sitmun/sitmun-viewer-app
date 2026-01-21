@@ -60,7 +60,9 @@
           <img
             matListItemMeta
             *ngIf="hasLogo(item)"
-            [src]="item[logoProperty]"
+            [ngSrc]="item[logoProperty]"
+            width="40"
+            height="40"
             [alt]="getItemName(item)"
             [class.disabled-image]="isUnavailable(item.id)" />
           <mat-icon

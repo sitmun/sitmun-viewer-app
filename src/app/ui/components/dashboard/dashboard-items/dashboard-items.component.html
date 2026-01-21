@@ -4,7 +4,6 @@
     <div *ngFor="let item of allItems" class="dashboard-item">
       <app-dashboard-item
         [item]="item"
-        (itemClicked)="itemClicked.emit(item)"
         (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
@@ -17,7 +16,6 @@
     <div *ngFor="let item of publicItems" class="dashboard-item">
       <app-dashboard-item
         [item]="item"
-        (itemClicked)="itemClicked.emit(item)"
         (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
@@ -32,7 +30,6 @@
       <div *ngFor="let item of privateItems" class="dashboard-item">
         <app-dashboard-item
           [item]="item"
-          (itemClicked)="itemClicked.emit(item)"
           (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
       </div>
     </div>

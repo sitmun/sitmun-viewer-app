@@ -1,8 +1,8 @@
 const MIDDLEWARE_URL_KEY = 'MIDDLEWARE_URL';
 const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
 
-var authToken = undefined;
-var middlewareUrl = undefined;
+let authToken = undefined;
+let middlewareUrl = undefined;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -17,13 +17,13 @@ self.addEventListener('message', (event) => {
 
   if (eventData.type === MIDDLEWARE_URL_KEY) {
     middlewareUrl = eventData.url;
-    return;
+
   }
 });
 
 self.addEventListener('fetch', (event) => {
-  var request = event.request;
-  var url = new URL(request.url);
+  const request = event.request;
+  const url = new URL(request.url);
 
   // Filter requests to only include middleware requests
   if (!middlewareUrl || !url.toString().startsWith(middlewareUrl)) {

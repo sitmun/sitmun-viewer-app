@@ -1,8 +1,9 @@
 # SITMUN Viewer Application
 
 [![License: EUPL v1.2](https://img.shields.io/badge/License-EUPL%20v1.2-blue.svg)](LICENSE)
+![Version](https://img.shields.io/badge/version-1.2.0--rc.1-blue.svg)
 
-The **SITMUN Viewer Application** is the official web-based frontend for visualizing and interacting with geospatial applications managed by the SITMUN platform. Built with TypeScript and Angular 16, it provides an intuitive map viewing interface that integrates seamlessly with the [SITMUN Backend Core](https://github.com/sitmun/sitmun-backend-core) REST API.
+The **SITMUN Viewer Application** is the Angular 16 frontend for visualizing geospatial applications managed by the SITMUN platform. It integrates with the [SITMUN Backend Core](https://github.com/sitmun/sitmun-backend-core) REST API.
 
 ## Table of Contents
 
@@ -23,15 +24,13 @@ The **SITMUN Viewer Application** is the official web-based frontend for visuali
 
 ## About SITMUN
 
-SITMUN is a comprehensive geospatial information management system designed for organizations that need to manage territorial information, geographical services, and spatial applications. The Viewer Application provides the end-user interface for:
+SITMUN is a geospatial information management system for territorial data, services, and spatial applications. The Viewer Application provides:
 
-- **🗺️ Interactive Map Visualization**: High-performance web mapping with multiple base layers
-- **📍 Geospatial Data Interaction**: Feature information, search, and location services
-- **🎛️ Configurable Controls**: Customizable map tools and interface components
-- **📊 Layer Management**: Dynamic layer activation, styling, and legend display
-- **🔍 Advanced Search**: Geographic and attribute-based search capabilities
-- **📱 Responsive Design**: Mobile-first approach for any device
-- **🌐 Multi-language Support**: Internationalization for CA, ES, EN, FR
+- Interactive map viewing with base layers
+- Feature info, search, and location tools
+- Layer catalog management and legends
+- Map tools (measure, draw, export)
+- Responsive UI and i18n (CA, ES, EN, FR)
 
 This frontend integrates with the [SITMUN Backend Core](https://github.com/sitmun/sitmun-backend-core) and complements the [SITMUN Administration Application](https://github.com/sitmun/sitmun-admin-app) for a complete geospatial platform.
 
@@ -39,22 +38,22 @@ This frontend integrates with the [SITMUN Backend Core](https://github.com/sitmu
 
 ### Core Mapping Features
 
-- 🗺️ **Interactive Mapping**: High-performance web mapping using SITNA (Sistema de Información Territorial de Navarra)
-- 📍 **Geolocation Services**: GPS positioning and location-based services
-- 🔍 **Search & Query**: Geographic search, feature queries, and WFS data access
-- 📊 **Layer Visualization**: Dynamic layer management with styling and transparency
-- 📏 **Measurement Tools**: Distance, area, and drawing/markup capabilities
-- 🖨️ **Map Export**: Print and download functionality for maps and data
-- 📱 **Street View Integration**: Google Street View integration for enhanced visualization
+- Interactive mapping using SITNA (Sistema de Información Territorial de Navarra)
+- Geolocation services
+- Search and query (feature info, WFS data access)
+- Layer visualization with styling and transparency
+- Measurement tools (distance, area, draw/markup)
+- Map export and print
+- Street View integration
 
 ### Technical Features
 
-- 📱 **Responsive Design**: Mobile-first approach with Angular Material 16.x
-- 🌐 **Internationalization**: Support for multiple languages (CA, ES, EN, FR)
-- 🎨 **Customizable UI**: Configurable interface with material design
-- 🚀 **Performance Optimized**: Lazy loading and efficient rendering
-- 🔧 **SITNA Integration**: Advanced mapping capabilities through SITNA library (api-sitna v4.1.0)
-- 🔐 **ServiceWorker**: Authentication token management for API requests
+- Responsive UI with Angular Material 16
+- Internationalization (CA, ES, EN, FR)
+- Configurable UI components
+- Lazy loading and efficient rendering
+- SITNA integration (api-sitna 4.8.0)
+- Service Worker for API auth token forwarding
 
 ## Quick Start
 
@@ -80,7 +79,7 @@ npm start
 # Open browser to http://localhost:4200
 ```
 
-The application will connect to a backend at `https://sitmun-backend-core.herokuapp.com` by default.
+The application will connect to a backend at `https://your-backend.example.com` by default.
 
 ## Installation
 
@@ -120,32 +119,24 @@ npm test
 
 ### OpenSSL Legacy Provider Requirement
 
-This project requires the legacy OpenSSL provider (`--openssl-legacy-provider`) due to dependencies in the SITNA mapping library and cryptographic operations. This requirement is automatically handled by the build script.
-
-**Why is this needed?**
-
-- **SITNA Library**: The core mapping library uses legacy cryptographic functions (CryptoJS, PDF generation)
-- **JWT Processing**: Token handling uses legacy algorithms for compatibility
-- **Webpack Bundling**: Large external libraries require legacy Node.js module compatibility
-- **Geospatial Security**: Data encryption operations use legacy OpenSSL algorithms
-
-**Impact:**
-
-- The build script automatically sets `NODE_OPTIONS=--openssl-legacy-provider`
-- This ensures compatibility with Node.js 16+ while maintaining security
-- No manual configuration required for developers
+Builds require the legacy OpenSSL provider because api-sitna bundles libraries that depend on legacy OpenSSL APIs. The `build` script sets `NODE_OPTIONS=--openssl-legacy-provider --max-old-space-size=8192` automatically.
 
 ### Environment Configuration
 
 The application supports multiple environment configurations:
 
-| Environment                | File                            | API Base URL                                | Hash Strategy | Production |
-| -------------------------- | ------------------------------- | ------------------------------------------- | ------------- | ---------- |
-| **Default**                | `environment.ts`                | `https://sitmun-backend-core.herokuapp.com` | true          | true       |
-| **Development**            | `environment.development.ts`    | `http://localhost:9000/backend`             | false         | false      |
-| **Development API Heroku** | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com` | false         | false      |
-| **Test Deployment**        | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com` | false         | true       |
-| **Production**             | `environment.prod.ts`           | `https://sitmun-backend-core.herokuapp.com` | true          | true       |
+| Environment                        | File                            | API Base URL                                 | Hash Strategy | Production |
+| ---------------------------------- | ------------------------------- | -------------------------------------------- | ------------- | ---------- |
+| **Default (no replacement)**       | `environment.ts`                | `https://sitmun-backend-core.herokuapp.com`  | true          | true       |
+| **Development**                    | `environment.development.ts`    | `http://localhost:9000/backend`              | false         | false      |
+| **Development API Remote**         | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com`  | false         | false      |
+| **Test Deployment (GitHub Pages)** | `environment.testdeployment.ts` | `https://sitmun-backend-core.herokuapp.com`  | false         | false      |
+| **Production**                     | `environment.prod.ts`           | `https://sitmun-backend-core.herokuapp.com`  | true          | true       |
+
+Notes:
+
+- `development-api-remote` and `testdeployment` both use `environment.testdeployment.ts`.
+- The `testdeployment` build adds `baseHref` and production optimizations in `angular.json`.
 
 ### Environment Variables
 
@@ -168,8 +159,8 @@ Build for specific environments:
 # Development build
 npm run build -- --configuration=development
 
-# Development with Heroku API
-npm run build -- --configuration=development-api-heroku
+# Development with remote API
+npm run build -- --configuration=development-api-remote
 
 # Test deployment build
 npm run build -- --configuration=testdeployment
@@ -203,8 +194,8 @@ npm start
 npm run build -- --configuration=development
 ng serve --configuration=development
 
-# Start with Heroku API configuration
-ng serve --configuration=development-api-heroku
+# Start with remote API configuration
+ng serve --configuration=development-api-remote
 
 # Start with custom port
 ng serve --port 4300
@@ -299,6 +290,13 @@ Tests use the same TypeScript path aliases as the application:
 
 These are automatically resolved by Jest's `moduleNameMapper` configuration.
 
+### Testing Gaps
+
+Planned coverage additions (from 1.2.0-rc.1):
+
+- Services: catalog-switching, error-tracking, global-error-handler, layer-info, map-interface, map-service-worker, raster-layer, sidebar-manager
+- Components: about-dialog, error-details-sidebar
+
 ## Deployment
 
 ### Default paths (local development)
@@ -351,7 +349,7 @@ script.src = '/BASE_PATH/assets/js/patch/patch_main.js';
 - Toastr assets:
 
 ```html
-<link rel="stylesheet" href="/BASE_PATH/assets/js/toastr/toastr.min.css" />
+<!-- Toastr CSS is included via angular.json "styles" -->
 <script src="/BASE_PATH/assets/js/toastr/toastr.min.js"></script>
 ```
 
@@ -400,7 +398,7 @@ The application integrates with the [SITMUN Backend Core](https://github.com/sit
 
 #### Authentication Endpoints
 
-```
+```http
 // Login
 POST /api/authenticate
 {
@@ -445,7 +443,7 @@ The application uses the **SITNA (Sistema de Información Territorial de Navarra
 
 **Version Information:**
 
-- **SITNA API Version**: Aligned with api-sitna 4.1.0
+- **SITNA API Version**: Aligned with api-sitna 4.8.0
 
 #### **Core Mapping Features**
 
@@ -466,6 +464,47 @@ The application uses the **SITNA (Sistema de Información Territorial de Navarra
 - **Geolocation**: GPS positioning and location-based services
 - **Search & Query**: Geographic search, feature queries, WFS data access
 - **External WMS**: Integration with external WMS services
+
+#### **Supported Controls**
+
+Controls are registered in `src/app/controls/handlers` and configured via backend tasks plus `src/assets/config/app-config.json` (`controlDefaults`, `enabledByDefault`, `disabledControls`). Parameters are merged with defaults where applicable.
+
+| Control Identifier | Purpose | Patches | Key Config / Notes |
+| --- | --- | --- | --- |
+| `sitna.attribution` | Attribution control | No | Map attribution toggle; optional `div`. Auto-enabled when `attribution` text exists. |
+| `sitna.basemapSelector` | Base map selection | No | Selector for background maps; `div` default `tc-slot-bms`. |
+| `sitna.click` | Click handling | No | Enables click interaction; supports `active` and `callback` in SITNA. |
+| `sitna.coordinates` | Coordinates display | No | Shows map coords (optionally geographic); `div` default `tc-slot-coordinates`. |
+| `sitna.dataLoader` | External data loading | No | Add WMS services and local files; `div` fixed `tc-slot-xdata`; `wmsSuggestions`, `enableDragAndDrop`. |
+| `sitna.download` | Map/data download | No | Download map image or vector data; `div` default `tc-slot-download`; `deselectableTabs`. |
+| `sitna.drawMeasureModify` | Draw/measure/modify | Yes | Drawing + measure control; `div` default `tc-slot-drawmeasuremodify`; `displayElevation`, `snapping`. |
+| `sitna.featureInfo` | GetFeatureInfo | Yes | WMS feature info by click; `persistentHighlights`, `displayElevation`. |
+| `sitna.fullScreen` | Fullscreen | No | Toggle fullscreen; `div` default `tc-slot-fullscreen`. |
+| `sitna.geolocation` | GPS & routes | No | Geolocation and routes; `div` default `tc-slot-geolocation`; `displayElevation`. |
+| `sitna.layerCatalog` | Layer catalog (virtual WMS) | Yes | Browse/add WMS layers; `div` default `tc-slot-toc`; `enableSearch`; virtual services from SITMUN trees. |
+| `sitna.legend` | Map legend | No | Legend display for layers; `div` default `tc-slot-legend`. |
+| `sitna.loadingIndicator` | Loading indicator | No | Global map loading indicator; boolean `true` or options. |
+| `sitna.measure` | Measure tool | No | Length/area/perimeter; `div` default `tc-slot-measure`; `displayElevation`. |
+| `sitna.multiFeatureInfo` | Spatial feature info | No | Multi-geometry queries (point/line/polygon); `div` default `tc-slot-multifeatureinfo`; `modes`, `persistentHighlights`. |
+| `sitna.navBar` | Navigation bar | No | Zoom/navigation bar; `div` default `tc-slot-nav`. |
+| `sitna.offlineMapMaker` | Offline map maker | No | Offline map packs; `div` default `tc-slot-offline`; `averageTileSize`, `offlineMapHintDiv`. |
+| `sitna.overviewMap` | Overview map | No | Situation map; `div` default `tc-slot-ovmap`; `layer` resolved from `situation-map` or first basemap. |
+| `sitna.popup` | Marker popup | No | Popup for marker data; boolean `true` or options. |
+| `sitna.printMap` | Print to PDF | Yes | Print control; `div` default `tc-slot-print`; `logo`, `legend`; patched using npm. |
+| `sitna.scale` | Scale display | No | Numeric scale indicator; `div` default `tc-slot-scale`. |
+| `sitna.scaleBar` | Scale bar | No | Graphic scale indicator; `div` default `tc-slot-scale`. |
+| `sitna.scaleSelector` | Scale selector | No | Numeric scale selector; `div` default `tc-slot-scale`. |
+| `sitna.search` | Search control | Yes | Search coordinates and entities; `div` default `tc-slot-search`; patched to avoid recursive events. |
+| `sitna.share` | Share control | No | Share map state; requires `stateful` map; `div` default `tc-slot-share`. |
+| `sitna.streetView` | Street View | No | Google Street View; `div` default `tc-slot-streetview`; `googleMapsKey`, `viewDiv`. |
+| `sitna.threed` | 2D/3D toggle | No | Toggle 2D/3D views; boolean `true` (auto-placed); 3D view set in `views.threeD`. |
+| `sitna.WFSEdit` | WFS editing | No | Edit WFS features; `div` default `tc-slot-wfsedit`; `downloadElevation`, `highlightChanges`, `showOriginalFeatures`, `snapping`, `styles`. |
+| `sitna.WFSQuery` | WFS query | No | Alphanumeric WFS queries from work layers; boolean `true` or `styles`, `highlightStyles`/`highLightStyles`. |
+| `sitna.workLayerManager` | Work layers | No | Manage loaded layers, order, visibility; `div` default `tc-slot-wlm`. |
+
+**Enabled by default:** `sitna.loadingIndicator` is listed in `enabledByDefault` in `src/assets/config/app-config.json`. To turn it off globally, remove it from `enabledByDefault` or add it to `disabledControls`.
+
+**Disabled by default:** `sitna.WFSEdit` and `sitna.offlineMapMaker` are listed in `disabledControls` in `src/assets/config/app-config.json`.
 
 #### **SITMUN-Specific Enhancements**
 
@@ -511,7 +550,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/
 │   ├── api/                    # API models and services
@@ -554,7 +593,7 @@ src/
 - **Modular Design**: Feature-based module organization
 - **Reactive Programming**: RxJS for asynchronous operations
 - **Material Design**: Angular Material for consistent UI
-- **SITNA Integration**: Advanced mapping through SITNA library (api-sitna v4.1.0)
+- **SITNA Integration**: Advanced mapping through SITNA library (api-sitna 4.8.0)
 
 ## Contributing
 
@@ -571,8 +610,6 @@ npm run lint
 npm test
 npm run build -- --configuration=production
 ```
-
-**Note**: The build script automatically sets `NODE_OPTIONS=--openssl-legacy-provider` for Node.js compatibility. This is required due to SITNA library dependencies and cryptographic operations that use legacy OpenSSL algorithms.
 
 1. **Submit a pull request** with a clear description
 
@@ -599,25 +636,31 @@ git commit -m "style(formatting): apply prettier formatting"
 - `test`: Adding or updating tests
 - `chore`: Maintenance tasks
 
+### UI Copy Checklist
+
+- Prefer short, concrete sentences and avoid filler words
+- Keep labels and placeholders consistent with the same user intent
+- Use sentence case for messages and title case for headings
+
 ## Support
 
 ### Troubleshooting
 
 #### Common Issues
 
-**Build Errors**
+#### Build Errors
 
 - **OpenSSL Errors**: Ensure Node.js 16+ is used, the build script handles legacy provider automatically
 - **Memory Issues**: Large SITNA library may require increased Node.js memory limits
 - **Dependency Conflicts**: Use `npm ci` for clean installs
 
-**Runtime Issues**
+#### Runtime Issues
 
 - **Map Not Loading**: Check backend connectivity and API endpoints
 - **Authentication Errors**: Verify JWT token validity and backend authentication
 - **Responsive Issues**: Test on different screen sizes, check CSS breakpoints
 
-**Development Issues**
+#### Development Issues
 
 - **Hot Reload Not Working**: Check file watching limits on your system
 - **Test Failures**: Ensure Jest is properly configured and dependencies are installed

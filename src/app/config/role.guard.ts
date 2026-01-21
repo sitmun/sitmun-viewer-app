@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
-  CanActivate,
+  CanActivateFn,
   Router,
   RouterStateSnapshot,
   UrlTree
@@ -10,44 +10,43 @@ import {
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class RoleGuard implements CanActivate {
-  constructor(
-    private authenticationService: AuthenticationService<CustomDetails>,
-    private router: Router
-  ) {}
+/**
+ * Guards routes by role and redirects to the default route on denial.
+ */
+export const roleGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+): boolean | UrlTree => {
+  const authenticationService = inject(AuthenticationService<CustomDetails>);
+  const router = inject(Router);
+  const AUTH_CONFIG = authenticationService.getAuthConfig();
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean | UrlTree {
-    const AUTH_CONFIG = this.authenticationService.getAuthConfig();
+  // this will be passed from the route config
+  // on the data property
+  const expectedRoles: string[] = Array.isArray(route.data['expectedRoles'])
+    ? route.data['expectedRoles']
+    : [];
 
-    // this will be passed from the route config
-    // on the data property
-    const expectedRoles = route.data['expectedRoles'];
-
-    if (
-      !this.authenticationService.isLoggedIn() ||
-      !this.authenticationService
+  const isLoggedIn = authenticationService.isLoggedIn();
+  const hasExpectedRole = isLoggedIn
+    ? authenticationService
         .getLoggedDetails()
         .authorities.some((element: any) => expectedRoles.includes(element))
-    ) {
-      // User not auth or without permissions
-      const defaultUrl = AUTH_CONFIG.routes.defaultPath(
-        this.authenticationService.getLoggedDetails()
+    : false;
+
+  if (!isLoggedIn || !hasExpectedRole) {
+    // User not auth or without permissions
+    const defaultUrl = isLoggedIn
+      ? AUTH_CONFIG.routes.defaultPath(authenticationService.getLoggedDetails())
+      : null;
+    if (defaultUrl) {
+      console.warn(
+        'Forbidden navigation to %s - Redirecting to default...',
+        state.url
       );
-      if (defaultUrl) {
-        console.warn(
-          'Forbidden navigation to %s - Redirecting to default...',
-          state.url
-        );
-        return this.router.parseUrl(defaultUrl);
-      }
-      return false;
+      return router.parseUrl(defaultUrl);
     }
-    return true;
+    return false;
   }
-}
+  return true;
+};

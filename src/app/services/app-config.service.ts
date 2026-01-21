@@ -178,14 +178,6 @@ export class AppConfigService {
   }
 
   /**
-   * Get all control defaults
-   * @returns Record of control identifier to default configuration
-   */
-  getAllControlDefaults(): Record<string, ControlDefaultConfig> {
-    return this.config?.controlDefaults || {};
-  }
-
-  /**
    * Get the attribution text from configuration
    * @returns Attribution string or null if not configured
    */

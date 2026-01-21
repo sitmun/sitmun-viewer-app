@@ -42,8 +42,10 @@
     <span class="current-language-icon" *ngIf="getLanguageIcon(currentLang)">
       <img
         *ngIf="isImageIcon(currentLang)"
-        [src]="getLanguageIcon(currentLang)"
+        [ngSrc]="getLanguageIcon(currentLang)"
         [alt]="getCurrentLanguageName()"
+        width="24"
+        height="24"
         class="flag-image-small" />
     </span>
     <span>{{ getCurrentLanguageName() }}</span>
@@ -64,8 +66,10 @@
         ">
         <img
           *ngIf="isImageIcon(language.shortname)"
-          [src]="getLanguageIcon(language.shortname)"
+          [ngSrc]="getLanguageIcon(language.shortname)"
           [alt]="language.name"
+          width="24"
+          height="24"
           class="flag-image" />
       </span>
       <span>{{ language.name }}</span>

@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -9,7 +10,7 @@ describe('ProfileInformationComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, NgOptimizedImage],
       declarations: [ProfileInformationComponent]
     });
     fixture = TestBed.createComponent(ProfileInformationComponent);

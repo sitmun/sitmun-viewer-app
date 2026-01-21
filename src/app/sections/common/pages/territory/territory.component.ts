@@ -17,11 +17,6 @@ export class TerritoryComponent implements OnInit {
   territoryId!: number;
   territory!: DashboardItem;
   applications!: DashboardItem[];
-  cardhWidth = '500px';
-  displayTag!: boolean;
-
-  applicationTag: any;
-  territoriesTag: any;
 
   constructor(
     private location: Location,
@@ -58,9 +53,5 @@ export class TerritoryComponent implements OnInit {
           this.applications = res.content;
         }
       });
-  }
-
-  navigateToPreviousPage() {
-    this.location.back();
   }
 }

@@ -94,10 +94,6 @@ export class ApplicationComponent implements OnInit {
     this.updateGroupedTerritories();
   }
 
-  navigateToPreviousPage() {
-    this.location.back();
-  }
-
   /**
    * Handles territory navigation when a territory is clicked in the list.
    * This is a fallback in case the SelectableListComponent's internal navigation doesn't work.
@@ -109,7 +105,7 @@ export class ApplicationComponent implements OnInit {
         ? NavigationPath.Section.Public.Map(this.applicationId, territory.id)
         : NavigationPath.Section.User.Map(this.applicationId, territory.id);
 
-      this.router.navigateByUrl(mapUrl);
+      void this.router.navigateByUrl(mapUrl);
     }
   }
 }

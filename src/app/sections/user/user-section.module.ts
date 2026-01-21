@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -25,7 +25,10 @@ import { TerritoryComponent } from '../common/pages/territory/territory.componen
     UserRoutingModule,
     TranslateModule,
     FormsModule,
-    UiModule
+    UiModule,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage
   ]
 })
 export class UserSectionModule {}

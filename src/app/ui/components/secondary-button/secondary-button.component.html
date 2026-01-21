@@ -1,6 +1,11 @@
 <button class="secondary-button">
   <span class="button-content">
-    <img *ngIf="button_img_url" [src]="button_img_url" alt="icon" />
+    <img
+      *ngIf="button_img_url"
+      [ngSrc]="button_img_url"
+      alt="icon"
+      width="40"
+      height="40" />
     <span>{{ button_text }}</span>
   </span>
 </button>

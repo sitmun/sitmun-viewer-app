@@ -23,19 +23,10 @@ export class LanguageService {
 
   /**
    * Get the current language from localStorage or default from configuration
-   * This is the preferred method over getDefaultLanguage() as it's more explicit
    */
   getCurrentLanguage(): string {
     const storedLang = localStorage.getItem('language');
     return storedLang ?? this.appConfigService.getDefaultLanguage();
-  }
-
-  /**
-   * Get the default language from configuration or localStorage
-   * @deprecated Use getCurrentLanguage() instead
-   */
-  getDefaultLanguage(): string {
-    return this.getCurrentLanguage();
   }
 
   /**
@@ -88,23 +79,6 @@ export class LanguageService {
     }
     const language = languages.find((lang) => lang.shortname === shortname);
     return language ? language.name : 'Language';
-  }
-
-  /**
-   * Return a list of available languages.
-   * @returns A list of available languages. If the API call fails, it returns a default list.
-   */
-  getLanguages(): Observable<LanguageDTO[]> {
-    return this.i18nService.availableLanguageCodes().pipe(
-      map((response: any) => {
-        const languages: LanguageDTO[] = response?._embedded?.languages ?? [];
-        if (!languages || languages.length === 0) {
-          return this.appConfigService.getDefaultLanguages();
-        }
-        return languages;
-      }),
-      catchError(() => of(this.appConfigService.getDefaultLanguages()))
-    );
   }
 
   /**

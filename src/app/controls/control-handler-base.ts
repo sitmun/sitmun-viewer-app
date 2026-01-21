@@ -41,7 +41,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
    * Default implementation does nothing - patches must be applied programmatically.
    * Override for custom loading logic (e.g., programmatic patches using meld).
    *
-   * @param context - Full application configuration context (required, must not be null)
+   * @param _context
    */
   async loadPatches(_context: AppCfg): Promise<void> {
     // Default: no patches to load (all patches must be applied programmatically)
@@ -95,7 +95,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
     // Check if already loaded
     if (checkLoaded) {
-      const isLoaded = await Promise.resolve(checkLoaded());
+      const isLoaded = await checkLoaded();
       if (isLoaded) {
         return Promise.resolve();
       }
@@ -206,16 +206,6 @@ export abstract class ControlHandlerBase implements ControlHandler {
   }
 
   /**
-   * Extract control name from controlIdentifier.
-   * Removes the 'sitna.' prefix if present.
-   *
-   * @returns Control name without prefix (e.g., 'layerCatalog' from 'sitna.layerCatalog')
-   */
-  protected getControlName(): string {
-    return this.controlIdentifier.replace(/^sitna\./, '');
-  }
-
-  /**
    * Get default control configuration from app-config.json.
    *
    * @returns Default configuration object from app-config.json, or empty object if not found
@@ -248,19 +238,11 @@ export abstract class ControlHandlerBase implements ControlHandler {
   }
 
   /**
-   * Get the default value to use when this control's task is NOT present in backend tasks.
-   * This is independent of app-config.json defaults (which are only used when task IS present).
-   *
-   * According to SITNA API, most controls are boolean properties, so false explicitly disables them.
-   * Override this method in specific handlers to implement custom logic (e.g., auto-enable based on
-   * app-config.json meaningful data like attribution text).
-   *
-   * **Important:** This method must always return a value (never undefined). Every control should
-   * be explicitly set to some value, even when not requested by the backend.
-   *
-   * @returns Default value when task is missing (false by default to match SITNA boolean controls)
+   * Default value when a control is not requested by backend configuration.
+   * Most controls are disabled when missing, so this returns false.
+   * Override in handlers that need auto-enable logic.
    */
-  protected getDefaultValueWhenMissing(): any {
-    return false; // Explicitly disable controls not requested (matches SITNA boolean API)
+  getDefaultValueWhenMissing(): SitnaControlConfig | boolean {
+    return false;
   }
 }

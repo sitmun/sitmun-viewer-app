@@ -48,7 +48,8 @@
               }
             ],
             "styles": [
-              "src/styles/main.scss"
+              "src/styles/main.scss",
+              "src/assets/js/toastr/toastr.min.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -70,7 +71,10 @@
               "pbf",
               "rbush",
               "ev-emitter/ev-emitter",
-              "pdfmake"
+              "pdfmake",
+              "@sitna/shpjs/dist/shp",
+              "md5",
+              "qrcode"
             ]
           },
           "configurations": {
@@ -91,13 +95,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "4mb",
+                  "maximumError": "6mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "10kb"
                 }
               ]
             },
@@ -115,7 +119,7 @@
                 }
               ]
             },
-            "development-api-heroku": {
+            "development-api-remote": {
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
@@ -170,8 +174,8 @@
             "development": {
               "browserTarget": "viewer-app:build:development"
             },
-            "development-api-heroku": {
-              "browserTarget": "viewer-app:build:development-api-heroku"
+            "development-api-remote": {
+              "browserTarget": "viewer-app:build:development-api-remote"
             },
             "testdeployment": {
               "browserTarget": "viewer-app:build:testdeployment"

@@ -210,19 +210,19 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   homeRedirect() {
     this.navigationClassActive = NavigationButtonActive.HOME;
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
+      void this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
     } else {
-      this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+      void this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
     }
   }
 
   loginRedirect() {
-    this.router.navigateByUrl(NavigationPath.Auth.Login);
+    void this.router.navigateByUrl(NavigationPath.Auth.Login);
   }
 
   profileRedirect() {
     this.navigationClassActive = NavigationButtonActive.PROFILE;
-    this.router.navigate([NavigationPath.Section.User.Profile]);
+    void this.router.navigate([NavigationPath.Section.User.Profile]);
   }
 
   logoutRedirect() {

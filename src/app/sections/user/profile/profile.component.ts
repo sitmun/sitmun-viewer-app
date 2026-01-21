@@ -18,7 +18,6 @@ export class ProfileComponent implements OnInit {
   readonly TERRITORIES_LIMIT: number = 3;
   displayPopupProfile = false;
   displayPopupTerritoriesProfiles = false;
-  fieldCurrentlyUpdating = false;
 
   territories: Array<TerritoryDTO> = [];
   selectedTerritory?: any;
@@ -252,7 +251,9 @@ export class ProfileComponent implements OnInit {
         this.scrollButonIcon = ScrollButtonIcon.SCROLL_BUTTON_UP;
         break;
       case ProfileSectionType.PROFILE_TERRITORIES:
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document
+          .getElementById('user-profile-section')
+          ?.scrollIntoView({ behavior: 'smooth' });
         this.currentSection = ProfileSectionType.PROFILE_INFORMATION;
         this.scrollButonIcon = ScrollButtonIcon.SCROLL_BUTTON_DOWN;
         break;

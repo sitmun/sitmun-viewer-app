@@ -29,7 +29,7 @@ export abstract class AbstractMapComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
   private componentDestroyed = new Subject<void>();
-  private isInEmbedded: boolean;
+  private readonly isInEmbedded: boolean;
   private currentCatalogIdx: number;
   private currentGeneralCfg: GeneralCfg | undefined;
   private currentAppCfg: AppCfg | undefined;
@@ -193,7 +193,7 @@ export abstract class AbstractMapComponent
       return;
     }
 
-    this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+    this.loadMap(this.currentGeneralCfg);
   }
 
   updateCatalog() {
@@ -219,7 +219,7 @@ export abstract class AbstractMapComponent
           // Clear and reload map with updated configuration
           if (this.currentAppCfg && this.currentGeneralCfg) {
             this.clearMap();
-            this.loadMap(this.currentAppCfg, this.currentGeneralCfg);
+            this.loadMap(this.currentGeneralCfg);
           }
         });
     }
@@ -294,7 +294,7 @@ export abstract class AbstractMapComponent
     };
   }
 
-  private loadMap(appCfg: AppCfg, cfg: GeneralCfg) {
+  private loadMap(cfg: GeneralCfg) {
     try {
       this.map = new SitnaMap('mapa', cfg);
     } catch (error) {
@@ -305,49 +305,6 @@ export abstract class AbstractMapComponent
     this.map.loaded(() => {
       this.mapInterface.updateInterface();
     });
-  }
-
-  private orderLayers(layers: any[], groups: any[]): any[] {
-    const groupsMap = new Map<string, any>();
-    groups.forEach((group) => groupsMap.set(group.id, group));
-
-    // Build the path to the root for each layer
-    function buildPathToRoot(layer: any): number[] {
-      const path: number[] = [layer.order];
-      let currentGroup = groupsMap.get(layer.parentGroupNode);
-
-      while (currentGroup) {
-        path.unshift(currentGroup.order); // Add the group order to the start of the path
-        currentGroup =
-          currentGroup.parentNode && currentGroup.parentNode !== currentGroup.id
-            ? groupsMap.get(currentGroup.parentNode)
-            : null;
-      }
-
-      return path;
-    }
-
-    // Assign each layer its "order path"
-    const layersWithPaths = layers.map((layer) => ({
-      layer,
-      path: buildPathToRoot(layer)
-    }));
-
-    // Sort the layers based on their "order paths"
-    layersWithPaths.sort((a, b) => {
-      const minLength = Math.min(a.path.length, b.path.length);
-      for (let i = 0; i < minLength; i++) {
-        if (a.path[i] !== b.path[i]) {
-          return a.path[i] - b.path[i];
-        }
-      }
-
-      // In case of a tie, the shorter path wins
-      return a.path.length - b.path.length;
-    });
-
-    // Returns the sorted list of layers
-    return layersWithPaths.map((item) => item.layer);
   }
 
   private waitForSITNAAndInitialize(): void {

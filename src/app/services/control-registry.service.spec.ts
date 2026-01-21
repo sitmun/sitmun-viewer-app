@@ -17,7 +17,7 @@ class MockHandler implements ControlHandler {
   readonly controlIdentifier: string;
   readonly sitnaConfigKey: string;
   readonly requiredPatches?: string[];
-  private customDiv?: string;
+  private readonly customDiv?: string;
 
   loadPatchesCalled = false;
   buildConfigCalled = false;

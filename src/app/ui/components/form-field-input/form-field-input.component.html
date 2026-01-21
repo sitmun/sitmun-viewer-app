@@ -9,7 +9,7 @@
       (input)="onInputChange($event)"
       [attr.maxlength]="input_length" />
     <button *ngIf="input_image" type="button" (click)="onButtonClicked()">
-      <img [src]="input_image" [alt]="input_title" />
+      <img [ngSrc]="input_image" [alt]="input_title" width="25" height="25" />
     </button>
   </div>
 </div>

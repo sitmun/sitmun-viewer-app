@@ -151,10 +151,6 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     return !!(this.applicationSelectedId && this.applicationSelectedId !== '');
   }
 
-  getApplicationIdAsNumber(): number {
-    return Number(this.applicationSelectedId) || 0;
-  }
-
   /**
    * Check if a territory is selected.
    */
@@ -272,12 +268,6 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     }
   }
 
-  isTerritorySelected(territoryId: number | string): boolean {
-    const territoryIdStr = String(territoryId);
-    const selectedIdStr = String(this.territorySelectedId);
-    return territoryIdStr === selectedIdStr;
-  }
-
   /**
    * Handles application search input changes.
    */
@@ -309,43 +299,6 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     this.onTerritorySelected(territory.id);
   }
 
-  selectApplication(appSelectedId: string) {
-    // Prevent selection of unavailable applications
-    const app = this.listApplications?.find(
-      (a) => String(a.id) === String(appSelectedId)
-    );
-    if (app && app.isUnavailable) {
-      return;
-    }
-
-    // Toggle selection: if clicking the same application, deselect it
-    if (String(this.applicationSelectedId) === String(appSelectedId)) {
-      this.applicationSelectedId = '';
-      this.territorySelectedId = '';
-      this.listTerritories = [];
-      this.searchValueTerritory = ''; // Clear territory search
-      this.updateGroupedTerritories();
-      this.updateCachedUnavailableIds();
-    } else {
-      // Change application selected
-      this.applicationSelectedId = String(appSelectedId);
-      this.territorySelectedId = '';
-      this.searchValueTerritory = ''; // Clear territory search when changing application
-
-      // Update listTerritories - will auto-select last selected territory if available
-      this.getAllTerritoriesFromApplicationSelected();
-    }
-  }
-
-  selectTerritory(territorySelectedId: string) {
-    // Toggle selection: if clicking the same territory, deselect it
-    if (String(this.territorySelectedId) === String(territorySelectedId)) {
-      this.territorySelectedId = '';
-    } else {
-      this.territorySelectedId = String(territorySelectedId);
-    }
-  }
-
   closeEvent() {
     this.dialogRef.close();
   }
@@ -374,14 +327,14 @@ export class ChangeApplicationTerritoryDialogComponent implements OnInit {
     }
 
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.Public.Map(
           Number(this.applicationSelectedId),
           Number(this.territorySelectedId)
         )
       );
     } else {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.User.Map(
           Number(this.applicationSelectedId),
           Number(this.territorySelectedId)

@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
   OnDestroy,
   Type,
@@ -29,11 +28,7 @@ export class OpenModalComponent implements AfterViewInit, OnDestroy {
 
   childComponentType!: Type<any>;
 
-  constructor(
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private cd: ChangeDetectorRef,
-    private dialogRef: OpenModalRef
-  ) {}
+  constructor(private cd: ChangeDetectorRef, private dialogRef: OpenModalRef) {}
 
   ngAfterViewInit() {
     this.loadChildComponent(this.childComponentType);
@@ -49,13 +44,10 @@ export class OpenModalComponent implements AfterViewInit, OnDestroy {
   // }
 
   loadChildComponent(componentType: Type<any>) {
-    const componentFactory =
-      this.componentFactoryResolver.resolveComponentFactory(componentType);
-
     const viewContainerRef = this.insertionPoint.viewContainerRef;
     viewContainerRef.clear();
 
-    this.componentRef = viewContainerRef.createComponent(componentFactory);
+    this.componentRef = viewContainerRef.createComponent(componentType);
   }
 
   ngOnDestroy() {

@@ -8,8 +8,6 @@ export enum Mode {
   Subscribe = 'subscribe'
 }
 
-export type ModalModesCRU = Mode.Add | Mode.Edit | Mode.Read | Mode.ReadOnly;
-
 /*
  * Extending components should inject required services.
  *

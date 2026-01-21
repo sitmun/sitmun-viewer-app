@@ -1,4 +1,4 @@
-import { Location } from '@angular/common';
+import { Location, NgOptimizedImage } from '@angular/common';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,6 +44,7 @@ describe('NavigationBarComponent', () => {
       imports: [
         BrowserAnimationsModule,
         HttpClientTestingModule,
+        NgOptimizedImage,
         TranslateModule.forRoot({
           loader: { provide: TranslateLoader, useClass: TranslateFakeLoader }
         }),

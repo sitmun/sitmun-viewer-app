@@ -74,37 +74,6 @@ export interface AppParameters {
   VERSION?: string;
 }
 
-export interface AppControls {
-  basemapSelector?: boolean;
-  TOC?: boolean;
-  workLayerManager?: boolean;
-  coordinates?: boolean;
-  search?: boolean;
-  measure?: boolean;
-  overviewMap?: boolean;
-  legend?: boolean;
-  popup?: boolean;
-  attribution?: boolean;
-  controlContainer?: boolean;
-  navBar?: boolean;
-  navBarHome?: boolean;
-  streetView?: boolean;
-  scaleBar?: boolean;
-  scale?: boolean;
-  scaleSelector?: boolean;
-  fullScreen?: boolean;
-  download?: boolean;
-  printMap?: boolean;
-  share?: boolean;
-  geolocation?: boolean;
-  dataLoader?: boolean;
-  drawMeasureModify?: boolean;
-  loadingIndicator?: boolean;
-  offlineMapMaker?: boolean;
-  featureInfo?: boolean;
-  click?: boolean;
-}
-
 export interface AppTasks {
   id: string;
   parameters: any;
@@ -117,11 +86,6 @@ export interface AppTree {
   image: string | null;
   rootNode: string;
   nodes: any;
-}
-
-export interface AppNode {
-  node: string;
-  infoNode: AppNodeInfo[];
 }
 
 export interface AppNodeInfo {

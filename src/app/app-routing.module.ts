@@ -40,7 +40,7 @@ const routes: Routes = [
           import('./sections/user/user-section.module').then(
             (m) => m.UserSectionModule
           )
-        // canActivate: [RoleGuard],
+        // canActivate: [roleGuard],
         // data: { expectedRoles: Object.values(UserRoles)}
       }
     ]

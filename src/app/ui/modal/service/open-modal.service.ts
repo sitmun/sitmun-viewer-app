@@ -1,12 +1,13 @@
 import {
   ApplicationRef,
-  ComponentFactoryResolver,
   ComponentRef,
   EmbeddedViewRef,
+  EnvironmentInjector,
   Injectable,
   Injector,
   OnDestroy,
-  Type
+  Type,
+  createComponent
 } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 
@@ -23,11 +24,12 @@ import { filter } from 'rxjs/operators';
 export class OpenModalService implements OnDestroy {
   modalComponentRef!: ComponentRef<OpenModalComponent>;
   private currentDialogRef: OpenModalRef | null = null;
-  private routerSubscription: Subscription;
+  private readonly routerSubscription: Subscription;
+  private modalCloseSubscription: Subscription | null = null;
 
   constructor(
-    protected componentFactoryResolver: ComponentFactoryResolver,
     protected appRef: ApplicationRef,
+    protected environmentInjector: EnvironmentInjector,
     protected injector: Injector,
     private router: Router
   ) {
@@ -44,10 +46,14 @@ export class OpenModalService implements OnDestroy {
     }
   }
 
+  /**
+   * Opens a modal and returns a handle to control its lifecycle.
+   */
   public open<T = any, R = any>(
     componentType: Type<any>,
     config: OpenModalConfig<T> = {}
   ): OpenModalRef<R> {
+    this.closeCurrentModal();
     const dialogRef = this.appendDialogComponentToBody(config);
 
     this.modalComponentRef.instance.childComponentType = componentType;
@@ -69,11 +75,10 @@ export class OpenModalService implements OnDestroy {
       sub.unsubscribe();
     });
 
-    const componentFactory =
-      this.componentFactoryResolver.resolveComponentFactory(OpenModalComponent);
-    const componentRef = componentFactory.create(
-      new OpenModalInjector(this.injector, map)
-    );
+    const componentRef = createComponent(OpenModalComponent, {
+      environmentInjector: this.environmentInjector,
+      elementInjector: new OpenModalInjector(this.injector, map)
+    });
 
     this.appRef.attachView(componentRef.hostView);
 
@@ -83,10 +88,12 @@ export class OpenModalService implements OnDestroy {
 
     this.modalComponentRef = componentRef;
 
-    this.modalComponentRef.instance.onClose.subscribe(() => {
-      this.removeDialogComponentFromBody();
-      this.currentDialogRef = null;
-    });
+    this.modalCloseSubscription?.unsubscribe();
+    this.modalCloseSubscription =
+      this.modalComponentRef.instance.onClose.subscribe(() => {
+        this.removeDialogComponentFromBody();
+        this.currentDialogRef = null;
+      });
 
     return dialogRef;
   }
@@ -95,7 +102,10 @@ export class OpenModalService implements OnDestroy {
     if (this.modalComponentRef) {
       this.appRef.detachView(this.modalComponentRef.hostView);
       this.modalComponentRef.destroy();
+      this.modalComponentRef = undefined as never;
     }
+    this.modalCloseSubscription?.unsubscribe();
+    this.modalCloseSubscription = null;
   }
 
   private closeCurrentModal(): void {

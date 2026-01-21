@@ -4,9 +4,6 @@ export const URL_RESET_PASSWORD_REQUEST = BASE_URL + '/password-reset/request';
 export const URL_RESET_PASSWORD_CONFIRM = BASE_URL + '/password-reset/confirm';
 export const URL_RESET_PASSWORD_RESEND = BASE_URL + '/password-reset/resend';
 
-export const URL_AUTH_VERIFY_PASSWORD =
-  BASE_URL + '/user-verification/verify-password';
-
 export const URL_AUTH_VERIFY_EMAIL =
   BASE_URL + '/user-verification/verify-email';
 
@@ -27,7 +24,6 @@ export const URL_API_MAP_CONFIG = (appId: number, territoryId: number) =>
   BASE_URL + `/config/client/profile/${appId}/${territoryId}`;
 
 // TODO Ver si son necesarios
-export const URL_API_I18N_MESSAGES_PREFIX = '';
 
 export const URL_API_I18N_LANGUAGE = '';
 

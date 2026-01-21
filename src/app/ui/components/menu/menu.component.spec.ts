@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +27,7 @@ describe('MenuComponent', () => {
       imports: [
         BrowserAnimationsModule,
         HttpClientTestingModule,
+        NgOptimizedImage,
         TranslateModule.forRoot(),
         FormsModule,
         MatDialogModule,

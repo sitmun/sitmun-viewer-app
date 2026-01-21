@@ -57,12 +57,12 @@ export class MapComponent extends AbstractMapComponent {
   }
 
   override navigateToMap() {
-    this.router.navigateByUrl(
+    void this.router.navigateByUrl(
       NavigationPath.Section.User.Map(this.applicationId, this.territoryId)
     );
   }
 
   override navigateToDashboard() {
-    this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+    void this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
   }
 }

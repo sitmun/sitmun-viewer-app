@@ -3,20 +3,22 @@
     <!-- Left section -->
     <div class="toolbar-left">
       <img
-        src="assets/logos/logo_orange.png"
+        ngSrc="assets/logos/logo_orange.png"
         alt="logo"
         class="logo-img"
         *ngIf="
           !isOnAuthLogin &&
           (!isOnMap() || headerBase?.logoSitmun?.visible !== false)
-        " />
+        " height="284" width="879" />
 
       <div *ngIf="headerLeftSection">
         <div *ngFor="let item of headerLeftSection">
           <img
             class="header-img"
-            *ngIf="item?.visible && item?.url"
-            [src]="item?.url"
+            *ngIf="item?.visible && item?.url as url"
+            [ngSrc]="url"
+            width="32"
+            height="32"
             [alt]="item?.alt" />
         </div>
       </div>
@@ -30,8 +32,10 @@
         <div *ngFor="let item of headerRightSection">
           <img
             class="header-img"
-            *ngIf="item?.visible && item?.url"
-            [src]="item?.url"
+            *ngIf="item?.visible && item?.url as url"
+            [ngSrc]="url"
+            width="32"
+            height="32"
             [alt]="item?.alt" />
         </div>
       </div>

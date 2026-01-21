@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     if (this.authenticationService.isLoggedIn()) {
-      this.router.navigateByUrl('/');
+      void this.router.navigateByUrl('/');
     }
     this.displayDNIEButton = !((environment as any).hideDNIEAccess ?? true);
     this.backgroundImageUrl = (environment as any).loginBackgroundImageUrl;
@@ -76,17 +76,19 @@ export class LoginComponent implements OnInit {
 
           if (redirectUrl) {
             // Redirect to the originally requested URL
-            this.router.navigateByUrl(redirectUrl);
+            void this.router.navigateByUrl(redirectUrl);
           } else {
             // Use default path - get auth details for defaultPath function
             try {
               const authDetails = this.authenticationService.getLoggedDetails();
-              this.router.navigateByUrl(
+              void this.router.navigateByUrl(
                 AUTH_CONFIG.routes.defaultPath(authDetails)
               );
             } catch {
               // Fallback to dashboard if details not available yet
-              this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+              void this.router.navigateByUrl(
+                NavigationPath.Section.User.Dashboard
+              );
             }
           }
         },
@@ -114,7 +116,7 @@ export class LoginComponent implements OnInit {
   }
 
   publicDashboard() {
-    this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
+    void this.router.navigateByUrl(NavigationPath.Section.Public.Dashboard);
   }
 
   showOrHidePassword() {

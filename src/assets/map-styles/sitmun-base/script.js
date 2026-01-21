@@ -13,13 +13,13 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
      *          - classes (array o string): clases CSS a aplicar
      */
     TC.Cfg.applyChanges = function (configArray) {
-      var changes = configArray instanceof Array ? configArray : [configArray];
+      const changes = configArray instanceof Array ? configArray : [configArray];
 
       if (changes) {
-        var map;
+        let map;
         changes.forEach(function (item) {
-          var elem = item.apply;
-          var clickedElems =
+          const elem = item.apply;
+          const clickedElems =
             elem.elements instanceof Array ? elem.elements : [elem.elements];
           map =
             item.map || map || SITNA.Map.get(document.querySelector('.tc-map'));
@@ -29,10 +29,10 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
               if (window.matchMedia(item.screenCondition).matches) {
                 // si es una pantalla estrecha
                 elem.changes.forEach(function (change) {
-                  var targets = Array.isArray(change.targets)
+                  const targets = Array.isArray(change.targets)
                     ? change.targets
                     : [change.targets];
-                  var classes = Array.isArray(change.classes)
+                  const classes = Array.isArray(change.classes)
                     ? change.classes
                     : [change.classes];
 
@@ -409,7 +409,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           tab = tab.parentElement;
         }
         if (tab.tagName === 'H2') {
-          for (var i = 0; i < map.controls.length; i++) {
+          for (let i = 0; i < map.controls.length; i++) {
             const ctl = map.controls[i];
             if (ctl.div && ctl.div.contains(tab)) {
               if (ctl.isHighlighted()) {
@@ -573,7 +573,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
 
             if (isToolsTabActive) {
               // Find the control that contains this h2
-              for (var i = 0; i < map.controls.length; i++) {
+              for (let i = 0; i < map.controls.length; i++) {
                 const ctl = map.controls[i];
                 if (ctl.div && ctl.div.contains(tab)) {
                   if (ctl.isHighlighted()) {

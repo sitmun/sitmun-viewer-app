@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SecondaryButtonComponent } from './secondary-button.component';
@@ -8,7 +9,8 @@ describe('MenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SecondaryButtonComponent]
+      declarations: [SecondaryButtonComponent],
+      imports: [NgOptimizedImage]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SecondaryButtonComponent);

@@ -53,24 +53,22 @@ export class AttributionControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Attribution has special auto-enable logic:
-   * If attribution TEXT is configured in app-config.json (not just a div),
-   * auto-enable the control even without a backend task.
-   * Otherwise, explicitly disable it.
+   * Auto-enable attribution when attribution text is configured.
+   * Returns default config (if it defines a div) or true to enable with SITNA default.
    */
-  override getDefaultValueWhenMissing(): any {
-    // Check if attribution TEXT is configured in app-config.json
-    const attribution = this.appConfigService.getAttribution();
-
-    if (attribution) {
-      // Attribution text exists → auto-enable control with default config
-      const defaultConfig = this.getDefaultConfig(); // Gets div if configured
-      return defaultConfig && Object.keys(defaultConfig).length > 0
-        ? defaultConfig
-        : true; // Return config with div, or just true
+  override getDefaultValueWhenMissing(): SitnaControlConfig | boolean {
+    const attributionText = this.appConfigService.getAttribution?.();
+    if (!attributionText) {
+      return false;
     }
 
-    // No attribution text → explicitly disable control
-    return false;
+    const defaultConfig = this.appConfigService.getControlDefault(
+      this.controlIdentifier
+    );
+    if (defaultConfig && defaultConfig.div) {
+      return defaultConfig;
+    }
+
+    return true;
   }
 }

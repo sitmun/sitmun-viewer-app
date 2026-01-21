@@ -40,7 +40,7 @@
 </div>
 
 <button mat-fab id="scroll-to-bottom-button" (click)="changeSection()">
-  <img [src]="this.scrollButonIcon" alt="Scroll button" />
+  <img [ngSrc]="scrollButonIcon" alt="Scroll button" width="24" height="24" />
 </button>
 
 <div id="territories-profile-section">
@@ -124,8 +124,8 @@
                         )
                       ">
                       <img
-                        src="assets/img/Icona-modificar-naranja.svg"
-                        alt="Edit organization" />
+                        ngSrc="assets/img/Icona-modificar-naranja.svg"
+                        alt="Edit organization" height="18" width="18" />
                     </button>
                   </div>
                 </td>
@@ -141,8 +141,8 @@
                         changeValue(position.id, position.name, 'name-')
                       ">
                       <img
-                        src="assets/img/Icona-modificar-naranja.svg"
-                        alt="Edit name" />
+                        ngSrc="assets/img/Icona-modificar-naranja.svg"
+                        alt="Edit name" height="18" width="18" />
                     </button>
                   </div>
                 </td>

@@ -151,16 +151,6 @@ export class ConfigLookupService {
   }
 
   /**
-   * Find a tree by its root node ID.
-   *
-   * @param id - Root node ID
-   * @returns The tree, or undefined if not found
-   */
-  findTree(id: string): AppTree | undefined {
-    return this.treesCache.get(id);
-  }
-
-  /**
    * Find a node by its ID.
    *
    * @param id - Node ID
@@ -183,14 +173,5 @@ export class ConfigLookupService {
       }
     }
     return undefined;
-  }
-
-  /**
-   * Get all trees.
-   *
-   * @returns Array of all trees
-   */
-  getAllTrees(): AppTree[] {
-    return Array.from(this.treesCache.values());
   }
 }

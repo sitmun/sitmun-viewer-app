@@ -115,11 +115,11 @@ export class DashboardSearchboxComponent implements OnInit {
 
   navigateToTerritoryPresentation(territoryId: number): void {
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.Public.Territory(territoryId)
       );
     } else {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.User.Territory(territoryId)
       );
     }
@@ -128,11 +128,11 @@ export class DashboardSearchboxComponent implements OnInit {
   navigateToApplicationPresentation(applicationId: number): void {
     this.showSuggestions = false;
     if (this.router.url.startsWith('/public')) {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.Public.Application(applicationId)
       );
     } else {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         NavigationPath.Section.User.Application(applicationId)
       );
     }

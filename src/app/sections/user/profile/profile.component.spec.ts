@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,6 +21,7 @@ describe('ProfileComponent', () => {
       imports: [
         HttpClientTestingModule,
         TranslateModule.forRoot(),
+        NgOptimizedImage,
         MatIconModule,
         MatTooltipModule
       ],

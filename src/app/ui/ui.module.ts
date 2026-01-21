@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -64,7 +64,21 @@ import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
     MatDialogModule,
     MatListModule,
     MatChipsModule,
-    RouterModule
+    RouterModule,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage,
+    NgOptimizedImage
   ],
   declarations: [
     DashboardItemsComponent,

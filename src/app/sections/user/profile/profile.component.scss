@@ -9,12 +9,28 @@ h2 {
 }
 
 #scroll-to-bottom-button {
-  background-color: colors.$blue-light !important;
+  background-color: colors.$login-page-button-login-background !important;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  padding: 10px 15px;
+  padding: 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: none !important;
+}
+
+#scroll-to-bottom-button:hover {
+  background-color: colors.$login-page-button-login-hover !important;
+}
+
+#scroll-to-bottom-button img {
+  filter: brightness(0) invert(1);
 }
 
 /* profile section */
@@ -25,6 +41,7 @@ h2 {
   margin-right: auto;
   width: $page-width;
   height: 100svh;
+  scroll-margin-top: 64px;
 
   #saveButton {
     width: 250px;

@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FormFieldInputComponent } from './form-field-input.component';
@@ -8,7 +9,8 @@ describe('FormFieldInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FormFieldInputComponent]
+      declarations: [FormFieldInputComponent],
+      imports: [NgOptimizedImage]
     }).compileComponents();
 
     fixture = TestBed.createComponent(FormFieldInputComponent);

@@ -1,5 +1,3 @@
-import { StringUtils } from '@ui/util/helpers';
-
 export interface UserDto {
   id: number;
   email: string;
@@ -13,22 +11,4 @@ export interface UserDto {
   administrator: boolean;
   blocked: boolean;
   createDate: Date;
-}
-
-export class UserUtils {
-  static userFullName(u: UserDto): string {
-    const parts = [];
-    if (u) {
-      parts.push(u.firstname);
-      parts.push(u.lastname);
-    }
-    return parts.filter((s) => StringUtils.isNotEmpty(s)).join(' ');
-  }
-
-  static fullName(firstname: string, lastname: string): string {
-    const parts = [];
-    parts.push(firstname);
-    parts.push(lastname);
-    return parts.filter((s) => StringUtils.isNotEmpty(s)).join(' ');
-  }
 }

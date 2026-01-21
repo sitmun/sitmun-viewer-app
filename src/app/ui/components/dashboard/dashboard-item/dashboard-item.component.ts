@@ -11,8 +11,6 @@ import { Router } from '@angular/router';
 
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-import { TranslateService } from '@ngx-translate/core';
-import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 /**
  * Component for displaying a single application card in the dashboard.
@@ -39,12 +37,7 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
   listOfTerritories: any;
   mediaQueryListener: any;
 
-  constructor(
-    private commonService: CommonService,
-    private router: Router,
-    private notificatioNService: NotificationService,
-    private translateService: TranslateService
-  ) {}
+  constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
     this.fillTerritory(this.item.id);
@@ -55,14 +48,6 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
     if (this.mediaQueryListener) {
       this.mediaQueryListener.removeListener();
     }
-  }
-
-  notInAuth() {
-    let notInAuth = true;
-    if (this.router.url.startsWith(NavigationPath.Auth.Base)) {
-      notInAuth = false;
-    }
-    return notInAuth;
   }
 
   @HostListener('window:resize', ['$event'])
@@ -115,7 +100,7 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
   }
 
   navigateToApplicationDetails(idApp: number) {
-    this.router.navigateByUrl(this.getApplicationUrl(idApp));
+    void this.router.navigateByUrl(this.getApplicationUrl(idApp));
   }
 
   displayTerritoriesTag(application: any) {
@@ -128,19 +113,11 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
 
   navigateToMap(idApp: number) {
     if (this.nbTerritory == 1) {
-      this.router.navigateByUrl(
+      void this.router.navigateByUrl(
         this.getMapUrl(idApp, this.listOfTerritories[0].id)
       );
     } else {
       this.displayTerritoriesTag(this.item);
     }
-  }
-
-  /**
-   * Navigates to the map for a specific application and territory.
-   * This method is called when a territory is clicked in the territories tag/modal.
-   */
-  navigateToTerritoryMap(applicationId: number, territoryId: number): void {
-    this.router.navigateByUrl(this.getMapUrl(applicationId, territoryId));
   }
 }

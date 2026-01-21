@@ -37,16 +37,6 @@ export abstract class AbstractDashboardComponent implements OnInit {
       });
   }
 
-  onTypeChange(type: DashboardTypes) {
-    if (type === DashboardTypes.APPLICATIONS) {
-      this.type = DashboardTypes.APPLICATIONS;
-    } else if (type === DashboardTypes.TERRITORIES) {
-      this.type = DashboardTypes.TERRITORIES;
-    }
-    this.items = [];
-    this.loadItems();
-  }
-
   onKeywordsSearch(keywords: string) {
     this.loadItems(keywords);
   }
