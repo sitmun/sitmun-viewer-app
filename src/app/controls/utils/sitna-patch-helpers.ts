@@ -1,7 +1,9 @@
 /**
  * Shared patch helpers for SITNA controls.
- * Centralizes FeatureStyler and Modify control patches to prevent errors
- * when methods are called before DOM elements are initialized.
+ *
+ * Includes:
+ * - FeatureStyler and Modify control patches (prevent init errors)
+ * - Custom control shell factory (create Web Component-compatible controls)
  *
  * These patches use try/catch guards to safely ignore "undefined" errors
  * that occur when private fields (#strokeColorPicker, #textInput, etc.)
@@ -9,6 +11,345 @@
  */
 
 import { PatchManager } from '../../utils/patch-manager';
+
+// ============================================================================
+// Custom Control Shell Factory
+// ============================================================================
+
+/**
+ * Configuration for creating a custom SITNA control shell.
+ */
+export interface CustomControlShellConfig {
+  /** Control name in PascalCase (e.g., "HelloWorld") - used for TC.control registration */
+  controlName: string;
+
+  /** CSS class for the control (e.g., "tc-ctl-hw") */
+  cssClass: string;
+
+  /** Custom element tag name in kebab-case (e.g., "sitna-hello-world") */
+  tagName: string;
+}
+
+/**
+ * Create and register a custom SITNA control shell.
+ *
+ * This factory creates a minimal JavaScript class that extends SITNA.control.Control,
+ * registers it as a custom element, and adds it to TC.control namespace.
+ *
+ * Why native JavaScript? SITNA controls are Web Components that extend HTMLElement.
+ * TypeScript's class compilation breaks Web Component inheritance, so we must
+ * use native JS class syntax via `new Function()`.
+ *
+ * Usage:
+ * ```typescript
+ * // Create the shell
+ * createCustomControlShell(TC, {
+ *   controlName: 'HelloWorld',
+ *   cssClass: 'tc-ctl-hw',
+ *   tagName: 'sitna-hello-world'
+ * });
+ *
+ * // Inject TypeScript methods onto the prototype
+ * const proto = TC.control.HelloWorld.prototype;
+ * proto['_initFromTypeScript'] = MyLogicClass._initFromTypeScript;
+ * proto['render'] = MyLogicClass.render;
+ * // ...
+ * ```
+ *
+ * @param TC - The TC namespace object
+ * @param config - Control shell configuration
+ * @returns true if shell was created, false if already exists or SITNA not ready
+ */
+export function createCustomControlShell(
+  TC: any,
+  config: CustomControlShellConfig
+): boolean {
+  const { controlName, cssClass, tagName } = config;
+
+  // Ensure TC.control namespace exists
+  TC.control = TC.control || {};
+
+  // Skip if already registered
+  if (TC.control[controlName]) {
+    return false;
+  }
+
+  // Check SITNA is available
+  const SITNA = (window as any).SITNA;
+  if (!SITNA?.control?.Control) {
+    console.warn(
+      `[createCustomControlShell] SITNA.control.Control not available for ${controlName}`
+    );
+    return false;
+  }
+
+  // Generate and execute the shell code
+  const shellCode = `
+    class ${controlName}Control extends SITNA.control.Control {
+      constructor() {
+        super(...arguments);
+        // Call TypeScript initializer if injected
+        if (typeof this._initFromTypeScript === 'function') {
+          this._initFromTypeScript();
+        }
+      }
+
+      // Override register to avoid appending the custom element to the DOM.
+      async register(map) {
+        this.map = map;
+        await this.render();
+        if (this.options?.active) {
+          this.activate();
+        }
+        return this;
+      }
+
+      // Override connectedCallback to prevent custom element from being inserted
+      // Instead, we'll render content directly into the parent div
+      connectedCallback() {
+        // Don't call super.connectedCallback() to prevent default Web Component behavior
+        // The control will be rendered via renderData which sets div.innerHTML directly
+      }
+    }
+
+    // Set CSS class
+    ${controlName}Control.prototype.CLASS = '${cssClass}';
+
+    // Register as custom element (required for Web Components)
+    if (!customElements.get('${tagName}')) {
+      customElements.define('${tagName}', ${controlName}Control);
+    }
+
+    // Register in TC.control namespace
+    TC.control.${controlName} = ${controlName}Control;
+  `;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const createShell = new Function('SITNA', 'TC', shellCode);
+    createShell(SITNA, TC);
+    return !!TC.control[controlName];
+  } catch (error) {
+    console.error(
+      `[createCustomControlShell] Failed to create ${controlName}:`,
+      error
+    );
+    return false;
+  }
+}
+
+/**
+ * Type for a control logic class with static methods.
+ * Static methods will be injected onto the control prototype.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ControlLogicClass = Record<string, any>;
+
+/**
+ * Inject all methods from a logic class onto a control prototype.
+ *
+ * This automatically discovers and injects all static methods from the logic class,
+ * eliminating the need to manually list each method.
+ *
+ * Methods that are excluded:
+ * - Properties that are not functions
+ * - Built-in static properties (length, name, prototype)
+ * - Properties starting with uppercase (assumed to be constants)
+ *
+ * Usage:
+ * ```typescript
+ * // Create shell and inject logic in one step
+ * createCustomControlShell(TC, { controlName: 'HelloWorld', ... });
+ * injectControlLogic(TC.control.HelloWorld.prototype, HelloWorldControlLogic);
+ * ```
+ *
+ * @param prototype - The control prototype to inject methods onto
+ * @param logicClass - The TypeScript class containing static methods
+ * @returns Array of method names that were injected
+ */
+export function injectControlLogic(
+  prototype: Record<string, unknown>,
+  logicClass: ControlLogicClass
+): string[] {
+  if (!prototype) {
+    console.warn('[injectControlLogic] No prototype provided');
+    return [];
+  }
+
+  // Skip if already injected
+  if (prototype['_methodsInjected']) {
+    return [];
+  }
+
+  const injected: string[] = [];
+
+  // Built-in static properties to skip
+  const skipProperties = new Set(['length', 'name', 'prototype']);
+
+  // Get all  property names from the logic class
+  const propertyNames = Object.getOwnPropertyNames(logicClass);
+
+  for (const name of propertyNames) {
+    // Skip built-in properties
+    if (skipProperties.has(name)) {
+      continue;
+    }
+
+    // Skip properties starting with uppercase (constants like DEFAULT_TITLE)
+    if (name[0] === name[0].toUpperCase() && name[0] !== '_') {
+      continue;
+    }
+
+    const value = logicClass[name];
+
+    // Only inject functions
+    if (typeof value === 'function') {
+      prototype[name] = value;
+      injected.push(name);
+    }
+  }
+
+  // Mark as injected to prevent double-injection
+  prototype['_methodsInjected'] = true;
+
+  return injected;
+}
+
+// ============================================================================
+// Generic Prototype Wrappers Factory
+// ============================================================================
+
+/**
+ * Base interface for custom control instances.
+ * Extend this interface for control-specific properties.
+ */
+export interface BaseCustomControlInstance {
+  /** Container div element */
+  div: HTMLElement | null;
+
+  /** Reference to the SITNA map */
+  map: unknown;
+
+  /** Template paths or compiled templates */
+  template: Record<string, string> | null;
+
+  /** CSS class for this control */
+  CLASS: string;
+
+  /** Reference to the logic instance (managed by wrappers) */
+  _logic?: ControlLogicBase;
+
+  /** Get localized string from SITNA i18n */
+  getLocaleString(key: string): string;
+
+  /** Render data using Handlebars template */
+  renderData(
+    data: Record<string, unknown>,
+    callback?: () => void
+  ): Promise<void>;
+}
+
+/**
+ * Base interface for control logic classes.
+ * Implement this interface for type-safe logic classes.
+ */
+export interface ControlLogicBase {
+  /** Initialize control state */
+  init(): void;
+
+  /** Load Handlebars templates */
+  loadTemplates(): Promise<void>;
+
+  /** Render the control */
+  render(callback?: () => void): Promise<void>;
+
+  /** Add event listeners to UI elements */
+  addUIEventListeners(): void;
+}
+
+/**
+ * Constructor type for logic classes.
+ */
+export type LogicConstructor<T extends BaseCustomControlInstance> = new (
+  control: T
+) => ControlLogicBase;
+
+/**
+ * Create reusable prototype wrappers for a custom SITNA control.
+ *
+ * This factory generates the standard lifecycle methods that SITNA expects
+ * (loadTemplates, render, addUIEventListeners) and delegates them to
+ * a logic class instance.
+ *
+ * Benefits:
+ * - Ensures consistent wrapper pattern
+ * - Type-safe via generic constraints
+ *
+ * Usage:
+ * ```typescript
+ * // In your control logic file:
+ * export const prototypeWrappers = createPrototypeWrappers<MyControlInstance>(
+ *   MyControlLogic
+ * );
+ *
+ * // In your handler:
+ * injectControlLogic(proto, prototypeWrappers);
+ * ```
+ *
+ * @param LogicClass - The TypeScript class that implements ControlLogicBase
+ * @returns Object with prototype methods to inject
+ */
+export function createPrototypeWrappers<T extends BaseCustomControlInstance>(
+  LogicClass: LogicConstructor<T>
+) {
+  return {
+    /**
+     * Initialize from TypeScript - creates logic instance and calls init.
+     */
+    _initFromTypeScript(this: T & { _logic?: ControlLogicBase }): void {
+      this._logic = new LogicClass(this as T);
+      this._logic.init();
+    },
+
+    /**
+     * Load templates - delegates to logic instance.
+     * Creates logic instance if it doesn't exist.
+     */
+    async loadTemplates(
+      this: T & { _logic?: ControlLogicBase }
+    ): Promise<void> {
+      if (!this._logic) {
+        this._logic = new LogicClass(this as T);
+      }
+      return this._logic.loadTemplates();
+    },
+
+    /**
+     * Render - delegates to logic instance.
+     * Creates logic instance if it doesn't exist.
+     */
+    async render(
+      this: T & { _logic?: ControlLogicBase },
+      callback?: () => void
+    ): Promise<void> {
+      if (!this._logic) {
+        this._logic = new LogicClass(this as T);
+      }
+      return this._logic.render(callback);
+    },
+
+    /**
+     * Add UI event listeners - delegates to logic instance.
+     * Creates logic instance if it doesn't exist.
+     */
+    addUIEventListeners(this: T & { _logic?: ControlLogicBase }): void {
+      if (!this._logic) {
+        this._logic = new LogicClass(this as T);
+      }
+      this._logic.addUIEventListeners();
+    }
+  };
+}
 
 /** Options for applying patches. */
 export interface PatchOptions {

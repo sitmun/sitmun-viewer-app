@@ -20,5 +20,8 @@
   "printPdf": "PDF gisa deskargatu",
   "printThisWindow": "Leiho hau inprimatu",
   "printPage": "Inprimatzeko orria",
-  "search.list.placename": "Toponimoak"
+  "search.list.placename": "Toponimoak",
+  "helloWorld.title": "Kaixo Mundua",
+  "helloWorld.message": "Kontrol hau Angular-etik erregistratuta dago eta Handlebars txantiloi baten bidez errendatzen da.",
+  "helloWorld.buttonLabel": "Agurtu"
 }

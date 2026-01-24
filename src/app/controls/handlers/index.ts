@@ -14,6 +14,7 @@ import { DrawMeasureModifyControlHandler } from './draw-measure-modify-control.h
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { FullScreenControlHandler } from './full-screen-control.handler';
 import { GeolocationControlHandler } from './geolocation-control.handler';
+import { HelloWorldControlHandler } from './hello-world-control.handler';
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { LegendControlHandler } from './legend-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
@@ -66,6 +67,9 @@ export { StreetViewControlHandler } from './street-view-control.handler';
 export { WFSEditControlHandler } from './wfs-edit-control.handler';
 export { WFSQueryControlHandler } from './wfs-query-control.handler';
 
+// Custom Controls
+export { HelloWorldControlHandler } from './hello-world-control.handler';
+
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 
@@ -116,5 +120,8 @@ export const ALL_CONTROL_HANDLERS = [
   WFSEditControlHandler,
 
   // Native WFSQuery
-  WFSQueryControlHandler
+  WFSQueryControlHandler,
+
+  // Custom Controls
+  HelloWorldControlHandler
 ] as const;

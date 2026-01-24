@@ -1,0 +1,273 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
+
+import { HelloWorldControlHandler } from './hello-world-control.handler';
+import { prototypeWrappers } from '../../controls/hello-world/hello-world-control.logic';
+import { AppConfigService } from '../../services/app-config.service';
+import { TCNamespaceService } from '../../services/tc-namespace.service';
+
+describe('HelloWorldControlHandler', () => {
+  let handler: HelloWorldControlHandler;
+  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockAppConfigService: jest.Mocked<AppConfigService>;
+  let mockTC: any;
+  let mockAppCfg: AppCfg;
+  let originalConsoleWarn: typeof console.warn;
+
+  beforeEach(() => {
+    // Suppress console.warn during tests to avoid cluttering test output
+    originalConsoleWarn = console.warn;
+    console.warn = jest.fn();
+    // Create mock TC namespace
+    mockTC = {
+      control: {}
+    };
+
+    mockTCNamespace = {
+      waitForTC: jest.fn().mockResolvedValue(mockTC),
+      waitForTCProperty: jest.fn(),
+      getTC: jest.fn().mockReturnValue(mockTC),
+      isTCReady: jest.fn().mockReturnValue(true)
+    } as Partial<
+      jest.Mocked<TCNamespaceService>
+    > as jest.Mocked<TCNamespaceService>;
+
+    mockAppConfigService = {
+      getControlDefault: jest.fn()
+    } as Partial<
+      jest.Mocked<AppConfigService>
+    > as jest.Mocked<AppConfigService>;
+    mockAppConfigService.getControlDefault.mockReturnValue({
+      div: 'tc-slot-hello-world'
+    });
+
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        HelloWorldControlHandler,
+        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: AppConfigService, useValue: mockAppConfigService }
+      ]
+    });
+
+    handler = TestBed.inject(HelloWorldControlHandler);
+
+    mockAppCfg = {
+      application: {
+        id: 1,
+        title: 'Test App',
+        type: 'test',
+        theme: 'default',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 100, 100]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: []
+    };
+
+    // Setup window.SITNA mock
+    (window as any).SITNA = {
+      control: {
+        Control: class MockControl {}
+      }
+    };
+  });
+
+  afterEach(() => {
+    delete (window as any).SITNA;
+    handler.cleanup();
+    // Restore original console.warn
+    console.warn = originalConsoleWarn;
+  });
+
+  it('should be created', () => {
+    expect(handler).toBeTruthy();
+  });
+
+  it('should inject prototypeWrappers via constructor', () => {
+    // Verify that prototypeWrappers are stored in the handler
+    expect((handler as any).prototypeWrappers).toBe(prototypeWrappers);
+  });
+
+  describe('controlIdentifier', () => {
+    it('should have correct control identifier', () => {
+      expect(handler.controlIdentifier).toBe('sitna.helloWorld');
+    });
+  });
+
+  describe('sitnaConfigKey', () => {
+    it('should have correct sitna config key', () => {
+      expect(handler.sitnaConfigKey).toBe('helloWorld');
+    });
+  });
+
+  describe('requiredPatches', () => {
+    it('should have no required patches (uses programmatic registration)', () => {
+      expect(handler.requiredPatches).toBeUndefined();
+    });
+  });
+
+  describe('buildConfiguration()', () => {
+    it('should return configuration with default div', () => {
+      const task: AppTasks = {
+        'ui-control': 'sitna.helloWorld',
+        parameters: {}
+      } as any;
+      const context: AppCfg = {} as any;
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toEqual({ div: 'tc-slot-hello-world' });
+    });
+
+    it('should merge task parameters', () => {
+      const task: AppTasks = {
+        'ui-control': 'sitna.helloWorld',
+        parameters: {
+          collapsed: true,
+          custom: 'value'
+        }
+      } as any;
+      const context: AppCfg = {} as any;
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toEqual({
+        div: 'tc-slot-hello-world',
+        collapsed: true,
+        custom: 'value'
+      });
+    });
+
+    it('should allow parameters to override div', () => {
+      const task: AppTasks = {
+        'ui-control': 'sitna.helloWorld',
+        parameters: {
+          div: 'custom-div'
+        }
+      } as any;
+      const context: AppCfg = {} as any;
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config?.div).toBe('custom-div');
+    });
+  });
+
+  describe('isReady()', () => {
+    it('should return false when TC.control.HelloWorld is not registered', () => {
+      mockTC.control.HelloWorld = undefined;
+
+      expect(handler.isReady()).toBe(false);
+    });
+
+    it('should return true when TC.control.HelloWorld is registered', () => {
+      mockTC.control.HelloWorld = class HelloWorld {};
+
+      expect(handler.isReady()).toBe(true);
+    });
+
+    it('should return false when TC is not available', () => {
+      mockTCNamespace.getTC.mockReturnValue(undefined);
+
+      expect(handler.isReady()).toBe(false);
+    });
+  });
+
+  describe('applyFoundationPatch()', () => {
+    it('should register the control', async () => {
+      const registerSpy = jest.spyOn(handler as any, 'registerCustomControl');
+
+      await handler.applyFoundationPatch(mockAppCfg);
+
+      expect(registerSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('loadPatches()', () => {
+    it('should register the control', async () => {
+      const registerSpy = jest.spyOn(handler as any, 'registerCustomControl');
+
+      await handler.loadPatches(mockAppCfg);
+
+      expect(registerSpy).toHaveBeenCalled();
+    });
+
+    it('should be idempotent (safe to call multiple times)', async () => {
+      await handler.loadPatches(mockAppCfg);
+      await handler.loadPatches(mockAppCfg);
+      await handler.loadPatches(mockAppCfg);
+
+      // Should not throw
+      expect(true).toBe(true);
+    });
+  });
+
+  describe('cleanup()', () => {
+    it('should reset controlRegistered flag', async () => {
+      // First register
+      await handler.loadPatches(mockAppCfg);
+
+      // Cleanup
+      handler.cleanup();
+
+      // Should be able to register again
+      const registerSpy = jest.spyOn(handler as any, 'registerCustomControl');
+      await handler.loadPatches(mockAppCfg);
+
+      expect(registerSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Integration', () => {
+    it('should handle full lifecycle', async () => {
+      // Initially not ready (no control registered)
+      mockTC.control.HelloWorld = undefined;
+      expect(handler.isReady()).toBe(false);
+
+      // Load patches
+      await handler.loadPatches(mockAppCfg);
+
+      // Build config
+      const task: AppTasks = {
+        'ui-control': 'sitna.helloWorld',
+        parameters: { custom: 'value' }
+      } as any;
+      const context: AppCfg = {} as any;
+
+      const config = handler.buildConfiguration(task, context);
+      expect(config).toBeDefined();
+      expect(config?.div).toBe('tc-slot-hello-world');
+      expect((config as Record<string, unknown>)?.['custom']).toBe('value');
+
+      // Cleanup
+      handler.cleanup();
+    });
+
+    it('should skip registration when SITNA not available', async () => {
+      delete (window as any).SITNA;
+
+      await handler.loadPatches(mockAppCfg);
+
+      // Should not throw, should handle gracefully
+      expect(handler.isReady()).toBe(false);
+    });
+
+    it('should skip registration when already registered', async () => {
+      // Pre-register the control
+      class HelloWorld {}
+      mockTC.control.HelloWorld = HelloWorld;
+
+      await handler.loadPatches(mockAppCfg);
+
+      // Should not throw and should recognize it's already registered
+      expect(handler.isReady()).toBe(true);
+    });
+  });
+});

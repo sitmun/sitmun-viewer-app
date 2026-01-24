@@ -28,7 +28,7 @@
     {
       "name": "Català",
       "shortname": "ca",
-      "locale": "ca-CA",
+      "locale": "ca-ES",
       "icon": "assets/flags/catalan.svg"
     },
     {
@@ -39,7 +39,8 @@
     }
   ],
   "enabledByDefault": [
-    "sitna.loadingIndicator"
+    "sitna.loadingIndicator",
+    "sitna.helloWorld"
   ],
   "disabledControls": [
     "sitna.WFSEdit",
@@ -156,6 +157,9 @@
         "sitna.workLayerManager",
         "sitna.legend"
       ]
+    },
+    "sitna.helloWorld": {
+      "div": "tc-slot-hello-world"
     }
   }
 }

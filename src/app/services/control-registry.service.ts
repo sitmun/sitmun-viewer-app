@@ -98,6 +98,16 @@ export class ControlRegistryService {
       await (layerCatalogHandler as any).applyFoundationPatch?.(context);
     }
 
+    // Apply HelloWorld foundation patch if enabled (by default or via task)
+    // This registers TC.control.HelloWorld before SITNA tries to instantiate it
+    const helloWorldHandler = this.getHandler('sitna.helloWorld');
+    const helloWorldEnabled =
+      tasks.some((task) => task['ui-control'] === 'sitna.helloWorld') ||
+      this.appConfigService.isEnabledByDefault('sitna.helloWorld');
+    if (helloWorldHandler && helloWorldEnabled) {
+      await (helloWorldHandler as any).applyFoundationPatch?.(context);
+    }
+
     // Step 1: Identify active controls that have handlers
     // Filter out disabled controls first (takes precedence over backend configuration)
     const activeControlsWithHandlers = tasks

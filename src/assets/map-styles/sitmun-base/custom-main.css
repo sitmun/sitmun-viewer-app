@@ -776,7 +776,8 @@ input[type='range']:focus {
 .tc-panel-content .tc-ctl-meas > h2,
 .tc-panel-content .tc-ctl-dmm > h2,
 .tc-panel-content .tc-ctl-prnmap > h2,
-.tc-panel-content .tc-ctl-share > h2 {
+.tc-panel-content .tc-ctl-share > h2,
+.tc-panel-content .tc-ctl-hw > h2 {
   display: flex;
   align-items: center;
   background-position: -6px 0px;
@@ -867,6 +868,16 @@ input[type='range']:focus {
 
 .tc-panel-content .tc-ctl-prnmap.tc-collapsed > h2 {
   background-image: url(./img/mapPrintG.png);
+  color: var(--sitmun-collapsed-color);
+}
+
+/* HelloWorld control - reusing tools.png icon */
+.tc-panel-content .tc-ctl-hw > h2 {
+  background-image: url(./img/tools.png);
+}
+
+.tc-panel-content .tc-ctl-hw.tc-collapsed > h2 {
+  background-image: url(./img/tools.png);
   color: var(--sitmun-collapsed-color);
 }
 

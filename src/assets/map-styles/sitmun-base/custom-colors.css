@@ -21,7 +21,8 @@
 .tc-ctl-share,
 .tc-ctl-download,
 .tc-ctl-wlm,
-.tc-ctl-lcat {
+.tc-ctl-lcat,
+.tc-ctl-hw {
   background-color: #fafafa;
 }
 

@@ -720,5 +720,8 @@
   "fitesCamiCavallsTitol": "Trams de camí de cavalls",
   "puntsQuilometricsTitol": "Localitzador de punts quilomètrics",
   "vedatsCacaTitol": "Localitzador de vedats de caça",
-  "errorCarregarCapa": "Error al carregar la capa "
+  "errorCarregarCapa": "Error al carregar la capa ",
+  "helloWorld.title": "Hola Món",
+  "helloWorld.message": "Aquest control està registrat des d'Angular i renderitzat mitjançant una plantilla Handlebars.",
+  "helloWorld.buttonLabel": "Saludar"
 }

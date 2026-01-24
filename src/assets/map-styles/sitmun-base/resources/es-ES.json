@@ -24,5 +24,8 @@
   "printPdf": "Descargar mapa en PDF",
   "printThisWindow": "Imprimir esta ventana",
   "printPage": "Página de impresión",
-  "search.list.placename": "Topónimos"
+  "search.list.placename": "Topónimos",
+  "helloWorld.title": "Hola Mundo",
+  "helloWorld.message": "Este control está registrado desde Angular y renderizado mediante una plantilla Handlebars.",
+  "helloWorld.buttonLabel": "Saludar"
 }

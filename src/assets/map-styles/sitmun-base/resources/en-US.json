@@ -24,5 +24,8 @@
   "printPdf": "Print PDF",
   "printThisWindow": "Print this window",
   "printPage": "Print page",
-  "search.list.placename": "Placename"
+  "search.list.placename": "Placename",
+  "helloWorld.title": "Hello World",
+  "helloWorld.message": "This control is registered from Angular and rendered via a Handlebars template.",
+  "helloWorld.buttonLabel": "Say hello"
 }
