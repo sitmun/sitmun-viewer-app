@@ -110,6 +110,8 @@
   "map.error.config.undefined": "La configuration de la carte n'est pas définie.",
   "map.error.initialization.failed": "Échec de l'initialisation de la carte. Veuillez réessayer.",
   "map.error.unknown": "Une erreur inconnue s'est produite.",
+  "map.error.sitna_load_timeout": "La bibliothèque de carte n'a pas pu être chargée. Veuillez actualiser la page.",
+  "map.error.sitna_load_failed": "Impossible d'initialiser le moteur cartographique.",
   "map.territoriesApplication.mainTitle": "Changer l'application ou le territoire",
   "map.territoriesApplication.applicationsTitle": "Sélectionner une application disponible pour l'utilisateur",
   "map.territoriesApplication.territoriesTitle": "Sélectionner un territoire disponible pour l'application",

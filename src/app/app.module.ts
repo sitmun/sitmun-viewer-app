@@ -57,6 +57,7 @@ import {
 } from './services/app-initializer.service';
 import { ControlRegistryService } from './services/control-registry.service';
 import { GlobalErrorHandler } from './services/global-error-handler';
+import { SitnaLoaderService } from './services/sitna-loader.service';
 import { AboutDialogComponent } from './ui/components/about-dialog/about-dialog.component';
 import { ErrorDetailsSidebarComponent } from './ui/components/error-details-sidebar/error-details-sidebar.component';
 
@@ -138,6 +139,12 @@ registerLocaleData(localeEs);
       useFactory: initializeControlHandlers,
       deps: [ControlRegistryService, ...ALL_CONTROL_HANDLERS],
       multi: true
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeSitnaLoader,
+      deps: [SitnaLoaderService],
+      multi: true
     }
   ],
   bootstrap: [AppComponent]
@@ -163,5 +170,23 @@ export function initializeControlHandlers(
 ): () => void {
   return () => {
     registry.registerAll(handlers);
+  };
+}
+
+/**
+ * Initialize SITNA loader service at application startup.
+ * Starts polling for SITNA.Map availability in background.
+ * Does not block Angular bootstrap - only map routes will wait.
+ */
+export function initializeSitnaLoader(
+  loader: SitnaLoaderService
+): () => Promise<void> {
+  return () => {
+    // Start polling in background, don't block bootstrap
+    loader.waitForSITNAMap().catch((err) => {
+      console.error('[Bootstrap] SITNA failed to load:', err);
+    });
+    // Return resolved promise to not block bootstrap
+    return Promise.resolve();
   };
 }

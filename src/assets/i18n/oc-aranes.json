@@ -140,6 +140,8 @@
   "map.error.config.undefined": "La configuració del mapa no està definida.",
   "map.error.initialization.failed": "Error en inicialitzar el mapa. Si us plau, torneu-ho a provar.",
   "map.error.unknown": "Ha passat un error desconegut.",
+  "map.error.sitna_load_timeout": "La biblioteca del mapa no s'ha pogut carregar. Si us plau, actualitzeu la pàgina.",
+  "map.error.sitna_load_failed": "No s'ha pogut inicialitzar el motor de mapes.",
   "map.territoriesApplication.mainTitle": "Canviar l'aplicació o el territori",
   "map.territoriesApplication.applicationsTitle": "Seleccionar aplicació disponible per a l'usuari",
   "map.territoriesApplication.territoriesTitle": "Seleccionar territori disponible per a l'aplicació",

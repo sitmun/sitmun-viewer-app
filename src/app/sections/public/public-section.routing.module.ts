@@ -7,10 +7,16 @@ import { TerritoryComponent } from '@sections/common/pages/territory/territory.c
 import { PublicDashboardComponent } from '@sections/public/public-dashboard/public-dashboard.component';
 import { PublicMapComponent } from '@sections/public/public-map/public-map.component';
 
+import { sitnaMapGuard } from '../../guards/sitna-map.guard';
+
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
   { path: 'dashboard', component: PublicDashboardComponent },
-  { path: 'map/:applicationId/:territoryId', component: PublicMapComponent },
+  {
+    path: 'map/:applicationId/:territoryId',
+    component: PublicMapComponent,
+    canActivate: [sitnaMapGuard]
+  },
   { path: 'territory/:territoryId', component: TerritoryComponent },
   { path: 'application/:applicationId', component: ApplicationComponent }
 ];

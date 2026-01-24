@@ -6,6 +6,7 @@ import { RoutingDefault } from '@config/app.config';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
 
 import { environment } from '../environments/environment';
+import { sitnaMapGuard } from './guards/sitna-map.guard';
 import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
 import { PublicLayoutComponent } from './layout/public-layout/public-layout.component';
 
@@ -47,7 +48,8 @@ const routes: Routes = [
   },
   {
     path: 'embedded-map/:applicationId/:territoryId/:lang',
-    component: EmbeddedMapComponent
+    component: EmbeddedMapComponent,
+    canActivate: [sitnaMapGuard]
   },
   {
     path: '**',

@@ -185,6 +185,8 @@
   "map.error.config.undefined": "Map configuration is undefined.",
   "map.error.initialization.failed": "Failed to initialize map. Please try again.",
   "map.error.unknown": "An unknown error occurred.",
+  "map.error.sitna_load_timeout": "Map library failed to load. Please refresh the page.",
+  "map.error.sitna_load_failed": "Unable to initialize mapping engine.",
   "map.territoriesApplication.mainTitle": "Change the application or the territory",
   "map.territoriesApplication.applicationsTitle": "Select application available for the user",
   "map.territoriesApplication.territoriesTitle": "Select territory available for the application",

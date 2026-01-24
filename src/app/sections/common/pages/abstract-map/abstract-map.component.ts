@@ -1,6 +1,5 @@
 import { Location } from '@angular/common';
 import {
-  AfterViewInit,
   Directive,
   ElementRef,
   OnDestroy,
@@ -39,9 +38,7 @@ type LoadingState =
   | 'error';
 
 @Directive()
-export abstract class AbstractMapComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private componentDestroyed = new Subject<void>();
   private readonly isInEmbedded: boolean;
   private currentGeneralCfg: GeneralCfg | undefined;
@@ -162,11 +159,6 @@ export abstract class AbstractMapComponent
     // Expose the current map
     // Maybe this needs a proper refactor to avoid this kind of things...
     (window as any).abstractMapObject = this;
-  }
-
-  ngAfterViewInit() {
-    // Wait for SITNA to be available before initializing map
-    this.waitForSITNAAndInitialize();
   }
 
   ngOnDestroy() {
@@ -396,20 +388,6 @@ export abstract class AbstractMapComponent
         this.mapInterface.updateInterface();
       }
     });
-  }
-
-  private waitForSITNAAndInitialize(): void {
-    const checkSITNA = () => {
-      const sitna = (window as any).SITNA;
-      if (sitna && sitna.Map) {
-        return;
-      } else {
-        // SITNA not ready yet, try again in 100ms
-        setTimeout(checkSITNA, 100);
-      }
-    };
-
-    checkSITNA();
   }
 
   abstract navigateToDashboard(): any;

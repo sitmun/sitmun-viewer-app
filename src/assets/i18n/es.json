@@ -143,6 +143,8 @@
   "map.error.config.undefined": "La configuración del mapa no está definida.",
   "map.error.initialization.failed": "Error al inicializar el mapa. Por favor, inténtelo de nuevo.",
   "map.error.unknown": "Ha ocurrido un error desconocido.",
+  "map.error.sitna_load_timeout": "La biblioteca del mapa no se pudo cargar. Por favor, actualice la página.",
+  "map.error.sitna_load_failed": "No se pudo inicializar el motor de mapas.",
   "map.territoriesApplication.mainTitle": "Cambiar la aplicación o el territorio",
   "map.territoriesApplication.applicationsTitle": "Seleccionar aplicación disponible para el usuario",
   "map.territoriesApplication.territoriesTitle": "Seleccionar territorio disponible para la aplicación",
