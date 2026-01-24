@@ -15,8 +15,14 @@ import { TranslateService } from '@ngx-translate/core';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import SitnaMap from 'api-sitna';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  takeUntil,
+  tap
+} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
@@ -24,17 +30,25 @@ import { MapConfigurationService } from 'src/app/services/map-configuration.serv
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 
+type LoadingState =
+  | 'idle'
+  | 'loading-config'
+  | 'processing-config'
+  | 'creating-map'
+  | 'loaded'
+  | 'error';
+
 @Directive()
 export abstract class AbstractMapComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
   private componentDestroyed = new Subject<void>();
   private readonly isInEmbedded: boolean;
-  private currentCatalogIdx: number;
   private currentGeneralCfg: GeneralCfg | undefined;
   private currentAppCfg: AppCfg | undefined;
-  private commonServiceSubscription: Subscription | undefined;
   private map: any;
+  protected loadingState: LoadingState = 'idle';
+  private activeRequestId = 0;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -61,29 +75,79 @@ export abstract class AbstractMapComponent
 
     const currentLang = this.translate.currentLang;
     this.locale = this.parseLang(currentLang);
-    this.currentCatalogIdx = 0;
   }
 
   ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      this.applicationId = Number(params['applicationId']);
-      this.territoryId = Number(params['territoryId']);
-      if (this.isInEmbedded) {
-        this.locale = this.parseLang(params['lang']);
-      }
-      this.clearMap();
-      this.commonServiceSubscription = this.commonService
-        .fetchMapConfiguration(this.applicationId, this.territoryId)
-        .subscribe(async (appCfg) => {
-          if (appCfg) {
-            await this.loadConfig(appCfg);
-            // There might be a new theme in the recently fetched appCfg
-            // We will share it with the rest of the app via
-            // the commonService.updateMessage()
-            this.commonService.updateMessage(appCfg.application.theme);
+    this.route.params
+      .pipe(
+        tap(() => {
+          this.loadingState = 'loading-config';
+        }),
+        debounceTime(300),
+        distinctUntilChanged(
+          (a, b) =>
+            a['applicationId'] === b['applicationId'] &&
+            a['territoryId'] === b['territoryId']
+        ),
+        tap((params) => {
+          this.applicationId = Number(params['applicationId']);
+          this.territoryId = Number(params['territoryId']);
+          if (this.isInEmbedded) {
+            this.locale = this.parseLang(params['lang']);
           }
-        });
-    });
+          this.clearMap();
+        }),
+        switchMap((params) => {
+          const requestId = ++this.activeRequestId;
+          return this.commonService
+            .fetchMapConfiguration(
+              Number(params['applicationId']),
+              Number(params['territoryId'])
+            )
+            .pipe(
+              tap((appCfg) => {
+                if (appCfg) {
+                  (appCfg as any).__requestId = requestId;
+                }
+              })
+            );
+        }),
+        takeUntil(this.componentDestroyed)
+      )
+      .subscribe({
+        next: async (appCfg) => {
+          if (appCfg) {
+            const requestId = (appCfg as any).__requestId;
+            if (requestId === this.activeRequestId) {
+              await this.loadConfig(appCfg, requestId);
+              // There might be a new theme in the recently fetched appCfg
+              // We will share it with the rest of the app via
+              // the commonService.updateMessage()
+              this.commonService.updateMessage(appCfg.application.theme);
+            }
+          } else {
+            // Handle null/undefined config from backend
+            this.loadingState = 'error';
+            console.error(
+              '[AbstractMapComponent] Received null/undefined config'
+            );
+            this.modal.open(ErrorModalComponent, {
+              data: { message: 'map.error.config.empty' }
+            });
+          }
+        },
+        error: (error) => {
+          this.loadingState = 'error';
+          console.error(
+            '[AbstractMapComponent] Failed to fetch config:',
+            error
+          );
+
+          this.modal.open(ErrorModalComponent, {
+            data: { message: 'map.error.config.fetch.failed' }
+          });
+        }
+      });
 
     if (!this.isInEmbedded) {
       this.translate.onLangChange
@@ -106,11 +170,11 @@ export abstract class AbstractMapComponent
   }
 
   ngOnDestroy() {
-    if (this.commonServiceSubscription) {
-      this.commonServiceSubscription.unsubscribe();
-    }
+    // Signal all subscriptions to complete
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
+
+    // Clear map resources
     this.clearMap();
   }
 
@@ -140,60 +204,77 @@ export abstract class AbstractMapComponent
     });
   }
 
-  async loadConfig(appCfg: AppCfg) {
-    this.currentAppCfg = appCfg;
+  async loadConfig(appCfg: AppCfg, requestId: number) {
+    try {
+      this.loadingState = 'processing-config';
+      this.currentAppCfg = appCfg;
 
-    // Initialize lookup service for efficient entity lookups
-    this.configLookup.initialize(appCfg);
+      // Initialize lookup service for efficient entity lookups
+      this.configLookup.initialize(appCfg);
 
-    // Process controls using handler system
-    const controls = await this.controlRegistry.processControls(
-      appCfg.tasks,
-      appCfg
-    );
-
-    const attribution = this.mapConfig.toAttribution();
-
-    this.currentGeneralCfg = {
-      locale: this.locale,
-      crs: this.mapConfig.toCrs(appCfg),
-      initialExtent: this.mapConfig.toInitialExtent(appCfg),
-      attribution: attribution,
-      layout: this.mapConfig.toLayout(appCfg),
-      baseLayers: this.mapConfig.toBaseLayers(appCfg),
-      controls: controls as any, // Handler system returns Partial<SitnaControls>
-      views: this.mapConfig.toViews(appCfg)
-    };
-
-    this.mapServiceWorker.loadMiddleware(appCfg);
-
-    // We need to save the currentGeneralCfg and the currentAppCfg, so when the
-    // catalog change, the map can be loaded again with the same configuration
-
-    if (!this.currentGeneralCfg) {
-      return;
-    }
-
-    const cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
-
-    if (!cfgCheck.ok) {
-      const ref = this.modal.open(ErrorModalComponent, {
-        data: { message: cfgCheck.message }
-      });
-      ref.afterClosed.subscribe(() => {
-        this.navigateToDashboard();
-      });
-      return;
-    }
-
-    if (!this.currentAppCfg || !this.currentGeneralCfg) {
-      console.error(
-        '[AbstractMapComponent] Config is undefined, cannot load map'
+      // Process controls using handler system
+      const controls = await this.controlRegistry.processControls(
+        appCfg.tasks,
+        appCfg
       );
-      return;
-    }
 
-    this.loadMap(this.currentGeneralCfg);
+      const attribution = this.mapConfig.toAttribution();
+
+      this.currentGeneralCfg = {
+        locale: this.locale,
+        crs: this.mapConfig.toCrs(appCfg),
+        initialExtent: this.mapConfig.toInitialExtent(appCfg),
+        attribution: attribution,
+        layout: this.mapConfig.toLayout(appCfg),
+        baseLayers: this.mapConfig.toBaseLayers(appCfg),
+        controls: controls as any, // Handler system returns Partial<SitnaControls>
+        views: this.mapConfig.toViews(appCfg)
+      };
+
+      this.mapServiceWorker.loadMiddleware(appCfg);
+
+      // We need to save the currentGeneralCfg and the currentAppCfg, so when the
+      // catalog change, the map can be loaded again with the same configuration
+
+      if (!this.currentGeneralCfg) {
+        this.loadingState = 'error';
+        return;
+      }
+
+      const cfgCheck = this.checkConfiguration(this.currentGeneralCfg);
+
+      if (!cfgCheck.ok) {
+        this.loadingState = 'error';
+        const ref = this.modal.open(ErrorModalComponent, {
+          data: { message: cfgCheck.message || 'map.error.unknown' }
+        });
+        ref.afterClosed.subscribe(() => {
+          this.navigateToDashboard();
+        });
+        return;
+      }
+
+      if (!this.currentAppCfg || !this.currentGeneralCfg) {
+        this.loadingState = 'error';
+        console.error(
+          '[AbstractMapComponent] Config is undefined, cannot load map'
+        );
+        return;
+      }
+
+      // Guard against stale results - only proceed if this is still the active request
+      this.loadingState = 'creating-map';
+      if (this.activeRequestId === requestId) {
+        this.loadMap(this.currentGeneralCfg);
+      }
+    } catch (error) {
+      this.loadingState = 'error';
+      console.error('[AbstractMapComponent] Error processing config:', error);
+      this.modal.open(ErrorModalComponent, {
+        data: { message: 'map.error.config.processing.failed' }
+      });
+      throw error;
+    }
   }
 
   updateCatalog() {
@@ -296,14 +377,24 @@ export abstract class AbstractMapComponent
 
   private loadMap(cfg: GeneralCfg) {
     try {
+      this.loadingState = 'creating-map';
       this.map = new SitnaMap('mapa', cfg);
     } catch (error) {
-      console.error('Failed to initialize map:', error);
+      this.loadingState = 'error';
+      console.error('[AbstractMapComponent] Failed to initialize map:', error);
+
+      this.modal.open(ErrorModalComponent, {
+        data: { message: 'map.error.initialization.failed' }
+      });
       return;
     }
 
     this.map.loaded(() => {
-      this.mapInterface.updateInterface();
+      // Check if component is still alive before updating state
+      if (!this.componentDestroyed.closed) {
+        this.loadingState = 'loaded';
+        this.mapInterface.updateInterface();
+      }
     });
   }
 

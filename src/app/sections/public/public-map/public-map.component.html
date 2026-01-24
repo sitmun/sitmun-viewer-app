@@ -1,5 +1,9 @@
 <div class="public-map">
   <div class="map-container">
+    <div *ngIf="loadingState === 'loading-config' || loadingState === 'processing-config' || loadingState === 'creating-map'" class="map-loading-overlay">
+      <div class="map-loading-spinner"></div>
+      <div class="map-loading-text">{{ 'map.loading' | translate }}</div>
+    </div>
     <div id="mapa" class="mapa-div"></div>
   </div>
 </div>
