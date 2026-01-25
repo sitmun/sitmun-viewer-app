@@ -32,7 +32,10 @@ if (!fs.existsSync(filePath)) {
   process.exit(0);
 }
 
-const source = fs.readFileSync(filePath, 'utf8');
+// Read and normalize line endings to LF for consistent matching
+let source = fs.readFileSync(filePath, 'utf8');
+const originalSource = source;
+source = source.replace(/\r\n/g, '\n');  // Normalize CRLF to LF
 
 if (source.includes(replacement)) {
   console.log('[patch-printmap-logo] Already patched.');
@@ -44,6 +47,13 @@ if (!source.includes(target)) {
   process.exit(0);
 }
 
+// Apply the patch
 const updated = source.replace(target, replacement);
-fs.writeFileSync(filePath, updated, 'utf8');
+
+// Restore original line endings if file had CRLF
+const finalContent = originalSource.includes('\r\n') 
+  ? updated.replace(/\n/g, '\r\n') 
+  : updated;
+
+fs.writeFileSync(filePath, finalContent, 'utf8');
 console.log('[patch-printmap-logo] Patch applied.');
