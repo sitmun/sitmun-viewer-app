@@ -29,6 +29,8 @@ import { MapConfigurationService } from 'src/app/services/map-configuration.serv
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 
+const MAP_LOAD_TIMEOUT_MS = 30_000;
+
 type LoadingState =
   | 'idle'
   | 'loading-config'
@@ -46,6 +48,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private map: any;
   protected loadingState: LoadingState = 'idle';
   private activeRequestId = 0;
+  private loadId = 0;
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -257,7 +260,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       // Guard against stale results - only proceed if this is still the active request
       this.loadingState = 'creating-map';
       if (this.activeRequestId === requestId) {
-        this.loadMap(this.currentGeneralCfg);
+        await this.loadMap(this.currentGeneralCfg);
       }
     } catch (error) {
       this.loadingState = 'error';
@@ -283,7 +286,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       // Rebuild controls to pick up the new currentTreeId
       this.controlRegistry
         .processControls(this.currentAppCfg.tasks, this.currentAppCfg)
-        .then((controls) => {
+        .then(async (controls) => {
           // Update general config with new controls
           if (this.currentGeneralCfg) {
             this.currentGeneralCfg.controls = controls as any;
@@ -292,13 +295,14 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
           // Clear and reload map with updated configuration
           if (this.currentAppCfg && this.currentGeneralCfg) {
             this.clearMap();
-            this.loadMap(this.currentGeneralCfg);
+            await this.loadMap(this.currentGeneralCfg);
           }
         });
     }
   }
 
   clearMap() {
+    this.loadId++;
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
     const warningModal = this.el.nativeElement.querySelector('.modal-view');
@@ -307,6 +311,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     );
     if (this.map) {
       this.renderer.removeChild(mapFather, this.map);
+      this.map = undefined;
     }
     if (overview) {
       this.renderer.removeChild(mapFather, overview);
@@ -367,27 +372,60 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     };
   }
 
-  private loadMap(cfg: GeneralCfg) {
+  /**
+   * Loads the map and waits for the SITNA loaded event or timeout.
+   * Resolves when the map has loaded or when an error was shown (modal).
+   * Callers should await it to sequence after map load. Timeout and constructor
+   * errors are handled inside (modal + loadingState); loadMap does not throw.
+   */
+  private async loadMap(cfg: GeneralCfg): Promise<void> {
+    const thisLoadId = ++this.loadId;
     try {
       this.loadingState = 'creating-map';
       this.map = new SitnaMap('mapa', cfg);
     } catch (error) {
       this.loadingState = 'error';
       console.error('[AbstractMapComponent] Failed to initialize map:', error);
-
       this.modal.open(ErrorModalComponent, {
         data: { message: 'map.error.initialization.failed' }
       });
       return;
     }
 
-    this.map.loaded(() => {
-      // Check if component is still alive before updating state
-      if (!this.componentDestroyed.closed) {
-        this.loadingState = 'loaded';
-        this.mapInterface.updateInterface();
-      }
+    const loadedPromise = new Promise<void>((resolve) => {
+      this.map.loaded(() => {
+        if (
+          thisLoadId === this.loadId &&
+          !this.componentDestroyed.closed
+        ) {
+          this.loadingState = 'loaded';
+          this.mapInterface.updateInterface();
+        }
+        resolve();
+      });
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Map load timeout')),
+        MAP_LOAD_TIMEOUT_MS
+      )
+    );
+
+    try {
+      await Promise.race([loadedPromise, timeoutPromise]);
+    } catch {
+      if (
+        thisLoadId === this.loadId &&
+        !this.componentDestroyed.closed
+      ) {
+        this.loadingState = 'error';
+        console.error('[AbstractMapComponent] Map load timeout');
+        this.modal.open(ErrorModalComponent, {
+          data: { message: 'map.error.initialization.failed' }
+        });
+      }
+    }
   }
 
   abstract navigateToDashboard(): any;

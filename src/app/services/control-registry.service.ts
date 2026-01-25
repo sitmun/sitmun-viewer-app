@@ -126,14 +126,16 @@ export class ControlRegistryService {
       return typeof needs === 'function' && needs.call(h, tasks, options);
     });
     await Promise.all(
-      toRun.map((h) =>
-        h.applyBootstrap!(context).catch((err: unknown) => {
+      toRun.map((h) => {
+        const apply = h.applyBootstrap;
+        if (typeof apply !== 'function') return Promise.resolve();
+        return apply.call(h, context).catch((err: unknown) => {
           console.error(
             `[ControlRegistry] Bootstrap failed for ${h.controlIdentifier}:`,
             err
           );
-        })
-      )
+        });
+      })
     );
   }
 
