@@ -20,6 +20,10 @@ declare function require(module: string): any;
 // meld is a CommonJS module, so we use require with proper typing
 const meld = require('meld') as Meld;
 
+/** Selector for layer-catalog tree root nodes (shared by multiple patches). */
+const LAYER_ROOT_SELECTOR =
+  'div.tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch > li.tc-ctl-lcat-node';
+
 /**
  * Handler for standard SITNA layerCatalog control using virtual WMS capabilities.
  * This is the "new way" - standard SITNA control displaying SITMUN trees.
@@ -72,10 +76,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     // Ensure context is initialized in lookup service
     this.configLookup.initialize(context);
 
-    // TC and SITNA are immediately available after guard
-    this.sitnaApi.getSITNA();
-    this.sitnaApi.getTC();
-
     // Apply only the bootstrap patch here; other patches run in loadPatches()
     await this.patchLayerGetCapabilitiesOnline();
   }
@@ -100,12 +100,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       return;
     }
 
-    // TC and SITNA are immediately available after guard
-    this.sitnaApi.getSITNA();
-    this.sitnaApi.getTC();
-
     // Apply patches in order (matching sandbox sequence)
-    await this.patchLayerGetCapabilitiesOnline();
     await this.patchLayerCatalogAddLayerToMap();
     await this.patchLayerCatalogAddLayer();
     await this.patchLayerCatalogGetLayerNodes();
@@ -303,7 +298,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
 
     // Default: use the first non-empty tree root node
-    const allRootNodeIds = context.trees.map((tree: AppTree) => tree.rootNode);
+    const allRootNodeIds = this.getAllRootNodeIds(context);
     const nonEmptyRootNodeIds = this.filterEmptyTrees(allRootNodeIds, context);
 
     if (nonEmptyRootNodeIds.length > 0) {
@@ -322,7 +317,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * When a virtual service URL is detected, return generated capabilities instead of fetching from server.
    */
   private async patchLayerGetCapabilitiesOnline(): Promise<void> {
-    await this.waitForTCAndApply(async () => {
+    await this.withTCAsync(async () => {
       const SITNA = this.sitnaApi.getSITNA();
 
       // Try to find Layer prototype
@@ -436,7 +431,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Completely replaces the method to handle virtual layers natively.
    */
   private async patchLayerCatalogAddLayerToMap(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const Util = TC.Util;
@@ -551,15 +546,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Patch LayerCatalog.addLayer to return a resolved Promise.
-   */
-  /**
-   * Patch LayerCatalog.addLayer to ignore calls for virtual layers (our layers)
-   * but allow external WMS layers to be added normally.
+   * Patch LayerCatalog.addLayer to return a resolved Promise and ignore calls
+   * for virtual layers (our layers), while allowing external WMS layers.
    * Uses meld.around to intercept calls and check if layer is virtual.
    */
   private async patchLayerCatalogAddLayer(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.addLayer !== 'function') {
@@ -646,7 +638,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Patch LayerCatalog.getLayerNodes to handle virtual layer nodes.
    */
   private async patchLayerCatalogGetLayerNodes(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       const advice = meld.around(
@@ -658,11 +650,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const layer = joinPoint.args[0] as any;
           const layerObj = layer || {};
           const result: Element[] = [];
-          const selectors = {
-            LAYER_ROOT:
-              'div.tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch > li.tc-ctl-lcat-node'
-          };
-          const rootNodes = self.div.querySelectorAll(selectors.LAYER_ROOT);
+          const rootNodes = self.div.querySelectorAll(LAYER_ROOT_SELECTOR);
           if (!rootNodes) {
             return [];
           }
@@ -695,7 +683,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Patch LayerCatalog.getLayerRootNode to handle virtual layers by nodeId.
    */
   private async patchLayerCatalogGetLayerRootNode(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto || typeof ctlProto.getLayerRootNode !== 'function') {
@@ -719,11 +707,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           // For virtual layers, find by nodeId
           const nodeId = layerObj.options?.nodeId || layerObj.nodeId;
           if (nodeId) {
-            const selectors = {
-              LAYER_ROOT:
-                'div.tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch > li.tc-ctl-lcat-node'
-            };
-            const rootNodes = self.div.querySelectorAll(selectors.LAYER_ROOT);
+            const rootNodes = self.div.querySelectorAll(LAYER_ROOT_SELECTOR);
 
             for (let i = 0; i < rootNodes.length; i++) {
               const rootNode = rootNodes[i] as Element;
@@ -750,11 +734,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Patch Raster.getPath to return parent node titles from SITMUN configuration.
    */
   private async patchRasterGetPath(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
-      const RasterProto =
-        TC.layer?.Raster?.prototype || TC.wrap?.layer?.Raster?.prototype;
+      const RasterProto = this.getRasterPrototype(TC);
 
       if (!RasterProto) {
         return;
@@ -812,6 +795,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
 
     return null;
+  }
+
+  /**
+   * Get the Raster prototype from SITNA/TC, if present.
+   */
+  private getRasterPrototype(TC: any): any {
+    return TC?.layer?.Raster?.prototype || TC?.wrap?.layer?.Raster?.prototype;
   }
 
   /**
@@ -915,7 +905,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Completely replaces loadTemplates method to customize template loading.
    */
   private async patchLayerCatalogTemplate(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto) {
@@ -967,7 +957,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Prevents errors when search input element doesn't exist in the DOM.
    */
   private async patchLayerCatalogCreateSearchAutocomplete(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control.LayerCatalog.prototype;
 
       if (!ctlProto) {
@@ -1021,11 +1011,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * with WMS capabilities data, with app config taking precedence.
    */
   private async patchRasterGetInfo(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
-      const RasterProto =
-        TC.layer?.Raster?.prototype || TC.wrap?.layer?.Raster?.prototype;
+      const RasterProto = this.getRasterPrototype(TC);
 
       // Capture TC in closure for use in the advice function
       const TCLayer = TC.layer;
@@ -1123,7 +1112,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Injects elements after template renders without modifying the template.
    */
   private async patchLayerCatalogInjectCatalogSwitching(): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const handler = this;
       const ctlProto = TC.control.LayerCatalog.prototype;

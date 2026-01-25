@@ -126,24 +126,6 @@ describe('SearchControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should return true when native control exists', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-
-    it('should return false when native control missing', () => {
-      mockSitnaApi.getTC.mockReturnValue({ control: {} } as any);
-
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return false when TC namespace not available', () => {
-      mockSitnaApi.getTC.mockReturnValue(null);
-
-      expect(handler.isReady()).toBe(false);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full native search workflow', () => {
       const task: AppTasks = {
@@ -154,9 +136,6 @@ describe('SearchControlHandler', () => {
         }
       } as any;
       const context: AppCfg = {} as any;
-
-      // Should be ready (native control)
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const config = handler.buildConfiguration(task, context);

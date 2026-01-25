@@ -32,31 +32,16 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
 
   /**
    * Build configuration for dataLoader control.
-   * Uses default div from app-config; supports wmsSuggestions and enableDragAndDrop.
+   * Defaults (div, enableDragAndDrop) from app-config; task parameters override.
    */
   override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
-    const config: SitnaControlConfig = {
-      ...this.getDefaultConfig()
-    };
-
-    if (this.areParametersEmpty(task.parameters)) {
-      this.uiStateService.enableToolsButton();
-      return config;
-    }
-
-    if (task.parameters.wmsSuggestions) {
-      config['wmsSuggestions'] = task.parameters.wmsSuggestions;
-    }
-
-    if (task.parameters.enableDragAndDrop !== undefined) {
-      config['enableDragAndDrop'] = task.parameters.enableDragAndDrop;
-    } else {
-      config['enableDragAndDrop'] = true;
-    }
-
+    const config = this.mergeWithParameters(
+      this.getDefaultConfig(),
+      task.parameters
+    );
     this.uiStateService.enableToolsButton();
     return config;
   }

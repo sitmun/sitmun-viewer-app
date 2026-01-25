@@ -4,11 +4,13 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { SitnaControls } from '@api/model/sitna-cfg';
 
 import { AppConfigService } from './app-config.service';
+import { SitnaApiService } from './sitna-api.service';
 import { ControlHandlerBase } from '../controls/control-handler-base';
 import {
   BootstrapEligibilityOptions,
   ControlHandler
 } from '../controls/control-handler.interface';
+import { applySitnaInfraPatches } from '../controls/utils/sitna-patch-helpers';
 import { NotificationService } from '../notifications/services/NotificationService';
 
 /**
@@ -35,7 +37,8 @@ export class ControlRegistryService {
 
   constructor(
     private notificationService: NotificationService,
-    private appConfigService: AppConfigService
+    private appConfigService: AppConfigService,
+    private sitnaApi: SitnaApiService
   ) {}
 
   /**
@@ -152,6 +155,8 @@ export class ControlRegistryService {
     context: AppCfg
   ): Promise<Partial<SitnaControls>> {
     this.controlTimings.clear();
+    const TC = this.sitnaApi.getTC();
+    applySitnaInfraPatches(TC);
     const sitnaControls: Partial<SitnaControls> = {};
 
     const bootstrapStart = performance.now();

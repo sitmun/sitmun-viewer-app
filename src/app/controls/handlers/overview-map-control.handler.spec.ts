@@ -671,10 +671,4 @@ describe('OverviewMapControlHandler', () => {
       }
     });
   });
-
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
 });

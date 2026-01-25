@@ -29,7 +29,15 @@ describe('MultiFeatureInfoControlHandler', () => {
 
     mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue({
-        div: 'tc-slot-multifeatureinfo'
+        div: 'tc-slot-multifeatureinfo',
+        active: true,
+        persistentHighlights: true,
+        share: true,
+        modes: {
+          point: { active: true },
+          polyline: { active: true },
+          polygon: { active: true }
+        }
       })
     } as Partial<
       jest.Mocked<AppConfigService>
@@ -218,12 +226,6 @@ describe('MultiFeatureInfoControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('loadPatches()', () => {
     it('should resolve successfully with context', async () => {
       await handler.loadPatches(mockAppCfg);
@@ -252,9 +254,6 @@ describe('MultiFeatureInfoControlHandler', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

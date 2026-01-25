@@ -119,12 +119,6 @@ describe('ClickControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('getDefaultValueWhenMissing()', () => {
     it('should return false via base class when control is not requested', () => {
       // Base class returns false by default
@@ -137,9 +131,6 @@ describe('ClickControlHandler', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

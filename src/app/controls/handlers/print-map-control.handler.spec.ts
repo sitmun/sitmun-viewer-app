@@ -287,48 +287,9 @@ describe('PrintMapControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should return false when TC is not available', () => {
-      mockSitnaApi.getTC.mockReturnValue(undefined);
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return false when PrintMap control is not available', () => {
-      mockSitnaApi.getTC.mockReturnValue({ control: {} } as any);
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return true when both TC and pdfMake are available', () => {
-      mockSitnaApi.getTC.mockReturnValue({
-        control: { PrintMap: {} }
-      } as any);
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('loadPatches()', () => {
-    beforeEach(() => {
-      // Mock TC namespace
-      (window as any).TC = { control: { PrintMap: {} } };
-      // Mock pdfMake as already loaded
-      (window as any).pdfMake = { vfs: {} };
-    });
-
-    it('should wait for TC namespace', async () => {
-      mockSitnaApi.getTC.mockReturnValue({ control: { PrintMap: {} } });
-
-      await handler.loadPatches(mockAppCfg);
-
-      expect(mockSitnaApi.getTC).toHaveBeenCalled();
-    });
-
-    it('should skip loading pdfmake if already loaded', async () => {
-      (window as any).pdfMake = { vfs: {} };
-
-      await handler.loadPatches(mockAppCfg);
-
-      // Should complete without errors
-      expect(mockSitnaApi.getTC).toHaveBeenCalled();
+    it('should resolve (base no-op)', async () => {
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 
@@ -344,9 +305,6 @@ describe('PrintMapControlHandler', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

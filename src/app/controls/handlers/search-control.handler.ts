@@ -88,13 +88,4 @@ export class SearchControlHandler extends ControlHandlerBase {
       });
     });
   }
-
-  /**
-   * Check if native search control is ready.
-   * Verifies that TC.control.Search exists (native SITNA control).
-   */
-  override isReady(): boolean {
-    const TC = this.sitnaApi.getTC();
-    return !!TC?.control?.Search;
-  }
 }

@@ -3,11 +3,11 @@ import { Injectable } from '@angular/core';
 import { AppCfg } from '@api/model/app-cfg';
 
 import { SitnaApiService } from '../../services/sitna-api.service';
+import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
-import {
-  applyFeatureStylerPatches,
-  applyModifyPatches
-} from '../utils/sitna-patch-helpers';
+
+declare function require(module: string): unknown;
+const meld = require('meld') as Meld;
 
 /**
  * Handler for the native SITNA featureInfo control.
@@ -37,75 +37,68 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
   /**
    * Load patches for featureInfo control.
-   * Adds diagnostic logging to verify displayElevation option is set correctly.
-   * Also patches FeatureStyler to prevent errors when setStrokeColor/setFillColor
-   * are called before the component has fully rendered its DOM elements.
+   * Patches Map.addControl and FeatureInfo.register so displayElevation from map config is applied.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
     await this.withTCAsync(async (TC) => {
-      // Apply FeatureStyler patches with cleanup registration
-      applyFeatureStylerPatches(TC, { patchManager: this.patchManager });
+      const mapProto = TC?.Map?.prototype as any;
+      if (mapProto?.addControl && !mapProto.__sitmunFiAddControl) {
+        const addControlAdvice = meld.around(
+          mapProto,
+          'addControl',
+          function (this: any, jp: MeldJoinPoint) {
+            const [ctrl, opts] = jp.args as [any, any];
+            const isFi = ctrl === 'featureInfo' || ctrl === 'FeatureInfo';
+            const needCfg =
+              isFi &&
+              opts?.displayElevation == null &&
+              this.options?.controls?.featureInfo?.displayElevation != null;
+            const finalOpts = needCfg
+              ? TC.Util.extend(
+                  true,
+                  {},
+                  opts || {},
+                  this.options.controls.featureInfo
+                )
+              : opts;
+            return jp.proceedApply([ctrl, finalOpts]);
+          }
+        );
+        mapProto.__sitmunFiAddControl = true;
+        this.patchManager.add(() => {
+          meld.remove(addControlAdvice);
+          delete mapProto.__sitmunFiAddControl;
+        });
+      }
 
-      // Apply Modify patches with cleanup registration
-      applyModifyPatches(TC, { patchManager: this.patchManager });
-
-      // Patch Map.addControl to intercept featureInfo control creation and ensure options are passed
-      // Also ensure patches are applied before any control is added (race condition guard)
-      const originalAddControl = TC.Map.prototype.addControl;
-      TC.Map.prototype.addControl = async function (
-        control: any,
-        options: any
-      ) {
-        // Ensure FeatureStyler is patched before adding any control
-        // This is critical because control creation might trigger FeatureStyler methods
-        // No patchManager here - these are guard patches that persist until reload
-        applyFeatureStylerPatches(TC, {});
-        applyModifyPatches(TC, {});
-
-        // Intercept featureInfo control creation
-        if (control === 'featureInfo' || control === 'FeatureInfo') {
-          // If options are missing displayElevation, get it from map config
-          if (
-            (!options || options.displayElevation === undefined) &&
-            this.options?.controls?.featureInfo
-          ) {
-            const mapConfig = this.options.controls.featureInfo;
+      const fiProto = TC?.control?.FeatureInfo?.prototype as any;
+      if (fiProto?.register && !fiProto.__sitmunFiRegister) {
+        const registerAdvice = meld.around(
+          fiProto,
+          'register',
+          function (this: any, jp: MeldJoinPoint) {
+            const [map] = jp.args as [any];
             if (
-              typeof mapConfig === 'object' &&
-              mapConfig !== null &&
-              (mapConfig as any).displayElevation !== undefined
+              this.options?.displayElevation === undefined &&
+              map?.options?.controls?.featureInfo?.displayElevation !==
+                undefined
             ) {
-              options = TC.Util.extend(true, {}, options || {}, mapConfig);
+              this.options = TC.Util.extend(
+                true,
+                {},
+                this.options,
+                map.options.controls.featureInfo
+              );
             }
+            return jp.proceedApply(jp.args);
           }
-        }
-        const result = await originalAddControl.call(this, control, options);
-        return result;
-      };
-
-      // Patch FeatureInfo register to restore displayElevation from map config if still missing
-      // This is a fallback in case the constructor patch didn't work
-      const originalRegister = TC.control.FeatureInfo.prototype.register;
-      TC.control.FeatureInfo.prototype.register = async function (map: any) {
-        // If displayElevation is missing but should be set, restore it from map config
-        if (
-          this.options?.displayElevation === undefined &&
-          map?.options?.controls?.featureInfo
-        ) {
-          const mapConfig = map.options.controls.featureInfo;
-          if (
-            typeof mapConfig === 'object' &&
-            mapConfig !== null &&
-            (mapConfig as any).displayElevation !== undefined
-          ) {
-            // Merge the map config options into control options
-            this.options = TC.Util.extend(true, {}, this.options, mapConfig);
-          }
-        }
-
-        const result = await originalRegister.call(this, map);
-        return result;
-      };
+        );
+        fiProto.__sitmunFiRegister = true;
+        this.patchManager.add(() => {
+          meld.remove(registerAdvice);
+          delete fiProto.__sitmunFiRegister;
+        });
+      }
     });
   }
 }

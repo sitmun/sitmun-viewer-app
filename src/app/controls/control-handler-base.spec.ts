@@ -143,31 +143,6 @@ describe('ControlHandlerBase', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should return true by default (patches applied programmatically)', () => {
-      expect(noPatchHandler.isReady()).toBe(true);
-    });
-
-    it('should return true for handlers with patches (applied programmatically)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-
-    it('should return true for multi-patch handler', () => {
-      class MultiPatchHandler extends ControlHandlerBase {
-        readonly controlIdentifier = 'test.multi';
-        readonly requiredPatches = ['patch1.js', 'patch2.js'];
-        override buildConfiguration() {
-          return null;
-        }
-      }
-
-      const multiHandler = TestBed.runInInjectionContext(
-        () => new MultiPatchHandler(mockSitnaApi)
-      );
-      expect(multiHandler.isReady()).toBe(true);
-    });
-  });
-
   describe('cleanup()', () => {
     it('should restore all patches', () => {
       jest.spyOn(handler['patchManager'], 'restoreAll');
@@ -331,15 +306,15 @@ describe('ControlHandlerBase', () => {
     });
   });
 
-  describe('waitForTCAndApply()', () => {
-    it('should wait for TC and execute callback', async () => {
+  describe('withTCAsync()', () => {
+    it('should run callback with TC', async () => {
       const mockTC = { control: {} };
       mockSitnaApi.getTC.mockReturnValue(mockTC);
 
       let callbackExecuted = false;
       let receivedTC: any;
 
-      await handler['waitForTCAndApply'](async (TC) => {
+      await handler['withTCAsync'](async (TC) => {
         callbackExecuted = true;
         receivedTC = TC;
       });
@@ -349,12 +324,12 @@ describe('ControlHandlerBase', () => {
       expect(receivedTC).toBe(mockTC);
     });
 
-    it('should handle callback errors', async () => {
+    it('should propagate callback errors', async () => {
       const mockTC = { control: {} };
       mockSitnaApi.getTC.mockReturnValue(mockTC);
 
       await expect(
-        handler['waitForTCAndApply'](async () => {
+        handler['withTCAsync'](async () => {
           throw new Error('Callback error');
         })
       ).rejects.toThrow();
@@ -365,9 +340,6 @@ describe('ControlHandlerBase', () => {
     it('should handle full lifecycle', async () => {
       // Load patches
       await handler.loadPatches(mockAppCfg);
-
-      // Check ready
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const mockTask: AppTasks = {

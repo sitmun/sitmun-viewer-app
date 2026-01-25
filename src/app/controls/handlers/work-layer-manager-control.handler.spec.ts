@@ -102,12 +102,6 @@ describe('WorkLayerManagerControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('loadPatches()', () => {
     it('should resolve immediately (no patches to load)', async () => {
       const context: AppCfg = {} as any;
@@ -125,9 +119,6 @@ describe('WorkLayerManagerControlHandler', () => {
 
       // Load patches (no-op for native control)
       await handler.loadPatches(context);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

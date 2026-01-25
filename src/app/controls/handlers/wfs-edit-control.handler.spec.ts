@@ -285,12 +285,6 @@ describe('WFSEditControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       mockAppConfigService.getControlDefault.mockReturnValue({
@@ -299,9 +293,6 @@ describe('WFSEditControlHandler', () => {
 
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

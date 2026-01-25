@@ -62,16 +62,6 @@ export abstract class ControlHandlerBase implements ControlHandler {
   }
 
   /**
-   * Check if control is ready.
-   * Default implementation returns true (patches are applied programmatically).
-   * Override for custom readiness checks.
-   */
-  isReady(): boolean {
-    // Default: always ready (patches are applied programmatically, not loaded from JS files)
-    return true;
-  }
-
-  /**
    * Clean up patches and resources.
    */
   cleanup(): void {
@@ -155,21 +145,6 @@ export abstract class ControlHandlerBase implements ControlHandler {
   protected withTCAsync(callback: (TC: any) => Promise<void>): Promise<void> {
     const TC = this.sitnaApi.getTC();
     return callback(TC);
-  }
-
-  /**
-   * Wait for TC namespace and apply callback.
-   *
-   * @deprecated Use withTC() for sync callbacks or withTCAsync() for async callbacks.
-   * This method is kept for backward compatibility and will be removed in a future version.
-   *
-   * @param callback - Function to execute with TC namespace
-   * @returns Promise that resolves when callback completes
-   */
-  protected async waitForTCAndApply(
-    callback: (TC: any) => Promise<void>
-  ): Promise<void> {
-    return this.withTCAsync(callback);
   }
 
   /**

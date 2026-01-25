@@ -4,6 +4,7 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { AppConfigService } from './app-config.service';
 import { ControlRegistryService } from './control-registry.service';
+import { SitnaApiService } from './sitna-api.service';
 import {
   ControlHandler,
   SitnaControlConfig
@@ -138,10 +139,15 @@ describe('ControlRegistryService', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
 
+    const sitnaApi = {
+      getTC: jest.fn().mockReturnValue({ control: {} })
+    } as unknown as SitnaApiService;
+
     TestBed.configureTestingModule({
       providers: [
         { provide: NotificationService, useValue: notificationService },
-        { provide: AppConfigService, useValue: appConfigService }
+        { provide: AppConfigService, useValue: appConfigService },
+        { provide: SitnaApiService, useValue: sitnaApi }
       ]
     });
     service = TestBed.inject(ControlRegistryService);

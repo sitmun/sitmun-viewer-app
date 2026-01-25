@@ -224,19 +224,10 @@ describe('WFSQueryControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full lifecycle with boolean mode', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config with no parameters (boolean mode)
       const task: AppTasks = {
@@ -252,9 +243,6 @@ describe('WFSQueryControlHandler', () => {
     it('should handle full lifecycle with options object mode', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config with parameters (options object mode)
       const task: AppTasks = {

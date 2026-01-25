@@ -98,14 +98,6 @@ export interface ControlHandler {
   ): SitnaControlConfig | null;
 
   /**
-   * Check if control is ready to use.
-   * Verifies that patches are loaded and configuration can be built.
-   *
-   * @returns true if control is ready
-   */
-  isReady(): boolean;
-
-  /**
    * Clean up any resources (patches, event listeners, etc.)
    * Called when control is no longer needed.
    */

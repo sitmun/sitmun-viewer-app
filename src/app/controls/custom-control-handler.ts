@@ -181,16 +181,6 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Check if control is ready.
-   * Verifies that the control class exists in TC.control namespace.
-   */
-  override isReady(): boolean {
-    const TC = this.sitnaApi.getTC();
-    const controlName = this.getControlName();
-    return !!TC?.control?.[controlName];
-  }
-
-  /**
    * Clean up resources.
    * Resets the registration flag.
    */

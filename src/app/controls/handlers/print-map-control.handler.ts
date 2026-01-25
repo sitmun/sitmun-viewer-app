@@ -38,22 +38,4 @@ export class PrintMapControlHandler extends ControlHandlerBase {
     this.uiStateService.enableToolsButton();
     return config;
   }
-
-  /**
-   * Load patches for native print map control.
-   * No patches needed - SITNA handles pdfmake loading internally.
-   * Using pdfmake 0.1.70 for compatibility with SITNA's expected module structure.
-   */
-  override async loadPatches(_context: AppCfg): Promise<void> {
-    // TC is guaranteed available after guard - just verify it's accessible
-    this.sitnaApi.getTC();
-  }
-
-  /**
-   * Check if native print map control is ready.
-   */
-  override isReady(): boolean {
-    const TC = this.sitnaApi.getTC();
-    return !!TC?.control?.PrintMap;
-  }
 }

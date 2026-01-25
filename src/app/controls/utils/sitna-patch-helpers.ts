@@ -547,3 +547,13 @@ export function applyModifyPatches(
 
   return { cleanup, applied: true };
 }
+
+/**
+ * Apply shared SITNA infra patches (FeatureStyler, Modify).
+ * Call once when TC is available, before any control is created.
+ * Idempotent; safe to call on every processControls run.
+ */
+export function applySitnaInfraPatches(TC: any): void {
+  applyFeatureStylerPatches(TC, {});
+  applyModifyPatches(TC, {});
+}

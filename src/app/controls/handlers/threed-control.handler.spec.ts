@@ -90,17 +90,10 @@ describe('ThreeDControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches({} as any);
-      expect(handler.isReady()).toBe(true);
 
       const task: AppTasks = {
         'ui-control': 'sitna.threed',

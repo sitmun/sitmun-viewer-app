@@ -170,10 +170,4 @@ describe('FeatureInfoControlHandler', () => {
       expect(config).toEqual({});
     });
   });
-
-  describe('isReady()', () => {
-    it('should always return true for native control', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
 });

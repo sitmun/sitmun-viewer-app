@@ -39,37 +39,11 @@ export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
-    // Get structural config (div) from app-config.json
-    const defaultConfig = this.getDefaultConfig();
-
-    // Build complete default configuration with hardcoded behavior defaults
-    const completeDefaultConfig: SitnaControlConfig = {
-      ...defaultConfig,
-      active: true,
-      persistentHighlights: true,
-      share: true,
-      modes: {
-        point: {
-          active: true
-        },
-        polyline: {
-          active: true
-        },
-        polygon: {
-          active: true
-        }
-      }
-    };
-
-    // Merge with task parameters (allows backend to override specific fields)
     const config = this.mergeWithParameters(
-      completeDefaultConfig,
+      this.getDefaultConfig(),
       task.parameters
     );
-
-    // Enable tools button when multiFeatureInfo control is configured
     this.uiStateService.enableToolsButton();
-
     return config;
   }
 }

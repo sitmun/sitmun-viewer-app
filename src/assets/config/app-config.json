@@ -73,7 +73,8 @@
       "div": "tc-slot-legend"
     },
     "sitna.dataLoader": {
-      "div": "tc-slot-xdata"
+      "div": "tc-slot-xdata",
+      "enableDragAndDrop": true
     },
     "sitna.download": {
       "div": "tc-slot-download",
@@ -110,6 +111,14 @@
       "div": "tc-slot-multifeatureinfo",
       "displayElevation": {
         "resolution": 100
+      },
+      "active": true,
+      "persistentHighlights": true,
+      "share": true,
+      "modes": {
+        "point": { "active": true },
+        "polyline": { "active": true },
+        "polygon": { "active": true }
       }
     },
     "sitna.offlineMapMaker": {

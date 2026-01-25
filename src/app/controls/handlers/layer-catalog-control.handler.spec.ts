@@ -585,12 +585,6 @@ describe('LayerCatalogControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full workflow', async () => {
       const context: AppCfg = {
@@ -630,9 +624,6 @@ describe('LayerCatalogControlHandler', () => {
 
       // Load patches (no-op)
       await handler.loadPatches(context);
-
-      // Should be ready
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const config = handler.buildConfiguration(task, context);

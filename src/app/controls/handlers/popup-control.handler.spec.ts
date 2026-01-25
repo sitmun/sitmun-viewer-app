@@ -145,25 +145,10 @@ describe('PopupControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should return false if TC.control.Popup not available', () => {
-      mockTC.control.Popup = undefined;
-      expect(handler.isReady()).toBe(false);
-    });
-
-    it('should return true if TC.control.Popup exists', () => {
-      mockTC.control.Popup = {};
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('Integration', () => {
     it('should handle full lifecycle with empty parameters', async () => {
       // Load patches (waits for TC)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready (native control)
-      expect(handler.isReady()).toBe(true);
 
       // Build config with empty parameters
       const task: AppTasks = {
@@ -179,9 +164,6 @@ describe('PopupControlHandler', () => {
     it('should handle full lifecycle with custom parameters', async () => {
       // Load patches (waits for TC)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready (native control)
-      expect(handler.isReady()).toBe(true);
 
       // Build config with custom parameters
       const task: AppTasks = {

@@ -125,12 +125,6 @@ describe('CoordinatesControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should return true by default', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('loadPatches()', () => {
     it('should resolve without loading scripts', async () => {
       await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
@@ -141,9 +135,6 @@ describe('CoordinatesControlHandler', () => {
     it('should handle full lifecycle', async () => {
       // Load patches
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready after patch is loaded
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {

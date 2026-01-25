@@ -50,13 +50,4 @@ export class PopupControlHandler extends ControlHandlerBase {
     // Otherwise return parameters as config object
     return task.parameters as SitnaControlConfig;
   }
-
-  /**
-   * Check if native popup control is ready.
-   * Verifies that TC.control.Popup exists (native SITNA control).
-   */
-  override isReady(): boolean {
-    const TC = this.sitnaApi.getTC();
-    return !!TC?.control?.Popup;
-  }
 }

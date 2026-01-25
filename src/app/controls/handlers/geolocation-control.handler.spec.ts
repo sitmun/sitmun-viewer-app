@@ -150,12 +150,6 @@ describe('GeolocationControlHandler', () => {
     });
   });
 
-  describe('isReady()', () => {
-    it('should always return true (no patches)', () => {
-      expect(handler.isReady()).toBe(true);
-    });
-  });
-
   describe('loadPatches()', () => {
     it('should resolve successfully with context', async () => {
       await handler.loadPatches(mockAppCfg);
@@ -176,9 +170,6 @@ describe('GeolocationControlHandler', () => {
     it('should handle full lifecycle', async () => {
       // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
-
-      // Should be ready immediately
-      expect(handler.isReady()).toBe(true);
 
       // Build config
       const task: AppTasks = {
