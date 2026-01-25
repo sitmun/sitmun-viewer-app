@@ -8,7 +8,7 @@ import {
   ControlLoadOptions
 } from './control-handler.interface';
 import { AppConfigService } from '../services/app-config.service';
-import { TCNamespaceService } from '../services/tc-namespace.service';
+import { SitnaApiService } from '../services/sitna-api.service';
 import { PatchManager, createPatchManager } from '../utils/patch-manager';
 
 /**
@@ -34,7 +34,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
    */
   protected readonly appConfigService = inject(AppConfigService);
 
-  constructor(protected tcNamespaceService: TCNamespaceService) {}
+  constructor(protected sitnaApi: SitnaApiService) {}
 
   /**
    * Load patches required by this control.
@@ -127,8 +127,37 @@ export abstract class ControlHandlerBase implements ControlHandler {
   }
 
   /**
+   * Execute callback with TC namespace (synchronous).
+   *
+   * TC is guaranteed available after app bootstrap and guard checks.
+   * Use this for synchronous operations that only need TC access.
+   *
+   * @param callback - Function to execute with TC namespace
+   */
+  protected withTC(callback: (TC: any) => void): void {
+    const TC = this.sitnaApi.getTC();
+    callback(TC);
+  }
+
+  /**
+   * Execute async callback with TC namespace.
+   *
+   * TC is guaranteed available after app bootstrap and guard checks.
+   * Use when callback contains await statements (HTTP calls, etc).
+   *
+   * @param callback - Async function to execute with TC namespace
+   * @returns Promise that resolves when callback completes
+   */
+  protected withTCAsync(callback: (TC: any) => Promise<void>): Promise<void> {
+    const TC = this.sitnaApi.getTC();
+    return callback(TC);
+  }
+
+  /**
    * Wait for TC namespace and apply callback.
-   * Ported from BaseScenarioComponent.waitForTCAndApply().
+   *
+   * @deprecated Use withTC() for sync callbacks or withTCAsync() for async callbacks.
+   * This method is kept for backward compatibility and will be removed in a future version.
    *
    * @param callback - Function to execute with TC namespace
    * @returns Promise that resolves when callback completes
@@ -136,17 +165,19 @@ export abstract class ControlHandlerBase implements ControlHandler {
   protected async waitForTCAndApply(
     callback: (TC: any) => Promise<void>
   ): Promise<void> {
-    const TC = await this.tcNamespaceService.waitForTC();
-    await callback(TC);
+    return this.withTCAsync(callback);
   }
 
   /**
    * Resolve dependencies before loading control.
    *
+   * Dependencies are checked synchronously (TC/SITNA are immediately available),
+   * but the method signature remains async for compatibility with ensureControlLoaded().
+   *
    * @param dependencies - Dependency specification
    */
   private async resolveDependencies(
-    dependencies: string | string[] | (() => Promise<void>)
+    dependencies: string | string[] | (() => void | Promise<void>)
   ): Promise<void> {
     if (typeof dependencies === 'function') {
       await dependencies();
@@ -159,40 +190,29 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
     for (const dep of depArray) {
       if (dep === 'TC') {
-        await this.tcNamespaceService.waitForTC();
+        this.sitnaApi.getTC(); // Throws if missing
       } else if (dep.includes('.')) {
         // It's a property path like 'TC.control.Search'
-        await this.tcNamespaceService.waitForTCProperty(dep);
+        this.sitnaApi.getTCProperty(dep); // Throws if missing
       } else {
         // It's a global variable
-        await this.waitForGlobal(dep);
+        this.checkGlobal(dep);
       }
     }
   }
 
   /**
-   * Wait for a global variable to become available.
+   * Check if a global variable is available (synchronous).
    *
    * @param globalName - Name of global variable
-   * @param maxRetries - Maximum retry attempts
-   * @param delayMs - Delay between retries
+   * @throws Error if global is not available
    */
-  private async waitForGlobal(
-    globalName: string,
-    maxRetries = 50,
-    delayMs = 100
-  ): Promise<void> {
-    for (let i = 0; i < maxRetries; i++) {
-      if ((window as any)[globalName] !== undefined) {
-        return;
-      }
-      if (i < maxRetries - 1) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
+  private checkGlobal(globalName: string): void {
+    if ((window as any)[globalName] === undefined) {
+      throw new Error(
+        `Global variable '${globalName}' not available. Check script loading order.`
+      );
     }
-    throw new Error(
-      `Global variable '${globalName}' not available after retries`
-    );
   }
 
   /**

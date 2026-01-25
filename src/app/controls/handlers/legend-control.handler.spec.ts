@@ -5,25 +5,23 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { LegendControlHandler } from './legend-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 
 describe('LegendControlHandler', () => {
   let handler: LegendControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockUIStateService: jest.Mocked<UIStateService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue({ div: 'tc-slot-legend' })
@@ -41,7 +39,7 @@ describe('LegendControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         LegendControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService },
         { provide: UIStateService, useValue: mockUIStateService }
       ]

@@ -6,11 +6,11 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { HelloWorldControlHandler } from './hello-world-control.handler';
 import { prototypeWrappers } from '../../controls/hello-world/hello-world-control.logic';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 
 describe('HelloWorldControlHandler', () => {
   let handler: HelloWorldControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockTC: any;
   let mockAppCfg: AppCfg;
@@ -25,14 +25,12 @@ describe('HelloWorldControlHandler', () => {
       control: {}
     };
 
-    mockTCNamespace = {
-      waitForTC: jest.fn().mockResolvedValue(mockTC),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn().mockReturnValue(mockTC),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockAppConfigService = {
       getControlDefault: jest.fn()
@@ -47,7 +45,7 @@ describe('HelloWorldControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         HelloWorldControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
@@ -174,7 +172,7 @@ describe('HelloWorldControlHandler', () => {
     });
 
     it('should return false when TC is not available', () => {
-      mockTCNamespace.getTC.mockReturnValue(undefined);
+      mockSitnaApi.getTC.mockReturnValue(undefined);
 
       expect(handler.isReady()).toBe(false);
     });

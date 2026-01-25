@@ -5,25 +5,23 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { GeolocationControlHandler } from './geolocation-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 
 describe('GeolocationControlHandler', () => {
   let handler: GeolocationControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockUIStateService: jest.Mocked<UIStateService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockUIStateService = {
       enableToolsButton: jest.fn()
@@ -42,7 +40,7 @@ describe('GeolocationControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         GeolocationControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: UIStateService, useValue: mockUIStateService },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]

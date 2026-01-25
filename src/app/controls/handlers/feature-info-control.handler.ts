@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 import {
@@ -32,8 +32,8 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'featureInfo';
   readonly requiredPatches = undefined; // No patches needed
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**
@@ -43,7 +43,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
    * are called before the component has fully rendered its DOM elements.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    await this.withTCAsync(async (TC) => {
       // Apply FeatureStyler patches with cleanup registration
       applyFeatureStylerPatches(TC, { patchManager: this.patchManager });
 

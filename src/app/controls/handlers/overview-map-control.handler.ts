@@ -4,7 +4,7 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { SitnaBaseLayer } from '@api/model/sitna-cfg';
 
 import { ConfigLookupService } from '../../services/config-lookup.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
@@ -27,11 +27,11 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined;
 
   constructor(
-    tcNamespaceService: TCNamespaceService,
+    sitnaApi: SitnaApiService,
     private configLookup: ConfigLookupService,
     private uiStateService: UIStateService
   ) {
-    super(tcNamespaceService);
+    super(sitnaApi);
   }
 
   buildConfiguration(

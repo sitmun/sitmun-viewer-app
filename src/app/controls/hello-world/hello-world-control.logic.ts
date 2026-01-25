@@ -122,7 +122,9 @@ export class HelloWorldControlLogic implements ControlLogicBase {
     const mapTitle = this.control.map?.baseLayer?.title || 'the active basemap';
 
     this.counter++;
-    window.alert(`Hello from SITNA! You are viewing ${mapTitle} ${this.counter} times.`);
+    window.alert(
+      `Hello from SITNA! You are viewing ${mapTitle} ${this.counter} times.`
+    );
   }
 }
 

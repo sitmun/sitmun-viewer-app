@@ -1,10 +1,10 @@
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { from, isObservable } from 'rxjs';
 
 import { NavigationPath, RoutingDefault } from '@config/app.config';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { from, isObservable } from 'rxjs';
 
 import { sitnaMapGuard } from './sitna-map.guard';
 import { SitnaLoaderService } from '../services/sitna-loader.service';
@@ -135,10 +135,7 @@ describe('SitnaMapGuard', () => {
     let canActivateResult: boolean | undefined;
     TestBed.runInInjectionContext(() => {
       toObservable(
-        sitnaMapGuard(
-          {} as any,
-          { url: '/embedded-map/1/2/es' } as any
-        )
+        sitnaMapGuard({} as any, { url: '/embedded-map/1/2/es' } as any)
       ).subscribe((result: boolean) => {
         canActivateResult = result;
       });

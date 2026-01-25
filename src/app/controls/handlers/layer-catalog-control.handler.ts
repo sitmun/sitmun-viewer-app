@@ -5,8 +5,7 @@ import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 import { CatalogSwitchingService } from '../../services/catalog-switching.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { RasterLayerService } from '../../services/raster-layer.service';
-import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
@@ -36,7 +35,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
   private readonly virtualWmsService = inject(VirtualWmsCapabilitiesService);
   private readonly configLookup = inject(ConfigLookupService);
-  private readonly sitnaNamespaceService = inject(SitnaNamespaceService);
   private readonly catalogSwitching = inject(CatalogSwitchingService);
   private readonly rasterService = inject(RasterLayerService);
 
@@ -47,8 +45,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   // Track if patches have been applied to avoid reapplying on map reload
   private patchesApplied = false;
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**
@@ -64,9 +62,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     // Ensure context is initialized in lookup service
     this.configLookup.initialize(context);
 
-    // Wait for SITNA and TC to be available
-    await this.sitnaNamespaceService.waitForSITNA(50, 100);
-    await this.tcNamespaceService.waitForTC();
+    // TC and SITNA are immediately available after guard
+    this.sitnaApi.getSITNA();
+    this.sitnaApi.getTC();
 
     // Apply ONLY the foundational patch - other patches will be applied in loadPatches()
     await this.patchLayerGetCapabilitiesOnline();
@@ -92,9 +90,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       return;
     }
 
-    // Wait for SITNA and TC to be available
-    await this.sitnaNamespaceService.waitForSITNA(50, 100);
-    await this.tcNamespaceService.waitForTC();
+    // TC and SITNA are immediately available after guard
+    this.sitnaApi.getSITNA();
+    this.sitnaApi.getTC();
 
     // Apply patches in order (matching sandbox sequence)
     await this.patchLayerGetCapabilitiesOnline();
@@ -324,7 +322,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private async patchLayerGetCapabilitiesOnline(): Promise<void> {
     await this.waitForTCAndApply(async () => {
-      const SITNA = await this.sitnaNamespaceService.waitForSITNA();
+      const SITNA = this.sitnaApi.getSITNA();
 
       // Try to find Layer prototype
       const LayerProto = (SITNA as any)?.layer?.Layer?.prototype;

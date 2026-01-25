@@ -6,7 +6,7 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { ControlHandlerBase } from './control-handler-base';
 import { SitnaControlConfig } from './control-handler.interface';
 import { AppConfigService } from '../services/app-config.service';
-import { TCNamespaceService } from '../services/tc-namespace.service';
+import { SitnaApiService } from '../services/sitna-api.service';
 
 /**
  * Concrete test implementation of ControlHandlerBase
@@ -41,19 +41,17 @@ class NoPatchHandler extends ControlHandlerBase {
 describe('ControlHandlerBase', () => {
   let handler: TestControlHandler;
   let noPatchHandler: NoPatchHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppCfg: AppCfg;
 
   beforeEach(() => {
     // Create spy
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn(),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     const mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue(null)
@@ -64,16 +62,16 @@ describe('ControlHandlerBase', () => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 
     handler = TestBed.runInInjectionContext(
-      () => new TestControlHandler(mockTCNamespace)
+      () => new TestControlHandler(mockSitnaApi)
     );
     noPatchHandler = TestBed.runInInjectionContext(
-      () => new NoPatchHandler(mockTCNamespace)
+      () => new NoPatchHandler(mockSitnaApi)
     );
 
     // Create mock AppCfg for loadPatches context
@@ -137,7 +135,7 @@ describe('ControlHandlerBase', () => {
       }
 
       const multiHandler = TestBed.runInInjectionContext(
-        () => new MultiPatchHandler(mockTCNamespace)
+        () => new MultiPatchHandler(mockSitnaApi)
       );
       await multiHandler.loadPatches(mockAppCfg);
       // Default implementation does nothing, just resolves
@@ -164,7 +162,7 @@ describe('ControlHandlerBase', () => {
       }
 
       const multiHandler = TestBed.runInInjectionContext(
-        () => new MultiPatchHandler(mockTCNamespace)
+        () => new MultiPatchHandler(mockSitnaApi)
       );
       expect(multiHandler.isReady()).toBe(true);
     });
@@ -249,7 +247,7 @@ describe('ControlHandlerBase', () => {
   describe('ensureControlLoaded()', () => {
     it('should load control with dependencies', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
+      mockSitnaApi.getTC.mockReturnValue(mockTC);
 
       let scriptLoaded = false;
       await handler['ensureControlLoaded']({
@@ -260,7 +258,7 @@ describe('ControlHandlerBase', () => {
         controlName: 'TestControl'
       });
 
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
       expect(scriptLoaded).toBe(true);
     });
 
@@ -300,8 +298,8 @@ describe('ControlHandlerBase', () => {
 
     it('should handle array of dependencies', async () => {
       const mockTC = { control: { Search: {} } };
-      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
-      mockTCNamespace.waitForTCProperty.mockReturnValue(Promise.resolve({}));
+      mockSitnaApi.getTC.mockReturnValue(mockTC);
+      mockSitnaApi.getTCProperty.mockReturnValue({});
 
       await handler['ensureControlLoaded']({
         dependencies: ['TC', 'TC.control.Search'],
@@ -310,8 +308,8 @@ describe('ControlHandlerBase', () => {
         controlName: 'TestControl'
       });
 
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
-      expect(mockTCNamespace.waitForTCProperty).toHaveBeenCalledWith(
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTCProperty).toHaveBeenCalledWith(
         'TC.control.Search'
       );
     });
@@ -336,7 +334,7 @@ describe('ControlHandlerBase', () => {
   describe('waitForTCAndApply()', () => {
     it('should wait for TC and execute callback', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
+      mockSitnaApi.getTC.mockReturnValue(mockTC);
 
       let callbackExecuted = false;
       let receivedTC: any;
@@ -346,14 +344,14 @@ describe('ControlHandlerBase', () => {
         receivedTC = TC;
       });
 
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
       expect(callbackExecuted).toBe(true);
       expect(receivedTC).toBe(mockTC);
     });
 
     it('should handle callback errors', async () => {
       const mockTC = { control: {} };
-      mockTCNamespace.waitForTC.mockReturnValue(Promise.resolve(mockTC));
+      mockSitnaApi.getTC.mockReturnValue(mockTC);
 
       await expect(
         handler['waitForTCAndApply'](async () => {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 
@@ -29,8 +29,8 @@ export class ThreeDControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'threeD'; // Explicit SITNA name
   readonly requiredPatches = undefined; // No patches required - native SITNA control
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**

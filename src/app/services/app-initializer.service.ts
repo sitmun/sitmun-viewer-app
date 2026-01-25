@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 
-import { SitnaNamespaceService } from './sitna-namespace.service';
+import { SitnaApiService } from './sitna-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppInitializerService {
-  private readonly sitnaNamespaceService = inject(SitnaNamespaceService);
+  private readonly sitnaApi = inject(SitnaApiService);
 
   /**
    * Initialize SITNA configuration on app bootstrap.
@@ -14,8 +14,8 @@ export class AppInitializerService {
    */
   async initialize(): Promise<void> {
     try {
-      // Wait for SITNA script to load
-      await this.sitnaNamespaceService.waitForSITNA(50, 100);
+      // Verify SITNA is available (synchronous check)
+      this.sitnaApi.getSITNA();
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
       // eslint-disable-next-line no-console

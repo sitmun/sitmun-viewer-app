@@ -5,21 +5,19 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { CoordinatesControlHandler } from './coordinates-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 
 describe('CoordinatesControlHandler', () => {
   let handler: CoordinatesControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppCfg: AppCfg;
   beforeEach(() => {
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     const mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue({
@@ -35,7 +33,7 @@ describe('CoordinatesControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         CoordinatesControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });

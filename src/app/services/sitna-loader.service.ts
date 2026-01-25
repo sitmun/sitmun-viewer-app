@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { filter, take, timeout as rxTimeout } from 'rxjs/operators';
 
-import { SitnaNamespaceService } from './sitna-namespace.service';
+import { SitnaApiService } from './sitna-api.service';
 
 /**
  * Service for waiting on SITNA.Map availability after bootstrap.
@@ -34,7 +34,7 @@ export class SitnaLoaderService {
    */
   readonly ready$: Observable<boolean> = this.readySubject.asObservable();
 
-  constructor(private sitnaNamespace: SitnaNamespaceService) {}
+  constructor(private sitnaApi: SitnaApiService) {}
 
   /**
    * Wait for SITNA.Map to become available.
@@ -107,13 +107,19 @@ export class SitnaLoaderService {
       if (this.pollingStopped) {
         return;
       }
-      const sitna = this.sitnaNamespace.getSITNA();
-      if (sitna && sitna.Map) {
-        // SITNA.Map is available
-        this.readySubject.next(true);
-        this.stopPolling();
-      } else {
-        // Not ready yet, try again
+
+      try {
+        const sitna = this.sitnaApi.getSITNA();
+        if (sitna && sitna.Map) {
+          // SITNA.Map is available
+          this.readySubject.next(true);
+          this.stopPolling();
+        } else {
+          // Not ready yet, try again
+          this.pollTimer = setTimeout(checkSITNA, this.pollInterval);
+        }
+      } catch {
+        // SITNA not available yet, try again
         this.pollTimer = setTimeout(checkSITNA, this.pollInterval);
       }
     };

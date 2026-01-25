@@ -1,29 +1,31 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
+import { SitnaApiService } from './sitna-api.service';
 import { SitnaLoaderService } from './sitna-loader.service';
-import { SitnaNamespaceService } from './sitna-namespace.service';
 
 describe('SitnaLoaderService', () => {
   let service: SitnaLoaderService;
-  let sitnaNamespaceSpy: jest.Mocked<SitnaNamespaceService>;
+  let sitnaApiSpy: jest.Mocked<SitnaApiService>;
 
   beforeEach(() => {
     const spy = {
       getSITNA: jest.fn(),
-      waitForSITNA: jest.fn()
-    } as jest.Mocked<SitnaNamespaceService>;
+      getTC: jest.fn(),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(false)
+    } as jest.Mocked<SitnaApiService>;
 
     TestBed.configureTestingModule({
       providers: [
         SitnaLoaderService,
-        { provide: SitnaNamespaceService, useValue: spy }
+        { provide: SitnaApiService, useValue: spy }
       ]
     });
 
     service = TestBed.inject(SitnaLoaderService);
-    sitnaNamespaceSpy = TestBed.inject(
-      SitnaNamespaceService
-    ) as jest.Mocked<SitnaNamespaceService>;
+    sitnaApiSpy = TestBed.inject(
+      SitnaApiService
+    ) as jest.Mocked<SitnaApiService>;
   });
 
   afterEach(() => {
@@ -49,7 +51,7 @@ describe('SitnaLoaderService', () => {
 
   it('should resolve immediately if SITNA already ready', async () => {
     // Mock SITNA as already available
-    sitnaNamespaceSpy.getSITNA.mockReturnValue({
+    sitnaApiSpy.getSITNA.mockReturnValue({
       Map: () => null
     } as any);
 
@@ -59,16 +61,16 @@ describe('SitnaLoaderService', () => {
   });
 
   it('should poll and resolve when SITNA becomes available', async () => {
-    // Initially return undefined, then return SITNA after a few calls
+    // Initially throw, then return SITNA after a few calls
     let callCount = 0;
-    sitnaNamespaceSpy.getSITNA.mockImplementation(() => {
+    sitnaApiSpy.getSITNA.mockImplementation(() => {
       callCount++;
       if (callCount > 3) {
         return {
           Map: () => null
         } as any;
       }
-      return undefined;
+      throw new Error('SITNA namespace not available');
     });
 
     // Should not be ready initially
@@ -82,7 +84,9 @@ describe('SitnaLoaderService', () => {
   }, 5000);
 
   it('should timeout if SITNA never becomes available', async () => {
-    sitnaNamespaceSpy.getSITNA.mockReturnValue(undefined);
+    sitnaApiSpy.getSITNA.mockImplementation(() => {
+      throw new Error('SITNA namespace not available');
+    });
 
     // Use a very short timeout for the test
     await expect(service.waitForSITNAMap(50)).rejects.toThrow(
@@ -101,7 +105,7 @@ describe('SitnaLoaderService', () => {
     expect(emissions).toEqual([false]);
 
     // Mock SITNA becoming available
-    sitnaNamespaceSpy.getSITNA.mockReturnValue({
+    sitnaApiSpy.getSITNA.mockReturnValue({
       Map: () => null
     } as any);
 
@@ -128,7 +132,7 @@ describe('SitnaLoaderService', () => {
     expect(emissions2).toEqual([false]);
 
     // Mock SITNA becoming available
-    sitnaNamespaceSpy.getSITNA.mockReturnValue({
+    sitnaApiSpy.getSITNA.mockReturnValue({
       Map: () => null
     } as any);
 
@@ -141,7 +145,7 @@ describe('SitnaLoaderService', () => {
 
   it('should handle late subscribers to ready$ after SITNA is ready', async () => {
     // Mock SITNA as available
-    sitnaNamespaceSpy.getSITNA.mockReturnValue({
+    sitnaApiSpy.getSITNA.mockReturnValue({
       Map: () => null
     } as any);
 
@@ -158,7 +162,7 @@ describe('SitnaLoaderService', () => {
   });
 
   it('should only start polling once', async () => {
-    sitnaNamespaceSpy.getSITNA.mockReturnValue({
+    sitnaApiSpy.getSITNA.mockReturnValue({
       Map: () => null
     } as any);
 

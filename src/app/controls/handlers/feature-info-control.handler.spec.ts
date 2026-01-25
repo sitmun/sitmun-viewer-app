@@ -5,22 +5,20 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 
 describe('FeatureInfoControlHandler', () => {
   let handler: FeatureInfoControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
 
   beforeEach(() => {
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockAppConfigService = {
       getControlDefault: jest.fn().mockReturnValue({
@@ -35,7 +33,7 @@ describe('FeatureInfoControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         FeatureInfoControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });

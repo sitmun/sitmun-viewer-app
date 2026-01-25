@@ -5,12 +5,12 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { PrintMapControlHandler } from './print-map-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 
 describe('PrintMapControlHandler', () => {
   let handler: PrintMapControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockUIStateService: jest.Mocked<UIStateService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
@@ -21,14 +21,12 @@ describe('PrintMapControlHandler', () => {
         PrintMap: {}
       }
     };
-    mockTCNamespace = {
-      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC)),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn().mockReturnValue(mockTC),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockUIStateService = {
       enableToolsButton: jest.fn()
@@ -51,7 +49,7 @@ describe('PrintMapControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         PrintMapControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: UIStateService, useValue: mockUIStateService },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
@@ -291,17 +289,17 @@ describe('PrintMapControlHandler', () => {
 
   describe('isReady()', () => {
     it('should return false when TC is not available', () => {
-      mockTCNamespace.getTC.mockReturnValue(undefined);
+      mockSitnaApi.getTC.mockReturnValue(undefined);
       expect(handler.isReady()).toBe(false);
     });
 
     it('should return false when PrintMap control is not available', () => {
-      mockTCNamespace.getTC.mockReturnValue({ control: {} } as any);
+      mockSitnaApi.getTC.mockReturnValue({ control: {} } as any);
       expect(handler.isReady()).toBe(false);
     });
 
     it('should return true when both TC and pdfMake are available', () => {
-      mockTCNamespace.getTC.mockReturnValue({
+      mockSitnaApi.getTC.mockReturnValue({
         control: { PrintMap: {} }
       } as any);
       expect(handler.isReady()).toBe(true);
@@ -317,13 +315,11 @@ describe('PrintMapControlHandler', () => {
     });
 
     it('should wait for TC namespace', async () => {
-      mockTCNamespace.waitForTC.mockReturnValue(
-        Promise.resolve({ control: { PrintMap: {} } })
-      );
+      mockSitnaApi.getTC.mockReturnValue({ control: { PrintMap: {} } });
 
       await handler.loadPatches(mockAppCfg);
 
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
     });
 
     it('should skip loading pdfmake if already loaded', async () => {
@@ -332,7 +328,7 @@ describe('PrintMapControlHandler', () => {
       await handler.loadPatches(mockAppCfg);
 
       // Should complete without errors
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
     });
   });
 

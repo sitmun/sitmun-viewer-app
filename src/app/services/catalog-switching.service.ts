@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { AppCfg, AppTree } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
-import { TCNamespaceService } from './tc-namespace.service';
+import { SitnaApiService } from './sitna-api.service';
 
 /**
  * Service for managing layer catalog switching functionality.
@@ -273,7 +273,7 @@ export class CatalogSwitchingService {
         control,
         changeCatalogButton,
         projectsPanel,
-        handler.tcNamespaceService
+        handler.sitnaApi
       );
       (changeCatalogButton as any).__catalogSwitchingHandlersAdded = true;
     }
@@ -290,11 +290,11 @@ export class CatalogSwitchingService {
     control: any,
     changeCatalogButton: HTMLElement,
     projectsPanel: HTMLElement,
-    tcNamespaceService: TCNamespaceService
+    sitnaApi: SitnaApiService
   ): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const service = this;
-    const TC = tcNamespaceService.getTC();
+    const TC = sitnaApi.getTC();
     const layerCatalogsForModal = this.getGlobalState();
 
     if (

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
@@ -29,15 +29,15 @@ export class SearchControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'search';
   readonly requiredPatches = undefined; // Patches applied programmatically
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**
    * Apply patches to avoid recursive FEATURESADD events in SITNA Search.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    this.withTC((TC) => {
       const MapProto = TC?.Map?.prototype as
         | {
             trigger?: (type: string, options?: any) => void;
@@ -107,7 +107,7 @@ export class SearchControlHandler extends ControlHandlerBase {
    * Verifies that TC.control.Search exists (native SITNA control).
    */
   override isReady(): boolean {
-    const TC = this.tcNamespaceService.getTC();
+    const TC = this.sitnaApi.getTC();
     return !!TC?.control?.Search;
   }
 }

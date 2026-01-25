@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaControlConfig } from '../control-handler.interface';
 import { CustomControlHandler } from '../custom-control-handler';
 import { prototypeWrappers } from '../hello-world/hello-world-control.logic';
@@ -31,10 +31,10 @@ export class HelloWorldControlHandler extends CustomControlHandler {
   readonly sitnaConfigKey = 'helloWorld';
   readonly requiredPatches = undefined;
 
-  constructor(tcNamespaceService: TCNamespaceService) {
+  constructor(sitnaApi: SitnaApiService) {
     // Explicitly inject prototypeWrappers from the logic file
     // This makes the dependency location clear and explicit
-    super(tcNamespaceService, prototypeWrappers);
+    super(sitnaApi, prototypeWrappers);
   }
 
   /**

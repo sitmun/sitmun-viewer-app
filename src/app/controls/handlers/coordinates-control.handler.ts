@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 
@@ -20,8 +20,8 @@ export class CoordinatesControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'coordinates';
   readonly requiredPatches = undefined;
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**

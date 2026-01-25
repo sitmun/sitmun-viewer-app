@@ -1,7 +1,7 @@
 import { AppCfg } from '@api/model/app-cfg';
 
 import { ControlHandlerBase } from './control-handler-base';
-import { TCNamespaceService } from '../services/tc-namespace.service';
+import { SitnaApiService } from '../services/sitna-api.service';
 import type { TCNamespace } from '../types/sitna.types';
 import {
   CustomControlShellConfig,
@@ -39,10 +39,10 @@ import {
  *   readonly sitnaConfigKey = 'myCustom';
  *
  *   constructor(
- *     tcNamespaceService: TCNamespaceService,
+ *     sitnaApi: SitnaApiService,
  *     prototypeWrappers: ControlLogicClass = prototypeWrappers
  *   ) {
- *     super(tcNamespaceService, prototypeWrappers);
+ *     super(sitnaApi, prototypeWrappers);
  *   }
  *
  *   protected getControlName(): string {
@@ -71,11 +71,8 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
   /** Prototype wrappers containing the control logic methods to inject */
   protected readonly prototypeWrappers: ControlLogicClass;
 
-  constructor(
-    tcNamespaceService: TCNamespaceService,
-    prototypeWrappers: ControlLogicClass
-  ) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService, prototypeWrappers: ControlLogicClass) {
+    super(sitnaApi);
     this.prototypeWrappers = prototypeWrappers;
   }
 
@@ -116,7 +113,7 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
       return;
     }
 
-    await this.waitForTCAndApply(async (TC: TCNamespace) => {
+    await this.withTCAsync(async (TC: TCNamespace) => {
       const controlName = this.getControlName();
       const shellConfig = this.getControlShellConfig();
 
@@ -179,7 +176,7 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
    * Verifies that the control class exists in TC.control namespace.
    */
   override isReady(): boolean {
-    const TC = this.tcNamespaceService.getTC();
+    const TC = this.sitnaApi.getTC();
     const controlName = this.getControlName();
     return !!TC?.control?.[controlName];
   }

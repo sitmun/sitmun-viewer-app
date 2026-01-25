@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 
@@ -22,8 +22,8 @@ export class PopupControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'popup';
   readonly requiredPatches = undefined; // No patches needed
 
-  constructor(tcNamespaceService: TCNamespaceService) {
-    super(tcNamespaceService);
+  constructor(sitnaApi: SitnaApiService) {
+    super(sitnaApi);
   }
 
   /**
@@ -31,8 +31,8 @@ export class PopupControlHandler extends ControlHandlerBase {
    * No-op: native control doesn't need patches.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
-    // Wait for TC namespace to ensure SITNA is ready
-    await this.tcNamespaceService.waitForTC();
+    // TC is guaranteed available after guard - just verify it's accessible
+    this.sitnaApi.getTC();
   }
 
   /**
@@ -56,7 +56,7 @@ export class PopupControlHandler extends ControlHandlerBase {
    * Verifies that TC.control.Popup exists (native SITNA control).
    */
   override isReady(): boolean {
-    const TC = this.tcNamespaceService.getTC();
+    const TC = this.sitnaApi.getTC();
     return !!TC?.control?.Popup;
   }
 }

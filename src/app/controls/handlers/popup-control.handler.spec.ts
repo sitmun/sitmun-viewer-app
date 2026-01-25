@@ -5,11 +5,11 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { PopupControlHandler } from './popup-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 
 describe('PopupControlHandler', () => {
   let handler: PopupControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockAppCfg: AppCfg;
   let mockTC: any;
@@ -21,14 +21,12 @@ describe('PopupControlHandler', () => {
       }
     };
 
-    mockTCNamespace = {
-      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC)),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn().mockReturnValue(mockTC),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     mockAppConfigService = {
       getControlDefault: jest.fn()
@@ -40,7 +38,7 @@ describe('PopupControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         PopupControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
@@ -91,7 +89,7 @@ describe('PopupControlHandler', () => {
     it('should wait for TC namespace', async () => {
       await handler.loadPatches(mockAppCfg);
 
-      expect(mockTCNamespace.waitForTC).toHaveBeenCalled();
+      expect(mockSitnaApi.getTC).toHaveBeenCalled();
     });
 
     it('should not load any patch scripts', async () => {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
@@ -24,10 +24,10 @@ export class PrintMapControlHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(
-    tcNamespaceService: TCNamespaceService,
+    sitnaApi: SitnaApiService,
     private uiStateService: UIStateService
   ) {
-    super(tcNamespaceService);
+    super(sitnaApi);
   }
 
   /**
@@ -55,14 +55,15 @@ export class PrintMapControlHandler extends ControlHandlerBase {
    * Using pdfmake 0.1.70 for compatibility with SITNA's expected module structure.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
-    await this.tcNamespaceService.waitForTC();
+    // TC is guaranteed available after guard - just verify it's accessible
+    this.sitnaApi.getTC();
   }
 
   /**
    * Check if native print map control is ready.
    */
   override isReady(): boolean {
-    const TC = this.tcNamespaceService.getTC();
+    const TC = this.sitnaApi.getTC();
     return !!TC?.control?.PrintMap;
   }
 }

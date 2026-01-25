@@ -6,17 +6,15 @@ import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { LanguageService } from '../../services/language.service';
-import { SitnaNamespaceService } from '../../services/sitna-namespace.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 
 describe('LayerCatalogControlHandler', () => {
   let handler: LayerCatalogControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockVirtualCapabilities: jest.Mocked<VirtualWmsCapabilitiesService>;
   let mockConfigLookup: jest.Mocked<ConfigLookupService>;
   let mockLanguageService: jest.Mocked<LanguageService>;
-  let mockSitnaNamespace: jest.Mocked<SitnaNamespaceService>;
   let _mockAppCfg: AppCfg;
 
   beforeEach(() => {
@@ -30,14 +28,12 @@ describe('LayerCatalogControlHandler', () => {
         LayerCatalog: class LayerCatalog {}
       }
     };
-    mockTCNamespace = {
-      waitForTC: jest.fn().mockReturnValue(Promise.resolve(mockTC as any)),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn().mockReturnValue(mockTC as any),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
     mockVirtualCapabilities = {
       generateVirtualUrl: jest.fn(),
       canGenerateCapabilities: jest.fn()
@@ -54,24 +50,18 @@ describe('LayerCatalogControlHandler', () => {
     mockLanguageService = {
       getCurrentLanguage: jest.fn()
     } as Partial<jest.Mocked<LanguageService>> as jest.Mocked<LanguageService>;
-    mockSitnaNamespace = {
-      waitForSITNA: jest.fn().mockReturnValue(Promise.resolve({} as any))
-    } as Partial<
-      jest.Mocked<SitnaNamespaceService>
-    > as jest.Mocked<SitnaNamespaceService>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         LayerCatalogControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         {
           provide: VirtualWmsCapabilitiesService,
           useValue: mockVirtualCapabilities
         },
         { provide: ConfigLookupService, useValue: mockConfigLookup },
-        { provide: LanguageService, useValue: mockLanguageService },
-        { provide: SitnaNamespaceService, useValue: mockSitnaNamespace }
+        { provide: LanguageService, useValue: mockLanguageService }
       ]
     });
 

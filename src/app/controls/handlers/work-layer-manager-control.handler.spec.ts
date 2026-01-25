@@ -5,22 +5,20 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 
 describe('WorkLayerManagerControlHandler', () => {
   let handler: WorkLayerManagerControlHandler;
-  let mockTCNamespace: jest.Mocked<TCNamespaceService>;
+  let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfig: jest.Mocked<AppConfigService>;
 
   beforeEach(() => {
-    mockTCNamespace = {
-      waitForTC: jest.fn(),
-      waitForTCProperty: jest.fn(),
+    mockSitnaApi = {
       getTC: jest.fn(),
-      isTCReady: jest.fn().mockReturnValue(true)
-    } as Partial<
-      jest.Mocked<TCNamespaceService>
-    > as jest.Mocked<TCNamespaceService>;
+      getSITNA: jest.fn().mockReturnValue({} as any),
+      getTCProperty: jest.fn(),
+      isReady: jest.fn().mockReturnValue(true)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
     mockAppConfig = {
       getControlDefault: jest.fn().mockReturnValue({
         div: 'workLayerManager'
@@ -33,7 +31,7 @@ describe('WorkLayerManagerControlHandler', () => {
       imports: [HttpClientTestingModule],
       providers: [
         WorkLayerManagerControlHandler,
-        { provide: TCNamespaceService, useValue: mockTCNamespace },
+        { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfig }
       ]
     });

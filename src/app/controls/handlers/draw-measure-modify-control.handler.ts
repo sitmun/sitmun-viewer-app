@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { TCNamespaceService } from '../../services/tc-namespace.service';
+import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
@@ -29,10 +29,10 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined; // No patches needed
 
   constructor(
-    tcNamespaceService: TCNamespaceService,
+    sitnaApi: SitnaApiService,
     private uiStateService: UIStateService
   ) {
-    super(tcNamespaceService);
+    super(sitnaApi);
   }
 
   /**
@@ -60,7 +60,7 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
    * Also patches Modify.renderPromise to prevent errors when #textInput is undefined.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
-    await this.waitForTCAndApply(async (TC) => {
+    this.withTC((TC) => {
       // Apply Modify patches with cleanup registration
       applyModifyPatches(TC, { patchManager: this.patchManager });
 
