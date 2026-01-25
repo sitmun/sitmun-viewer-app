@@ -1,10 +1,9 @@
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 import { NavigationPath, RoutingDefault } from '@config/app.config';
-import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
-import { from, isObservable } from 'rxjs';
+import { Subject, from, isObservable } from 'rxjs';
 
 import { sitnaMapGuard } from './sitna-map.guard';
 import { SitnaLoaderService } from '../services/sitna-loader.service';
@@ -12,12 +11,13 @@ import { SitnaLoaderService } from '../services/sitna-loader.service';
 describe('SitnaMapGuard', () => {
   let sitnaLoaderSpy: jest.Mocked<Pick<SitnaLoaderService, 'waitForSITNAMap'>>;
   let routerSpy: jest.Mocked<Pick<Router, 'navigateByUrl'>>;
-  let modalSpy: jest.Mocked<Pick<OpenModalService, 'open'>>;
-  let modalRef: OpenModalRef;
+  let dialogSpy: jest.Mocked<Pick<MatDialog, 'open'>>;
+  let afterClosed$: Subject<void>;
   let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    afterClosed$ = new Subject<void>();
     const loaderSpy = {
       waitForSITNAMap: jest.fn()
     } as jest.Mocked<Pick<SitnaLoaderService, 'waitForSITNAMap'>>;
@@ -26,11 +26,11 @@ describe('SitnaMapGuard', () => {
       navigateByUrl: jest.fn()
     } as jest.Mocked<Pick<Router, 'navigateByUrl'>>;
 
-    const modalSpyObj = {
-      open: jest.fn()
-    } as jest.Mocked<Pick<OpenModalService, 'open'>>;
-    modalRef = new OpenModalRef();
-    modalSpyObj.open.mockReturnValue(modalRef);
+    const dialogSpyObj = {
+      open: jest
+        .fn()
+        .mockReturnValue({ afterClosed: () => afterClosed$.asObservable() })
+    } as jest.Mocked<Pick<MatDialog, 'open'>>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -40,15 +40,15 @@ describe('SitnaMapGuard', () => {
         },
         { provide: Router, useValue: routerSpyObj as unknown as Router },
         {
-          provide: OpenModalService,
-          useValue: modalSpyObj as unknown as OpenModalService
+          provide: MatDialog,
+          useValue: dialogSpyObj as unknown as MatDialog
         }
       ]
     });
 
     sitnaLoaderSpy = loaderSpy;
     routerSpy = routerSpyObj;
-    modalSpy = modalSpyObj;
+    dialogSpy = dialogSpyObj;
   });
 
   afterEach(() => {
@@ -92,9 +92,9 @@ describe('SitnaMapGuard', () => {
     flush();
 
     expect(canActivateResult).toBe(false);
-    expect(modalSpy.open).toHaveBeenCalled();
+    expect(dialogSpy.open).toHaveBeenCalled();
 
-    modalRef.close();
+    afterClosed$.next();
 
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith(
       NavigationPath.Section.User.Dashboard
@@ -118,9 +118,9 @@ describe('SitnaMapGuard', () => {
     flush();
 
     expect(canActivateResult).toBe(false);
-    expect(modalSpy.open).toHaveBeenCalled();
+    expect(dialogSpy.open).toHaveBeenCalled();
 
-    modalRef.close();
+    afterClosed$.next();
 
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith(
       NavigationPath.Section.Public.Dashboard
@@ -144,9 +144,9 @@ describe('SitnaMapGuard', () => {
     flush();
 
     expect(canActivateResult).toBe(false);
-    expect(modalSpy.open).toHaveBeenCalled();
+    expect(dialogSpy.open).toHaveBeenCalled();
 
-    modalRef.close();
+    afterClosed$.next();
 
     expect(routerSpy.navigateByUrl).toHaveBeenCalledWith(RoutingDefault.Auth);
   }));

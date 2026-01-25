@@ -2,17 +2,18 @@ import { Location } from '@angular/common';
 import {
   Directive,
   ElementRef,
+  Injector,
   OnDestroy,
   OnInit,
   Renderer2
 } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import SitnaMap from 'api-sitna';
 import { Subject } from 'rxjs';
 import {
@@ -59,7 +60,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     protected route: ActivatedRoute,
     protected router: Router,
     protected commonService: CommonService,
-    protected modal: OpenModalService,
+    protected dialog: MatDialog,
+    protected injector: Injector,
     private renderer: Renderer2,
     private el: ElementRef,
     private document: Document,
@@ -131,8 +133,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             console.error(
               '[AbstractMapComponent] Received null/undefined config'
             );
-            this.modal.open(ErrorModalComponent, {
-              data: { message: 'map.error.config.empty' }
+            this.dialog.open(ErrorModalComponent, {
+              data: { message: 'map.error.config.empty' },
+              role: 'alertdialog',
+              injector: this.injector
             });
           }
         },
@@ -143,8 +147,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             error
           );
 
-          this.modal.open(ErrorModalComponent, {
-            data: { message: 'map.error.config.fetch.failed' }
+          this.dialog.open(ErrorModalComponent, {
+            data: { message: 'map.error.config.fetch.failed' },
+            role: 'alertdialog',
+            injector: this.injector
           });
         }
       });
@@ -240,10 +246,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
       if (!cfgCheck.ok) {
         this.loadingState = 'error';
-        const ref = this.modal.open(ErrorModalComponent, {
-          data: { message: cfgCheck.message || 'map.error.unknown' }
+        const ref = this.dialog.open(ErrorModalComponent, {
+          data: { message: cfgCheck.message || 'map.error.unknown' },
+          role: 'alertdialog',
+          injector: this.injector
         });
-        ref.afterClosed.subscribe(() => {
+        ref.afterClosed().subscribe(() => {
           this.navigateToDashboard();
         });
         return;
@@ -265,8 +273,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.loadingState = 'error';
       console.error('[AbstractMapComponent] Error processing config:', error);
-      this.modal.open(ErrorModalComponent, {
-        data: { message: 'map.error.config.processing.failed' }
+      this.dialog.open(ErrorModalComponent, {
+        data: { message: 'map.error.config.processing.failed' },
+        role: 'alertdialog',
+        injector: this.injector
       });
       throw error;
     }
@@ -305,7 +315,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.loadId++;
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
-    const warningModal = this.el.nativeElement.querySelector('.modal-view');
     const overview = this.el.nativeElement.querySelector(
       '.tc-ctl-sv-view.tc-hidden'
     );
@@ -315,10 +324,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     }
     if (overview) {
       this.renderer.removeChild(mapFather, overview);
-    }
-
-    if (warningModal) {
-      this.renderer.removeChild(this.document.body, warningModal);
     }
 
     // Find and remove the old mapa div, insert new one in same location
@@ -386,18 +391,17 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.loadingState = 'error';
       console.error('[AbstractMapComponent] Failed to initialize map:', error);
-      this.modal.open(ErrorModalComponent, {
-        data: { message: 'map.error.initialization.failed' }
+      this.dialog.open(ErrorModalComponent, {
+        data: { message: 'map.error.initialization.failed' },
+        role: 'alertdialog',
+        injector: this.injector
       });
       return;
     }
 
     const loadedPromise = new Promise<void>((resolve) => {
       this.map.loaded(() => {
-        if (
-          thisLoadId === this.loadId &&
-          !this.componentDestroyed.closed
-        ) {
+        if (thisLoadId === this.loadId && !this.componentDestroyed.closed) {
           this.loadingState = 'loaded';
           this.mapInterface.updateInterface();
         }
@@ -415,14 +419,13 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     try {
       await Promise.race([loadedPromise, timeoutPromise]);
     } catch {
-      if (
-        thisLoadId === this.loadId &&
-        !this.componentDestroyed.closed
-      ) {
+      if (thisLoadId === this.loadId && !this.componentDestroyed.closed) {
         this.loadingState = 'error';
         console.error('[AbstractMapComponent] Map load timeout');
-        this.modal.open(ErrorModalComponent, {
-          data: { message: 'map.error.initialization.failed' }
+        this.dialog.open(ErrorModalComponent, {
+          data: { message: 'map.error.initialization.failed' },
+          role: 'alertdialog',
+          injector: this.injector
         });
       }
     }

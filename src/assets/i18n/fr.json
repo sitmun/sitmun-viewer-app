@@ -90,6 +90,7 @@
   "menu.changeApplication": "Changer",
   "menu.changeTerritory": "Changer de territoire",
   "menu.continue": "Continuer",
+  "common.button.close": "Fermer",
   "paginate.previous": "Précédent",
   "paginate.next": "Suivant",
   "map.error.title": "Une erreur est survenue...",

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { PublicDashboardComponent } from '@sections/public/public-dashboard/public-dashboard.component';
@@ -15,7 +16,8 @@ import { UiModule } from '@ui/ui.module';
     PublicRoutingModule,
     TranslateModule,
     FormsModule,
-    UiModule
+    UiModule,
+    MatDialogModule
   ]
 })
 export class PublicSectionModule {}

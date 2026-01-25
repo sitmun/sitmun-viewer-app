@@ -1,11 +1,17 @@
 import { DOCUMENT, Location } from '@angular/common';
-import { Component, ElementRef, Inject, Renderer2 } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Inject,
+  Injector,
+  Renderer2
+} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AbstractMapComponent } from '@sections/common/pages/abstract-map/abstract-map.component';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
@@ -25,7 +31,8 @@ export class EmbeddedMapComponent extends AbstractMapComponent {
     route: ActivatedRoute,
     router: Router,
     commonService: CommonService,
-    modal: OpenModalService,
+    dialog: MatDialog,
+    injector: Injector,
     renderer: Renderer2,
     el: ElementRef,
     @Inject(DOCUMENT) document: Document,
@@ -42,7 +49,8 @@ export class EmbeddedMapComponent extends AbstractMapComponent {
       route,
       router,
       commonService,
-      modal,
+      dialog,
+      injector,
       renderer,
       el,
       document,

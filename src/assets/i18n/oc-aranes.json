@@ -120,6 +120,7 @@
   "menu.changeApplication": "Canviar",
   "menu.changeTerritory": "Canviar territori",
   "menu.continue": "Continuar",
+  "common.button.close": "Tancar",
   "paginate.previous": "Anterior",
   "paginate.next": "Següent",
   "map.error.title": "Ha passat un error...",

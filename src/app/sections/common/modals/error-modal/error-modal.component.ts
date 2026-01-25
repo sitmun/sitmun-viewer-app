@@ -1,33 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-import { BaseModal } from '@ui/modal/component/base-modal';
-import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
-import { OpenModalConfig } from '@ui/modal/service/open-modal.config';
+export interface ErrorModalData {
+  message: string;
+}
 
 @Component({
   selector: 'app-error-modal',
-  templateUrl: './error-modal.component.html',
-  styleUrls: [
-    './error-modal.component.scss',
-    '../../../../ui/modal/style/open-modal.component.scss'
-  ]
+  templateUrl: './error-modal.component.html'
 })
-export class ErrorModalComponent extends BaseModal {
+export class ErrorModalComponent {
   message: string;
 
   constructor(
-    private modalRef: OpenModalRef,
-    private modalCfg: OpenModalConfig
+    public dialogRef: MatDialogRef<ErrorModalComponent>,
+    @Inject(MAT_DIALOG_DATA) data: ErrorModalData
   ) {
-    super();
-    this.message = this.modalCfg.data.message;
+    this.message = data.message;
   }
 
-  protected override onClose() {
-    super.onClose();
-    this.modalRef.close({
-      applicationId: null,
-      territoryId: null
-    });
+  close(): void {
+    this.dialogRef.close();
   }
 }

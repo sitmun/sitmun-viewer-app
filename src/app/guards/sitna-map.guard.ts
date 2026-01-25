@@ -1,9 +1,9 @@
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 
 import { NavigationPath, RoutingDefault } from '@config/app.config';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';
-import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { Observable, of, from } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -27,7 +27,8 @@ export const sitnaMapGuard: CanActivateFn = (
   const guardTimeout = 5000;
   const sitnaLoader = inject(SitnaLoaderService);
   const router = inject(Router);
-  const modal = inject(OpenModalService);
+  const matDialog = inject(MatDialog);
+  const injector = inject(Injector);
 
   return from(sitnaLoader.waitForSITNAMap(guardTimeout)).pipe(
     map(() => true),
@@ -42,11 +43,13 @@ export const sitnaMapGuard: CanActivateFn = (
         error
       );
 
-      const dialogRef = modal.open(ErrorModalComponent, {
-        data: { message: messageKey }
+      const dialogRef = matDialog.open(ErrorModalComponent, {
+        data: { message: messageKey },
+        role: 'alertdialog',
+        injector
       });
 
-      dialogRef.afterClosed.subscribe(() => {
+      dialogRef.afterClosed().subscribe(() => {
         void router.navigateByUrl(getFallbackUrl(state.url));
       });
 
