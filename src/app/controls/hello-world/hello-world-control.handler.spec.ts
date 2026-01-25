@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { HelloWorldControlHandler } from './hello-world-control.handler';
-import { prototypeWrappers } from '../../controls/hello-world/hello-world-control.logic';
+import { prototypeWrappers } from './hello-world-control.logic';
 import { AppConfigService } from '../../services/app-config.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 

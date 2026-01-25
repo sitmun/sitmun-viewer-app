@@ -327,7 +327,7 @@ describe('prototypeWrappers', () => {
 describe('Constants', () => {
   it('should export correct TEMPLATE_PATH', () => {
     expect(TEMPLATE_PATH).toBe(
-      'assets/js/patch/templates/hello-world-control/HelloWorld.hbs'
+      'assets/js/templates/hello-world-control/HelloWorld.hbs'
     );
   });
 });

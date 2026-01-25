@@ -4,7 +4,7 @@
  * This file contains all the business logic for the HelloWorld control.
  * Uses an instance-based approach for better testability.
  *
- * @see hello-world-control.handler.ts for wiring logic
+ * @see hello-world-control.handler.ts (same folder) for wiring
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 
 /** Path to the Handlebars template */
 export const TEMPLATE_PATH =
-  'assets/js/patch/templates/hello-world-control/HelloWorld.hbs';
+  'assets/js/templates/hello-world-control/HelloWorld.hbs';
 
 // ============================================================================
 // Interfaces
