@@ -795,6 +795,10 @@ input[type='range']:focus {
   text-transform: none;
 }
 
+sitna-hello-world {
+  padding: 0px !important;
+}
+
 .tc-panel-content .tc-ctl-wlm > h2,
 .tc-panel-content .tc-ctl-lcat > h2,
 .tc-panel-content .tc-ctl-bms > h2,
@@ -871,13 +875,15 @@ input[type='range']:focus {
   color: var(--sitmun-collapsed-color);
 }
 
-/* HelloWorld control - reusing tools.png icon */
+/* HelloWorld control - reusing tools.png icon; black when expanded */
 .tc-panel-content .tc-ctl-hw > h2 {
   background-image: url(./img/tools.png);
+  filter: brightness(0);
 }
 
 .tc-panel-content .tc-ctl-hw.tc-collapsed > h2 {
   background-image: url(./img/tools.png);
+  filter: brightness(0) opacity(0.5);
   color: var(--sitmun-collapsed-color);
 }
 
@@ -920,3 +926,5 @@ input[type='range']:focus {
   transform: translateX(-50%);
   top: 3.2em;
 }
+
+
