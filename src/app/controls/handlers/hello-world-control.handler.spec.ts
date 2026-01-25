@@ -178,11 +178,11 @@ describe('HelloWorldControlHandler', () => {
     });
   });
 
-  describe('applyFoundationPatch()', () => {
+  describe('applyBootstrap()', () => {
     it('should register the control', async () => {
       const registerSpy = jest.spyOn(handler as any, 'registerCustomControl');
 
-      await handler.applyFoundationPatch(mockAppCfg);
+      await handler.applyBootstrap(mockAppCfg);
 
       expect(registerSpy).toHaveBeenCalled();
     });

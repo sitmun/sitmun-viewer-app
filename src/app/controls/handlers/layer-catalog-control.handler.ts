@@ -9,7 +9,10 @@ import { SitnaApiService } from '../../services/sitna-api.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
+import {
+  BootstrapEligibilityOptions,
+  SitnaControlConfig
+} from '../control-handler.interface';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
@@ -49,13 +52,20 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
+  /** Run bootstrap only when layerCatalog is requested by a task. */
+  needsBootstrap(
+    tasks: AppTasks[],
+    _options: BootstrapEligibilityOptions
+  ): boolean {
+    return tasks.some((t) => t['ui-control'] === 'sitna.layerCatalog');
+  }
+
   /**
-   * Apply foundational patch (Layer.getCapabilitiesOnline) early, before map initialization.
-   * This is called as a preload step to ensure virtual WMS interception works.
+   * Bootstrap: patch Layer.getCapabilitiesOnline before map init so virtual WMS interception works.
    *
    * @param context - Full application configuration context (required, must not be null)
    */
-  async applyFoundationPatch(context: AppCfg): Promise<void> {
+  async applyBootstrap(context: AppCfg): Promise<void> {
     // Store AppCfg immediately for use in patch closures
     this.currentAppCfg = context;
 
@@ -66,7 +76,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     this.sitnaApi.getSITNA();
     this.sitnaApi.getTC();
 
-    // Apply ONLY the foundational patch - other patches will be applied in loadPatches()
+    // Apply only the bootstrap patch here; other patches run in loadPatches()
     await this.patchLayerGetCapabilitiesOnline();
   }
 

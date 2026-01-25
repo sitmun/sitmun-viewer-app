@@ -365,6 +365,33 @@ describe('ControlRegistryService', () => {
 
       expect(result).toEqual({});
     });
+
+    it('should expose last-run timings via getLastControlTimings', async () => {
+      const handler = new MockHandler(
+        'sitna.coordinates',
+        undefined,
+        'tc-slot-coordinates',
+        'coordinates'
+      );
+      service.register(handler);
+
+      const tasks: AppTasks[] = [
+        { 'ui-control': 'sitna.coordinates', parameters: {} } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      await service.processControls(tasks, context);
+
+      const timings = service.getLastControlTimings();
+      expect(timings.has('__bootstrap__')).toBe(true);
+      expect(timings.has('sitna.coordinates')).toBe(true);
+      expect(
+        timings.get('sitna.coordinates')?.buildConfigMs
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        timings.get('sitna.coordinates')?.loadPatchesMs
+      ).toBeGreaterThanOrEqual(0);
+    });
   });
 
   describe('Control Key Generation', () => {

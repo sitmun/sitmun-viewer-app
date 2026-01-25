@@ -1,6 +1,13 @@
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 /**
+ * Options passed to needsBootstrap so handlers can decide eligibility without depending on app config.
+ */
+export interface BootstrapEligibilityOptions {
+  isEnabledByDefault(controlId: string): boolean;
+}
+
+/**
  * Configuration object returned by control handlers.
  * Can contain any properties needed by SITNA controls.
  * Common properties are explicitly defined for type safety.
@@ -46,6 +53,27 @@ export interface ControlHandler {
    * Example: ['sitna.modify'] for DrawMeasureModify
    */
   readonly dependencies?: string[];
+
+  /**
+   * Optional. True if this control's bootstrap should run for the given tasks.
+   * Enables the registry to stay generic; only handlers that implement both this and
+   * applyBootstrap participate in the bootstrap phase.
+   *
+   * @param tasks - Pending tasks from the backend
+   * @param options - Helpers (e.g. isEnabledByDefault) so the handler can decide without coupling to app config
+   */
+  needsBootstrap?(
+    tasks: AppTasks[],
+    options: BootstrapEligibilityOptions
+  ): boolean;
+
+  /**
+   * Optional. Run before map init and before any per-control loadPatches (e.g. patch SITNA, register TC.control.X).
+   * Must be idempotent. Only run when needsBootstrap?.(tasks, options) is true (or when needsBootstrap is unimplemented, never).
+   *
+   * @param context - Full application configuration context
+   */
+  applyBootstrap?(context: AppCfg): Promise<void>;
 
   /**
    * Load required patches for this control.

@@ -1,6 +1,7 @@
-import { AppCfg } from '@api/model/app-cfg';
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { ControlHandlerBase } from './control-handler-base';
+import type { BootstrapEligibilityOptions } from './control-handler.interface';
 import { SitnaApiService } from '../services/sitna-api.service';
 import type { TCNamespace } from '../types/sitna.types';
 import {
@@ -17,7 +18,7 @@ import {
  * - Control registration tracking
  * - Control shell creation and registration
  * - TypeScript method injection onto prototype
- * - Foundation patch application
+ * - Bootstrap (early registration)
  * - Load patches pattern
  * - Readiness checking
  * - Cleanup
@@ -88,11 +89,21 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
    */
   protected abstract getControlShellConfig(): CustomControlShellConfig;
 
+  /** Run bootstrap when the control is requested by a task or enabled by default. */
+  needsBootstrap(
+    tasks: AppTasks[],
+    options: BootstrapEligibilityOptions
+  ): boolean {
+    return (
+      tasks.some((t) => t['ui-control'] === this.controlIdentifier) ||
+      options.isEnabledByDefault(this.controlIdentifier)
+    );
+  }
+
   /**
-   * Apply foundation patch - registers the custom control class early.
-   * Called before map initialization to ensure SITNA can find the control.
+   * Bootstrap: register the custom control class early, before map initialization.
    */
-  async applyFoundationPatch(_context: AppCfg): Promise<void> {
+  async applyBootstrap(_context: AppCfg): Promise<void> {
     await this.registerCustomControl();
   }
 

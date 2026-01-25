@@ -5,7 +5,10 @@ import { SitnaControls } from '@api/model/sitna-cfg';
 
 import { AppConfigService } from './app-config.service';
 import { ControlHandlerBase } from '../controls/control-handler-base';
-import { ControlHandler } from '../controls/control-handler.interface';
+import {
+  BootstrapEligibilityOptions,
+  ControlHandler
+} from '../controls/control-handler.interface';
 import { NotificationService } from '../notifications/services/NotificationService';
 
 /**
@@ -20,6 +23,15 @@ export class ControlRegistryService {
    * Map of control type to handler instance.
    */
   private handlers = new Map<string, ControlHandler>();
+
+  /**
+   * Last-run timings per control (buildConfig, loadPatches) and optionally bootstrap.
+   * Cleared at start of each processControls() run.
+   */
+  private controlTimings = new Map<
+    string,
+    { buildConfigMs: number; loadPatchesMs?: number }
+  >();
 
   constructor(
     private notificationService: NotificationService,
@@ -74,6 +86,58 @@ export class ControlRegistryService {
   }
 
   /**
+   * Return last-run timings per control (for tests/dev). Keys are controlIdentifier or "__bootstrap__".
+   */
+  getLastControlTimings(): ReadonlyMap<
+    string,
+    { buildConfigMs: number; loadPatchesMs?: number }
+  > {
+    return this.controlTimings;
+  }
+
+  /**
+   * True if the handler has patches to load (requiredPatches or custom loadPatches).
+   */
+  private needsPatches(handler: ControlHandler): boolean {
+    return (
+      (handler.requiredPatches !== undefined &&
+        handler.requiredPatches.length > 0) ||
+      handler.loadPatches !== ControlHandlerBase.prototype.loadPatches
+    );
+  }
+
+  /**
+   * Run bootstrap for controls that declare they need it.
+   * Each handler with applyBootstrap and needsBootstrap decides eligibility;
+   * the registry only runs those that return true from needsBootstrap(tasks, options).
+   * Runs in parallel with per-handler error isolation.
+   */
+  private async applyBootstrap(
+    tasks: AppTasks[],
+    context: AppCfg
+  ): Promise<void> {
+    const options: BootstrapEligibilityOptions = {
+      isEnabledByDefault: (id: string) =>
+        this.appConfigService.isEnabledByDefault(id)
+    };
+    const toRun = Array.from(this.handlers.values()).filter((h) => {
+      if (typeof h.applyBootstrap !== 'function') return false;
+      const needs = h.needsBootstrap;
+      return typeof needs === 'function' && needs.call(h, tasks, options);
+    });
+    await Promise.all(
+      toRun.map((h) =>
+        h.applyBootstrap!(context).catch((err: unknown) => {
+          console.error(
+            `[ControlRegistry] Bootstrap failed for ${h.controlIdentifier}:`,
+            err
+          );
+        })
+      )
+    );
+  }
+
+  /**
    * Process all tasks to build SITNA controls configuration.
    * Coordinates loading patches and building configuration.
    *
@@ -85,28 +149,14 @@ export class ControlRegistryService {
     tasks: AppTasks[],
     context: AppCfg
   ): Promise<Partial<SitnaControls>> {
+    this.controlTimings.clear();
     const sitnaControls: Partial<SitnaControls> = {};
 
-    // STEP 0: Apply foundational patches FIRST (before any map initialization)
-    // This ensures patches like Layer.getCapabilitiesOnline are applied before layers are loaded
-    const layerCatalogHandler = this.getHandler('sitna.layerCatalog');
-    if (
-      layerCatalogHandler &&
-      tasks.some((task) => task['ui-control'] === 'sitna.layerCatalog')
-    ) {
-      // Apply just the foundational patch early - full patches will be applied later if control is used
-      await (layerCatalogHandler as any).applyFoundationPatch?.(context);
-    }
-
-    // Apply HelloWorld foundation patch if enabled (by default or via task)
-    // This registers TC.control.HelloWorld before SITNA tries to instantiate it
-    const helloWorldHandler = this.getHandler('sitna.helloWorld');
-    const helloWorldEnabled =
-      tasks.some((task) => task['ui-control'] === 'sitna.helloWorld') ||
-      this.appConfigService.isEnabledByDefault('sitna.helloWorld');
-    if (helloWorldHandler && helloWorldEnabled) {
-      await (helloWorldHandler as any).applyFoundationPatch?.(context);
-    }
+    const bootstrapStart = performance.now();
+    await this.applyBootstrap(tasks, context);
+    this.controlTimings.set('__bootstrap__', {
+      buildConfigMs: performance.now() - bootstrapStart
+    });
 
     // Step 1: Identify active controls that have handlers
     // Filter out disabled controls first (takes precedence over backend configuration)
@@ -134,27 +184,17 @@ export class ControlRegistryService {
       return sitnaControls;
     }
 
-    // Build configuration for each control and load patches only for controls that are actually used
+    const patchLoaders: Promise<void>[] = [];
+
     for (const { task, handler } of activeControls) {
       try {
-        // First, build configuration to check if control will be used
+        const bid = handler.controlIdentifier;
+        const t0 = performance.now();
         const config = handler.buildConfiguration(task, context);
+        const buildConfigMs = performance.now() - t0;
+        this.controlTimings.set(bid, { buildConfigMs });
 
         if (config !== null) {
-          // Control will be used - load patches only if needed
-          // Check if handler has patches to load (requiredPatches defined) or overrides loadPatches
-          const hasPatches =
-            handler.requiredPatches !== undefined &&
-            handler.requiredPatches.length > 0;
-          const hasCustomLoadPatches =
-            handler.loadPatches !== ControlHandlerBase.prototype.loadPatches;
-
-          if (hasPatches || hasCustomLoadPatches) {
-            await handler.loadPatches(context);
-          }
-
-          // Use handler's explicit sitnaConfigKey (required for all handlers)
-          // Support dynamic config keys via getSitnaConfigKey() method if available
           let controlKey: string;
           if (typeof (handler as any).getSitnaConfigKey === 'function') {
             controlKey = (handler as any).getSitnaConfigKey(task);
@@ -167,15 +207,38 @@ export class ControlRegistryService {
             continue;
           }
           (sitnaControls as any)[controlKey] = config;
+
+          if (this.needsPatches(handler)) {
+            const loadStart = performance.now();
+            patchLoaders.push(
+              handler
+                .loadPatches(context)
+                .then(() => {
+                  const entry = this.controlTimings.get(bid);
+                  if (entry)
+                    entry.loadPatchesMs = performance.now() - loadStart;
+                })
+                .catch((err: unknown) => {
+                  console.error(
+                    `[ControlRegistry] Failed to load patches for ${bid}:`,
+                    err
+                  );
+                  const entry = this.controlTimings.get(bid);
+                  if (entry)
+                    entry.loadPatchesMs = performance.now() - loadStart;
+                })
+            );
+          }
         }
       } catch (error) {
         console.error(
           `[ControlRegistry] Failed to configure ${task['ui-control']}:`,
           error
         );
-        // Continue with other controls
       }
     }
+
+    await Promise.all(patchLoaders);
 
     // Post-process: Remove any disabled controls that may have been added
     // This ensures disabledControls takes precedence over everything
