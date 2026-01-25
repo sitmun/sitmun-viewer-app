@@ -2,7 +2,13 @@
   <div class="map-container">
     <div *ngIf="loadingState === 'loading-config' || loadingState === 'processing-config' || loadingState === 'creating-map'" class="map-loading-overlay">
       <div class="map-loading-spinner"></div>
-      <div class="map-loading-text">{{ 'map.loading' | translate }}</div>
+      <div class="map-loading-text">
+        <ng-container [ngSwitch]="loadingState">
+          <span *ngSwitchCase="'loading-config'">{{ 'map.loading.config' | translate }}</span>
+          <span *ngSwitchCase="'processing-config'">{{ 'map.loading.processing' | translate }}</span>
+          <span *ngSwitchDefault>{{ 'map.loading.creating' | translate }}</span>
+        </ng-container>
+      </div>
     </div>
     <div id="mapa"></div>
   </div>

@@ -7,7 +7,8 @@ import {
   URL_API_TERRITORIES
 } from '@api/api-config';
 import { AppCfg } from '@api/model/app-cfg';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 import { AppConfigService } from '../../services/app-config.service';
@@ -74,6 +75,11 @@ export interface ItemDto {
   name: string;
 }
 
+interface MapConfigCacheEntry {
+  data: AppCfg;
+  timestamp: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -85,6 +91,9 @@ export class CommonService {
     this.messageSubject.asObservable();
 
   private appConfigService = inject(AppConfigService);
+
+  private mapConfigCache = new Map<string, MapConfigCacheEntry>();
+  private readonly CONFIG_CACHE_TTL_MS = 60_000;
 
   constructor(private http: HttpClient) {}
 
@@ -120,17 +129,28 @@ export class CommonService {
     return this.http.get<ResponseDto>(environment.apiUrl + path);
   }
 
-  fetchMapConfiguration(appId: number, territoryId: number) {
-    // Check if test config file is configured
+  fetchMapConfiguration(
+    appId: number,
+    territoryId: number
+  ): Observable<AppCfg> {
     const testConfigFile = this.appConfigService.getTestConfigFile();
     if (testConfigFile) {
       return this.http.get<AppCfg>(`assets/config/${testConfigFile}`);
     }
 
-    // Normal backend call
-    return this.http.get<AppCfg>(
-      environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId)
-    );
+    const key = `${appId}:${territoryId}`;
+    const cached = this.mapConfigCache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CONFIG_CACHE_TTL_MS) {
+      return of(cached.data);
+    }
+
+    return this.http
+      .get<AppCfg>(environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId))
+      .pipe(
+        tap((data) => {
+          this.mapConfigCache.set(key, { data, timestamp: Date.now() });
+        })
+      );
   }
 
   // Components that need to share a newTheme with others will call
