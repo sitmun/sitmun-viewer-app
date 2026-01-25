@@ -58,24 +58,27 @@ export interface CustomControlShellConfig {
  *
  * @param TC - The TC namespace object
  * @param config - Control shell configuration
+ * @param getSITNA - Optional getter for SITNA namespace (avoids direct window access). Falls back to window.SITNA when omitted.
  * @returns true if shell was created, false if already exists or SITNA not ready
  */
 export function createCustomControlShell(
   TC: any,
-  config: CustomControlShellConfig
+  config: CustomControlShellConfig,
+  getSITNA?: () => { control?: { Control?: unknown }; [key: string]: unknown }
 ): boolean {
   const { controlName, cssClass, tagName } = config;
 
-  // Ensure TC.control namespace exists
   TC.control = TC.control || {};
 
-  // Skip if already registered
   if (TC.control[controlName]) {
     return false;
   }
 
-  // Check SITNA is available
-  const SITNA = (window as any).SITNA;
+  const SITNA = getSITNA
+    ? getSITNA()
+    : ((typeof window !== 'undefined'
+        ? (window as unknown as Record<string, unknown>)['SITNA']
+        : undefined) as { control?: { Control?: unknown } } | undefined);
   if (!SITNA?.control?.Control) {
     console.warn(
       `[createCustomControlShell] SITNA.control.Control not available for ${controlName}`

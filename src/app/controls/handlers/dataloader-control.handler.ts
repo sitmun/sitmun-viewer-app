@@ -32,41 +32,32 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
 
   /**
    * Build configuration for dataLoader control.
-   * Always sets div to 'tc-slot-xdata' and handles optional parameters:
-   * - wmsSuggestions: Array of WMS group options
-   * - enableDragAndDrop: Boolean (defaults to true if not specified)
+   * Uses default div from app-config; supports wmsSuggestions and enableDragAndDrop.
    */
   buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
-    // Always set div to 'tc-slot-xdata' (required by SITNA)
     const config: SitnaControlConfig = {
-      div: 'tc-slot-xdata'
+      ...this.getDefaultConfig()
     };
 
-    // If parameters are empty, return minimal config
     if (this.areParametersEmpty(task.parameters)) {
       this.uiStateService.enableToolsButton();
       return config;
     }
 
-    // Include wmsSuggestions if provided
     if (task.parameters.wmsSuggestions) {
       config['wmsSuggestions'] = task.parameters.wmsSuggestions;
     }
 
-    // Handle enableDragAndDrop: use provided value or default to true
     if (task.parameters.enableDragAndDrop !== undefined) {
       config['enableDragAndDrop'] = task.parameters.enableDragAndDrop;
     } else {
-      // If the dataloader is enabled, drag and drop is enabled by default
       config['enableDragAndDrop'] = true;
     }
 
-    // Enable tools button when dataLoader is configured
     this.uiStateService.enableToolsButton();
-
     return config;
   }
 }

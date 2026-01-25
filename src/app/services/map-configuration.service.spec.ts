@@ -207,8 +207,8 @@ describe('MapConfigurationService', () => {
     });
 
     it('should return 3D view configuration if 3D task present', () => {
-      // Mock app-config with controls array
       appConfigService.getControlDefault.mockReturnValue({
+        div: 'tc-slot-threed',
         controls: ['sitna.threeD', 'sitna.basemapSelector', 'sitna.legend']
       });
 
@@ -230,7 +230,6 @@ describe('MapConfigurationService', () => {
       const result = service.toViews(cfgWith3D);
 
       expect(result.threeD).toBeDefined();
-      // Should use fallback 'view3d' when no div in params or config
       expect(result.threeD?.div).toBe('tc-slot-threed');
 
       // Controls should be translated from backend to SITNA names using handlers' sitnaConfigKey
@@ -315,7 +314,6 @@ describe('MapConfigurationService', () => {
     });
 
     it('should omit controls array if empty/not configured', () => {
-      // Mock app-config without controls
       appConfigService.getControlDefault.mockReturnValue({});
 
       const cfgWith3D: AppCfg = {
@@ -326,8 +324,8 @@ describe('MapConfigurationService', () => {
       const result = service.toViews(cfgWith3D);
 
       expect(result.threeD).toBeDefined();
-      expect(result.threeD?.div).toBe('tc-slot-threed');
-      expect(result.threeD?.controls).toBeUndefined(); // Let SITNA use defaults
+      expect(result.threeD?.div).toBeUndefined();
+      expect(result.threeD?.controls).toBeUndefined();
     });
   });
 

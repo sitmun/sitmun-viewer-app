@@ -19,6 +19,7 @@ import { ControlRegistryService } from 'src/app/services/control-registry.servic
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
+import { SitnaApiService } from 'src/app/services/sitna-api.service';
 
 @Component({
   selector: 'app-public-map',
@@ -42,7 +43,8 @@ export class PublicMapComponent extends AbstractMapComponent {
     mapConfig: MapConfigurationService,
     mapInterface: MapInterfaceService,
     mapServiceWorker: MapServiceWorkerService,
-    appConfigService: AppConfigService
+    appConfigService: AppConfigService,
+    sitnaApi: SitnaApiService
   ) {
     super(
       translate,
@@ -60,7 +62,8 @@ export class PublicMapComponent extends AbstractMapComponent {
       mapConfig,
       mapInterface,
       mapServiceWorker,
-      appConfigService
+      appConfigService,
+      sitnaApi
     );
   }
 

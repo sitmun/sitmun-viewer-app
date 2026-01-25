@@ -12,8 +12,11 @@ describe('SitnaLoaderService', () => {
       getSITNA: jest.fn(),
       getTC: jest.fn(),
       getTCProperty: jest.fn(),
-      isReady: jest.fn().mockReturnValue(false)
-    } as jest.Mocked<SitnaApiService>;
+      isReady: jest.fn().mockReturnValue(false),
+      getGlobal: jest.fn(),
+      setGlobal: jest.fn(),
+      isGlobalDefined: jest.fn().mockReturnValue(false)
+    } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
 
     TestBed.configureTestingModule({
       providers: [

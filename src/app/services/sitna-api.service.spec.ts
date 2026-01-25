@@ -160,6 +160,51 @@ describe('SitnaApiService', () => {
     });
   });
 
+  describe('getGlobal / setGlobal', () => {
+    it('should return undefined for unset app global', () => {
+      expect(service.getGlobal('abstractMapObject')).toBeUndefined();
+      expect(service.getGlobal('layerCatalogsForModal')).toBeUndefined();
+    });
+
+    it('should set and get abstractMapObject', () => {
+      const ref = { updateCatalog: jest.fn() };
+      service.setGlobal('abstractMapObject', ref);
+      expect(service.getGlobal('abstractMapObject')).toBe(ref);
+      service.setGlobal('abstractMapObject', undefined);
+      expect(service.getGlobal('abstractMapObject')).toBeUndefined();
+    });
+
+    it('should set and get layerCatalogsForModal', () => {
+      const state = {
+        currentTreeId: 't1',
+        catalogs: [{ id: 't1', catalog: 'C1' }],
+        rootNodeIds: ['n1']
+      };
+      service.setGlobal('layerCatalogsForModal', state);
+      expect(service.getGlobal('layerCatalogsForModal')).toEqual(state);
+      service.setGlobal('layerCatalogsForModal', undefined);
+      expect(service.getGlobal('layerCatalogsForModal')).toBeUndefined();
+    });
+  });
+
+  describe('isGlobalDefined', () => {
+    it('should return false for unset app globals', () => {
+      expect(service.isGlobalDefined('abstractMapObject')).toBe(false);
+      expect(service.isGlobalDefined('layerCatalogsForModal')).toBe(false);
+    });
+
+    it('should return true when app global is set', () => {
+      service.setGlobal('abstractMapObject', { updateCatalog: jest.fn() });
+      expect(service.isGlobalDefined('abstractMapObject')).toBe(true);
+    });
+
+    it('should check window for non-SitnaGlobals names', () => {
+      expect(service.isGlobalDefined('TC')).toBe(false);
+      (window as any).TC = {};
+      expect(service.isGlobalDefined('TC')).toBe(true);
+    });
+  });
+
   describe('edge cases', () => {
     it('should throw for null TC', () => {
       (window as any).TC = null;

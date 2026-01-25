@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
+import { AppConfigService } from '../../services/app-config.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { LanguageService } from '../../services/language.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
@@ -28,11 +29,20 @@ describe('LayerCatalogControlHandler', () => {
         LayerCatalog: class LayerCatalog {}
       }
     };
+    const appGlobals = new Map<string, unknown>();
     mockSitnaApi = {
       getTC: jest.fn().mockReturnValue(mockTC as any),
       getSITNA: jest.fn().mockReturnValue({} as any),
       getTCProperty: jest.fn(),
-      isReady: jest.fn().mockReturnValue(true)
+      isReady: jest.fn().mockReturnValue(true),
+      getGlobal: jest.fn((k: string) => appGlobals.get(k)),
+      setGlobal: jest.fn((k: string, v: unknown) => {
+        if (v === undefined) appGlobals.delete(k);
+        else appGlobals.set(k, v);
+      }),
+      isGlobalDefined: jest.fn(
+        (n: string) => appGlobals.has(n) && appGlobals.get(n) != null
+      )
     } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
     mockVirtualCapabilities = {
       generateVirtualUrl: jest.fn(),
@@ -51,6 +61,10 @@ describe('LayerCatalogControlHandler', () => {
       getCurrentLanguage: jest.fn()
     } as Partial<jest.Mocked<LanguageService>> as jest.Mocked<LanguageService>;
 
+    const mockAppConfigService = {
+      getControlDefault: jest.fn().mockReturnValue({ div: 'tc-slot-toc' })
+    };
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
@@ -61,7 +75,8 @@ describe('LayerCatalogControlHandler', () => {
           useValue: mockVirtualCapabilities
         },
         { provide: ConfigLookupService, useValue: mockConfigLookup },
-        { provide: LanguageService, useValue: mockLanguageService }
+        { provide: LanguageService, useValue: mockLanguageService },
+        { provide: AppConfigService, useValue: mockAppConfigService }
       ]
     });
 

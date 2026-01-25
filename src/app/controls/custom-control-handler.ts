@@ -138,8 +138,9 @@ export abstract class CustomControlHandler extends ControlHandlerBase {
         return;
       }
 
-      // Create the control shell using the factory
-      const created = createCustomControlShell(TC, shellConfig);
+      const created = createCustomControlShell(TC, shellConfig, () =>
+        this.sitnaApi.getSITNA()
+      );
 
       if (created) {
         // Inject TypeScript methods onto the prototype

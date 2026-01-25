@@ -221,10 +221,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     // Get default configuration using controlIdentifier
     const defaultConfig = this.getDefaultConfig();
 
-    // Build base configuration with default + layers + specific div override
     const baseConfig: SitnaControlConfig = {
       ...defaultConfig,
-      div: 'tc-slot-toc', // Override default div with the expected slot
       layers: wmsLayers
     };
 

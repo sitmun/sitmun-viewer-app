@@ -9,13 +9,8 @@ import { SitnaApiService } from './sitna-api.service';
  * Service for managing layer catalog switching functionality.
  * TODO: Add unit tests (catalog-switching.service.spec.ts)
  *
- * Global state interface for catalog switching modal.
+ * Catalog state shape matches LayerCatalogsForModalState from types/sitna-globals.types.
  */
-interface LayerCatalogsForModal {
-  currentTreeId: string;
-  catalogs: Array<{ id: string; catalog: string }>;
-  rootNodeIds: string[];
-}
 
 /**
  * Utility class for managing catalog switching functionality.
@@ -25,6 +20,8 @@ interface LayerCatalogsForModal {
   providedIn: 'root'
 })
 export class CatalogSwitchingService {
+  constructor(private readonly sitnaApi: SitnaApiService) {}
+
   /**
    * Setup global state for catalog switching.
    * Builds catalogs array from trees and sets up window.layerCatalogsForModal.
@@ -62,7 +59,7 @@ export class CatalogSwitchingService {
       currentTreeId = trees[0].id;
     } else {
       // Multiple trees: check for existing selection in global state
-      const existingModal = this.getGlobalState();
+      const existingModal = this.sitnaApi.getGlobal('layerCatalogsForModal');
       const existingTreeId = existingModal?.currentTreeId;
 
       // Validate existing tree ID exists in available trees
@@ -74,8 +71,7 @@ export class CatalogSwitchingService {
       }
     }
 
-    // Set global variable for modal (expected by catalog switching patches)
-    this.setGlobalState({
+    this.sitnaApi.setGlobal('layerCatalogsForModal', {
       currentTreeId: currentTreeId,
       catalogs: catalogs,
       rootNodeIds: rootNodeIds
@@ -86,7 +82,7 @@ export class CatalogSwitchingService {
    * Get current selected tree ID from global state.
    */
   getCurrentTreeId(): string | undefined {
-    return this.getGlobalState()?.currentTreeId;
+    return this.sitnaApi.getGlobal('layerCatalogsForModal')?.currentTreeId;
   }
 
   /**
@@ -109,7 +105,9 @@ export class CatalogSwitchingService {
    * Get tooltip text for the changeTopic button showing current topic.
    */
   getCurrentTopicTooltip(): string {
-    const layerCatalogsForModal = this.getGlobalState();
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
     if (
       !layerCatalogsForModal ||
       !layerCatalogsForModal.catalogs ||
@@ -146,7 +144,9 @@ export class CatalogSwitchingService {
    * @param selectedTreeId - The tree ID of the selected catalog
    */
   switchCatalog(selectedTreeId: string): void {
-    const layerCatalogsForModal = this.getGlobalState();
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
     if (!layerCatalogsForModal) {
       console.warn(
         '[CatalogSwitching] layerCatalogsForModal not found, cannot switch catalog'
@@ -165,8 +165,7 @@ export class CatalogSwitchingService {
     // Update button tooltip immediately
     this.updateChangeTopicButtonTooltip();
 
-    // Trigger catalog update via AbstractMapComponent if available
-    const abstractMapObject = (window as any).abstractMapObject;
+    const abstractMapObject = this.sitnaApi.getGlobal('abstractMapObject');
     if (
       abstractMapObject &&
       typeof abstractMapObject.updateCatalog === 'function'
@@ -184,7 +183,9 @@ export class CatalogSwitchingService {
    * This is called from the renderData patch.
    */
   injectCatalogSwitchingButton(control: any, handler: any): void {
-    const layerCatalogsForModal = this.getGlobalState();
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
 
     // Only inject if multiple catalogs exist
     if (
@@ -295,7 +296,9 @@ export class CatalogSwitchingService {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const service = this;
     const TC = sitnaApi.getTC();
-    const layerCatalogsForModal = this.getGlobalState();
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
 
     if (
       !layerCatalogsForModal ||
@@ -416,7 +419,9 @@ export class CatalogSwitchingService {
    * Render the projects panel with catalog list.
    */
   renderProjectsPanel(control: any, projectsPanel: Element): void {
-    const layerCatalogsForModal = this.getGlobalState();
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
     if (!layerCatalogsForModal || !layerCatalogsForModal.catalogs) {
       return;
     }
@@ -527,19 +532,5 @@ export class CatalogSwitchingService {
           error
         );
       });
-  }
-
-  /**
-   * Get global state object.
-   */
-  private getGlobalState(): LayerCatalogsForModal | undefined {
-    return (window as any).layerCatalogsForModal;
-  }
-
-  /**
-   * Set global state object.
-   */
-  private setGlobalState(state: LayerCatalogsForModal): void {
-    (window as any).layerCatalogsForModal = state;
   }
 }

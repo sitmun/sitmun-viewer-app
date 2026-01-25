@@ -208,7 +208,7 @@ export abstract class ControlHandlerBase implements ControlHandler {
    * @throws Error if global is not available
    */
   private checkGlobal(globalName: string): void {
-    if ((window as any)[globalName] === undefined) {
+    if (!this.sitnaApi.isGlobalDefined(globalName)) {
       throw new Error(
         `Global variable '${globalName}' not available. Check script loading order.`
       );

@@ -5,3 +5,4 @@
 
 export * from './meld.types';
 export * from './sitna.types';
+export * from './sitna-globals.types';

@@ -23,12 +23,14 @@ import {
   takeUntil,
   tap
 } from 'rxjs/operators';
+import { MAP_CONTAINER_ID } from 'src/app/config/sitna.constants';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
+import { SitnaApiService } from 'src/app/services/sitna-api.service';
 
 const MAP_LOAD_TIMEOUT_MS = 30_000;
 
@@ -70,7 +72,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     private mapConfig: MapConfigurationService,
     private mapInterface: MapInterfaceService,
     private mapServiceWorker: MapServiceWorkerService,
-    private appConfigService: AppConfigService
+    private appConfigService: AppConfigService,
+    private sitnaApi: SitnaApiService
   ) {
     const path = this.location.path();
     this.isInEmbedded = path.includes('embedded');
@@ -165,9 +168,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         });
     }
 
-    // Expose the current map
-    // Maybe this needs a proper refactor to avoid this kind of things...
-    (window as any).abstractMapObject = this;
+    this.sitnaApi.setGlobal('abstractMapObject', this);
   }
 
   ngOnDestroy() {
@@ -290,7 +291,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       return; // This is a safeguard, but it should never happen
     }
 
-    const layerCatalogsForModal = (window as any).layerCatalogsForModal;
+    const layerCatalogsForModal = this.sitnaApi.getGlobal(
+      'layerCatalogsForModal'
+    );
 
     if (layerCatalogsForModal) {
       // Rebuild controls to pick up the new currentTreeId
@@ -313,6 +316,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
   clearMap() {
     this.loadId++;
+    this.sitnaApi.setGlobal('abstractMapObject', undefined);
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
     const overview = this.el.nativeElement.querySelector(
@@ -326,10 +330,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       this.renderer.removeChild(mapFather, overview);
     }
 
-    // Find and remove the old mapa div, insert new one in same location
-    const oldMapDiv = mapFather.querySelector('#mapa');
+    const oldMapDiv = mapFather.querySelector(`#${MAP_CONTAINER_ID}`);
     const div = this.renderer.createElement('div');
-    this.renderer.setAttribute(div, 'id', 'mapa');
+    this.renderer.setAttribute(div, 'id', MAP_CONTAINER_ID);
 
     if (oldMapDiv) {
       // Insert new div in the exact same position as the old one
@@ -387,7 +390,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     const thisLoadId = ++this.loadId;
     try {
       this.loadingState = 'creating-map';
-      this.map = new SitnaMap('mapa', cfg);
+      this.map = new SitnaMap(MAP_CONTAINER_ID, cfg);
     } catch (error) {
       this.loadingState = 'error';
       console.error('[AbstractMapComponent] Failed to initialize map:', error);

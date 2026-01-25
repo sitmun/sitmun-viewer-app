@@ -163,10 +163,9 @@ export class MapConfigurationService {
             .filter((key): key is string => key !== null)
         : [];
 
-      // Get div from task parameters, default config, or fallback to 'tc-slot-threed'
       const divFromParams = threeDTask.parameters?.div;
       const divFromConfig = threeDConfig?.['div'] as string | undefined;
-      const div = divFromParams || divFromConfig || 'tc-slot-threed';
+      const div = divFromParams ?? divFromConfig;
 
       // Build view configuration
       sitnaViews.threeD = {
