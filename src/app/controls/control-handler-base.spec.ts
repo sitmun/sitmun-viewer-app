@@ -15,7 +15,7 @@ class TestControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'test.control';
   readonly requiredPatches = ['assets/js/patch/test.js'];
 
-  buildConfiguration(
+  override buildConfiguration(
     _task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
@@ -30,7 +30,7 @@ class NoPatchHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'test.nopatch';
   readonly requiredPatches = undefined;
 
-  buildConfiguration(
+  override buildConfiguration(
     _task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
@@ -129,7 +129,7 @@ describe('ControlHandlerBase', () => {
       class MultiPatchHandler extends ControlHandlerBase {
         readonly controlIdentifier = 'test.multi';
         readonly requiredPatches = ['patch1.js', 'patch2.js', 'patch3.js'];
-        buildConfiguration() {
+        override buildConfiguration() {
           return null;
         }
       }
@@ -156,7 +156,7 @@ describe('ControlHandlerBase', () => {
       class MultiPatchHandler extends ControlHandlerBase {
         readonly controlIdentifier = 'test.multi';
         readonly requiredPatches = ['patch1.js', 'patch2.js'];
-        buildConfiguration() {
+        override buildConfiguration() {
           return null;
         }
       }

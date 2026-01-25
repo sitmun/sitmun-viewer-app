@@ -36,18 +36,11 @@ export class ClickControlHandler extends ControlHandlerBase {
    * Returns boolean true to enable click handling.
    * Pure boolean control - no parameters are handled.
    */
-  buildConfiguration(
+  override buildConfiguration(
     _task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
     // Pure boolean control - just return true to enable
     return true as any;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-
 import { SitnaApiService } from '../../services/sitna-api.service';
-import { SitnaControlConfig } from '../control-handler.interface';
 import { CustomControlHandler } from '../custom-control-handler';
 import { prototypeWrappers } from '../hello-world/hello-world-control.logic';
 import { CustomControlShellConfig } from '../utils/sitna-patch-helpers';
@@ -53,17 +50,5 @@ export class HelloWorldControlHandler extends CustomControlHandler {
       cssClass: 'tc-ctl-hw',
       tagName: 'sitna-hello-world'
     };
-  }
-
-  /**
-   * Build configuration for HelloWorld control.
-   * Merges default configuration from app-config.json with backend parameters.
-   */
-  buildConfiguration(
-    task: AppTasks,
-    _context: AppCfg
-  ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    return this.mergeWithParameters(defaultConfig, task.parameters);
   }
 }

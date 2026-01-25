@@ -31,7 +31,7 @@ export class LoadingIndicatorControlHandler extends ControlHandlerBase {
    * Returns boolean true by default (enables loading indicator).
    * Returns config object if custom parameters are provided.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
@@ -43,12 +43,5 @@ export class LoadingIndicatorControlHandler extends ControlHandlerBase {
     // If parameters provided, return merged config object
     const defaultConfig = this.getDefaultConfig();
     return this.mergeWithParameters(defaultConfig, task.parameters);
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

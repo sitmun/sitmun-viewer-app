@@ -41,7 +41,7 @@ export class ThreeDControlHandler extends ControlHandlerBase {
    * @param _task
    * @param _context
    */
-  buildConfiguration(
+  override buildConfiguration(
     _task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {

@@ -34,7 +34,7 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     context: AppCfg
   ): SitnaControlConfig | null {
@@ -186,9 +186,5 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
       layerNames: layer.layers
     };
     return result;
-  }
-
-  override isReady(): boolean {
-    return true;
   }
 }

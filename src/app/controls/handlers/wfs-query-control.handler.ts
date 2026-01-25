@@ -39,7 +39,7 @@ export class WFSQueryControlHandler extends ControlHandlerBase {
    * Returns boolean true if no parameters, otherwise returns options object.
    * Supports styles, highlightStyles, and legacy highLightStyles alias.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
@@ -49,12 +49,5 @@ export class WFSQueryControlHandler extends ControlHandlerBase {
     }
     // Otherwise return boolean true to enable control
     return true as any;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

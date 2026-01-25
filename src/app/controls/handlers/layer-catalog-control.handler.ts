@@ -124,7 +124,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Build configuration for standard layerCatalog.
    * Generates virtual WMS capabilities for each root tree node.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     context: AppCfg
   ): SitnaControlConfig | null {
@@ -311,13 +311,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
 
     return []; // No non-empty trees available
-  }
-
-  /**
-   * Standard control is always ready.
-   */
-  override isReady(): boolean {
-    return true;
   }
 
   // ============================================================================

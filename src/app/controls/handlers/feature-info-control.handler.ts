@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { AppCfg } from '@api/model/app-cfg';
 
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
 import {
   applyFeatureStylerPatches,
   applyModifyPatches
@@ -108,26 +107,5 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         return result;
       };
     });
-  }
-
-  /**
-   * Build configuration for featureInfo control.
-   * Uses default config if no parameters provided, otherwise merges parameters.
-   */
-  buildConfiguration(
-    task: AppTasks,
-    _context: AppCfg
-  ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    const config = this.mergeWithParameters(defaultConfig, task.parameters);
-
-    return config;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

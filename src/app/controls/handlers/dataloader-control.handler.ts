@@ -34,7 +34,7 @@ export class DataLoaderControlHandler extends ControlHandlerBase {
    * Build configuration for dataLoader control.
    * Uses default div from app-config; supports wmsSuggestions and enableDragAndDrop.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {

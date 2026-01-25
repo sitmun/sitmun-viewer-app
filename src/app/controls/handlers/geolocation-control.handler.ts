@@ -30,28 +30,12 @@ export class GeolocationControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  /**
-   * Build configuration for geolocation control.
-   * Uses default div if no parameters provided, otherwise merges parameters.
-   * Enables tools button when geolocation control is configured.
-   */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
-    _context: AppCfg
+    context: AppCfg
   ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    const config = this.mergeWithParameters(defaultConfig, task.parameters);
-
-    // Enable tools button when geolocation control is configured
+    const config = super.buildConfiguration(task, context);
     this.uiStateService.enableToolsButton();
-
     return config;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

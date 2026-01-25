@@ -50,12 +50,16 @@ export abstract class ControlHandlerBase implements ControlHandler {
 
   /**
    * Build configuration for this control.
-   * Must be implemented by concrete handlers.
+   * Default: merge getDefaultConfig() with task.parameters.
+   * Override when context, side effects, or different semantics are needed.
    */
-  abstract buildConfiguration(
+  buildConfiguration(
     task: AppTasks,
-    context: AppCfg
-  ): SitnaControlConfig | null;
+    _context: AppCfg
+  ): SitnaControlConfig | null {
+    const defaultConfig = this.getDefaultConfig();
+    return this.mergeWithParameters(defaultConfig, task.parameters);
+  }
 
   /**
    * Check if control is ready.

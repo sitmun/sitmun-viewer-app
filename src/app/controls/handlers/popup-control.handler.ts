@@ -39,7 +39,7 @@ export class PopupControlHandler extends ControlHandlerBase {
    * Build configuration for popup control.
    * Returns true if no parameters, or merges parameters if provided.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {

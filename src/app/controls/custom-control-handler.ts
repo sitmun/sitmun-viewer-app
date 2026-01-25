@@ -26,7 +26,8 @@ import {
  * Subclasses must implement:
  * - `getControlName()`: Returns the control name (e.g., "HelloWorld")
  * - `getControlShellConfig()`: Returns the shell configuration
- * - `buildConfiguration()`: Builds control configuration (inherited from ControlHandlerBase)
+ * - `buildConfiguration()`: Optional. Omit when default div + merge parameters is sufficient;
+ *   the default is inherited from ControlHandlerBase.
  *
  * The prototype wrappers (logic) must be injected via constructor, making the dependency
  * explicit and allowing logic files to be located anywhere.
@@ -57,11 +58,7 @@ import {
  *       tagName: 'sitna-my-custom'
  *     };
  *   }
- *
- *   buildConfiguration(task: AppTasks, context: AppCfg): SitnaControlConfig | null {
- *     const defaultConfig = this.getDefaultConfig();
- *     return this.mergeWithParameters(defaultConfig, task.parameters);
- *   }
+ *   // buildConfiguration may be omitted; base default merges getDefaultConfig() with task.parameters
  * }
  * ```
  */

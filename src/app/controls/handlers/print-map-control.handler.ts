@@ -30,22 +30,12 @@ export class PrintMapControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  /**
-   * Build configuration for print map control.
-   * Uses default config from app-config.json if no parameters provided, otherwise merges parameters.
-   * Enables tools button when print map control is configured.
-   * Supports optional parameters: logo, legend
-   */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
-    _context: AppCfg
+    context: AppCfg
   ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    const config = this.mergeWithParameters(defaultConfig, task.parameters);
-
-    // Enable tools button when print map control is configured
+    const config = super.buildConfiguration(task, context);
     this.uiStateService.enableToolsButton();
-
     return config;
   }
 

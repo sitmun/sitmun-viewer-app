@@ -35,7 +35,7 @@ export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
    * Uses default div from app-config.json and merges with task parameters.
    * Enables tools button when multiFeatureInfo control is configured.
    */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
     _context: AppCfg
   ): SitnaControlConfig | null {
@@ -71,12 +71,5 @@ export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
     this.uiStateService.enableToolsButton();
 
     return config;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

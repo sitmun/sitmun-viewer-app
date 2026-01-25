@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { AppCfg } from '@api/model/app-cfg';
 
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
-import { SitnaControlConfig } from '../control-handler.interface';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
@@ -88,18 +87,6 @@ export class SearchControlHandler extends ControlHandlerBase {
         delete MapProto.__sitmunFeaturesAddPatched;
       });
     });
-  }
-
-  /**
-   * Build configuration for search control.
-   * Uses default div if no parameters provided.
-   */
-  buildConfiguration(
-    task: AppTasks,
-    _context: AppCfg
-  ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    return this.mergeWithParameters(defaultConfig, task.parameters);
   }
 
   /**

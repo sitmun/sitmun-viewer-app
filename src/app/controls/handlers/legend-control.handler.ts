@@ -30,25 +30,12 @@ export class LegendControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  /**
-   * Build configuration for legend control.
-   * Uses default div if no parameters provided.
-   */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
-    _context: AppCfg
+    context: AppCfg
   ): SitnaControlConfig | null {
-    // Enable UI button when legend control is configured
+    const config = super.buildConfiguration(task, context);
     this.uiStateService.enableLegendButton();
-
-    const defaultConfig = this.getDefaultConfig();
-    return this.mergeWithParameters(defaultConfig, task.parameters);
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
+    return config;
   }
 }

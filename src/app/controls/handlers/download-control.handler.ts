@@ -30,28 +30,12 @@ export class DownloadControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  /**
-   * Build configuration for download control.
-   * Uses default div if no parameters provided, otherwise merges parameters.
-   * Enables tools button when download control is configured.
-   */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
-    _context: AppCfg
+    context: AppCfg
   ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    const config = this.mergeWithParameters(defaultConfig, task.parameters);
-
-    // Enable tools button when download control is configured
+    const config = super.buildConfiguration(task, context);
     this.uiStateService.enableToolsButton();
-
     return config;
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }

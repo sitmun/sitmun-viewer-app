@@ -35,21 +35,12 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
     super(sitnaApi);
   }
 
-  /**
-   * Build configuration for drawMeasureModify control.
-   * Uses default div if no parameters provided, otherwise merges parameters.
-   * Enables tools button when drawMeasureModify control is configured.
-   */
-  buildConfiguration(
+  override buildConfiguration(
     task: AppTasks,
-    _context: AppCfg
+    context: AppCfg
   ): SitnaControlConfig | null {
-    const defaultConfig = this.getDefaultConfig();
-    const config = this.mergeWithParameters(defaultConfig, task.parameters);
-
-    // Enable tools button when drawMeasureModify control is configured
+    const config = super.buildConfiguration(task, context);
     this.uiStateService.enableToolsButton();
-
     return config;
   }
 
@@ -68,12 +59,5 @@ export class DrawMeasureModifyControlHandler extends ControlHandlerBase {
       // This now patches all 6 methods (previously only 2)
       applyFeatureStylerPatches(TC, { patchManager: this.patchManager });
     });
-  }
-
-  /**
-   * Native control is always ready (no patches to load).
-   */
-  override isReady(): boolean {
-    return true;
   }
 }
