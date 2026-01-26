@@ -91,9 +91,7 @@
     },
     "sitna.geolocation": {
       "div": "tc-slot-geolocation",
-      "displayElevation": {
-        "resolution": 100
-      }
+      "displayElevation": true
     },
     "sitna.measure": {
       "div": "tc-slot-measure",

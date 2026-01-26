@@ -37,7 +37,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
   /**
    * Load patches for featureInfo control.
-   * Patches Map.addControl and FeatureInfo.register so displayElevation from map config is applied.
+   * Patches Map.addControl (featureInfo and featureTools) and FeatureInfo.register so displayElevation from map config is applied.
    */
   override async loadPatches(_context: AppCfg): Promise<void> {
     await this.withTCAsync(async (TC) => {
@@ -48,19 +48,25 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           'addControl',
           function (this: any, jp: MeldJoinPoint) {
             const [ctrl, opts] = jp.args as [any, any];
-            const isFi = ctrl === 'featureInfo' || ctrl === 'FeatureInfo';
+            const isFeatureInfo = ctrl === 'featureInfo';
+            const isFeatureTools = ctrl === 'featureTools';
             const needCfg =
-              isFi &&
+              (isFeatureInfo || isFeatureTools) &&
               opts?.displayElevation == null &&
               this.options?.controls?.featureInfo?.displayElevation != null;
-            const finalOpts = needCfg
-              ? TC.Util.extend(
-                  true,
-                  {},
-                  opts || {},
-                  this.options.controls.featureInfo
-                )
-              : opts;
+            const inject =
+              needCfg && isFeatureTools
+                ? {
+                    displayElevation:
+                      this.options.controls.featureInfo.displayElevation
+                  }
+                : needCfg
+                ? this.options.controls.featureInfo
+                : null;
+            const finalOpts =
+              inject != null
+                ? TC.Util.extend(true, {}, opts || {}, inject)
+                : opts;
             return jp.proceedApply([ctrl, finalOpts]);
           }
         );
