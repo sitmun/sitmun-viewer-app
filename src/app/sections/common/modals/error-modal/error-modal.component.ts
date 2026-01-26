@@ -6,6 +6,7 @@ export interface ErrorModalData {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-error-modal',
   templateUrl: './error-modal.component.html'
 })

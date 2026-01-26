@@ -28,8 +28,6 @@ import { TerritoryComponent } from '../common/pages/territory/territory.componen
     FormsModule,
     UiModule,
     MatDialogModule,
-    NgOptimizedImage,
-    NgOptimizedImage,
     NgOptimizedImage
   ]
 })

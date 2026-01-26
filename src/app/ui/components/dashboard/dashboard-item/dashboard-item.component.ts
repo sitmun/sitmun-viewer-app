@@ -23,6 +23,7 @@ import { NavigationPath } from '@config/app.config';
  * the dialog-based application/territory selection UI.
  */
 @Component({
+  standalone: false,
   selector: 'app-dashboard-item',
   templateUrl: './dashboard-item.component.html',
   styleUrls: ['./dashboard-item.component.scss']

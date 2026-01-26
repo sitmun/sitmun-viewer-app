@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'app-return-button',
   templateUrl: './return-button.component.html',
   styleUrls: ['./return-button.component.scss']

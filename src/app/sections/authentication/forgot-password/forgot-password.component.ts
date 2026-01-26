@@ -13,6 +13,7 @@ import { NotificationService } from 'src/app/notifications/services/Notification
 import { AuthenticationService } from './../../../auth/services/authentication.service';
 
 @Component({
+  standalone: false,
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss']
@@ -153,7 +154,7 @@ export class ForgotPasswordComponent {
             }
           }
         });
-    } catch (error) {
+    } catch {
       this.translateService
         .get('forgotPasswordPage.serverError')
         .subscribe((trad) => {

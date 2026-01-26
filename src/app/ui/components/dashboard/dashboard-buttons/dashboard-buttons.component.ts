@@ -3,6 +3,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { DashboardTypes } from '@api/services/common.service';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-buttons',
   templateUrl: './dashboard-buttons.component.html',
   styleUrls: ['./dashboard-buttons.component.scss']

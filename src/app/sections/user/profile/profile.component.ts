@@ -10,6 +10,7 @@ import { forkJoin } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
+  standalone: false,
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']

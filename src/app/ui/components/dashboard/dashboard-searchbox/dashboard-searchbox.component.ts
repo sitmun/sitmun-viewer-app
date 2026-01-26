@@ -16,6 +16,7 @@ import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-searchbox',
   templateUrl: './dashboard-searchbox.component.html',
   styleUrls: ['./dashboard-searchbox.component.scss']

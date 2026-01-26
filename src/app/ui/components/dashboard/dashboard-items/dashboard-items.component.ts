@@ -18,6 +18,7 @@ import { DashboardItemComponent } from '../dashboard-item/dashboard-item.compone
 import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-items',
   templateUrl: './dashboard-items.component.html',
   styleUrls: ['./dashboard-items.component.scss']

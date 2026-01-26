@@ -14,6 +14,7 @@ import { NotificationService } from 'src/app/notifications/services/Notification
 import { AppConfigService } from 'src/app/services/app-config.service';
 
 @Component({
+  standalone: false,
   selector: 'app-change-application-territory-dialog',
   templateUrl: './change-application-territory-dialog.component.html',
   styleUrls: ['./change-application-territory-dialog.component.scss']

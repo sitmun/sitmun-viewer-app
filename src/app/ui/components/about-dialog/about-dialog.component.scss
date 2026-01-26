@@ -1,4 +1,4 @@
-@import '../../../../styles/_colors.scss';
+@use '../../../../styles/colors' as *;
 
 .about-content {
   display: flex;

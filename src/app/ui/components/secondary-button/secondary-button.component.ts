@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-secondary-button',
   templateUrl: './secondary-button.component.html',
   styleUrls: ['./secondary-button.component.scss']

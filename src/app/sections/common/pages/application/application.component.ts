@@ -12,6 +12,7 @@ import {
 import { NavigationPath } from '@config/app.config';
 
 @Component({
+  standalone: false,
   selector: 'app-application',
   templateUrl: './application.component.html',
   styleUrls: ['./application.component.scss']

@@ -8,6 +8,7 @@ import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 
 @Component({
+  standalone: false,
   selector: 'app-login-modal',
   templateUrl: './login-modal.component.html',
   styleUrls: [

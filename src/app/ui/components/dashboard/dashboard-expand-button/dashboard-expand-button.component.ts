@@ -3,6 +3,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-expand-button',
   templateUrl: './dashboard-expand-button.component.html',
   styleUrls: ['./dashboard-expand-button.component.scss']

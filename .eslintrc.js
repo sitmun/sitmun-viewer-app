@@ -22,6 +22,8 @@ module.exports = {
         ],
         rules: {
           "@typescript-eslint/no-explicit-any": "off",
+          // Allow NgModule-based components (Angular 19 compatibility)
+          "@angular-eslint/prefer-standalone": "off",
           // Disable @typescript-eslint/no-unused-vars in favor of unused-imports plugin
           "@typescript-eslint/no-unused-vars": "off",
           // Unused imports - auto-fixable

@@ -5,6 +5,7 @@ import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 import { OpenModalConfig } from '@ui/modal/service/open-modal.config';
 
 @Component({
+  standalone: false,
   selector: 'app-warning-modal',
   templateUrl: './warning-modal.component.html',
   styleUrls: [

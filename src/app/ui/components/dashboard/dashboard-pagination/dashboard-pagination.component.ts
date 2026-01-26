@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-pagination',
   templateUrl: './dashboard-pagination.component.html',
   styleUrls: ['./dashboard-pagination.component.scss']

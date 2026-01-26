@@ -1,4 +1,5 @@
-import 'zone.js/bundles/zone-testing-bundle.umd.js';
+import 'zone.js';
+import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,

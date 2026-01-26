@@ -17,7 +17,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         ErrorTrackingService,
         undefined
       );
-    } catch (e) {
+    } catch {
       // Service not available yet
     }
   }
@@ -27,7 +27,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     if (!this.errorTrackingService) {
       try {
         this.errorTrackingService = this.injector.get(ErrorTrackingService);
-      } catch (e) {
+      } catch {
         // Service not available
       }
     }

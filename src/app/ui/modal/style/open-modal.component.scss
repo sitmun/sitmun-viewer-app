@@ -1,3 +1,4 @@
+@use 'sass:math';
 @use 'dimensions';
 @use 'colors';
 @use 'mixins';
@@ -57,7 +58,7 @@
           padding: 0;
         }
         &.half-padding {
-          padding: round(dimensions.$modal-body-padding * 0.5);
+          padding: math.round(dimensions.$modal-body-padding * 0.5);
         }
         &.padding-bottom {
           padding-bottom: dimensions.$modal-body-padding;
@@ -79,7 +80,7 @@
         .inner-body {
           &.padding {
             @include mixins.horizontal-padding(dimensions.$modal-body-padding);
-            padding-top: round(dimensions.$modal-body-padding * 0.5);
+            padding-top: math.round(dimensions.$modal-body-padding * 0.5);
             &.include-bottom {
               padding-bottom: dimensions.$modal-body-padding;
             }

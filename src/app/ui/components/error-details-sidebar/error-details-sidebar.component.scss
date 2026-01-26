@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@import '../../../../styles/_colors.scss';
+@use '../../../../styles/colors' as *;
 
 // Overlay backdrop
 .error-sidebar-overlay {

@@ -11,6 +11,7 @@ import {
  * All business logic (filtering, grouping, navigation, selection) handled by parent.
  */
 @Component({
+  standalone: false,
   selector: 'app-selectable-list',
   templateUrl: './selectable-list.component.html',
   styleUrls: ['./selectable-list.component.scss'],

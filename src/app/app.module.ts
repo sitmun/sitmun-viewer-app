@@ -1,15 +1,18 @@
 import { NgOptimizedImage, registerLocaleData } from '@angular/common';
 import {
   HttpClient,
-  HttpClientModule,
-  HTTP_INTERCEPTORS
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi
 } from '@angular/common/http';
 import localeEs from '@angular/common/locales/es';
 import {
-  APP_INITIALIZER,
+  inject,
+  Injector,
   LOCALE_ID,
   NgModule,
-  ErrorHandler
+  ErrorHandler,
+  provideAppInitializer
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -78,13 +81,12 @@ registerLocaleData(localeEs);
     ErrorDetailsSidebarComponent,
     MessageBoxDialogComponent
   ],
+  bootstrap: [AppComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
     AuthenticationModule,
     UiModule,
-    HttpClientModule,
-
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -94,7 +96,6 @@ registerLocaleData(localeEs);
     }),
     FormsModule,
     NgxPaginationModule,
-    BrowserAnimationsModule,
     BrowserAnimationsModule,
     SharedPipesModule,
     MatToolbarModule,
@@ -107,8 +108,6 @@ registerLocaleData(localeEs);
     MatDialogModule,
     MatListModule,
     MatExpansionModule,
-    NgOptimizedImage,
-    NgOptimizedImage,
     NgOptimizedImage
   ],
   providers: [
@@ -122,32 +121,23 @@ registerLocaleData(localeEs);
     },
     // Register all control handlers
     ...ALL_CONTROL_HANDLERS,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeAppConfig,
-      deps: [AppConfigService],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeApp,
-      deps: [AppInitializerService],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeControlHandlers,
-      deps: [ControlRegistryService, ...ALL_CONTROL_HANDLERS],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeSitnaLoader,
-      deps: [SitnaLoaderService],
-      multi: true
-    }
-  ],
-  bootstrap: [AppComponent]
+    provideAppInitializer(() =>
+      initializeAppConfig(inject(AppConfigService))()
+    ),
+    provideAppInitializer(() => initializeApp(inject(AppInitializerService))()),
+    provideAppInitializer(() => {
+      const injector = inject(Injector);
+      const registry = inject(ControlRegistryService);
+      const handlers = [...ALL_CONTROL_HANDLERS].map((H) =>
+        injector.get(H as never)
+      );
+      return initializeControlHandlers(registry, ...handlers)();
+    }),
+    provideAppInitializer(() =>
+      initializeSitnaLoader(inject(SitnaLoaderService))()
+    ),
+    provideHttpClient(withInterceptorsFromDi())
+  ]
 })
 export class AppModule {}
 

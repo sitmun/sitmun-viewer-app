@@ -132,16 +132,18 @@
         },
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
-          "options": {},
+          "options": {
+            "buildTarget": "viewer-app:build:development"
+          },
           "configurations": {
             "production": {
-              "browserTarget": "viewer-app:build:production"
+              "buildTarget": "viewer-app:build:production"
             },
             "docker-dev": {
-              "browserTarget": "viewer-app:build:docker-dev"
+              "buildTarget": "viewer-app:build:docker-dev"
             },
             "development": {
-              "browserTarget": "viewer-app:build:development"
+              "buildTarget": "viewer-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -149,7 +151,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "viewer-app:build"
+            "buildTarget": "viewer-app:build"
           }
         },
         "test": {

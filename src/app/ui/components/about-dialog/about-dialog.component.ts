@@ -15,6 +15,7 @@ export interface AboutDialogData {
  * TODO: Add unit tests (about-dialog.component.spec.ts)
  */
 @Component({
+  standalone: false,
   selector: 'app-about-dialog',
   templateUrl: './about-dialog.component.html',
   styleUrls: ['./about-dialog.component.scss']

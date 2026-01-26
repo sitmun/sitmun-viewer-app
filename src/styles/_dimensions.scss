@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 // Base
 $base-border: 1px;
 $base-border-2: $base-border * 2;
@@ -105,11 +107,11 @@ $modal-title-font-size: $base-font-size + 2px;
 $modal-padding-h: 20px;
 $modal-title-padding-h: $modal-padding-h;
 $modal-button-font-size: $base-font-size - 1px;
-$modal-button-margin-h: round($modal-padding-h * 0.5);
+$modal-button-margin-h: math.round($modal-padding-h * 0.5);
 $modal-button-margin-v: $modal-padding-h;
-$modal-body-padding-xs: round($modal-padding-h * 0.25);
-$modal-body-padding-sm: round($modal-padding-h * 1.25);
-$modal-body-padding: round($modal-padding-h * 2);
+$modal-body-padding-xs: math.round($modal-padding-h * 0.25);
+$modal-body-padding-sm: math.round($modal-padding-h * 1.25);
+$modal-body-padding: math.round($modal-padding-h * 2);
 $modal-body-max-height: calc(
   100vh - #{($modal-margin-top * 2) + $modal-header-height}
 );

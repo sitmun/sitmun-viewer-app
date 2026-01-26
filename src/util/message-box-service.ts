@@ -38,6 +38,7 @@ export enum MessageBoxType {
 }
 
 @Component({
+  standalone: false,
   templateUrl: './message-box-dialog-component.html'
 })
 export class MessageBoxDialogComponent {

@@ -9,6 +9,7 @@ import {
 } from '@api/services/common.service';
 
 @Component({
+  standalone: false,
   selector: 'app-territory',
   templateUrl: './territory.component.html',
   styleUrls: ['./territory.component.scss']

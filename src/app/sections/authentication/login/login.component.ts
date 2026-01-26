@@ -14,6 +14,7 @@ import {
 } from '../../../utils/problem-detail.utils';
 
 @Component({
+  standalone: false,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']

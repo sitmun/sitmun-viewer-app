@@ -22,6 +22,7 @@ import { MapServiceWorkerService } from 'src/app/services/map-service-worker.ser
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
 
 @Component({
+  standalone: false,
   selector: 'app-public-map',
   templateUrl: './public-map.component.html',
   styleUrls: ['./public-map.component.scss']

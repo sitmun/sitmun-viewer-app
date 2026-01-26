@@ -183,7 +183,7 @@ export class VirtualWmsCapabilitiesService {
       // Check if there are any layers in the tree
       const layerCount = this.countLayers(rootLayer);
       return layerCount > 0;
-    } catch (error) {
+    } catch {
       // If any error occurs, the node cannot generate valid capabilities
       return false;
     }

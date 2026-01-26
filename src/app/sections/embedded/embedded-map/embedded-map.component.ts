@@ -21,6 +21,7 @@ import { MapServiceWorkerService } from 'src/app/services/map-service-worker.ser
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
 
 @Component({
+  standalone: false,
   selector: 'app-embedded-map',
   templateUrl: './embedded-map.component.html',
   styleUrls: ['./embedded-map.component.scss']

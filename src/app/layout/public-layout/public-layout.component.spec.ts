@@ -4,7 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { PublicLayoutComponent } from './public-layout.component';
 
-@Component({ selector: 'app-navigation-bar', template: '' })
+@Component({ selector: 'app-navigation-bar', template: '', standalone: true })
 class StubNavigationBarComponent {}
 
 describe('PublicLayoutComponent', () => {
@@ -13,8 +13,8 @@ describe('PublicLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
-      declarations: [PublicLayoutComponent, StubNavigationBarComponent]
+      imports: [RouterTestingModule, StubNavigationBarComponent],
+      declarations: [PublicLayoutComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PublicLayoutComponent);

@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 @Component({
+  standalone: false,
   selector: 'app-profile-information',
   templateUrl: './profile-information.component.html',
   styleUrls: ['./profile-information.component.scss']

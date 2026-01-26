@@ -30,6 +30,7 @@ import { Subscription } from 'rxjs';
 import { LanguageService } from 'src/app/services/language.service';
 
 @Component({
+  standalone: false,
   selector: 'app-navigation-bar',
   templateUrl: './navigation-bar.component.html',
   styleUrls: ['./navigation-bar.component.scss'],

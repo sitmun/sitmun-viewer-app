@@ -14,6 +14,7 @@ import { SidebarManagerService } from '../../../services/sidebar-manager.service
  * TODO: Add unit tests (error-details-sidebar.component.spec.ts)
  */
 @Component({
+  standalone: false,
   selector: 'app-error-details-sidebar',
   templateUrl: './error-details-sidebar.component.html',
   styleUrls: ['./error-details-sidebar.component.scss']
@@ -138,7 +139,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
       } else {
         text += `Timestamp: Invalid timestamp\n`;
       }
-    } catch (e) {
+    } catch {
       text += `Timestamp: Error formatting timestamp\n`;
     }
 
@@ -206,7 +207,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     }
     try {
       return timestamp.toLocaleString();
-    } catch (e) {
+    } catch {
       return timestamp.toString();
     }
   }
@@ -257,7 +258,7 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
         },
         2
       );
-    } catch (e) {
+    } catch {
       // Fallback if JSON.stringify still fails
       return String(details);
     }

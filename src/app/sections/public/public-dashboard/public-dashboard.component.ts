@@ -6,6 +6,7 @@ import { AbstractDashboardComponent } from '@sections/common/pages/abstract-dash
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 
 @Component({
+  standalone: false,
   selector: 'app-public-dashboard',
   templateUrl: './public-dashboard.component.html',
   styleUrls: ['./public-dashboard.component.scss']

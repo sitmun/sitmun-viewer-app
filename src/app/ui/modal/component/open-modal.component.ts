@@ -14,8 +14,8 @@ import { Subject } from 'rxjs';
 import { OpenModalRef } from '../service/open-modal-ref';
 
 @Component({
+  standalone: false,
   template: '<div><ng-template appInsertion></ng-template></div>'
-  // styleUrls: ['./style/open-modal.component.scss']
 })
 export class OpenModalComponent implements AfterViewInit, OnDestroy {
   componentRef!: ComponentRef<any>;

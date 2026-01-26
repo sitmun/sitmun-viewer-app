@@ -11,6 +11,7 @@ export interface DashboardTerritorySelectionDialogData {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-territory-selection-dialog',
   templateUrl: './dashboard-territory-selection-dialog.component.html',
   styleUrls: ['./dashboard-territory-selection-dialog.component.scss']
