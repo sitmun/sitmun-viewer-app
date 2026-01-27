@@ -7,7 +7,7 @@ export const environment = {
   hideBackgroundImage: false,
   hideDNIEAccess: false,
   apiUrl: '/backend', // Change this when there is a real production environment
-  version: '1.2.0-rc.1',
+  version: '1.2.0',
   environmentName: 'Production',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),

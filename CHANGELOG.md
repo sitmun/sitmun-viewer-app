@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-## [1.2.0-rc.1] - 2026-01-21
+## [1.2.0] - 2026-01-27
 
 ### Added
 
@@ -180,8 +180,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.2.0-rc.1...HEAD
-[1.2.0-rc.1]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.1...sitmun-viewer-app/1.2.0-rc.1
+[unreleased]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.2.0...HEAD
+[1.2.0]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.1...sitmun-viewer-app/1.2.0
 [1.1.1]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.1.0...sitmun-viewer-app/1.1.1
 [1.1.0]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.0.0...sitmun-viewer-app/1.1.0
 [1.0.0]: https://github.com/sitmun/sitmun-application-stack/releases/tag/sitmun-viewer-app/1.0.0
