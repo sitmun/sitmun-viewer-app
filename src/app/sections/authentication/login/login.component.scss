@@ -224,6 +224,10 @@
           }
         }
       }
+
+      ::ng-deep .alternative-login-section .secondary-button {
+          width: 100%;
+      }
     }
   }
 }
