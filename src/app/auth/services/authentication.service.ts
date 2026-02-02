@@ -15,9 +15,11 @@ import {
 } from '@auth/authentication.options';
 import { NavigationPath, QueryParam } from '@config/app.config';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { CookieService } from 'ngx-cookie-service';
 import { tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +31,7 @@ export class AuthenticationService<T> {
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
+    private readonly cookieService: CookieService,
     @Inject(AUTH_CONFIG_DI) private readonly config: AuthConfig<T>
   ) {
     // TODO
@@ -76,6 +79,7 @@ export class AuthenticationService<T> {
 
   logout(): void {
     this.clearStorage();
+    this.cookieService.delete('oidc_token');
     this.router.navigateByUrl(this.config.routes.loginPath).then();
   }
 
