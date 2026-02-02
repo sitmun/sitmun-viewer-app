@@ -149,6 +149,14 @@
       }
     }
   }
+
+  .alternative-login-section {
+    color: white;
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+  }
 }
 
 /* Layout for phone */

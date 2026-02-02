@@ -47,3 +47,9 @@ export interface RequestNewPassword {
    */
   email: string;
 }
+
+export interface AuthProvider {
+  providerName: string;
+  displayName: string;
+  imagePath: string;
+}

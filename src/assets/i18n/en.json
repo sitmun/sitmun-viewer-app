@@ -1,5 +1,7 @@
 {
   "genericPrivateHeader.hi": "Hello {{username}}!",
+  "callback.processing": "Processing your login...",
+  "callback.redirect": "Login successful! Redirecting...",
   "loginPage.logoutText": "Log out",
   "loginPage.title": "Log in",
   "loginPage.publicDashboardButton": "Public access",
@@ -8,6 +10,7 @@
   "loginPage.passwordText": "Password",
   "loginPage.passwordPlaceholder": "Password",
   "loginPage.submit": "Access",
+  "loginPage.alternativeLoginMethods": "Or login using",
   "loginPage.noConnexionDetails": "No credentials?",
   "loginPage.DNIE": "Access with electronic certificate or national identification system",
   "loginPage.passwordForgotten": "Forgot password?",

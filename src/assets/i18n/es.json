@@ -1,5 +1,7 @@
 {
   "genericPrivateHeader.hi": "¡Hola {{username}}!",
+  "callback.processing": "Procesando el inicio de sesión...",
+  "callback.redirect": "Sesión iniciada! Redirigiendo...",
   "loginPage.logoutText": "Desconexión",
   "genericPrivateHeaders.changeAppOrTerritory": "Cambiar la aplicación o el territorio",
   "loginPage.title": "Iniciar sesión",
@@ -9,6 +11,7 @@
   "loginPage.passwordText": "Contraseña",
   "loginPage.passwordPlaceholder": "Contraseña",
   "loginPage.submit": "Entrar",
+  "loginPage.alternativeLoginMethods": "O inicia sesión con",
   "loginPage.noConnexionDetails": "No tienes una cuenta?",
   "loginPage.DNIE": "Acceso mediante certificado digital o DNIE",
   "loginPage.incorrectLogin": "Datos de acceso incorrectos",
