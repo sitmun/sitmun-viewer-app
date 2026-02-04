@@ -88,7 +88,7 @@ export class AuthenticationService<T> {
   }
 
   initOidcAuth(providerId: string) {
-    globalThis.location.href = `${environment.apiUrl}${URL_OIDC_AUTH}/${providerId}`;
+    globalThis.location.href = `${environment.apiUrl}${URL_OIDC_AUTH}/${providerId}?client_type=viewer`;
   }
 
   authorizeOidcUser(token: string) {
