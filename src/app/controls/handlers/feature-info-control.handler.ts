@@ -206,14 +206,31 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
       const taskText = task.name || task.id || 'Més informació';
       const fieldName = 'ℹ️' + ' '.repeat(index);
 
-      newData[fieldName] =
-        '<a href="#" class="sitmun-more-info-link" data-task-id="' +
-        task.id +
-        '" data-cartography-id="' +
-        cartographyId +
-        '">' +
-        taskText +
-        '</a>';
+      // Build URL with parameter substitution
+      if (task.command && task.parameters) {
+        let url = task.command;
+        Object.keys(task.parameters).forEach((paramName) => {
+          const paramConfig = task.parameters[paramName];
+          const fieldNameToLookup =
+            paramConfig.value || paramConfig.name || paramName;
+
+          let value = currentData[fieldNameToLookup];
+          if (value === undefined) {
+            const normalizedFieldName = fieldNameToLookup.toLowerCase().replace(/\s+/g, '');
+            value = currentData[normalizedFieldName];
+          }
+          if (value !== undefined) {
+            const placeholder = paramName.startsWith('${') && paramName.endsWith('}')
+              ? paramName
+              : '${' + paramName + '}';
+            url = url.replace(placeholder, String(value));
+          }
+        });
+        newData[fieldName] =
+          '<a href="'+ url +'" target="_blank" rel="noopener noreferrer">' + taskText + '</a>';
+      } else {
+        newData[fieldName] = taskText;
+      }
     });
 
     // Update feature data
@@ -342,8 +359,12 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
       if (th && td) {
         const key = th.textContent?.trim();
         const value = td.textContent?.trim();
-        if (key && value && key !== 'Més informació') {
+        if (key && value && key !== 'Més informació' && !key.includes('ℹ️')) {
+          // Store with original key
           data[key] = value;
+          // Also store with normalized key (lowercase, no spaces)
+          const normalizedKey = key.toLowerCase().replace(/\s+/g, '');
+          data[normalizedKey] = value;
         }
       }
     });

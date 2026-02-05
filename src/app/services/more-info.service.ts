@@ -83,7 +83,7 @@ export class MoreInfoService {
     const queryType = parameters?.queryType || 'url';
     switch (queryType) {
       case 'url':
-        return this.executeUrlQuery(parameters, featureData);
+        return this.executeUrlQuery(task, featureData);
       case 'sql':
         return this.executeSqlQuery(parameters, featureData);
       default:
@@ -91,24 +91,15 @@ export class MoreInfoService {
     }
   }
 
-  private executeUrlQuery(parameters: any, featureData: any): Observable<any> {
-    const urlTemplate = parameters?.url || parameters?.urlTemplate;
+  private executeUrlQuery(task: any, featureData: any): Observable<any> {
+    const urlTemplate = task.command;
     if (!urlTemplate) {
-      return of({ error: 'No URL template configured' });
+      return of({ error: 'No URL configured in task command' });
     }
 
     const url = this.replacePlaceholders(urlTemplate, featureData);
-    if (parameters?.redirect === true) {
-      window.open(url, '_blank');
-      return of({ redirected: true, url });
-    } else {
-      return this.http.get(url).pipe(
-        map((response) => ({ success: true, data: response })),
-        catchError((error) =>
-          of({ error: error.message || 'HTTP request failed' })
-        )
-      );
-    }
+    window.open(url, '_blank');
+    return of({ success: true, url });
   }
 
   private executeSqlQuery(parameters: any, featureData: any): Observable<any> {
