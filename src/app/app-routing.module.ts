@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { CallbackComponent } from '@auth/callback/callback.component';
 import { AuthenticationGuard } from '@auth/services/authentication-guard';
 import { RoutingDefault } from '@config/app.config';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
@@ -20,6 +21,10 @@ const routes: Routes = [
         (m) => m.AuthenticationSectionModule
       ),
     canActivate: [AuthenticationGuard]
+  },
+  {
+    path: 'callback',
+    component: CallbackComponent
   },
   {
     path: 'public',

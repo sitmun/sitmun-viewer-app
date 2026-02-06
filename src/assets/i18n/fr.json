@@ -1,5 +1,7 @@
 {
   "genericPrivateHeader.hi": "Bonjour {{username}} !",
+  "callback.processing": "Traitement de la connexion...",
+  "callback.redirect": "Session démarrée! Redirection en cours...",
   "loginPage.logoutText": "Se déconnecter",
   "loginPage.title": "Connexion",
   "loginPage.publicDashboardButton": "Accès public",
@@ -8,6 +10,7 @@
   "loginPage.passwordText": "Mot de passe",
   "loginPage.passwordPlaceholder": "Mot de passe",
   "loginPage.submit": "Connexion",
+  "loginPage.alternativeLoginMethods": "Ou connectez-vous avec",
   "loginPage.noConnexionDetails": "Vous ne disposez pas d'un compte ?",
   "loginPage.DNIE": "Accès avec certificat électronique ou carte d'identité électronique ",
   "loginPage.passwordForgotten": "Mot de passe oublié ?",

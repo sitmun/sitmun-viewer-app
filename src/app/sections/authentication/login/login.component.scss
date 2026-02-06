@@ -149,6 +149,14 @@
       }
     }
   }
+
+  .alternative-login-section {
+    color: white;
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+  }
 }
 
 /* Layout for phone */
@@ -215,6 +223,10 @@
             width: 80%;
           }
         }
+      }
+
+      ::ng-deep .alternative-login-section .secondary-button {
+          width: 100%;
       }
     }
   }

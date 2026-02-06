@@ -1,5 +1,7 @@
 {
   "genericPrivateHeader.hi": "Hola, {{username}}!",
+  "callback.processing": "Processant l'inici de sessió...",
+  "callback.redirect": "Sessió iniciada! Redirigint...",
   "loginPage.logoutText": "Desconnexió",
   "loginPage.title": "Iniciar sessió",
   "loginPage.publicDashboardButton": "Accés públic",
@@ -9,6 +11,7 @@
   "loginPage.passwordText": "Contrasenya",
   "loginPage.passwordPlaceholder": "Contrasenya",
   "loginPage.submit": "Accedir",
+  "loginPage.alternativeLoginMethods": "O inicia sessió amb",
   "loginPage.noConnexionDetails": "No tens compte d'usuari?",
   "loginPage.DNIE": "Accés amb certificat digital o DNIE",
   "loginPage.incorrectLogin": "Dades d'accés incorrectes",

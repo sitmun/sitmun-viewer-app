@@ -7,6 +7,10 @@ export const URL_RESET_PASSWORD_RESEND = BASE_URL + '/password-reset/resend';
 export const URL_AUTH_VERIFY_EMAIL =
   BASE_URL + '/user-verification/verify-email';
 
+export const URL_AUTH_METHODS = BASE_URL + '/auth/enabled-methods';
+
+export const URL_OIDC_AUTH = '/oauth2/authorization';
+
 export const URL_AUTH_LOGIN = BASE_URL + '/authenticate';
 
 export const URL_API_USER_ACCOUNT = BASE_URL + '/account';
