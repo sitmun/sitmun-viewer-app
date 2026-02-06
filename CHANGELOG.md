@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-02-06
+
+### Added
+
+- OIDC authentication support with dynamically configured providers ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- Callback component to handle backend redirection and JWT storage ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- Cookie-based JWT transport using ngx-cookie-service for future HttpOnly cookie support ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- OIDC provider buttons dynamically rendered below login form ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- Translation strings for OIDC authentication flows ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- Callback component tests ([7f85deb](https://github.com/sitmun/sitmun-viewer-app/commit/7f85deb))
+- Query parameter for proper backend to frontend redirection ([7344785](https://github.com/sitmun/sitmun-viewer-app/commit/7344785))
+
+### Changed
+
+- Improved mobile view for authentication ([ace8b56](https://github.com/sitmun/sitmun-viewer-app/commit/ace8b56))
+- Made SITNA paths relative by default ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+- Enhanced existing authentication code with readonly/keydown attributes and extracted methods ([aeccc32](https://github.com/sitmun/sitmun-viewer-app/commit/aeccc32))
+
+### Fixed
+
+- Cookie removal on logout ([34e35e5](https://github.com/sitmun/sitmun-viewer-app/commit/34e35e5))
+
 ## [1.2.0] - 2026-01-27
 
 ### Added
