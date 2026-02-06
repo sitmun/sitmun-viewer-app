@@ -8,8 +8,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
+  AuthProvider,
   AuthenticationRequest,
-  AuthProvider
+  AUTH_METHOD_OIDC
 } from '@auth/authentication.options';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { NavigationPath } from '@config/app.config';
@@ -63,7 +64,8 @@ export class LoginComponent implements OnInit {
     });
 
     effect(() => {
-      this.alternativeLoginMethods = this.loginMethods().get('oidc') ?? [];
+      this.alternativeLoginMethods =
+        this.loginMethods().get(AUTH_METHOD_OIDC) ?? [];
     });
 
     this.authenticationRequest = {

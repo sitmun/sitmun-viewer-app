@@ -1,4 +1,5 @@
 const MIDDLEWARE_URL_KEY = 'MIDDLEWARE_URL';
+// Must match AUTH_TOKEN_MESSAGE_TYPE in auth/authentication.options.ts
 const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
 
 let authToken = undefined;

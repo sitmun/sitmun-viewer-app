@@ -1,4 +1,5 @@
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import {
   ComponentFixture,
   TestBed,
@@ -7,7 +8,7 @@ import {
 } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { AUTH_CONFIG_DI } from '@auth/authentication.options';
+import { AUTH_CONFIG_DI, OIDC_TOKEN_COOKIE } from '@auth/authentication.options';
 import { CallbackComponent } from '@auth/callback/callback.component';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { CustomAuthConfig } from '@config/app.config';
@@ -33,7 +34,6 @@ describe('CallbackComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         CallbackComponent,
-        HttpClientModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
@@ -44,6 +44,8 @@ describe('CallbackComponent', () => {
         })
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         Router,
         CookieService,
         TranslateService,
@@ -53,7 +55,11 @@ describe('CallbackComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { routeConfig: { path: 'dashboard' }, queryParams: {} }
+            snapshot: {
+              routeConfig: { path: 'dashboard' },
+              queryParams: {},
+              queryParamMap: { get: () => null }
+            }
           }
         }
       ]
@@ -81,16 +87,16 @@ describe('CallbackComponent', () => {
       .spyOn(authService, 'loginRedirect')
       .mockReturnValue(undefined);
     component.ngOnInit();
+    expect(cookieService.get).toHaveBeenCalledWith(OIDC_TOKEN_COOKIE);
     expect(component.messageKey).toBe('callback.redirect');
     expect(loginSpy).toHaveBeenCalledWith('token123');
-    expect(navSpy).toHaveBeenCalledWith({
-      snapshot: {
-        queryParams: {},
-        routeConfig: {
-          path: 'dashboard'
-        }
-      }
-    });
+    expect(navSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        snapshot: expect.objectContaining({
+          routeConfig: { path: 'dashboard' }
+        })
+      })
+    );
   });
 
   it('should navigate to root and show error if token does not exist', fakeAsync(() => {
@@ -101,6 +107,7 @@ describe('CallbackComponent', () => {
     const showErrorSpy = jest.spyOn(notificationService, 'error');
     component.ngOnInit();
     tick();
+    expect(cookieService.get).toHaveBeenCalledWith(OIDC_TOKEN_COOKIE);
     expect(navByUrlSpy).toHaveBeenCalledWith('/');
     expect(showErrorSpy).toHaveBeenCalled();
   }));

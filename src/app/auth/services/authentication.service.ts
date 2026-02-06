@@ -11,7 +11,11 @@ import {
   AUTH_CONFIG_DI,
   AuthConfig,
   AuthenticationRequest,
-  AuthenticationResponse
+  AuthenticationResponse,
+  AUTH_TOKEN_MESSAGE_TYPE,
+  OIDC_CLIENT_TYPE_QUERY_PARAM,
+  OIDC_CLIENT_TYPE_VIEWER,
+  OIDC_TOKEN_COOKIE
 } from '@auth/authentication.options';
 import { NavigationPath, QueryParam } from '@config/app.config';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
@@ -76,9 +80,19 @@ export class AuthenticationService<T> {
     }
   }
 
+  /**
+   * Clears localStorage tokens and deletes the `OIDC_TOKEN_COOKIE` cookie.
+   *
+   * The cookie deletion is only effective when `http-only-cookie` is `false`
+   * (default). When `true`, the cookie cannot be deleted by JavaScript; the
+   * backend or cookie expiry must handle cleanup instead.
+   *
+   * **Future improvement:** When token transfer moves to URL fragments,
+   * this cookie deletion becomes unnecessary and can be removed.
+   */
   logout(): void {
     this.clearStorage();
-    this.cookieService.delete('oidc_token');
+    this.cookieService.delete(OIDC_TOKEN_COOKIE);
     this.router.navigateByUrl(this.config.routes.loginPath).then();
   }
 
@@ -87,7 +101,7 @@ export class AuthenticationService<T> {
   }
 
   initOidcAuth(providerId: string) {
-    globalThis.location.href = `${environment.apiUrl}${URL_OIDC_AUTH}/${providerId}?client_type=viewer`;
+    globalThis.location.href = `${environment.apiUrl}${URL_OIDC_AUTH}/${providerId}?${OIDC_CLIENT_TYPE_QUERY_PARAM}=${OIDC_CLIENT_TYPE_VIEWER}`;
   }
 
   authorizeOidcUser(token: string) {
@@ -140,7 +154,7 @@ export class AuthenticationService<T> {
     const token = localStorage.getItem(this.AUTH_TOKEN);
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
-        type: 'AUTH_TOKEN',
+        type: AUTH_TOKEN_MESSAGE_TYPE,
         token: token
       });
     }
@@ -151,7 +165,7 @@ export class AuthenticationService<T> {
     localStorage.setItem(this.AUTH_TOKEN, token);
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
-        type: 'AUTH_TOKEN',
+        type: AUTH_TOKEN_MESSAGE_TYPE,
         token: token
       });
     }

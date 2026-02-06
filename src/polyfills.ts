@@ -53,6 +53,10 @@ import 'zone.js'; // Included with Angular CLI.
 
 /***************************************************************************************************
  * Polyfill para crypto.randomUUID
+ *
+ * This feature is available only in secure contexts (HTTPS))
+ *
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID
  */
 if (
   globalThis.window &&

@@ -38,11 +38,13 @@ import { ProfileInformationComponent } from './components/profile-information/pr
 import { ReturnButtonComponent } from './components/return-button/return-button.component';
 import { SecondaryButtonComponent } from './components/secondary-button/secondary-button.component';
 import { SelectableListComponent } from './components/selectable-list/selectable-list.component';
+import { SpinnerComponent } from './components/spinner/spinner.component';
 import { TerritoryDetailsComponent } from './components/territory-details/territory-details.component';
 import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
 
 @NgModule({
   imports: [
+    SpinnerComponent,
     CommonModule,
     TranslateModule,
     FormsModule,
@@ -94,6 +96,7 @@ import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
     DashboardPaginationComponent,
     MenuComponent,
     PrimaryButtonComponent,
+    SpinnerComponent,
     SecondaryButtonComponent,
     FormFieldInputComponent,
     NotificationComponent,
