@@ -1,15 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { URL_AUTH_LOGIN } from '@api/api-config';
+import {
+  URL_AUTH_LOGIN,
+  URL_AUTH_METHODS,
+  URL_OIDC_AUTH
+} from '@api/api-config';
 import {
   AUTH_CONFIG_DI,
   AuthConfig,
   AuthenticationRequest,
   AuthenticationResponse
 } from '@auth/authentication.options';
+import { NavigationPath, QueryParam } from '@config/app.config';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { CookieService } from 'ngx-cookie-service';
 import { tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -22,9 +28,10 @@ export class AuthenticationService<T> {
   readonly AUTH_TOKEN: string;
   readonly AUTH_DETAILS: string;
   constructor(
-    private http: HttpClient,
-    private router: Router,
-    @Inject(AUTH_CONFIG_DI) private config: AuthConfig<T>
+    private readonly http: HttpClient,
+    private readonly router: Router,
+    private readonly cookieService: CookieService,
+    @Inject(AUTH_CONFIG_DI) private readonly config: AuthConfig<T>
   ) {
     // TODO
     this.AUTH_TOKEN = this.config.localStoragePrefix + '_auth_token';
@@ -46,9 +53,45 @@ export class AuthenticationService<T> {
       );
   }
 
+  loginRedirect(route: ActivatedRoute) {
+    // Check for redirect query parameter
+    const redirectUrl =
+      route.snapshot.queryParams[QueryParam.Login.RedirectAfterLogin];
+    const AUTH_CONFIG = this.getAuthConfig();
+
+    if (redirectUrl) {
+      // Redirect to the originally requested URL
+      void this.router.navigateByUrl(redirectUrl);
+    } else {
+      // Use default path - get auth details for defaultPath function
+      try {
+        const authDetails = this.getLoggedDetails();
+        void this.router.navigateByUrl(
+          AUTH_CONFIG.routes.defaultPath(authDetails)
+        );
+      } catch {
+        // Fallback to dashboard if details not available yet
+        void this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+      }
+    }
+  }
+
   logout(): void {
     this.clearStorage();
+    this.cookieService.delete('oidc_token');
     this.router.navigateByUrl(this.config.routes.loginPath).then();
+  }
+
+  getAuthMethods() {
+    return this.http.get(environment.apiUrl + URL_AUTH_METHODS);
+  }
+
+  initOidcAuth(providerId: string) {
+    globalThis.location.href = `${environment.apiUrl}${URL_OIDC_AUTH}/${providerId}?client_type=viewer`;
+  }
+
+  authorizeOidcUser(token: string) {
+    this.setToken(token);
   }
 
   // Helpers ------------------------------------------------------------------

@@ -1,16 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  effect,
+  OnInit,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { AuthenticationRequest } from '@auth/authentication.options';
+import {
+  AuthenticationRequest,
+  AuthProvider
+} from '@auth/authentication.options';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { NavigationPath, QueryParam } from '@config/app.config';
+import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 import { environment } from 'src/environments/environment';
 
 import {
-  isProblemDetail,
-  extractProblemType
+  extractProblemType,
+  isProblemDetail
 } from '../../../utils/problem-detail.utils';
 
 @Component({
@@ -31,13 +40,32 @@ export class LoginComponent implements OnInit {
   displayBackgroundImage = true;
   backgroundImageUrl?: string;
 
+  loginMethods: WritableSignal<Map<string, AuthProvider[]>> = signal(
+    new Map<string, AuthProvider[]>()
+  );
+  alternativeLoginMethods: AuthProvider[] = [];
+
   constructor(
-    private authenticationService: AuthenticationService<unknown>,
-    private router: Router,
-    private route: ActivatedRoute,
-    private translate: TranslateService,
-    private notificationService: NotificationService
+    private readonly authenticationService: AuthenticationService<unknown>,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly translate: TranslateService,
+    private readonly notificationService: NotificationService
   ) {
+    this.authenticationService.getAuthMethods().subscribe((res) => {
+      if (Array.isArray(res)) {
+        const map = new Map<string, AuthProvider[]>();
+        res.forEach((item) => {
+          map.set(item.id, item.providers ?? []);
+        });
+        this.loginMethods.set(map);
+      }
+    });
+
+    effect(() => {
+      this.alternativeLoginMethods = this.loginMethods().get('oidc') ?? [];
+    });
+
     this.authenticationRequest = {
       username: '',
       password: ''
@@ -68,30 +96,7 @@ export class LoginComponent implements OnInit {
     ) {
       this.authenticationService.login(this.authenticationRequest).subscribe({
         next: () => {
-          // Check for redirect query parameter
-          const redirectUrl =
-            this.route.snapshot.queryParams[
-              QueryParam.Login.RedirectAfterLogin
-            ];
-          const AUTH_CONFIG = this.authenticationService.getAuthConfig();
-
-          if (redirectUrl) {
-            // Redirect to the originally requested URL
-            void this.router.navigateByUrl(redirectUrl);
-          } else {
-            // Use default path - get auth details for defaultPath function
-            try {
-              const authDetails = this.authenticationService.getLoggedDetails();
-              void this.router.navigateByUrl(
-                AUTH_CONFIG.routes.defaultPath(authDetails)
-              );
-            } catch {
-              // Fallback to dashboard if details not available yet
-              void this.router.navigateByUrl(
-                NavigationPath.Section.User.Dashboard
-              );
-            }
-          }
+          this.authenticationService.loginRedirect(this.route);
         },
         error: (error) => {
           if (error.status === 401 || isProblemDetail(error)) {
@@ -114,6 +119,10 @@ export class LoginComponent implements OnInit {
         }
       });
     }
+  }
+
+  initAuth(providerId: string) {
+    this.authenticationService.initOidcAuth(providerId);
   }
 
   publicDashboard() {

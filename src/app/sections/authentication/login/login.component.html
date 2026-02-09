@@ -14,7 +14,9 @@
         <app-primary-button
           [button_text]="'loginPage.publicDashboardButton' | translate"
           [mat_icon]="'public'"
-          (click)="publicDashboard()" />
+          (click)="publicDashboard()"
+          (keydown)="publicDashboard()"
+        />
       </div>
     </div>
 
@@ -49,6 +51,19 @@
       <app-secondary-button
         [button_text]="'loginPage.DNIE' | translate"
         *ngIf="displayDNIEButton" />
+    </div>
+
+    <div class="alternative-login-section" *ngIf="alternativeLoginMethods.length > 0">
+      <p>{{ 'loginPage.alternativeLoginMethods' | translate }}</p>
+      <div class="buttons">
+        <app-secondary-button
+          *ngFor="let authProvider of alternativeLoginMethods"
+          [button_text]="authProvider.displayName"
+          [button_img_url]="authProvider.imagePath"
+          (click)="initAuth(authProvider.providerName)"
+          (keydown)="initAuth(authProvider.providerName)"
+        />
+      </div>
     </div>
   </div>
 </div>
