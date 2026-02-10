@@ -9,7 +9,7 @@ export class FeatureInfoMoreInfoHandler {
   ) {}
 
   injectMoreInfoFields(options: any): void {
-    if (!options?.services) return;
+    if (!options?.services || !Array.isArray(options.services)) return;
 
     for (const service of options.services) {
       this.processServiceLayers(service);
@@ -56,7 +56,7 @@ export class FeatureInfoMoreInfoHandler {
   }
 
   private processServiceLayers(service: any): void {
-    if (!service.layers) return;
+    if (!service?.layers || !Array.isArray(service.layers)) return;
 
     for (const layer of service.layers) {
       this.processLayerFeatures(layer);
@@ -64,7 +64,7 @@ export class FeatureInfoMoreInfoHandler {
   }
 
   private processLayerFeatures(layer: any): void {
-    if (!layer.features) return;
+    if (!layer?.features || !Array.isArray(layer.features)) return;
 
     const cartographyId = this.getCartographyIdFromLayerName(layer.name);
 
@@ -79,6 +79,8 @@ export class FeatureInfoMoreInfoHandler {
   }
 
   private addMoreInfoFieldsToFeature(feature: any, tasks: any[]): void {
+    if (!Array.isArray(tasks)) return;
+
     const currentData = feature.getData ? feature.getData() : feature.data || {};
     const newData = { ...currentData };
 
@@ -86,35 +88,24 @@ export class FeatureInfoMoreInfoHandler {
       const taskText = task.name;
       const fieldName = 'ℹ️' + ' '.repeat(index);
 
-      if (task.command && task.parameters) {
+      if (task.command) {
         let url = task.command;
-        Object.keys(task.parameters).forEach((paramName) => {
-          const paramConfig = task.parameters[paramName];
-          const fieldNameToLookup =
-            paramConfig.value || paramConfig.name || paramName;
+        if (task.parameters) {
+          Object.keys(task.parameters).forEach((paramName) => {
+            const { label, name, value } = task.parameters[paramName];
+            const fieldNameToLookup = value || name || paramName;
 
-          let value = currentData[fieldNameToLookup];
-          if (value === undefined) {
-            const normalizedFieldName = fieldNameToLookup
-              .toLowerCase()
-              .replaceAll(/\s+/g, '');
-            value = currentData[normalizedFieldName];
-          }
+            const featureValue = this.lookupFeatureValue(
+              currentData,
+              fieldNameToLookup
+            );
 
-          if (value !== undefined) {
-            const placeholder =
-              paramName.startsWith('${') && paramName.endsWith('}')
-                ? paramName
-                : '${' + paramName + '}';
-            url = url.replace(placeholder, String(value));
-          }
-        });
-        newData[fieldName] =
-          '<a href="' +
-          url +
-          '" target="_blank" rel="noopener noreferrer">' +
-          taskText +
-          '</a>';
+            if (featureValue !== undefined) {
+              url = url.split(label).join(String(featureValue));
+            }
+          });
+        }
+        newData[fieldName] = this.buildMoreInfoLink(url, taskText);
       } else {
         newData[fieldName] = taskText;
       }
@@ -189,8 +180,7 @@ export class FeatureInfoMoreInfoHandler {
         const value = td.textContent?.trim();
         if (key && value && key !== 'Més informació' && !key.includes('ℹ️')) {
           data[key] = value;
-          const normalizedKey = key.toLowerCase().replaceAll(/\s+/g, '');
-          data[normalizedKey] = value;
+          data[this.normalizeKey(key)] = value;
         }
       }
     });
@@ -208,5 +198,28 @@ export class FeatureInfoMoreInfoHandler {
     } else if (result.data) {
       alert('Més informació:\n' + JSON.stringify(result.data, null, 2));
     }
+  }
+
+  private lookupFeatureValue(currentData: any, fieldNameToLookup: string): any {
+    let value = currentData[fieldNameToLookup];
+    if (value === undefined) {
+      value = currentData[this.normalizeKey(fieldNameToLookup)];
+    }
+
+    return value;
+  }
+
+  private normalizeKey(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, '');
+  }
+
+  private buildMoreInfoLink(url: string, taskText: string): string {
+    return (
+      '<a href="' +
+      url +
+      '" target="_blank" rel="noopener noreferrer">' +
+      taskText +
+      '</a>'
+    );
   }
 }
