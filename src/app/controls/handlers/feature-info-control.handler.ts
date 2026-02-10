@@ -6,6 +6,7 @@ import { MoreInfoService } from '../../services/more-info.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
+import { FeatureInfoMoreInfoHandler } from './more-info.handler';
 
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
@@ -38,6 +39,10 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined;
   private readonly moreInfoService = inject(MoreInfoService);
   private appConfig: AppCfg | null = null;
+  private readonly moreInfoHandler = new FeatureInfoMoreInfoHandler(
+    this.moreInfoService,
+    () => this.appConfig
+  );
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
@@ -130,7 +135,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
             // Process features BEFORE calling original responseCallback
             if (options?.services && this.moreInfoService.hasMoreInfoTasks()) {
-              this.injectMoreInfoFields(options);
+              this.moreInfoHandler.injectMoreInfoFields(options);
             }
 
             // Call original responseCallback
@@ -138,7 +143,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
             // After render, attach event listeners
             setTimeout(() => {
-              this.attachMoreInfoListeners(jp.target);
+              this.moreInfoHandler.attachMoreInfoListeners(jp.target);
             }, 100);
 
             return result;
@@ -151,252 +156,5 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         });
       }
     });
-  }
-
-  /**
-   * Inject "Més informació" fields into features before rendering
-   */
-  private injectMoreInfoFields(options: any): void {
-    if (!options.services) return;
-
-    for (const service of options.services) {
-      this.processServiceLayers(service);
-    }
-  }
-
-  /**
-   * Process all layers in a service
-   */
-  private processServiceLayers(service: any): void {
-    if (!service.layers) return;
-
-    for (const layer of service.layers) {
-      this.processLayerFeatures(layer);
-    }
-  }
-
-  /**
-   * Process all features in a layer
-   */
-  private processLayerFeatures(layer: any): void {
-    if (!layer.features) return;
-
-    const cartographyId = this.getCartographyIdFromLayerName(layer.name);
-
-    if (!cartographyId) return;
-
-    const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
-    if (tasks.length === 0) return;
-
-    for (const feature of layer.features) {
-      this.addMoreInfoFieldsToFeature(feature, tasks, cartographyId);
-    }
-  }
-
-  /**
-   * Add "Més informació" fields to a single feature
-   */
-  private addMoreInfoFieldsToFeature( feature: any, tasks: any[], cartographyId: string): void {
-    const currentData = feature.getData
-      ? feature.getData()
-      : feature.data || {};
-    const newData = { ...currentData };
-
-    tasks.forEach((task: any, index: number) => {
-      const taskText = task.name || task.id || 'Més informació';
-      const fieldName = 'ℹ️' + ' '.repeat(index);
-
-      // Build URL with parameter substitution for URL and API tasks
-      if (task.command && task.parameters) {
-        let url = task.command;
-        Object.keys(task.parameters).forEach((paramName) => {
-          const paramConfig = task.parameters[paramName];
-          const fieldNameToLookup =
-            paramConfig.value || paramConfig.name || paramName;
-
-          let value = currentData[fieldNameToLookup];
-          if (value === undefined) {
-            const normalizedFieldName = fieldNameToLookup.toLowerCase().replace(/\s+/g, '');
-            value = currentData[normalizedFieldName];
-          }
-          /**NOMES PER TEST**/
-          // Fallback values for API calls when field not found
-          if (value === undefined && task.scope === 'API') {
-            if (fieldNameToLookup === 'longitud') {
-              value = 3.85289;
-            } else if (fieldNameToLookup === 'latitud') {
-              value = 39.88853;
-            }
-          }
-          if (value !== undefined) {
-            const placeholder = paramName.startsWith('${') && paramName.endsWith('}')
-              ? paramName
-              : '${' + paramName + '}';
-            url = url.replace(placeholder, String(value));
-          }
-        });
-        newData[fieldName] =
-          '<a href="'+ url +'" target="_blank" rel="noopener noreferrer">' + taskText + '</a>';
-      } else {
-        newData[fieldName] = taskText;
-      }
-    });
-
-    // Update feature data
-    if (typeof feature.setData === 'function') {
-      feature.setData(newData);
-    } else {
-      feature.data = newData;
-    }
-  }
-
-  /**
-   * Attach click event listeners to "Més informació" links
-   */
-  private attachMoreInfoListeners(featureInfoControl: any): void {
-    const container = this.getFeatureInfoContainer(featureInfoControl);
-    if (!container) return;
-
-    const links = container.querySelectorAll('.sitmun-more-info-link');
-
-    links.forEach((link: any) => {
-      link.addEventListener('click', (e: Event) => {
-        e.preventDefault();
-
-        const taskId = link.dataset.taskId;
-        const cartographyId = link.dataset.cartographyId;
-
-        if (!taskId || !cartographyId) {
-          return;
-        }
-
-        // Find the specific task by ID
-        const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
-        const task = tasks.find((t: any) => t.id === taskId);
-
-        if (!task) {
-          return;
-        }
-
-        // Get feature data from the table
-        const table = link.closest('table.tc-attr');
-        const featureData = this.extractFeatureDataFromTable(table);
-
-        this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
-          next: (result: any) => {
-            this.displayMoreInfoResult(result);
-          },
-          error: (error: any) => {
-            alert('Error obtenint més informació: ' + error.message);
-          }
-        });
-      });
-    });
-  }
-
-  /**
-   * Get cartography ID from layer name by searching in app config
-   */
-  private getCartographyIdFromLayerName(layerName: string): string | null {
-    return this.searchCartographyIdInConfig(layerName);
-  }
-
-  /**
-   * Search for cartography ID in app config layers
-   */
-  private searchCartographyIdInConfig(layerName: string): string | null {
-    if (!this.appConfig?.layers) return null;
-
-    for (const layer of this.appConfig.layers) {
-      const cartographyId = this.extractCartographyIdFromLayer(
-        layer,
-        layerName
-      );
-      if (cartographyId) {
-        return cartographyId;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Extract cartography ID from a config layer if it contains the layer name
-   */
-  private extractCartographyIdFromLayer(
-    layer: any,
-    layerName: string
-  ): string | null {
-    if (!layer.layers || !Array.isArray(layer.layers)) return null;
-    if (!layer.layers.includes(layerName)) return null;
-    if (!layer.id || typeof layer.id !== 'string') return null;
-
-    const match = /layer\/(\d+)/.exec(layer.id);
-    if (!match) return null;
-
-    return match[1];
-  }
-
-  /**
-   * Get feature info container element
-   */
-  private getFeatureInfoContainer(featureInfoControl: any): HTMLElement | null {
-    if (typeof featureInfoControl.getInfoContainer === 'function') {
-      return featureInfoControl.getInfoContainer();
-    }
-    if (featureInfoControl.infoContainer) {
-      return featureInfoControl.infoContainer;
-    }
-    if (featureInfoControl.div) {
-      return featureInfoControl.div.querySelector('.tc-ctl-finfo-content');
-    }
-    return null;
-  }
-
-  /**
-   * Extract feature data from rendered attribute table
-   */
-  private extractFeatureDataFromTable(table: HTMLElement | null): any {
-    if (!table) return {};
-
-    const data: any = {};
-    const rows = table.querySelectorAll('tbody tr');
-
-    rows.forEach((row: any) => {
-      const th = row.querySelector('th');
-      const td = row.querySelector('td');
-      if (th && td) {
-        const key = th.textContent?.trim();
-        const value = td.textContent?.trim();
-        if (key && value && key !== 'Més informació' && !key.includes('ℹ️')) {
-          // Store with original key
-          data[key] = value;
-          // Also store with normalized key (lowercase, no spaces)
-          const normalizedKey = key.toLowerCase().replace(/\s+/g, '');
-          data[normalizedKey] = value;
-        }
-      }
-    });
-
-    return data;
-  }
-
-  /**
-   * Display More Info result
-   * NOTE: Currently shows results in browser alert.
-   * Future enhancement: Implement custom popup/dialog component.
-   */
-  private displayMoreInfoResult(result: any): void {
-    if (result.redirected) {
-      // URL redirect already opened in new window
-      return;
-    }
-
-    // Show result in alert (basic implementation)
-    if (result.error) {
-      alert('Error: ' + result.error);
-    } else if (result.data) {
-      alert('Més informació:\n' + JSON.stringify(result.data, null, 2));
-    }
   }
 }
