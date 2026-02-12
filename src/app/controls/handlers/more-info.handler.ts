@@ -16,6 +16,39 @@ export class FeatureInfoMoreInfoHandler {
     }
   }
 
+  executeSqlTasksForFeatures(options: any): void {
+    if (!options?.services || !Array.isArray(options.services)) return;
+
+    for (const service of options.services) {
+      if (!service?.layers || !Array.isArray(service.layers)) continue;
+
+      for (const layer of service.layers) {
+        if (!layer?.features || !Array.isArray(layer.features)) continue;
+
+        const cartographyId = this.getCartographyIdFromLayerName(layer.name);
+        if (!cartographyId) continue;
+
+        const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
+        if (tasks.length === 0) continue;
+
+        const nonInteractiveTasks = tasks.filter((task: any) =>
+          this.isNonInteractiveTask(task)
+        );
+        if (nonInteractiveTasks.length === 0) continue;
+
+        for (const feature of layer.features) {
+          const featureData = feature.getData
+            ? feature.getData()
+            : feature.data || {};
+
+          nonInteractiveTasks.forEach((task: any) => {
+            this.moreInfoService.executeMoreInfo(task, featureData).subscribe();
+          });
+        }
+      }
+    }
+  }
+
   attachMoreInfoListeners(featureInfoControl: any): void {
     const container = this.getFeatureInfoContainer(featureInfoControl);
     if (!container) return;
@@ -26,8 +59,8 @@ export class FeatureInfoMoreInfoHandler {
       link.addEventListener('click', (e: Event) => {
         e.preventDefault();
 
-        const taskId = link.dataset.taskId;
-        const cartographyId = link.dataset.cartographyId;
+        const taskId = link.dataset['taskId'];
+        const cartographyId = link.dataset['cartographyId'];
 
         if (!taskId || !cartographyId) {
           return;
@@ -40,7 +73,7 @@ export class FeatureInfoMoreInfoHandler {
           return;
         }
 
-        const table = link.closest('table.tc-attr');
+        const table = link.closest('table.tc-attr') as HTMLElement | null;
         const featureData = this.extractFeatureDataFromTable(table);
 
         this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
@@ -74,11 +107,15 @@ export class FeatureInfoMoreInfoHandler {
     if (tasks.length === 0) return;
 
     for (const feature of layer.features) {
-      this.addMoreInfoFieldsToFeature(feature, tasks);
+      this.addMoreInfoFieldsToFeature(feature, tasks, cartographyId);
     }
   }
 
-  private addMoreInfoFieldsToFeature(feature: any, tasks: any[]): void {
+  private addMoreInfoFieldsToFeature(
+    feature: any,
+    tasks: any[],
+    cartographyId: string
+  ): void {
     if (!Array.isArray(tasks)) return;
 
     const currentData = feature.getData ? feature.getData() : feature.data || {};
@@ -87,6 +124,12 @@ export class FeatureInfoMoreInfoHandler {
     tasks.forEach((task: any, index: number) => {
       const taskText = task.name;
       const fieldName = 'ℹ️' + ' '.repeat(index);
+      const nonInteractive = this.isNonInteractiveTask(task);
+
+      if (nonInteractive) {
+        newData[fieldName] = '';
+        return;
+      }
 
       if (task.command) {
         let url = task.command;
@@ -105,7 +148,12 @@ export class FeatureInfoMoreInfoHandler {
             }
           });
         }
-        newData[fieldName] = this.buildMoreInfoLink(url, taskText);
+        newData[fieldName] = this.buildMoreInfoLink(
+          url,
+          taskText,
+          task.id,
+          cartographyId
+        );
       } else {
         newData[fieldName] = taskText;
       }
@@ -115,6 +163,24 @@ export class FeatureInfoMoreInfoHandler {
       feature.setData(newData);
     } else {
       feature.data = newData;
+    }
+  }
+
+  private isNonInteractiveTask(task: any): boolean {
+    const taskParameters = this.parseTaskParameters(task?.parameters);
+    const queryType = taskParameters?.queryType;
+    return task?.scope === 'SQL' || (queryType && queryType !== 'url');
+  }
+
+  private parseTaskParameters(parameters: any): any | null {
+    if (typeof parameters !== 'string') {
+      return parameters;
+    }
+
+    try {
+      return JSON.parse(parameters);
+    } catch {
+      return null;
     }
   }
 
@@ -213,10 +279,19 @@ export class FeatureInfoMoreInfoHandler {
     return value.toLowerCase().replace(/\s+/g, '');
   }
 
-  private buildMoreInfoLink(url: string, taskText: string): string {
+  private buildMoreInfoLink(
+    url: string,
+    taskText: string,
+    taskId: string,
+    cartographyId: string
+  ): string {
     return (
       '<a href="' +
-      url +
+      url + 
+      '" class="sitmun-more-info-link" data-task-id="' +
+      taskId +
+      '" data-cartography-id="' +
+      cartographyId +
       '" target="_blank" rel="noopener noreferrer">' +
       taskText +
       '</a>'

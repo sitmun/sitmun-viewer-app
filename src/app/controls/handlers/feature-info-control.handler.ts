@@ -2,11 +2,11 @@ import { Injectable, inject } from '@angular/core';
 
 import { AppCfg } from '@api/model/app-cfg';
 
+import { FeatureInfoMoreInfoHandler } from './more-info.handler';
 import { MoreInfoService } from '../../services/more-info.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
-import { FeatureInfoMoreInfoHandler } from './more-info.handler';
 
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
@@ -136,6 +136,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
             // Process features BEFORE calling original responseCallback
             if (options?.services && this.moreInfoService.hasMoreInfoTasks()) {
               this.moreInfoHandler.injectMoreInfoFields(options);
+              this.moreInfoHandler.executeSqlTasksForFeatures(options);
             }
 
             // Call original responseCallback

@@ -1,4 +1,4 @@
-﻿import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { AppCfg } from '@api/model/app-cfg';
@@ -18,6 +18,10 @@ export class MoreInfoService {
   constructor(private readonly http: HttpClient) {}
 
   initialize(config: AppCfg): void {
+    console.info('[MoreInfo] initialize start', {
+      hasTasks: Array.isArray(config?.tasks),
+      taskCount: Array.isArray(config?.tasks) ? config.tasks.length : 0
+    });
     this.moreInfoTasks.clear();
     if (!config?.tasks) {
       console.warn('[MoreInfoService] No tasks in config');
@@ -26,6 +30,11 @@ export class MoreInfoService {
 
     config.tasks.forEach((task: any) => {
       if (task['ui-control'] === 'sitna.moreInfo') {
+        console.info('[MoreInfo] task found', {
+          id: task?.id,
+          scope: task?.scope,
+          hasUrl: !!task?.url
+        });
         const cartographyId = this.extractCartographyId(task);
         if (cartographyId) {
           const key = String(cartographyId);
@@ -33,7 +42,12 @@ export class MoreInfoService {
           existingTasks.push(task);
           this.moreInfoTasks.set(key, existingTasks);
         }
+
       }
+    });
+
+    console.info('[MoreInfo] initialize end', {
+      moreInfoTaskGroups: this.moreInfoTasks.size
     });
   }
 
@@ -70,14 +84,18 @@ export class MoreInfoService {
   }
 
   executeMoreInfo(task: any, featureData: any): Observable<any> {
-    let parameters = task.parameters;
-    if (typeof parameters === 'string') {
-      try {
-        parameters = JSON.parse(parameters);
-      } catch (error) {
-        console.error('[MoreInfoService] Invalid task parameters:', error);
-        return of({ error: 'Invalid task parameters' });
-      }
+    console.info('[MoreInfo] executeMoreInfo', {
+      taskId: task?.id,
+      scope: task?.scope,
+      hasFeatureData: !!featureData
+    });
+    const parameters = this.parseTaskParameters(task.parameters);
+    if (task.parameters && parameters === null) {
+      return of({ error: 'Invalid task parameters' });
+    }
+
+    if (task?.scope === 'SQL') {
+      return this.executeSqlProxy(task, featureData);
     }
 
     const queryType = parameters?.queryType || 'url';
@@ -110,8 +128,11 @@ export class MoreInfoService {
     }
 
     const sql = this.replacePlaceholders(sqlTemplate, featureData);
-    return this.http.post(apiUrl, { sql }).pipe(
-      map((response) => ({ success: true, data: response })),
+    return this.http.get(apiUrl, { params: { sql } }).pipe(
+      map((response) => {
+        console.log('RESPONSE: ', response);
+        return { success: true, data: response };
+      }),
       catchError((error) => of({ error: error.message || 'SQL query failed' }))
     );
   }
@@ -127,4 +148,126 @@ export class MoreInfoService {
     });
     return result;
   }
+
+  private executeSqlProxy(task: any, featureData: any): Observable<any> {
+    const rawUrl = task?.url;
+    if (!rawUrl) {
+      return of({ error: 'No SQL proxy URL configured' });
+    }
+
+    const url = this.replacePlaceholders(String(rawUrl), featureData);
+    const parameters = this.parseTaskParameters(task.parameters);
+    if (task.parameters && parameters === null) {
+      return of({ error: 'Invalid task parameters' });
+    }
+
+    const paramPayload = this.buildSqlParamPayload(parameters, featureData);
+    if (paramPayload) {
+      console.info('[MoreInfo] SQL param payload', {
+        url,
+        length: paramPayload.length
+      });
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/xml; charset=utf-8',
+        Accept: 'application/xml, text/xml, */*'
+      });
+      return this.http.post(url, paramPayload, { headers }).pipe(
+        map((response) => ({ success: true, data: response })),
+        catchError((error) =>
+          of({ error: error.message || 'SQL query failed' })
+        )
+      );
+    }
+
+    return this.http.get(url).pipe(
+      map((response) => ({ success: true, data: response })),
+      catchError((error) => of({ error: error.message || 'SQL query failed' }))
+    );
+  }
+
+  private parseTaskParameters(parameters: any): any | null {
+    if (typeof parameters !== 'string') {
+      return parameters;
+    }
+
+    try {
+      return JSON.parse(parameters);
+    } catch (error) {
+      console.error('[MoreInfoService] Invalid task parameters:', error);
+      return null;
+    }
+  }
+
+  private buildSqlParamPayload(
+    parameters: any,
+    featureData: any
+  ): string | null {
+    if (!parameters || typeof parameters !== 'object') {
+      return null;
+    }
+
+    const entries = Object.entries(parameters).filter(([, config]) =>
+      this.isSqlParamConfig(config)
+    );
+
+    if (entries.length === 0) {
+      return null;
+    }
+
+    const paramFields = entries
+      .map(([paramName, config]) => {
+        const value = this.getSqlParamValue(
+          featureData,
+          paramName,
+          config as any
+        );
+        return (
+          '<param>' +
+          '<key>' + paramName + '</key>' +
+          '<value>' + (value == null ? '' : String(value)) + '</value>' +
+          '</param>'
+        );
+      })
+      .join('\n');
+
+    return paramFields;
+  }
+
+  private isSqlParamConfig(config: any): boolean {
+    return (
+      config &&
+      typeof config === 'object' &&
+      ('label' in config || 'value' in config || 'name' in config)
+    );
+  }
+
+  private getSqlParamValue(
+    featureData: any,
+    paramName: string,
+    config: any
+  ): any {
+    const candidates = [config?.value, config?.name, paramName].filter(
+      (entry) => typeof entry === 'string' && entry.length > 0
+    );
+
+    for (const key of candidates) {
+      const direct = featureData?.[key];
+      if (direct !== undefined) {
+        return direct;
+      }
+
+      const normalized = this.normalizeKey(key);
+      const normalizedValue = featureData?.[normalized];
+      if (normalizedValue !== undefined) {
+        return normalizedValue;
+      }
+    }
+
+    return undefined;
+  }
+
+  private normalizeKey(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, '');
+  }
+
 }
