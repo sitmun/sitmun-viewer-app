@@ -3,9 +3,17 @@ import type { AppCfg } from '@api/model/app-cfg';
 import { MoreInfoService } from '../../services/more-info.service';
 
 export class FeatureInfoMoreInfoHandler {
+  private placeholderCounter = 0;
+  private readonly placeholderIds = new WeakMap<any, Map<string, string>>();
+  private readonly pendingResults = new Map<
+    string,
+    { task: any; result: any }
+  >();
+
   constructor(
     private readonly moreInfoService: MoreInfoService,
-    private readonly getAppConfig: () => AppCfg | null
+    private readonly getAppConfig: () => AppCfg | null,
+    private readonly showJsonResult?: (title: string, rows: any[]) => void
   ) {}
 
   injectMoreInfoFields(options: any): void {
@@ -42,7 +50,21 @@ export class FeatureInfoMoreInfoHandler {
             : feature.data || {};
 
           nonInteractiveTasks.forEach((task: any) => {
-            this.moreInfoService.executeMoreInfo(task, featureData).subscribe();
+            const taskIndex = tasks.indexOf(task);
+            const taskKey = this.getTaskKey(task, taskIndex);
+            const placeholderId = this.getPlaceholderId(feature, taskKey);
+            this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
+              next: (result: any) => {
+                this.displayMoreInfoResult(task, result, placeholderId);
+              },
+              error: (error: any) => {
+                this.displayMoreInfoResult(
+                  task,
+                  { error: error?.message || 'Error obtenint més informació' },
+                  placeholderId
+                );
+              }
+            });
           });
         }
       }
@@ -60,14 +82,19 @@ export class FeatureInfoMoreInfoHandler {
         e.preventDefault();
 
         const taskId = link.dataset['taskId'];
+        const taskIndex = link.dataset['taskIndex'];
         const cartographyId = link.dataset['cartographyId'];
 
         if (!taskId || !cartographyId) {
-          return;
+          if (!taskIndex || !cartographyId) {
+            return;
+          }
         }
 
         const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
-        const task = tasks.find((t: any) => t.id === taskId);
+        const task = taskId
+          ? tasks.find((t: any) => t.id === taskId)
+          : tasks[Number(taskIndex)];
 
         if (!task) {
           return;
@@ -78,7 +105,7 @@ export class FeatureInfoMoreInfoHandler {
 
         this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
           next: (result: any) => {
-            this.displayMoreInfoResult(result);
+            this.displayMoreInfoResult(task, result);
           },
           error: (error: any) => {
             alert('Error obtenint més informació: ' + error.message);
@@ -86,6 +113,8 @@ export class FeatureInfoMoreInfoHandler {
         });
       });
     });
+
+    this.flushPendingResults(container);
   }
 
   private processServiceLayers(service: any): void {
@@ -127,7 +156,14 @@ export class FeatureInfoMoreInfoHandler {
       const nonInteractive = this.isNonInteractiveTask(task);
 
       if (nonInteractive) {
-        newData[fieldName] = '';
+        const taskKey = this.getTaskKey(task, index);
+        const placeholderId = this.getPlaceholderId(feature, taskKey);
+        newData[fieldName] = this.buildMoreInfoPlaceholder(
+          taskText,
+          taskKey,
+          cartographyId,
+          placeholderId
+        );
         return;
       }
 
@@ -152,7 +188,8 @@ export class FeatureInfoMoreInfoHandler {
           url,
           taskText,
           task.id,
-          cartographyId
+          cartographyId,
+          index
         );
       } else {
         newData[fieldName] = taskText;
@@ -169,7 +206,12 @@ export class FeatureInfoMoreInfoHandler {
   private isNonInteractiveTask(task: any): boolean {
     const taskParameters = this.parseTaskParameters(task?.parameters);
     const queryType = taskParameters?.queryType;
-    return task?.scope === 'SQL' || (queryType && queryType !== 'url');
+    return (
+      task?.scope === 'SQL' ||
+      task?.scope === 'API' ||
+      (queryType && queryType !== 'url') ||
+      (!!taskParameters?.apiUrl && queryType !== 'url')
+    );
   }
 
   private parseTaskParameters(parameters: any): any | null {
@@ -254,16 +296,166 @@ export class FeatureInfoMoreInfoHandler {
     return data;
   }
 
-  private displayMoreInfoResult(result: any): void {
+  private displayMoreInfoResult(
+    task: any,
+    result: any,
+    placeholderId?: string
+  ): void {
     if (result.redirected) {
       return;
     }
 
     if (result.error) {
-      alert('Error: ' + result.error);
+      const message = 'Error: ' + result.error;
+      if (placeholderId) {
+        if (!this.updatePlaceholder(placeholderId, this.escapeHtml(message))) {
+          this.pendingResults.set(placeholderId, { task, result });
+        }
+        return;
+      }
+      alert(message);
     } else if (result.data) {
-      alert('Més informació:\n' + JSON.stringify(result.data, null, 2));
+      const rows = this.normalizeRows(result.data);
+      const tableHtml = this.renderTableHtml(rows);
+      if (placeholderId) {
+        if (!this.updatePlaceholder(placeholderId, tableHtml)) {
+          this.pendingResults.set(placeholderId, { task, result });
+        }
+        return;
+      }
+      if (this.showJsonResult) {
+        const title = task?.name || 'More info';
+        this.showJsonResult(title, rows);
+        return;
+      }
+      alert('More info:\n' + JSON.stringify(result.data, null, 2));
     }
+  }
+
+  private normalizeRows(data: any): any[] {
+    if (data == null) return [];
+
+    if (typeof data === 'string') {
+      const trimmed = data.trim();
+      if (
+        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+        (trimmed.startsWith('[') && trimmed.endsWith(']'))
+      ) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return this.normalizeRows(parsed);
+        } catch {
+          return [{ value: data }];
+        }
+      }
+      return [{ value: data }];
+    }
+
+    if (Array.isArray(data)) {
+      if (data.length === 0) return [];
+      if (data.every((item) => item && typeof item === 'object')) {
+        return data;
+      }
+      return data.map((item) => ({ value: item }));
+    }
+
+    if (typeof data === 'object') {
+      return [data];
+    }
+
+    return [{ value: data }];
+  }
+
+  private renderTableHtml(rows: any[]): string {
+    if (!rows || rows.length === 0) {
+      return '<div class="sitmun-more-info-empty">Sense dades</div>';
+    }
+
+    const columns = Object.keys(rows[0]);
+    const header = columns
+      .map((column) => '<th>' + this.escapeHtml(column) + '</th>')
+      .join('');
+    const body = rows
+      .map((row) => {
+        const cells = columns
+          .map((column) =>
+            '<td>' + this.escapeHtml(String(row[column] ?? '')) + '</td>'
+          )
+          .join('');
+        return '<tr>' + cells + '</tr>';
+      })
+      .join('');
+
+    return (
+      '<table class="sitmun-json-table">' +
+      '<thead><tr>' +
+      header +
+      '</tr></thead>' +
+      '<tbody>' +
+      body +
+      '</tbody>' +
+      '</table>'
+    );
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  private updatePlaceholder(placeholderId: string, html: string): boolean {
+    const element = document.querySelector(
+      '[data-placeholder-id="' + placeholderId + '"]'
+    ) as HTMLElement | null;
+    if (!element) {
+      return false;
+    }
+
+    element.innerHTML = html;
+    return true;
+  }
+
+  private flushPendingResults(container: HTMLElement): void {
+    if (this.pendingResults.size === 0) return;
+
+    Array.from(this.pendingResults.entries()).forEach(([id, payload]) => {
+      const element = container.querySelector(
+        '[data-placeholder-id="' + id + '"]'
+      ) as HTMLElement | null;
+      if (!element) return;
+
+      const result = payload.result;
+      if (result?.error) {
+        element.innerHTML = this.escapeHtml('Error: ' + result.error);
+      } else if (result?.data) {
+        const rows = this.normalizeRows(result.data);
+        element.innerHTML = this.renderTableHtml(rows);
+      }
+      this.pendingResults.delete(id);
+    });
+  }
+
+  private getTaskKey(task: any, index: number): string {
+    return String(task?.id ?? 'idx-' + index);
+  }
+
+  private getPlaceholderId(feature: any, taskKey: string): string {
+    let featureMap = this.placeholderIds.get(feature);
+    if (!featureMap) {
+      featureMap = new Map<string, string>();
+      this.placeholderIds.set(feature, featureMap);
+    }
+
+    const existing = featureMap.get(taskKey);
+    if (existing) return existing;
+
+    const id = 'sitmun-more-info-' + String(++this.placeholderCounter);
+    featureMap.set(taskKey, id);
+    return id;
   }
 
   private lookupFeatureValue(currentData: any, fieldNameToLookup: string): any {
@@ -282,19 +474,43 @@ export class FeatureInfoMoreInfoHandler {
   private buildMoreInfoLink(
     url: string,
     taskText: string,
-    taskId: string,
-    cartographyId: string
+    taskId: string | undefined,
+    cartographyId: string,
+    taskIndex: number
   ): string {
+    const safeTaskId = taskId ? taskId : '';
     return (
       '<a href="' +
-      url + 
+      url +
       '" class="sitmun-more-info-link" data-task-id="' +
-      taskId +
+      safeTaskId +
       '" data-cartography-id="' +
       cartographyId +
+      '" data-task-index="' +
+      String(taskIndex) +
       '" target="_blank" rel="noopener noreferrer">' +
       taskText +
       '</a>'
+    );
+  }
+
+  private buildMoreInfoPlaceholder(
+    taskText: string,
+    taskId: string,
+    cartographyId: string,
+    placeholderId: string
+  ): string {
+    return (
+      '<span class="sitmun-more-info-placeholder" data-task-id="' +
+      taskId +
+      '" data-cartography-id="' +
+      cartographyId +
+      '" data-placeholder-id="' +
+      placeholderId +
+      '">' +
+      this.escapeHtml(taskText) +
+      ' (Carregant...)' +
+      '</span>'
     );
   }
 }

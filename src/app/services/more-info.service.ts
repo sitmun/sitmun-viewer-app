@@ -1,4 +1,4 @@
-﻿import { HttpClient, HttpHeaders } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { AppCfg } from '@api/model/app-cfg';
@@ -18,23 +18,13 @@ export class MoreInfoService {
   constructor(private readonly http: HttpClient) {}
 
   initialize(config: AppCfg): void {
-    console.info('[MoreInfo] initialize start', {
-      hasTasks: Array.isArray(config?.tasks),
-      taskCount: Array.isArray(config?.tasks) ? config.tasks.length : 0
-    });
     this.moreInfoTasks.clear();
     if (!config?.tasks) {
-      console.warn('[MoreInfoService] No tasks in config');
       return;
     }
 
     config.tasks.forEach((task: any) => {
       if (task['ui-control'] === 'sitna.moreInfo') {
-        console.info('[MoreInfo] task found', {
-          id: task?.id,
-          scope: task?.scope,
-          hasUrl: !!task?.url
-        });
         const cartographyId = this.extractCartographyId(task);
         if (cartographyId) {
           const key = String(cartographyId);
@@ -44,10 +34,6 @@ export class MoreInfoService {
         }
 
       }
-    });
-
-    console.info('[MoreInfo] initialize end', {
-      moreInfoTaskGroups: this.moreInfoTasks.size
     });
   }
 
@@ -84,11 +70,6 @@ export class MoreInfoService {
   }
 
   executeMoreInfo(task: any, featureData: any): Observable<any> {
-    console.info('[MoreInfo] executeMoreInfo', {
-      taskId: task?.id,
-      scope: task?.scope,
-      hasFeatureData: !!featureData
-    });
     const parameters = this.parseTaskParameters(task.parameters);
     if (task.parameters && parameters === null) {
       return of({ error: 'Invalid task parameters' });
@@ -97,11 +78,16 @@ export class MoreInfoService {
     if (task?.scope === 'SQL') {
       return this.executeSqlProxy(task, featureData);
     }
+    if (task?.scope === 'API') {
+      return this.executeApiQuery(parameters, task, featureData);
+    }
 
-    const queryType = parameters?.queryType || 'url';
+    const queryType = parameters?.queryType || (parameters?.apiUrl ? 'api' : 'url');
     switch (queryType) {
       case 'url':
         return this.executeUrlQuery(task, featureData);
+      case 'api':
+        return this.executeApiQuery(parameters, task, featureData);
       case 'sql':
         return this.executeSqlQuery(parameters, featureData);
       default:
@@ -137,6 +123,32 @@ export class MoreInfoService {
     );
   }
 
+  private executeApiQuery(
+    parameters: any,
+    task: any,
+    featureData: any
+  ): Observable<any> {
+    const rawApiUrl = task?.url || parameters?.apiUrl || task?.command;
+    const apiUrl = rawApiUrl
+      ? this.replacePlaceholdersFromParams(
+          String(rawApiUrl),
+          task?.parameters,
+          featureData
+        )
+      : '';
+    if (!apiUrl) {
+      return of({ error: 'API URL not configured' });
+    }
+
+    const params =
+      this.buildQueryParams(parameters?.params, featureData) ||
+      this.buildTaskParamQuery(task?.parameters, featureData);
+    return this.http.get(apiUrl, { params }).pipe(
+      map((response) => ({ success: true, data: response })),
+      catchError((error) => of({ error: error.message || 'API query failed' }))
+    );
+  }
+
   private replacePlaceholders(template: string, data: any): string {
     let result = template;
     const patterns = [/\{([^}]+)\}/g, /\$\{([^}]+)\}/g, /\{\{([^}]+)\}\}/g];
@@ -147,6 +159,53 @@ export class MoreInfoService {
       });
     });
     return result;
+  }
+
+  private replacePlaceholdersFromParams(
+    template: string,
+    taskParameters: any,
+    featureData: any
+  ): string {
+    let result = template;
+    if (taskParameters && typeof taskParameters === 'object') {
+      Object.entries(taskParameters).forEach(([paramName, config]) => {
+        if (!this.isSqlParamConfig(config)) {
+          return;
+        }
+
+        const label = (config as any)?.label || paramName;
+        const value = this.getSqlParamValue(
+          featureData,
+          paramName,
+          config as any
+        );
+        if (label && value !== undefined) {
+          result = result.split(String(label)).join(String(value));
+        }
+      });
+    }
+
+    return this.replacePlaceholders(result, featureData);
+  }
+
+  private buildQueryParams(
+    paramsConfig: any,
+    featureData: any
+  ): Record<string, string> | undefined {
+    if (!paramsConfig || typeof paramsConfig !== 'object') {
+      return undefined;
+    }
+
+    const params: Record<string, string> = {};
+    Object.entries(paramsConfig).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        params[key] = this.replacePlaceholders(value, featureData);
+      } else if (value != null) {
+        params[key] = String(value);
+      }
+    });
+
+    return params;
   }
 
   private executeSqlProxy(task: any, featureData: any): Observable<any> {
@@ -161,25 +220,8 @@ export class MoreInfoService {
       return of({ error: 'Invalid task parameters' });
     }
 
-    const paramPayload = this.buildSqlParamPayload(parameters, featureData);
-    if (paramPayload) {
-      console.info('[MoreInfo] SQL param payload', {
-        url,
-        length: paramPayload.length
-      });
-      const headers = new HttpHeaders({
-        'Content-Type': 'application/xml; charset=utf-8',
-        Accept: 'application/xml, text/xml, */*'
-      });
-      return this.http.post(url, paramPayload, { headers }).pipe(
-        map((response) => ({ success: true, data: response })),
-        catchError((error) =>
-          of({ error: error.message || 'SQL query failed' })
-        )
-      );
-    }
-
-    return this.http.get(url).pipe(
+    const params = this.buildTaskParamQuery(parameters, featureData);
+    return this.http.get(url, { params }).pipe(
       map((response) => ({ success: true, data: response })),
       catchError((error) => of({ error: error.message || 'SQL query failed' }))
     );
@@ -198,39 +240,39 @@ export class MoreInfoService {
     }
   }
 
-  private buildSqlParamPayload(
+  private buildTaskParamQuery(
     parameters: any,
     featureData: any
-  ): string | null {
+  ): Record<string, string> | undefined {
     if (!parameters || typeof parameters !== 'object') {
-      return null;
+      return undefined;
     }
 
     const entries = Object.entries(parameters).filter(([, config]) =>
       this.isSqlParamConfig(config)
     );
-
     if (entries.length === 0) {
-      return null;
+      return undefined;
     }
 
-    const paramFields = entries
-      .map(([paramName, config]) => {
-        const value = this.getSqlParamValue(
-          featureData,
-          paramName,
-          config as any
-        );
-        return (
-          '<param>' +
-          '<key>' + paramName + '</key>' +
-          '<value>' + (value == null ? '' : String(value)) + '</value>' +
-          '</param>'
-        );
-      })
-      .join('\n');
+    const params: Record<string, string> = {};
+    entries.forEach(([paramName, config]) => {
+      const key = this.normalizeParamKey(paramName);
+      if (!key) {
+        return;
+      }
 
-    return paramFields;
+      const value = this.getSqlParamValue(
+        featureData,
+        paramName,
+        config as any
+      );
+      if (value !== undefined) {
+        params[key] = String(value);
+      }
+    });
+
+    return Object.keys(params).length > 0 ? params : undefined;
   }
 
   private isSqlParamConfig(config: any): boolean {
@@ -268,6 +310,18 @@ export class MoreInfoService {
 
   private normalizeKey(value: string): string {
     return value.toLowerCase().replace(/\s+/g, '');
+  }
+
+  private normalizeParamKey(value: string): string {
+    const trimmed = value.trim();
+    const patterns = [/^\$\{(.+)\}$/, /^\{(.+)\}$/, /^\{\{(.+)\}\}$/];
+    for (const pattern of patterns) {
+      const match = pattern.exec(trimmed);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    return trimmed;
   }
 
 }
