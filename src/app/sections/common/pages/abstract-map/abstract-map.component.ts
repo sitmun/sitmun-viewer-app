@@ -19,6 +19,8 @@ import { Subject } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
+  filter,
+  map,
   switchMap,
   takeUntil,
   tap
@@ -125,6 +127,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             const requestId = (appCfg as any).__requestId;
             if (requestId === this.activeRequestId) {
               await this.loadConfig(appCfg, requestId);
+              // Restore component reference after map load so that catalog switching
+              // (and anything else using abstractMapObject) can trigger updateCatalog.
+              // Must run after loadConfig/loadMap because clearMap() sets it to undefined.
+              this.sitnaApi.setGlobal('abstractMapObject', this);
               // There might be a new theme in the recently fetched appCfg
               // We will share it with the rest of the app via
               // the commonService.updateMessage()
@@ -160,11 +166,73 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
     if (!this.isInEmbedded) {
       this.translate.onLangChange
-        .pipe(takeUntil(this.componentDestroyed))
-        .subscribe(() => {
-          this.router.navigateByUrl('/').then(() => {
-            this.navigateToMap();
-          });
+        .pipe(
+          filter(
+            () =>
+              this.applicationId != null &&
+              !isNaN(this.applicationId) &&
+              this.territoryId != null &&
+              !isNaN(this.territoryId)
+          ),
+          map(() => this.parseLang(this.translate.currentLang)),
+          filter((newLocale) => newLocale !== this.locale),
+          tap((newLocale) => {
+            this.locale = newLocale;
+            this.loadingState = 'loading-config';
+            this.clearMap();
+          }),
+          switchMap(() => {
+            const langForRequest = this.translate.currentLang;
+            const requestId = ++this.activeRequestId;
+            return this.commonService
+              .fetchMapConfiguration(
+                this.applicationId,
+                this.territoryId,
+                langForRequest
+              )
+              .pipe(
+                tap((appCfg) => {
+                  if (appCfg) {
+                    (appCfg as any).__requestId = requestId;
+                  }
+                })
+              );
+          }),
+          takeUntil(this.componentDestroyed)
+        )
+        .subscribe({
+          next: async (appCfg) => {
+            if (appCfg) {
+              const requestId = (appCfg as any).__requestId;
+              if (requestId === this.activeRequestId) {
+                await this.loadConfig(appCfg, requestId);
+                this.sitnaApi.setGlobal('abstractMapObject', this);
+                this.commonService.updateMessage(appCfg.application.theme);
+              }
+            } else {
+              this.loadingState = 'error';
+              console.error(
+                '[AbstractMapComponent] Received null/undefined config on lang change'
+              );
+              this.dialog.open(ErrorModalComponent, {
+                data: { message: 'map.error.config.empty' },
+                role: 'alertdialog',
+                injector: this.injector
+              });
+            }
+          },
+          error: (error) => {
+            this.loadingState = 'error';
+            console.error(
+              '[AbstractMapComponent] Failed to fetch config on lang change:',
+              error
+            );
+            this.dialog.open(ErrorModalComponent, {
+              data: { message: 'map.error.config.fetch.failed' },
+              role: 'alertdialog',
+              injector: this.injector
+            });
+          }
         });
     }
 
@@ -179,8 +247,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     // Clear map resources
     this.clearMap();
   }
-
-  abstract navigateToMap(): any;
 
   removeSitnaDivs() {
     const divs = this.document.querySelectorAll('.tc-modal');
@@ -210,6 +276,11 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     try {
       this.loadingState = 'processing-config';
       this.currentAppCfg = appCfg;
+      this.sitnaApi.setGlobal('currentAppCfg', appCfg);
+      this.sitnaApi.setGlobal(
+        'currentMapLang',
+        this.translate.currentLang || undefined
+      );
 
       // Initialize lookup service for efficient entity lookups
       this.configLookup.initialize(appCfg);
@@ -296,20 +367,26 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     );
 
     if (layerCatalogsForModal) {
-      // Rebuild controls to pick up the new currentTreeId
+      // Rebuild controls to pick up the new currentTreeId. Full map reload is required
+      // because the layer catalog is built at map init from config (no in-place refresh API).
       this.controlRegistry
         .processControls(this.currentAppCfg.tasks, this.currentAppCfg)
         .then(async (controls) => {
-          // Update general config with new controls
-          if (this.currentGeneralCfg) {
-            this.currentGeneralCfg.controls = controls as any;
+          if (!this.currentAppCfg || !this.currentGeneralCfg) {
+            return;
           }
-
-          // Clear and reload map with updated configuration
-          if (this.currentAppCfg && this.currentGeneralCfg) {
-            this.clearMap();
-            await this.loadMap(this.currentGeneralCfg);
-          }
+          // Update stored config and pass a fresh object to loadMap so the new map gets the new controls
+          this.currentGeneralCfg.controls = controls as any;
+          const newCfg = {
+            ...this.currentGeneralCfg,
+            controls: this.currentGeneralCfg.controls
+          };
+          this.clearMap();
+          await this.loadMap(newCfg);
+          this.sitnaApi.setGlobal('abstractMapObject', this);
+        })
+        .catch((err) => {
+          console.error('[AbstractMapComponent] updateCatalog failed:', err);
         });
     }
   }
@@ -317,6 +394,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   clearMap() {
     this.loadId++;
     this.sitnaApi.setGlobal('abstractMapObject', undefined);
+    this.sitnaApi.setGlobal('layerCatalogsForModal', undefined);
+    this.sitnaApi.setGlobal('currentAppCfg', undefined);
     // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
     const overview = this.el.nativeElement.querySelector(

@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { FormFieldInputComponent } from '@ui/components/form-field-input/form-field-input.component';
 import { PrimaryButtonComponent } from '@ui/components/primary-button/primary-button.component';
 import { SecondaryButtonComponent } from '@ui/components/secondary-button/secondary-button.component';
@@ -49,6 +50,7 @@ describe('LoginComponent', () => {
             login: jest.fn(),
             isLoggedIn: jest.fn(),
             getAuthConfig: jest.fn(),
+            getAuthMethods: jest.fn().mockReturnValue(of([])),
             getLoggedDetails: jest.fn()
           }
         },

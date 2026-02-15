@@ -1,3 +1,5 @@
+import type { AppCfg } from '@api/model/app-cfg';
+
 /**
  * Typed app globals hosted by SitnaApiService (replaces window.abstractMapObject / window.layerCatalogsForModal).
  */
@@ -17,4 +19,8 @@ export interface LayerCatalogsForModalState {
 export interface SitnaGlobals {
   abstractMapObject?: AbstractMapRef | null;
   layerCatalogsForModal?: LayerCatalogsForModalState | null;
+  /** Active map config; used by virtual WMS patch so tree uses current language. */
+  currentAppCfg?: AppCfg | null;
+  /** Current map language (e.g. "en"); used in virtual WMS URLs to avoid cached GetCapabilities from another language. */
+  currentMapLang?: string | null;
 }

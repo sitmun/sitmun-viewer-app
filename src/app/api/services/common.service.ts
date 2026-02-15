@@ -12,6 +12,7 @@ import { tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 import { AppConfigService } from '../../services/app-config.service';
+import { LanguageService } from '../../services/language.service';
 
 export enum DashboardTypes {
   APPLICATIONS = 'applications',
@@ -91,6 +92,7 @@ export class CommonService {
     this.messageSubject.asObservable();
 
   private appConfigService = inject(AppConfigService);
+  private languageService = inject(LanguageService);
 
   private mapConfigCache = new Map<string, MapConfigCacheEntry>();
   private readonly CONFIG_CACHE_TTL_MS = 60_000;
@@ -131,26 +133,34 @@ export class CommonService {
 
   fetchMapConfiguration(
     appId: number,
-    territoryId: number
+    territoryId: number,
+    langOverride?: string
   ): Observable<AppCfg> {
     const testConfigFile = this.appConfigService.getTestConfigFile();
     if (testConfigFile) {
       return this.http.get<AppCfg>(`assets/config/${testConfigFile}`);
     }
 
-    const key = `${appId}:${territoryId}`;
+    const lang =
+      (langOverride ?? this.languageService.getCurrentLanguage())?.trim() || '';
+    const key = `${appId}:${territoryId}:${lang}`;
     const cached = this.mapConfigCache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CONFIG_CACHE_TTL_MS) {
+    const useCache =
+      !langOverride &&
+      cached &&
+      Date.now() - cached.timestamp < this.CONFIG_CACHE_TTL_MS;
+    if (useCache) {
       return of(cached.data);
     }
 
-    return this.http
-      .get<AppCfg>(environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId))
-      .pipe(
-        tap((data) => {
-          this.mapConfigCache.set(key, { data, timestamp: Date.now() });
-        })
-      );
+    const url = environment.apiUrl + URL_API_MAP_CONFIG(appId, territoryId);
+    const options = lang ? { params: { lang } } : {};
+
+    return this.http.get<AppCfg>(url, options).pipe(
+      tap((data) => {
+        this.mapConfigCache.set(key, { data, timestamp: Date.now() });
+      })
+    );
   }
 
   // Components that need to share a newTheme with others will call

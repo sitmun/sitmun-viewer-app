@@ -59,7 +59,12 @@ export class SitnaApiService {
    */
   isGlobalDefined(name: string): boolean {
     const k = name as keyof SitnaGlobals;
-    if (k === 'abstractMapObject' || k === 'layerCatalogsForModal') {
+    if (
+      k === 'abstractMapObject' ||
+      k === 'layerCatalogsForModal' ||
+      k === 'currentAppCfg' ||
+      k === 'currentMapLang'
+    ) {
       return this.appGlobals.has(k) && this.appGlobals.get(k) != null;
     }
     return (
