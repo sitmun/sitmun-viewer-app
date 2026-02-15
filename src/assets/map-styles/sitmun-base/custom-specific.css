@@ -144,6 +144,19 @@
 .tc-ctl-wlm .tc-ctl-wlm-lyr {
   font-size: 0.75em;
   padding-bottom: 5px;
+  color: #757575 !important;
+}
+
+.tc-ctl-wlm .tc-ctl-wlm-path {
+  color: #660000 !important;
+}
+
+.tc-ctl-wlm li.tc-ctl-wlm-elm.tc-ctl-wlm-elm-notvisible .tc-ctl-wlm-lyr {
+  color: #757575 !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node-notvisible {
+  color: #757575 !important;
 }
 
 .tc-ctl-wlm input[type='range'] {
