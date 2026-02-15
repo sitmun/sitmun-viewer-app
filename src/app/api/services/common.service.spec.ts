@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 
 import { CommonService } from './common.service';
 import { AppConfigService } from '../../services/app-config.service';
+import { LanguageService } from '../../services/language.service';
 
 describe('CommonService', () => {
   let service: CommonService;
@@ -16,6 +17,7 @@ describe('CommonService', () => {
   let appConfigService: jest.Mocked<
     Pick<AppConfigService, 'getTestConfigFile'>
   >;
+  let languageService: jest.Mocked<Pick<LanguageService, 'getCurrentLanguage'>>;
 
   const mockAppCfg = {
     application: { id: 1, name: 'Test', theme: 'sitmun-base' },
@@ -27,11 +29,15 @@ describe('CommonService', () => {
     appConfigService = {
       getTestConfigFile: jest.fn().mockReturnValue(null)
     };
+    languageService = {
+      getCurrentLanguage: jest.fn().mockReturnValue('')
+    };
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         CommonService,
-        { provide: AppConfigService, useValue: appConfigService }
+        { provide: AppConfigService, useValue: appConfigService },
+        { provide: LanguageService, useValue: languageService }
       ]
     });
     service = TestBed.inject(CommonService);
@@ -102,6 +108,20 @@ describe('CommonService', () => {
         r.url?.includes('assets/config/test-config.json')
       );
       expect(reqs.length).toBe(2);
+    });
+
+    it('should send lang query param when current language is set', (done) => {
+      languageService.getCurrentLanguage.mockReturnValue('ca');
+      const url = environment.apiUrl + URL_API_MAP_CONFIG(12, 4);
+      service.fetchMapConfiguration(12, 4).subscribe((data) => {
+        expect(data).toEqual(mockAppCfg);
+        done();
+      });
+      const req = httpMock.expectOne(
+        (r) => r.url?.startsWith(url) && r.params?.get('lang') === 'ca'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(mockAppCfg);
     });
   });
 });

@@ -3,13 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 
+import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { DashboardItemsComponent } from '@ui/components/dashboard/dashboard-items/dashboard-items.component';
 import { DashboardSearchboxComponent } from '@ui/components/dashboard/dashboard-searchbox/dashboard-searchbox.component';
-
-import { CommonService } from '@api/services/common.service';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
+import { of } from 'rxjs';
 
 import { DashboardComponent } from './dashboard.component';
 
@@ -34,8 +33,12 @@ describe('DashboardComponent', () => {
         {
           provide: CommonService,
           useValue: {
-            fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [], totalElements: 0 })),
-            fetchTerritoriesByApplication: jest.fn().mockReturnValue(of({ content: [] }))
+            fetchDashboardItems: jest
+              .fn()
+              .mockReturnValue(of({ content: [], totalElements: 0 })),
+            fetchTerritoriesByApplication: jest
+              .fn()
+              .mockReturnValue(of({ content: [] }))
           }
         },
         {

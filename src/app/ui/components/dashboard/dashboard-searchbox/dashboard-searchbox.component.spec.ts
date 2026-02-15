@@ -2,10 +2,9 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 
+import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
-
-import { CommonService } from '@api/services/common.service';
 
 import { DashboardSearchboxComponent } from './dashboard-searchbox.component';
 
@@ -25,7 +24,9 @@ describe('DashboardSearchboxComponent', () => {
         {
           provide: CommonService,
           useValue: {
-            fetchTerritoriesByApplication: jest.fn().mockReturnValue(of({ content: [] }))
+            fetchTerritoriesByApplication: jest
+              .fn()
+              .mockReturnValue(of({ content: [] }))
           }
         }
       ]
