@@ -20,6 +20,8 @@ import { SitnaApiService } from './sitna-api.service';
   providedIn: 'root'
 })
 export class CatalogSwitchingService {
+  private pendingSelectedTreeId: string | null = null;
+
   constructor(private readonly sitnaApi: SitnaApiService) {}
 
   /**
@@ -62,8 +64,11 @@ export class CatalogSwitchingService {
       const existingModal = this.sitnaApi.getGlobal('layerCatalogsForModal');
       const existingTreeId = existingModal?.currentTreeId;
 
-      // Validate existing tree ID exists in available trees
-      if (existingTreeId && trees.some((tree) => tree.id === existingTreeId)) {
+      // Validate existing tree ID exists in available trees (string compare for API number/string)
+      if (
+        existingTreeId &&
+        trees.some((tree) => String(tree.id) === String(existingTreeId))
+      ) {
         currentTreeId = existingTreeId;
       } else {
         // Fallback to the first tree
@@ -96,7 +101,7 @@ export class CatalogSwitchingService {
     }
 
     const selectedTree = context.trees.find(
-      (tree: AppTree) => tree.id === currentTreeId
+      (tree: AppTree) => String(tree.id) === String(currentTreeId)
     );
     return selectedTree ? selectedTree.rootNode : null;
   }
@@ -267,17 +272,14 @@ export class CatalogSwitchingService {
       document.body.appendChild(projectsPanel);
     }
 
-    // Attach event handlers immediately after injecting button
-    // Check if handlers already added (avoid duplicates)
-    if (!(changeCatalogButton as any).__catalogSwitchingHandlersAdded) {
-      this.attachCatalogSwitchingHandlers(
-        control,
-        changeCatalogButton,
-        projectsPanel,
-        handler.sitnaApi
-      );
-      (changeCatalogButton as any).__catalogSwitchingHandlersAdded = true;
-    }
+    // Always attach handlers so the (possibly new) button gets its click listener after map reload.
+    // Panel delegation is attached only once to avoid stacking (see attachCatalogSwitchingHandlers).
+    this.attachCatalogSwitchingHandlers(
+      control,
+      changeCatalogButton,
+      projectsPanel,
+      handler.sitnaApi
+    );
 
     // Update tooltip after button is created (in case catalog was already selected)
     this.updateChangeTopicButtonTooltip();
@@ -308,7 +310,7 @@ export class CatalogSwitchingService {
       return;
     }
 
-    // Click handler for catalog switching button
+    // Button click: always attach (button is recreated on map reload)
     changeCatalogButton.addEventListener('click', function (e: Event) {
       e.preventDefault();
       e.stopPropagation();
@@ -325,7 +327,12 @@ export class CatalogSwitchingService {
       }
     });
 
-    // Use event delegation for panel buttons (they may not exist until template is rendered)
+    // Panel delegation: attach only once (panel persists across map reloads; avoid stacking)
+    if ((projectsPanel as any).__delegationAttached) {
+      return;
+    }
+    (projectsPanel as any).__delegationAttached = true;
+
     projectsPanel.addEventListener('click', function (e: Event) {
       const target = e.target as HTMLElement;
 
@@ -353,6 +360,12 @@ export class CatalogSwitchingService {
 
         // Add selection to clicked item
         catalogElement.classList.add('tc-ctl-lcat-proj-selected');
+
+        // Store pending selection (source of truth for Accept)
+        const catalogIdInput = catalogElement.querySelector(
+          '.tc-ctl-lcat-proj-catalog-id'
+        ) as HTMLInputElement;
+        service.pendingSelectedTreeId = catalogIdInput?.value ?? null;
         return;
       }
 
@@ -363,12 +376,8 @@ export class CatalogSwitchingService {
       ) {
         e.preventDefault();
         e.stopPropagation();
+        service.pendingSelectedTreeId = null;
         projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
-        projectsPanel
-          .querySelectorAll('.tc-ctl-lcat-proj-selected')
-          .forEach((item: Element) => {
-            item.classList.remove('tc-ctl-lcat-proj-selected');
-          });
         return;
       }
 
@@ -379,20 +388,13 @@ export class CatalogSwitchingService {
       ) {
         e.preventDefault();
         e.stopPropagation();
-        const selectedProject = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-selected'
-        );
-        if (selectedProject) {
-          const catalogIdInput = selectedProject.querySelector(
-            '.tc-ctl-lcat-proj-catalog-id'
-          ) as HTMLInputElement;
-          if (catalogIdInput) {
-            const treeId = catalogIdInput.value; // Tree ID is stored as string
-            if (treeId !== layerCatalogsForModal.currentTreeId) {
-              service.switchCatalog(treeId);
-            }
-          }
+        const treeId = service.pendingSelectedTreeId;
+        if (treeId != null) {
+          // switchCatalog reads layerCatalogsForModal fresh from global state
+          // and skips if the selected tree is already current
+          service.switchCatalog(treeId);
         }
+        service.pendingSelectedTreeId = null;
         projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
         return;
       }
@@ -404,12 +406,8 @@ export class CatalogSwitchingService {
       ) {
         e.preventDefault();
         e.stopPropagation();
+        service.pendingSelectedTreeId = null;
         projectsPanel.classList.add(TC.Consts.classes.HIDDEN);
-        projectsPanel
-          .querySelectorAll('.tc-ctl-lcat-proj-selected')
-          .forEach((item: Element) => {
-            item.classList.remove('tc-ctl-lcat-proj-selected');
-          });
         return;
       }
     });
@@ -454,77 +452,9 @@ export class CatalogSwitchingService {
           }
         });
 
-        // Re-attach event handlers for newly rendered elements
-        const closeButton = projectsPanel.querySelector('.tc-modal-close');
-        const acceptButton = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-accept'
+        this.pendingSelectedTreeId = String(
+          layerCatalogsForModal.currentTreeId
         );
-        const cancelButton = projectsPanel.querySelector(
-          '.tc-ctl-lcat-proj-cancel'
-        );
-        const catalogItemsNew = projectsPanel.querySelectorAll(
-          '.tc-ctl-lcat-proj-catalog'
-        );
-
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const service = this;
-
-        if (closeButton) {
-          closeButton.addEventListener('click', function () {
-            projectsPanel.classList.add('tc-hidden');
-            projectsPanel
-              .querySelectorAll('.tc-ctl-lcat-proj-selected')
-              .forEach((item: Element) => {
-                item.classList.remove('tc-ctl-lcat-proj-selected');
-              });
-          });
-        }
-
-        if (acceptButton) {
-          acceptButton.addEventListener('click', () => {
-            const selectedProject = projectsPanel.querySelector(
-              '.tc-ctl-lcat-proj-selected'
-            );
-            if (selectedProject) {
-              const catalogIdInput = selectedProject.querySelector(
-                '.tc-ctl-lcat-proj-catalog-id'
-              ) as HTMLInputElement;
-              if (catalogIdInput) {
-                const treeId = catalogIdInput.value; // Tree ID is stored as string
-                if (treeId !== layerCatalogsForModal.currentTreeId) {
-                  service.switchCatalog(treeId);
-                }
-              }
-            }
-            projectsPanel.classList.add('tc-hidden');
-          });
-        }
-
-        if (cancelButton) {
-          cancelButton.addEventListener('click', function () {
-            projectsPanel.classList.add('tc-hidden');
-            projectsPanel
-              .querySelectorAll('.tc-ctl-lcat-proj-selected')
-              .forEach((item: Element) => {
-                item.classList.remove('tc-ctl-lcat-proj-selected');
-              });
-          });
-        }
-
-        catalogItemsNew.forEach((catalogElement: Element) => {
-          catalogElement.addEventListener('click', function (e: Event) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const selected = projectsPanel.querySelector(
-              '.tc-ctl-lcat-proj-selected'
-            );
-            if (selected && selected !== catalogElement) {
-              selected.classList.remove('tc-ctl-lcat-proj-selected');
-            }
-            catalogElement.classList.add('tc-ctl-lcat-proj-selected');
-          });
-        });
       })
       .catch((error: any) => {
         console.error(

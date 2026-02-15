@@ -381,7 +381,15 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             ...this.currentGeneralCfg,
             controls: this.currentGeneralCfg.controls
           };
+          // Save catalog state built by processControls; clearMap will clear it
+          const savedCatalogState = this.sitnaApi.getGlobal(
+            'layerCatalogsForModal'
+          );
           this.clearMap();
+          // Restore catalog state so injectCatalogSwitchingButton can find it during loadMap
+          if (savedCatalogState) {
+            this.sitnaApi.setGlobal('layerCatalogsForModal', savedCatalogState);
+          }
           await this.loadMap(newCfg);
           this.sitnaApi.setGlobal('abstractMapObject', this);
         })
