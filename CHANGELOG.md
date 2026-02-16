@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- Reload map and layer tree when language changes.
+
+### Changed
+
+- Added test coverage for language parameter behavior and improved related test quality.
+
+### Fixed
+
+- Fixed catalog switching state and button visibility after app switch or language change.
+- Increased contrast for loaded layers list text.
+
 ## [1.2.1] - 2026-02-06
 
 ### Added
@@ -202,8 +215,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.2.0...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.1...HEAD
 [1.2.0]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.1...sitmun-viewer-app/1.2.0
-[1.1.1]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.1.0...sitmun-viewer-app/1.1.1
-[1.1.0]: https://github.com/sitmun/sitmun-application-stack/compare/sitmun-viewer-app/1.0.0...sitmun-viewer-app/1.1.0
-[1.0.0]: https://github.com/sitmun/sitmun-application-stack/releases/tag/sitmun-viewer-app/1.0.0
+[1.1.1]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.0...sitmun-viewer-app/1.1.1
+[1.1.0]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.0.0...sitmun-viewer-app/1.1.0
+[1.0.0]: https://github.com/sitmun/sitmun-viewer-app/releases/tag/sitmun-viewer-app/1.0.0
