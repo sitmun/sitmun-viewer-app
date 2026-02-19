@@ -171,7 +171,7 @@ export class FeatureInfoMoreInfoHandler {
 
     tasks.forEach((task: any, index: number) => {
       const taskText = task.name;
-      const fieldName = 'ℹ️' + ' '.repeat(index);
+      const fieldName = this.buildUniqueFieldName('ℹ️ ' + taskText, index);
       const nonInteractive = this.isNonInteractiveTask(task);
 
       if (nonInteractive) {
@@ -477,6 +477,10 @@ export class FeatureInfoMoreInfoHandler {
 
   private normalizeKey(value: string): string {
     return value.toLowerCase().split(/\s+/g).join('');
+  }
+
+  private buildUniqueFieldName(base: string, index: number): string {
+    return base + '\u200B'.repeat(index);
   }
 
   private buildMoreInfoLink(
