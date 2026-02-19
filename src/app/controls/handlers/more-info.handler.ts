@@ -1,6 +1,7 @@
 import type { AppCfg } from '@api/model/app-cfg';
 
 import { MoreInfoService } from '../../services/more-info.service';
+import { normalizeMoreInfoRows } from '../utils/more-info-data.utils';
 
 export class FeatureInfoMoreInfoHandler {
   private placeholderCounter = 0;
@@ -28,47 +29,63 @@ export class FeatureInfoMoreInfoHandler {
     if (!options?.services || !Array.isArray(options.services)) return;
 
     for (const service of options.services) {
-      if (!service?.layers || !Array.isArray(service.layers)) continue;
-
-      for (const layer of service.layers) {
-        if (!layer?.features || !Array.isArray(layer.features)) continue;
-
-        const cartographyId = this.getCartographyIdFromLayerName(layer.name);
-        if (!cartographyId) continue;
-
-        const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
-        if (tasks.length === 0) continue;
-
-        const nonInteractiveTasks = tasks.filter((task: any) =>
-          this.isNonInteractiveTask(task)
-        );
-        if (nonInteractiveTasks.length === 0) continue;
-
-        for (const feature of layer.features) {
-          const featureData = feature.getData
-            ? feature.getData()
-            : feature.data || {};
-
-          nonInteractiveTasks.forEach((task: any) => {
-            const taskIndex = tasks.indexOf(task);
-            const taskKey = this.getTaskKey(task, taskIndex);
-            const placeholderId = this.getPlaceholderId(feature, taskKey);
-            this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
-              next: (result: any) => {
-                this.displayMoreInfoResult(task, result, placeholderId);
-              },
-              error: (error: any) => {
-                this.displayMoreInfoResult(
-                  task,
-                  { error: error?.message || 'Error obtenint més informació' },
-                  placeholderId
-                );
-              }
-            });
-          });
-        }
-      }
+      this.executeSqlTasksForService(service);
     }
+  }
+
+  private executeSqlTasksForService(service: any): void {
+    if (!service?.layers || !Array.isArray(service.layers)) return;
+
+    for (const layer of service.layers) {
+      this.executeSqlTasksForLayer(layer);
+    }
+  }
+
+  private executeSqlTasksForLayer(layer: any): void {
+    if (!layer?.features || !Array.isArray(layer.features)) return;
+
+    const cartographyId = this.getCartographyIdFromLayerName(layer.name);
+    if (!cartographyId) return;
+
+    const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
+    if (tasks.length === 0) return;
+
+    const nonInteractiveTasks = tasks.filter((task: any) =>
+      this.isNonInteractiveTask(task)
+    );
+    if (nonInteractiveTasks.length === 0) return;
+
+    for (const feature of layer.features) {
+      this.executeTasksForFeature(feature, nonInteractiveTasks, tasks);
+    }
+  }
+
+  private executeTasksForFeature(
+    feature: any,
+    nonInteractiveTasks: any[],
+    allTasks: any[]
+  ): void {
+    const featureData = feature.getData
+      ? feature.getData()
+      : feature.data || {};
+
+    nonInteractiveTasks.forEach((task: any) => {
+      const taskIndex = allTasks.indexOf(task);
+      const taskKey = this.getTaskKey(task, taskIndex);
+      const placeholderId = this.getPlaceholderId(feature, taskKey);
+      this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
+        next: (result: any) => {
+          this.displayMoreInfoResult(task, result, placeholderId);
+        },
+        error: (error: any) => {
+          this.displayMoreInfoResult(
+            task,
+            { error: error?.message || 'Error obtenint més informació' },
+            placeholderId
+          );
+        }
+      });
+    });
   }
 
   attachMoreInfoListeners(featureInfoControl: any): void {
@@ -147,7 +164,9 @@ export class FeatureInfoMoreInfoHandler {
   ): void {
     if (!Array.isArray(tasks)) return;
 
-    const currentData = feature.getData ? feature.getData() : feature.data || {};
+    const currentData = feature.getData
+      ? feature.getData()
+      : feature.data || {};
     const newData = { ...currentData };
 
     tasks.forEach((task: any, index: number) => {
@@ -214,7 +233,7 @@ export class FeatureInfoMoreInfoHandler {
     );
   }
 
-  private parseTaskParameters(parameters: any): any | null {
+  private parseTaskParameters(parameters: any): any {
     if (typeof parameters !== 'string') {
       return parameters;
     }
@@ -315,7 +334,7 @@ export class FeatureInfoMoreInfoHandler {
       }
       alert(message);
     } else if (result.data) {
-      const rows = this.normalizeRows(result.data);
+      const rows = normalizeMoreInfoRows(result.data);
       const tableHtml = this.renderTableHtml(rows);
       if (placeholderId) {
         if (!this.updatePlaceholder(placeholderId, tableHtml)) {
@@ -332,40 +351,6 @@ export class FeatureInfoMoreInfoHandler {
     }
   }
 
-  private normalizeRows(data: any): any[] {
-    if (data == null) return [];
-
-    if (typeof data === 'string') {
-      const trimmed = data.trim();
-      if (
-        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))
-      ) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          return this.normalizeRows(parsed);
-        } catch {
-          return [{ value: data }];
-        }
-      }
-      return [{ value: data }];
-    }
-
-    if (Array.isArray(data)) {
-      if (data.length === 0) return [];
-      if (data.every((item) => item && typeof item === 'object')) {
-        return data;
-      }
-      return data.map((item) => ({ value: item }));
-    }
-
-    if (typeof data === 'object') {
-      return [data];
-    }
-
-    return [{ value: data }];
-  }
-
   private renderTableHtml(rows: any[]): string {
     if (!rows || rows.length === 0) {
       return '<div class="sitmun-more-info-empty">Sense dades</div>';
@@ -378,9 +363,13 @@ export class FeatureInfoMoreInfoHandler {
     const body = rows
       .map((row) => {
         const cells = columns
-          .map((column) =>
-            '<td>' + this.escapeHtml(String(row[column] ?? '')) + '</td>'
-          )
+          .map((column) => {
+            return (
+              '<td>' +
+              this.escapeHtml(this.stringifyValueForDisplay(row[column])) +
+              '</td>'
+            );
+          })
           .join('');
         return '<tr>' + cells + '</tr>';
       })
@@ -400,17 +389,36 @@ export class FeatureInfoMoreInfoHandler {
 
   private escapeHtml(value: string): string {
     return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .split('&')
+      .join('&amp;')
+      .split('<')
+      .join('&lt;')
+      .split('>')
+      .join('&gt;')
+      .split('"')
+      .join('&quot;')
+      .split("'")
+      .join('&#39;');
+  }
+
+  private stringifyValueForDisplay(value: any): string {
+    if (value === null || value === undefined) return '';
+
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value, null, 2);
+      } catch {
+        return '[valor no serialitzable]';
+      }
+    }
+
+    return String(value);
   }
 
   private updatePlaceholder(placeholderId: string, html: string): boolean {
-    const element = document.querySelector(
+    const element = document.querySelector<HTMLElement>(
       '[data-placeholder-id="' + placeholderId + '"]'
-    ) as HTMLElement | null;
+    );
     if (!element) {
       return false;
     }
@@ -423,16 +431,16 @@ export class FeatureInfoMoreInfoHandler {
     if (this.pendingResults.size === 0) return;
 
     Array.from(this.pendingResults.entries()).forEach(([id, payload]) => {
-      const element = container.querySelector(
+      const element = container.querySelector<HTMLElement>(
         '[data-placeholder-id="' + id + '"]'
-      ) as HTMLElement | null;
+      );
       if (!element) return;
 
       const result = payload.result;
       if (result?.error) {
         element.innerHTML = this.escapeHtml('Error: ' + result.error);
       } else if (result?.data) {
-        const rows = this.normalizeRows(result.data);
+        const rows = normalizeMoreInfoRows(result.data);
         element.innerHTML = this.renderTableHtml(rows);
       }
       this.pendingResults.delete(id);
@@ -468,7 +476,7 @@ export class FeatureInfoMoreInfoHandler {
   }
 
   private normalizeKey(value: string): string {
-    return value.toLowerCase().replace(/\s+/g, '');
+    return value.toLowerCase().split(/\s+/g).join('');
   }
 
   private buildMoreInfoLink(
@@ -478,7 +486,7 @@ export class FeatureInfoMoreInfoHandler {
     cartographyId: string,
     taskIndex: number
   ): string {
-    const safeTaskId = taskId ? taskId : '';
+    const safeTaskId = taskId ?? '';
     return (
       '<a href="' +
       url +
