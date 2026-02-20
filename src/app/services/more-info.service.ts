@@ -32,7 +32,6 @@ export class MoreInfoService {
           existingTasks.push(task);
           this.moreInfoTasks.set(key, existingTasks);
         }
-
       }
     });
   }
@@ -70,7 +69,7 @@ export class MoreInfoService {
   }
 
   executeMoreInfo(task: any, featureData: any): Observable<any> {
-    const parameters = this.parseTaskParameters(task.parameters);
+    const parameters = this.parseTaskParameters(task.parameters) as any;
     if (task.parameters && parameters === null) {
       return of({ error: 'Invalid task parameters' });
     }
@@ -82,7 +81,8 @@ export class MoreInfoService {
       return this.executeApiQuery(parameters, task, featureData);
     }
 
-    const queryType = parameters?.queryType || (parameters?.apiUrl ? 'api' : 'url');
+    const queryType =
+      parameters?.queryType || (parameters?.apiUrl ? 'api' : 'url');
     switch (queryType) {
       case 'url':
         return this.executeUrlQuery(task, featureData);
@@ -101,7 +101,11 @@ export class MoreInfoService {
       return of({ error: 'No URL configured in task command' });
     }
 
-    const url = this.replacePlaceholders(urlTemplate, featureData);
+    const url = this.replacePlaceholdersFromParams(
+      urlTemplate,
+      task?.parameters,
+      featureData
+    );
     window.open(url, '_blank');
     return of({ success: true, url });
   }
@@ -151,7 +155,12 @@ export class MoreInfoService {
 
   private replacePlaceholders(template: string, data: any): string {
     let result = template;
-    const patterns = [/\{([^}]+)\}/g, /\$\{([^}]+)\}/g, /\{\{([^}]+)\}\}/g];
+    const patterns = [
+      /\{([^}]+)\}/g,
+      /\$\{([^}]+)\}/g,
+      /\{\{([^}]+)\}\}/g,
+      /\$([^$]+)\$/g
+    ];
     patterns.forEach((pattern) => {
       result = result.replace(pattern, (_match, key) => {
         const value = data[key.trim()];
@@ -167,18 +176,15 @@ export class MoreInfoService {
     featureData: any
   ): string {
     let result = template;
-    if (taskParameters && typeof taskParameters === 'object') {
-      Object.entries(taskParameters).forEach(([paramName, config]) => {
+    const parsedTaskParameters = this.parseTaskParameters(taskParameters);
+    if (parsedTaskParameters && typeof parsedTaskParameters === 'object') {
+      Object.entries(parsedTaskParameters).forEach(([paramName, config]) => {
         if (!this.isSqlParamConfig(config)) {
           return;
         }
 
-        const label = (config as any)?.label || paramName;
-        const value = this.getSqlParamValue(
-          featureData,
-          paramName,
-          config as any
-        );
+        const label = config?.label || paramName;
+        const value = this.getSqlParamValue(featureData, paramName, config);
         if (label && value !== undefined) {
           result = result.split(String(label)).join(String(value));
         }
@@ -200,8 +206,12 @@ export class MoreInfoService {
     Object.entries(paramsConfig).forEach(([key, value]) => {
       if (typeof value === 'string') {
         params[key] = this.replacePlaceholders(value, featureData);
-      } else if (value != null) {
+      } else if (typeof value === 'number' || typeof value === 'boolean') {
         params[key] = String(value);
+      } else if (typeof value === 'bigint') {
+        params[key] = value.toString();
+      } else if (typeof value === 'object' && value !== null) {
+        params[key] = JSON.stringify(value);
       }
     });
 
@@ -227,7 +237,7 @@ export class MoreInfoService {
     );
   }
 
-  private parseTaskParameters(parameters: any): any | null {
+  private parseTaskParameters(parameters: any): unknown {
     if (typeof parameters !== 'string') {
       return parameters;
     }
@@ -262,13 +272,19 @@ export class MoreInfoService {
         return;
       }
 
-      const value = this.getSqlParamValue(
-        featureData,
-        paramName,
-        config as any
-      );
+      const value = this.getSqlParamValue(featureData, paramName, config);
       if (value !== undefined) {
-        params[key] = String(value);
+        if (
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+        ) {
+          params[key] = String(value);
+        } else if (typeof value === 'bigint') {
+          params[key] = value.toString();
+        } else if (typeof value === 'object' && value !== null) {
+          params[key] = JSON.stringify(value);
+        }
       }
     });
 
@@ -309,12 +325,17 @@ export class MoreInfoService {
   }
 
   private normalizeKey(value: string): string {
-    return value.toLowerCase().replace(/\s+/g, '');
+    return value.toLowerCase().split(/\s+/g).join('');
   }
 
   private normalizeParamKey(value: string): string {
     const trimmed = value.trim();
-    const patterns = [/^\$\{(.+)\}$/, /^\{(.+)\}$/, /^\{\{(.+)\}\}$/];
+    const patterns = [
+      /^\$\{(.+)\}$/,
+      /^\{(.+)\}$/,
+      /^\{\{(.+)\}\}$/,
+      /^\$(.+)\$$/
+    ];
     for (const pattern of patterns) {
       const match = pattern.exec(trimmed);
       if (match) {
@@ -323,5 +344,4 @@ export class MoreInfoService {
     }
     return trimmed;
   }
-
 }

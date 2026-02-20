@@ -6,6 +6,7 @@ import { normalizeMoreInfoRows } from '../utils/more-info-data.utils';
 export class FeatureInfoMoreInfoHandler {
   private placeholderCounter = 0;
   private readonly placeholderIds = new WeakMap<any, Map<string, string>>();
+  private readonly inFlightPlaceholderIds = new Set<string>();
   private readonly pendingResults = new Map<
     string,
     { task: any; result: any }
@@ -73,11 +74,14 @@ export class FeatureInfoMoreInfoHandler {
       const taskIndex = allTasks.indexOf(task);
       const taskKey = this.getTaskKey(task, taskIndex);
       const placeholderId = this.getPlaceholderId(feature, taskKey);
+      this.inFlightPlaceholderIds.add(placeholderId);
       this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
         next: (result: any) => {
+          this.inFlightPlaceholderIds.delete(placeholderId);
           this.displayMoreInfoResult(task, result, placeholderId);
         },
         error: (error: any) => {
+          this.inFlightPlaceholderIds.delete(placeholderId);
           this.displayMoreInfoResult(
             task,
             { error: error?.message || 'Error obtenint més informació' },
@@ -91,6 +95,8 @@ export class FeatureInfoMoreInfoHandler {
   attachMoreInfoListeners(featureInfoControl: any): void {
     const container = this.getFeatureInfoContainer(featureInfoControl);
     if (!container) return;
+
+    this.ensureCurrentFeatureCheckedState(container);
 
     const links = container.querySelectorAll('.sitmun-more-info-link');
 
@@ -131,7 +137,88 @@ export class FeatureInfoMoreInfoHandler {
       });
     });
 
+    this.triggerPlaceholderRequestsFromContainer(container);
     this.flushPendingResults(container);
+  }
+
+  private ensureCurrentFeatureCheckedState(container: HTMLElement): void {
+    const currentFeatureItem = container.querySelector<HTMLElement>(
+      'ul.tc-ctl-finfo-features > li.tc-current'
+    );
+    if (!currentFeatureItem) {
+      return;
+    }
+
+    currentFeatureItem.classList.add('tc-checked');
+
+    const currentTable = currentFeatureItem.querySelector<HTMLElement>(
+      ':scope > table.tc-attr, :scope > table'
+    );
+    if (currentTable && !currentTable.classList.contains('tc-attr')) {
+      currentTable.classList.add('tc-attr');
+    }
+  }
+
+  private triggerPlaceholderRequestsFromContainer(
+    container: HTMLElement
+  ): void {
+    const placeholders = container.querySelectorAll(
+      '.sitmun-more-info-placeholder[data-cartography-id][data-placeholder-id]'
+    );
+
+    placeholders.forEach((placeholder: any) => {
+      const placeholderId = placeholder.dataset?.['placeholderId'];
+      const cartographyId = placeholder.dataset?.['cartographyId'];
+      const taskKey = placeholder.dataset?.['taskId'];
+      if (!placeholderId || !cartographyId || !taskKey) return;
+
+      if (
+        this.pendingResults.has(placeholderId) ||
+        this.inFlightPlaceholderIds.has(placeholderId)
+      ) {
+        return;
+      }
+
+      const text = (placeholder.textContent || '').trim();
+      if (!text.includes('Carregant...')) return;
+
+      const tasks = this.moreInfoService.getMoreInfoTasks(cartographyId);
+      const task = this.resolveTaskFromTaskKey(tasks, taskKey) as any;
+      if (!task) return;
+
+      const table = placeholder.closest('table.tc-attr') as HTMLElement | null;
+      const featureData = this.extractFeatureDataFromTable(table);
+
+      this.inFlightPlaceholderIds.add(placeholderId);
+      this.moreInfoService.executeMoreInfo(task, featureData).subscribe({
+        next: (result: any) => {
+          this.inFlightPlaceholderIds.delete(placeholderId);
+          this.displayMoreInfoResult(task, result, placeholderId);
+        },
+        error: (error: any) => {
+          this.inFlightPlaceholderIds.delete(placeholderId);
+          this.displayMoreInfoResult(
+            task,
+            { error: error?.message || 'Error obtenint més informació' },
+            placeholderId
+          );
+        }
+      });
+    });
+  }
+
+  private resolveTaskFromTaskKey(tasks: unknown[], taskKey: string): unknown {
+    if (!Array.isArray(tasks) || tasks.length === 0) return undefined;
+
+    if (taskKey.startsWith('idx-')) {
+      const index = Number(taskKey.slice(4));
+      if (Number.isInteger(index) && index >= 0 && index < tasks.length) {
+        return tasks[index];
+      }
+      return undefined;
+    }
+
+    return tasks.find((task: any) => String(task?.id) === taskKey);
   }
 
   private processServiceLayers(service: any): void {
@@ -188,9 +275,10 @@ export class FeatureInfoMoreInfoHandler {
 
       if (task.command) {
         let url = task.command;
-        if (task.parameters) {
-          Object.keys(task.parameters).forEach((paramName) => {
-            const { label, name, value } = task.parameters[paramName];
+        const taskParameters = this.parseTaskParameters(task.parameters);
+        if (taskParameters && typeof taskParameters === 'object') {
+          Object.keys(taskParameters).forEach((paramName) => {
+            const { label, name, value } = taskParameters[paramName];
             const fieldNameToLookup = value || name || paramName;
 
             const featureValue = this.lookupFeatureValue(
@@ -198,7 +286,7 @@ export class FeatureInfoMoreInfoHandler {
               fieldNameToLookup
             );
 
-            if (featureValue !== undefined) {
+            if (label && featureValue !== undefined) {
               url = url.split(label).join(String(featureValue));
             }
           });
@@ -283,6 +371,9 @@ export class FeatureInfoMoreInfoHandler {
   private getFeatureInfoContainer(featureInfoControl: any): HTMLElement | null {
     if (typeof featureInfoControl.getInfoContainer === 'function') {
       return featureInfoControl.getInfoContainer();
+    }
+    if (typeof featureInfoControl.getContainerElement === 'function') {
+      return featureInfoControl.getContainerElement();
     }
     if (featureInfoControl.infoContainer) {
       return featureInfoControl.infoContainer;
@@ -376,7 +467,7 @@ export class FeatureInfoMoreInfoHandler {
       .join('');
 
     return (
-      '<table class="sitmun-json-table">' +
+      '<table class="sitmun-json-table tc-attr">' +
       '<thead><tr>' +
       header +
       '</tr></thead>' +

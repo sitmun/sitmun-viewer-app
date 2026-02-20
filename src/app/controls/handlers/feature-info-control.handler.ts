@@ -38,6 +38,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   readonly sitnaConfigKey = 'featureInfo';
   readonly requiredPatches = undefined;
   private readonly moreInfoService = inject(MoreInfoService);
+  private readonly mapEventCleanups: Array<() => void> = [];
   private appConfig: AppCfg | null = null;
   private readonly moreInfoHandler = new FeatureInfoMoreInfoHandler(
     this.moreInfoService,
@@ -46,6 +47,12 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
+  }
+
+  private scheduleAttachMoreInfoListeners(displayControl: any): void {
+    setTimeout(() => {
+      this.moreInfoHandler.attachMoreInfoListeners(displayControl);
+    }, 50);
   }
 
   /**
@@ -101,27 +108,58 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         const registerAdvice = meld.around(
           fiProto,
           'register',
-          function (this: any, jp: MeldJoinPoint) {
+          (jp: MeldJoinPoint) => {
+            const control = jp.target as any;
             const [map] = jp.args as [any];
             if (
-              this.options?.displayElevation === undefined &&
+              control.options?.displayElevation === undefined &&
               map?.options?.controls?.featureInfo?.displayElevation !==
                 undefined
             ) {
-              this.options = TC.Util.extend(
+              control.options = TC.Util.extend(
                 true,
                 {},
-                this.options,
+                control.options,
                 map.options.controls.featureInfo
               );
             }
-            return jp.proceedApply(jp.args);
+
+            const result = jp.proceedApply(jp.args);
+
+            if (map?.on && !control.__sitmunMoreInfoMapEvents) {
+              const onDisplayRender = (e: any) => {
+                const displayControl = e?.control;
+                if (!displayControl) return;
+
+                const isFromFeatureInfo = displayControl.caller === control;
+                const isHighlightedPopup =
+                  displayControl.currentFeature?.showsPopup === true;
+
+                if (!isFromFeatureInfo && !isHighlightedPopup) {
+                  return;
+                }
+
+                this.scheduleAttachMoreInfoListeners(displayControl);
+              };
+
+              map.on('popup.tc drawtable.tc', onDisplayRender);
+              this.mapEventCleanups.push(() => {
+                map.off('popup.tc drawtable.tc', onDisplayRender);
+              });
+              control.__sitmunMoreInfoMapEvents = { map, onDisplayRender };
+            }
+
+            return result;
           }
         );
         mapProto.__sitmunFiRegister = true;
         this.patchManager.add(() => {
           meld.remove(registerAdvice);
           delete mapProto.__sitmunFiRegister;
+          while (this.mapEventCleanups.length > 0) {
+            const cleanup = this.mapEventCleanups.pop();
+            cleanup?.();
+          }
         });
       }
 
@@ -154,6 +192,28 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         this.patchManager.add(() => {
           meld.remove(responseCallbackAdvice);
           delete fiProto.__sitmunMoreInfo;
+        });
+      }
+
+      if (
+        fiProto?.displayResultsCallback &&
+        !fiProto.__sitmunMoreInfoDisplayResults
+      ) {
+        const displayResultsAdvice = meld.around(
+          fiProto,
+          'displayResultsCallback',
+          (jp: MeldJoinPoint) => {
+            const result = jp.proceedApply(jp.args);
+            setTimeout(() => {
+              this.moreInfoHandler.attachMoreInfoListeners(jp.target);
+            }, 50);
+            return result;
+          }
+        );
+        fiProto.__sitmunMoreInfoDisplayResults = true;
+        this.patchManager.add(() => {
+          meld.remove(displayResultsAdvice);
+          delete fiProto.__sitmunMoreInfoDisplayResults;
         });
       }
     });
