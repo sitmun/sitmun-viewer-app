@@ -70,6 +70,18 @@ describe('normalizeMoreInfoRows', () => {
     expect(normalizeMoreInfoRows('hello')).toEqual([{ value: 'hello' }]);
   });
 
+  it('returns primitive number as value row', () => {
+    expect(normalizeMoreInfoRows(42)).toEqual([{ value: 42 }]);
+  });
+
+  it('flattens primitive arrays using index paths', () => {
+    expect(normalizeMoreInfoRows(['a', 2, true])).toEqual([
+      { field: '[0]', value: 'a' },
+      { field: '[1]', value: '2' },
+      { field: '[2]', value: 'true' }
+    ]);
+  });
+
   it('represents empty objects and arrays', () => {
     const data = { a: {}, b: [] };
 
@@ -77,5 +89,11 @@ describe('normalizeMoreInfoRows', () => {
       { field: 'a', value: '{}' },
       { field: 'b', value: '[]' }
     ]);
+  });
+
+  it('represents null and undefined nested values as empty strings', () => {
+    const data = { a: null, b: undefined };
+
+    expect(normalizeMoreInfoRows(data)).toEqual([data]);
   });
 });
