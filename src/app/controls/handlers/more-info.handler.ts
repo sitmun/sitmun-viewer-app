@@ -96,8 +96,6 @@ export class FeatureInfoMoreInfoHandler {
     const container = this.getFeatureInfoContainer(featureInfoControl);
     if (!container) return;
 
-    this.ensureCurrentFeatureCheckedState(container);
-
     const links = container.querySelectorAll('.sitmun-more-info-link');
 
     links.forEach((link: any) => {
@@ -139,24 +137,6 @@ export class FeatureInfoMoreInfoHandler {
 
     this.triggerPlaceholderRequestsFromContainer(container);
     this.flushPendingResults(container);
-  }
-
-  private ensureCurrentFeatureCheckedState(container: HTMLElement): void {
-    const currentFeatureItem = container.querySelector<HTMLElement>(
-      'ul.tc-ctl-finfo-features > li.tc-current'
-    );
-    if (!currentFeatureItem) {
-      return;
-    }
-
-    currentFeatureItem.classList.add('tc-checked');
-
-    const currentTable = currentFeatureItem.querySelector<HTMLElement>(
-      ':scope > table.tc-attr, :scope > table'
-    );
-    if (currentTable && !currentTable.classList.contains('tc-attr')) {
-      currentTable.classList.add('tc-attr');
-    }
   }
 
   private triggerPlaceholderRequestsFromContainer(
@@ -467,7 +447,7 @@ export class FeatureInfoMoreInfoHandler {
       .join('');
 
     return (
-      '<table class="sitmun-json-table tc-attr">' +
+      '<table class="sitmun-json-table">' +
       '<thead><tr>' +
       header +
       '</tr></thead>' +
