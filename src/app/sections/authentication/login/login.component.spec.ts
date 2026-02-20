@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FormFieldInputComponent } from '@ui/components/form-field-input/form-field-input.component';
 import { PrimaryButtonComponent } from '@ui/components/primary-button/primary-button.component';
 import { SecondaryButtonComponent } from '@ui/components/secondary-button/secondary-button.component';
+import { of } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 import { LoginComponent } from './login.component';
@@ -49,6 +50,7 @@ describe('LoginComponent', () => {
             login: jest.fn(),
             isLoggedIn: jest.fn(),
             getAuthConfig: jest.fn(),
+            getAuthMethods: jest.fn().mockReturnValue(of([])),
             getLoggedDetails: jest.fn()
           }
         },

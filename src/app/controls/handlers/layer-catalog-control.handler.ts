@@ -196,7 +196,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           continue;
         }
 
-        const virtualUrl = this.virtualWmsService.generateVirtualUrl(childId);
+        const mapLang = this.sitnaApi.getGlobal('currentMapLang') ?? undefined;
+        const virtualUrl = this.virtualWmsService.generateVirtualUrl(
+          childId,
+          mapLang
+        );
 
         wmsLayers.push({
           id: `virtual-${childId.replace(/\//g, '-')}`,
@@ -360,10 +364,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             capabilitiesUrl = layer.url;
           }
 
+          const appCfg =
+            handler.sitnaApi.getGlobal('currentAppCfg') ??
+            handler.currentAppCfg;
           // Check if this is a virtual service
           if (
             capabilitiesUrl &&
-            handler.currentAppCfg &&
+            appCfg &&
             handler.virtualWmsService.isVirtualServiceUrl(capabilitiesUrl)
           ) {
             const nodeId =
@@ -375,7 +382,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                 const capabilities =
                   handler.virtualWmsService.generateCapabilities(
                     nodeId,
-                    handler.currentAppCfg
+                    appCfg
                   );
                 return Promise.resolve(capabilities);
               } catch (error) {
@@ -399,24 +406,28 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             // It's a Promise
             return (proceedResult as Promise<unknown>).then(
               (result: unknown) => {
-                // Process WMTS capabilities if needed and get the processed result
+                const cfg =
+                  handler.sitnaApi.getGlobal('currentAppCfg') ??
+                  handler.currentAppCfg;
                 result = handler.rasterService.processWmtsCapabilitiesResult(
                   layer,
                   capabilitiesUrl,
                   result,
-                  handler.currentAppCfg || undefined
+                  cfg || undefined
                 );
 
                 return result;
               }
             );
           } else {
-            // Process WMTS capabilities if needed and get the processed result
+            const cfg =
+              handler.sitnaApi.getGlobal('currentAppCfg') ??
+              handler.currentAppCfg;
             return handler.rasterService.processWmtsCapabilitiesResult(
               layer,
               capabilitiesUrl,
               proceedResult,
-              handler.currentAppCfg || undefined
+              cfg || undefined
             );
           }
         }
@@ -451,14 +462,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           // eslint-disable-next-line @typescript-eslint/no-this-alias
           const self = this;
           const layerObj = layer;
-          // Use layerName as the node ID to find the real layer configuration
-          // AppCfg is guaranteed to be non-null (set before patches are applied)
-          if (!handler.currentAppCfg) {
+          const appCfgAdd =
+            handler.sitnaApi.getGlobal('currentAppCfg') ??
+            handler.currentAppCfg;
+          if (!appCfgAdd) {
             return joinPoint.proceed();
           }
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
             layerName,
-            handler.currentAppCfg
+            appCfgAdd
           );
 
           // Create layer options with real configuration
@@ -508,13 +520,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             const newLayer = new Raster(layerOptions);
             await newLayer.getCapabilitiesPromise();
 
-            if (!handler.currentAppCfg) {
+            if (!appCfgAdd) {
               return joinPoint.proceed();
             }
-            const nodeTitle = handler.getNodeTitle(
-              layerName,
-              handler.currentAppCfg
-            );
+            const nodeTitle = handler.getNodeTitle(layerName, appCfgAdd);
 
             if (nodeTitle && newLayer.Capability?.Layer) {
               handler.updateLayerTitleInCapabilities(
@@ -752,11 +761,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         'getPath',
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           const nodeId = this.options?.nodeId;
-          // currentAppCfg is guaranteed to be non-null (set before patches are applied)
-          if (nodeId && handler.currentAppCfg) {
+          const appCfgPath =
+            handler.sitnaApi.getGlobal('currentAppCfg') ??
+            handler.currentAppCfg;
+          if (nodeId && appCfgPath) {
             const parentTitles = handler.getParentNodeTitles(
               nodeId,
-              handler.currentAppCfg
+              appCfgPath
             );
             if (parentTitles.length > 0) {
               return parentTitles;
@@ -1052,16 +1063,16 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           // For virtual layers, use nodeId from options if available, otherwise use name parameter
           const nodeId = nodeIdFromOptions || name;
 
-          // Ensure we have app config
-          if (!handler.currentAppCfg) {
-            // Return minimal structure with abstract to ensure info button is shown
+          const appCfgInfo =
+            handler.sitnaApi.getGlobal('currentAppCfg') ??
+            handler.currentAppCfg;
+          if (!appCfgInfo) {
             return { name: nodeId, abstract: '' };
           }
 
-          // Find real service/layer configuration for this virtual node
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
             nodeId,
-            handler.currentAppCfg
+            appCfgInfo
           );
           if (!realLayerConfig) {
             const node = handler.configLookup.findNode(nodeId);

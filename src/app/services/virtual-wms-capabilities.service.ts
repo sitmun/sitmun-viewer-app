@@ -128,23 +128,39 @@ export class VirtualWmsCapabilitiesService {
   }
 
   /**
-   * Extract node ID from virtual service URL
+   * Extract node ID from virtual service URL.
+   * Handles both legacy (virtual://.../node/123) and lang-prefixed (virtual://.../en/node/123) URLs.
    */
   extractNodeIdFromUrl(url: string): string | null {
     if (!this.isVirtualServiceUrl(url)) {
       return null;
     }
-    return url.substring(VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL.length);
+    const afterBase = url.substring(
+      VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL.length
+    );
+    const firstSlash = afterBase.indexOf('/');
+    if (firstSlash === -1) {
+      return afterBase || null;
+    }
+    const firstSegment = afterBase.slice(0, firstSlash);
+    const rest = afterBase.slice(firstSlash + 1);
+    if (rest && /^[a-z]{2}(-[a-zA-Z0-9]*)?$/i.test(firstSegment)) {
+      return rest;
+    }
+    return afterBase;
   }
 
   /**
-   * Generate a virtual WMS service URL for a given node ID
+   * Generate a virtual WMS service URL for a given node ID.
+   * Including lang ensures a distinct URL per language so SITNA does not reuse cached GetCapabilities.
    *
    * @param nodeId - The node ID (e.g., "node/12338")
-   * @returns Virtual URL (e.g., "virtual://sitmun-layer-catalog/node/12338")
+   * @param lang - Optional language code (e.g. "en"); when set, included in URL path
+   * @returns Virtual URL (e.g. "virtual://sitmun-layer-catalog/en/node/12338" or "virtual://sitmun-layer-catalog/node/12338")
    */
-  generateVirtualUrl(nodeId: string): string {
-    return `${VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL}${nodeId}`;
+  generateVirtualUrl(nodeId: string, lang?: string): string {
+    const base = VirtualWmsCapabilitiesService.VIRTUAL_BASE_URL;
+    return lang ? `${base}${lang}/${nodeId}` : `${base}${nodeId}`;
   }
 
   /**

@@ -1,7 +1,7 @@
 # SITMUN Viewer Application
 
 [![License: EUPL v1.2](https://img.shields.io/badge/License-EUPL%20v1.2-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)
 
 The **SITMUN Viewer Application** is the Angular 16 frontend for visualizing geospatial applications managed by the SITMUN platform. It integrates with the [SITMUN Backend Core](https://github.com/sitmun/sitmun-backend-core) REST API.
 
