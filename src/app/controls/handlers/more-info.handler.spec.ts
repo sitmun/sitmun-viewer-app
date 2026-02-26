@@ -240,7 +240,9 @@ describe('FeatureInfoMoreInfoHandler', () => {
         { id: 'task-0', name: 'Primer task' },
         { id: 'task-1', name: 'Segon task' }
       ]);
-      mockMoreInfoService.executeMoreInfo.mockReturnValue(of({ data: { ok: true } }));
+      mockMoreInfoService.executeMoreInfo.mockReturnValue(
+        of({ data: { ok: true } })
+      );
 
       handler.attachMoreInfoListeners({
         getInfoContainer: () => container
@@ -396,7 +398,9 @@ describe('FeatureInfoMoreInfoHandler', () => {
         { id: 'sql-1', name: 'Consulta SQL', scope: 'SQL' },
         { id: 'url-1', name: 'Link extern', command: 'https://example.org' }
       ]);
-      mockMoreInfoService.executeMoreInfo.mockReturnValue(of({ data: { ok: 1 } }));
+      mockMoreInfoService.executeMoreInfo.mockReturnValue(
+        of({ data: { ok: 1 } })
+      );
 
       handler.executeSqlTasksForFeatures({
         services: [

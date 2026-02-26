@@ -1,4 +1,7 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { MoreInfoService } from './more-info.service';
@@ -86,8 +89,49 @@ describe('MoreInfoService', () => {
         '_blank'
       );
       expect(emitted).toEqual({
+        redirected: true,
         success: true,
         url: 'https://example.org/item/08001?name=Barcelona'
+      });
+    });
+
+    it('should expand RFC6570 URL templates using declared parameters (including dotted field paths)', () => {
+      const openSpy = jest.fn();
+      Object.defineProperty(window, 'open', {
+        writable: true,
+        value: openSpy
+      });
+
+      let emitted: any;
+      service
+        .executeMoreInfo(
+          {
+            id: 'url-task-rfc6570',
+            command:
+              'https://example.org/item/{code}?name={name}&season={season}',
+            parameters: {
+              code: { label: 'code', value: 'properties.code' },
+              name: { label: 'name', value: 'Nom' },
+              season: { label: 'season', value: 'properties.season' }
+            }
+          },
+          {
+            Nom: 'Barcelona',
+            properties: { code: '08001', season: 2024 }
+          }
+        )
+        .subscribe((result) => {
+          emitted = result;
+        });
+
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://example.org/item/08001?name=Barcelona&season=2024',
+        '_blank'
+      );
+      expect(emitted).toEqual({
+        redirected: true,
+        success: true,
+        url: 'https://example.org/item/08001?name=Barcelona&season=2024'
       });
     });
 
@@ -173,7 +217,9 @@ describe('MoreInfoService', () => {
           emitted = result;
         });
 
-      const req = httpMock.expectOne('/api/info/12?city=Barcelona&page=1&active=true&meta=%7B%22source%22:%22sitmun%22%7D');
+      const req = httpMock.expectOne(
+        '/api/info/12?city=Barcelona&page=1&active=true&meta=%7B%22source%22:%22sitmun%22%7D'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({ ok: true });
 
@@ -193,7 +239,7 @@ describe('MoreInfoService', () => {
             scope: 'SQL',
             url: '/api/sql-proxy/{layer}',
             parameters: {
-              '$ID$': { value: 'id' },
+              $ID$: { value: 'id' },
               code: { name: 'Codi' }
             }
           },
@@ -203,7 +249,9 @@ describe('MoreInfoService', () => {
           emitted = result;
         });
 
-      const req = httpMock.expectOne('/api/sql-proxy/municipis?ID=7&code=08001');
+      const req = httpMock.expectOne(
+        '/api/sql-proxy/municipis?ID=7&code=08001'
+      );
       expect(req.request.method).toBe('GET');
       req.flush({ total: 1 });
 

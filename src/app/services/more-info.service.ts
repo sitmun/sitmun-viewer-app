@@ -1,9 +1,10 @@
-﻿import { HttpClient } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { AppCfg } from '@api/model/app-cfg';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { parseTemplate } from 'url-template';
 
 /**
  * Service for handling "More Info" functionality.
@@ -80,6 +81,9 @@ export class MoreInfoService {
     if (task?.scope === 'API') {
       return this.executeApiQuery(parameters, task, featureData);
     }
+    if (task?.scope === 'URL') {
+      return this.executeUrlQuery(task, featureData);
+    }
 
     const queryType =
       parameters?.queryType || (parameters?.apiUrl ? 'api' : 'url');
@@ -96,9 +100,9 @@ export class MoreInfoService {
   }
 
   private executeUrlQuery(task: any, featureData: any): Observable<any> {
-    const urlTemplate = task.command;
+    const urlTemplate = task.url || task.command;
     if (!urlTemplate) {
-      return of({ error: 'No URL configured in task command' });
+      return of({ error: 'No URL configured in task' });
     }
 
     const url = this.replacePlaceholdersFromParams(
@@ -107,7 +111,7 @@ export class MoreInfoService {
       featureData
     );
     window.open(url, '_blank');
-    return of({ success: true, url });
+    return of({ success: true, url, redirected: true });
   }
 
   private executeSqlQuery(parameters: any, featureData: any): Observable<any> {
@@ -119,10 +123,7 @@ export class MoreInfoService {
 
     const sql = this.replacePlaceholders(sqlTemplate, featureData);
     return this.http.get(apiUrl, { params: { sql } }).pipe(
-      map((response) => {
-        console.log('RESPONSE: ', response);
-        return { success: true, data: response };
-      }),
+      map((response) => ({ success: true, data: response })),
       catchError((error) => of({ error: error.message || 'SQL query failed' }))
     );
   }
@@ -183,14 +184,58 @@ export class MoreInfoService {
           return;
         }
 
-        const label = config?.label || paramName;
-        const value = this.getSqlParamValue(featureData, paramName, config);
-        if (label && value !== undefined) {
-          result = result.split(String(label)).join(String(value));
+        // Legacy support: replace explicit label tokens (e.g. "$CODI$")
+        // Only applies if label has special wrapping chars (legacy format)
+        const legacyLabel = (config as any)?.label;
+        if (legacyLabel && this.isLegacyToken(String(legacyLabel))) {
+          const v = this.getSqlParamValue(featureData, paramName, config);
+          if (v !== undefined) {
+            result = result.split(String(legacyLabel)).join(String(v));
+          }
         }
       });
     }
 
+    // RFC 6570 URI template expansion: vars from declared params (field path) + featureData fallback
+    try {
+      const vars: Record<string, string | number> = {};
+      if (parsedTaskParameters && typeof parsedTaskParameters === 'object') {
+        Object.entries(parsedTaskParameters).forEach(([paramName, config]) => {
+          if (!this.isSqlParamConfig(config)) {
+            return;
+          }
+          const variable = this.normalizeParamKey(paramName);
+          const fieldPath =
+            (config as any)?.value || (config as any)?.name || paramName;
+          const v = this.getValueByPath(featureData, String(fieldPath));
+          if (v !== undefined && v !== null) {
+            vars[variable] =
+              typeof v === 'string' || typeof v === 'number' ? v : String(v);
+          }
+        });
+      }
+      // Fallback: top-level featureData for placeholders not in task parameters (e.g. {Nom})
+      if (featureData && typeof featureData === 'object') {
+        Object.entries(featureData).forEach(([k, v]) => {
+          if (
+            k !== 'properties' &&
+            vars[k] === undefined &&
+            (typeof v === 'string' ||
+              typeof v === 'number' ||
+              typeof v === 'boolean')
+          ) {
+            vars[k] = v as string | number;
+          }
+        });
+      }
+      if (Object.keys(vars).length > 0 && result.includes('{')) {
+        result = parseTemplate(String(result)).expand(vars);
+      }
+    } catch {
+      // Best-effort: fall back to other placeholder mechanisms
+    }
+
+    // Fallback: expand remaining placeholders directly from feature data
     return this.replacePlaceholders(result, featureData);
   }
 
@@ -309,19 +354,39 @@ export class MoreInfoService {
     );
 
     for (const key of candidates) {
-      const direct = featureData?.[key];
-      if (direct !== undefined) {
-        return direct;
+      const directOrPath = this.getValueByPath(featureData, key);
+      if (directOrPath !== undefined) {
+        return directOrPath;
       }
 
       const normalized = this.normalizeKey(key);
-      const normalizedValue = featureData?.[normalized];
-      if (normalizedValue !== undefined) {
-        return normalizedValue;
-      }
+      const normalizedValue = this.getValueByPath(featureData, normalized);
+      if (normalizedValue !== undefined) return normalizedValue;
     }
 
     return undefined;
+  }
+
+  private getValueByPath(data: any, path: string): any {
+    if (!data || !path) return undefined;
+    const trimmed = path.trim();
+    if (!trimmed) return undefined;
+
+    // Direct key
+    if (Object.prototype.hasOwnProperty.call(data, trimmed)) {
+      const direct = data[trimmed];
+      if (direct !== undefined) return direct;
+    }
+
+    // Dotted path
+    if (!trimmed.includes('.')) return undefined;
+    const parts = trimmed.split('.').filter(Boolean);
+    let cur: any = data;
+    for (const part of parts) {
+      if (cur == null) return undefined;
+      cur = cur[part];
+    }
+    return cur;
   }
 
   private normalizeKey(value: string): string {
@@ -343,5 +408,19 @@ export class MoreInfoService {
       }
     }
     return trimmed;
+  }
+
+  /**
+   * Checks if a label is a legacy token format (e.g., "$CODI$", "${var}", "{{var}}").
+   * The new backend sets label to the plain variable name, so we must distinguish
+   * between legacy tokens (which need string replacement) and modern variable names.
+   */
+  private isLegacyToken(label: string): boolean {
+    const trimmed = label.trim();
+    return (
+      /^\$\{.+\}$/.test(trimmed) || // ${var}
+      /^\$[^$]+\$$/.test(trimmed) || // $VAR$
+      /^\{\{.+\}\}$/.test(trimmed) // {{var}}
+    );
   }
 }

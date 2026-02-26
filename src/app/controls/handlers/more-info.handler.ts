@@ -253,8 +253,9 @@ export class FeatureInfoMoreInfoHandler {
         return;
       }
 
-      if (task.command) {
-        let url = task.command;
+      const urlTemplate = task.url || task.command;
+      if (urlTemplate) {
+        let url = urlTemplate;
         const taskParameters = this.parseTaskParameters(task.parameters);
         if (taskParameters && typeof taskParameters === 'object') {
           Object.keys(taskParameters).forEach((paramName) => {
