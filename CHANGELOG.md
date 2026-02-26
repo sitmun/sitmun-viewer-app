@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-02-26
+
+### Added
+
+- More Information task support for URL scope, including RFC 6570 URI template handling.
+- New centralized More Information handler/service flow for feature-info integration.
+- Additional tests for More Information task behavior.
+
+### Changed
+
+- Refactored More Information handling to extract reusable data utilities and reduce duplicated logic.
+- Improved URL More Information presentation text for better user understanding.
+
+### Fixed
+
+- Fixed More Information feature-info highlight behavior that prevented table information from being shown correctly.
+
 ## [1.2.2] - 2026-02-16
 
 ### Added
@@ -217,7 +234,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.2...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.3...HEAD
+[1.2.3]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.2...sitmun-viewer-app/1.2.3
 [1.2.2]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.1...sitmun-viewer-app/1.2.2
 [1.2.0]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.1...sitmun-viewer-app/1.2.0
 [1.1.1]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.0...sitmun-viewer-app/1.1.1
