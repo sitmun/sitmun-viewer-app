@@ -40,7 +40,7 @@ const config: Config = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    'node_modules/(?!.*\\.mjs$|@angular|rxjs|api-sitna)'
+    'node_modules/(?!.*\\.mjs$|@angular|rxjs|api-sitna|url-template)'
   ],
 
   // The glob patterns Jest uses to detect test files
