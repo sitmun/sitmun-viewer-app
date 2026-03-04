@@ -20,7 +20,7 @@ describe('LayerCatalogControlHandler', () => {
 
   beforeEach(() => {
     // Suppress console.warn for all tests except those that explicitly test it
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+     
     jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     const mockTC = {

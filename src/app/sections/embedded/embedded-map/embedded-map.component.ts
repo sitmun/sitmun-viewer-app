@@ -67,6 +67,6 @@ export class EmbeddedMapComponent extends AbstractMapComponent {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   override navigateToDashboard() {}
 }

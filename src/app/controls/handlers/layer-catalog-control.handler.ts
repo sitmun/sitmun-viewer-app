@@ -576,7 +576,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         if (typeof layer.id === 'string' && /^[0-9]+$/.test(layer.id)) {
           return Promise.resolve();
         }
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
+         
         const self = this as any;
         return new Promise<void>(function (resolve, reject) {
           let fromLayerCatalog: any[] = [];

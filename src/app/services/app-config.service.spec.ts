@@ -19,7 +19,7 @@ describe('AppConfigService', () => {
 
   beforeEach(() => {
     // Suppress console.warn for all tests except the one that explicitly tests it
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+     
     jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     TestBed.configureTestingModule({
@@ -58,7 +58,7 @@ describe('AppConfigService', () => {
       jest.restoreAllMocks();
       const consoleWarnSpy = jest
         .spyOn(console, 'warn')
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         .mockImplementation(() => {});
 
       const loadPromise = service.loadConfig();
@@ -74,7 +74,7 @@ describe('AppConfigService', () => {
 
       // Restore mock for other tests
       consoleWarnSpy.mockRestore();
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+       
       jest.spyOn(console, 'warn').mockImplementation(() => {});
     });
 

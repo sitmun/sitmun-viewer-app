@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
     (globalThis as { d3?: unknown }).d3 = d3;
   } else {
     // Use console directly here as this is bootstrap code before Angular services are available
-    // eslint-disable-next-line no-console
+     
     console.warn('d3 global is missing; charts may not work');
   }
 
@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
     await import('api-sitna');
   } catch (error: unknown) {
     // Use console directly here as this is bootstrap code before Angular services are available
-    // eslint-disable-next-line no-console
+     
     console.error('Failed to load SITNA library', error);
     throw error;
   }
@@ -36,13 +36,13 @@ async function bootstrap(): Promise<void> {
     .bootstrapModule(AppModule)
     .catch((err: unknown) => {
       // Use console directly here as this is bootstrap code before Angular services are available
-      // eslint-disable-next-line no-console
+       
       console.error('Angular bootstrap failed', err);
     });
 }
 
 bootstrap().catch((err: unknown) => {
   // Use console directly here as this is bootstrap code before Angular services are available
-  // eslint-disable-next-line no-console
+   
   console.error('Angular bootstrap failed', err);
 });

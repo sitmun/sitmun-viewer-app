@@ -9,7 +9,7 @@ import { NotificationType } from '../models/NotificationType';
   providedIn: 'root'
 })
 export class NotificationService {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   constructor() {}
   private notification$: Subject<INotification | null> =
     new BehaviorSubject<INotification | null>(null);

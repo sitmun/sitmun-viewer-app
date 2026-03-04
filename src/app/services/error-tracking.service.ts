@@ -26,7 +26,7 @@ export class ErrorTrackingService {
   private errors: ErrorEntry[] = [];
   private errorsSubject = new BehaviorSubject<ErrorEntry[]>([]);
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   constructor() {}
 
   /**

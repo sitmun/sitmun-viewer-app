@@ -6,7 +6,7 @@ export interface ResultModal {
 }
 
 export class OpenModalRef<R = any> {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   constructor() {}
 
   private readonly afterClosedSubject = new Subject<R>();

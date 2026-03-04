@@ -258,7 +258,7 @@ describe('ControlHandlerBase', () => {
 
     it('should cache load promises', async () => {
       const loadPromise = handler['ensureControlLoaded']({
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         loadScript: () => {},
         controlName: 'TestControl'
       });
@@ -278,7 +278,7 @@ describe('ControlHandlerBase', () => {
 
       await handler['ensureControlLoaded']({
         dependencies: ['TC', 'TC.control.Search'],
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         loadScript: () => {},
         controlName: 'TestControl'
       });
@@ -297,7 +297,7 @@ describe('ControlHandlerBase', () => {
 
       await handler['ensureControlLoaded']({
         dependencies: depFunction,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         loadScript: () => {},
         controlName: 'TestControl'
       });

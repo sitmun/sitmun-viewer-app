@@ -64,7 +64,7 @@ export function createPatchManager(): PatchManager {
         } catch (error: unknown) {
           // Direct console usage is intentional: This utility may be called during cleanup
           // before Angular services are available or after they've been destroyed.
-          // eslint-disable-next-line no-console
+           
           console.error('Error restoring patch:', error);
         }
       });

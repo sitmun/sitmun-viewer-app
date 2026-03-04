@@ -128,7 +128,7 @@ export function createCustomControlShell(
   `;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+     
     const createShell = new Function('SITNA', 'TC', shellCode);
     createShell(SITNA, TC);
     return !!TC.control[controlName];
@@ -145,7 +145,7 @@ export function createCustomControlShell(
  * Type for a control logic class with static methods.
  * Static methods will be injected onto the control prototype.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export type ControlLogicClass = Record<string, any>;
 
 /**

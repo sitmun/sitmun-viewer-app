@@ -10,7 +10,7 @@ describe('VirtualWmsCapabilitiesService', () => {
 
   beforeEach(() => {
     // Suppress console.error for all tests (these are expected errors from error handling tests)
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+     
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
     TestBed.configureTestingModule({});

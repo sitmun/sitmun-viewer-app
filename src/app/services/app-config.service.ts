@@ -72,7 +72,7 @@ export class AppConfigService {
       );
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
-      // eslint-disable-next-line no-console
+       
       console.warn(
         'Failed to load app configuration, using defaults. Error:',
         error

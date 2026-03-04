@@ -5,7 +5,7 @@ describe('PatchManager', () => {
 
   beforeEach(() => {
     // Suppress console.error for all tests except those that explicitly test it
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+     
     jest.spyOn(console, 'error').mockImplementation(() => {});
     patchManager = createPatchManager();
   });
@@ -115,7 +115,7 @@ describe('PatchManager', () => {
       jest.restoreAllMocks();
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         .mockImplementation(() => {});
 
       patchManager.restoreAll();
@@ -126,7 +126,7 @@ describe('PatchManager', () => {
 
       // Restore mock for other tests
       consoleErrorSpy.mockRestore();
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+       
       jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
@@ -166,7 +166,7 @@ describe('PatchManager', () => {
     });
 
     it('should handle multiple clears', () => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+       
       patchManager.add(() => {});
       patchManager.clear();
       patchManager.clear();
@@ -378,7 +378,7 @@ describe('PatchManager', () => {
       jest.restoreAllMocks();
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+         
         .mockImplementation(() => {});
 
       expect(() => patchManager.restoreAll()).not.toThrow();
@@ -386,7 +386,7 @@ describe('PatchManager', () => {
 
       // Restore mock for other tests
       consoleErrorSpy.mockRestore();
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+       
       jest.spyOn(console, 'error').mockImplementation(() => {});
     });
   });

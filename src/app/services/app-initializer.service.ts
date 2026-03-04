@@ -18,7 +18,7 @@ export class AppInitializerService {
       this.sitnaApi.getSITNA();
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
-      // eslint-disable-next-line no-console
+       
       console.error('Failed to initialize SITNA', error);
       throw error;
     }

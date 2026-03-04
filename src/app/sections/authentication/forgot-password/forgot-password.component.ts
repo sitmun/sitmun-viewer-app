@@ -63,7 +63,7 @@ export class ForgotPasswordComponent {
       this.resetPasswordService
         .requestNewPassword(this.recoveryRequest)
         .subscribe({
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
+           
           next: () => {}
         });
       this.codeReceived = true;
