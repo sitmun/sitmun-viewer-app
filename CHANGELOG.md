@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-03-04
+
+### Changed
+
+- Node.js requirement updated to `>=20.19.0` (engines).
+- Angular framework upgraded to version 19 with latest features and performance improvements.
+- ESLint configuration migrated from legacy `.eslintrc.js` to flat config `eslint.config.js`.
+- Updated ESLint and related dependencies to latest versions.
+
+### Removed
+
+- Removed `.eslintignore` and `.eslintrc.js` legacy configuration files.
+- Removed deploy configuration from `angular.json`.
+
 ## [1.2.3] - 2026-02-26
 
 ### Added
@@ -234,7 +248,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.3...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...HEAD
+[1.2.4]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.3...sitmun-viewer-app/1.2.4
 [1.2.3]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.2...sitmun-viewer-app/1.2.3
 [1.2.2]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.1...sitmun-viewer-app/1.2.2
 [1.2.0]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.1.1...sitmun-viewer-app/1.2.0
