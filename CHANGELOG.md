@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-03-11
+
+### Changed
+
+- Release alignment to `1.2.5` across package metadata, environments, and documentation badges.
+
 ## [1.2.4] - 2026-03-04
 
 ### Changed
@@ -248,7 +254,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...HEAD
+[1.2.5]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...sitmun-viewer-app/1.2.5
 [1.2.4]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.3...sitmun-viewer-app/1.2.4
 [1.2.3]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.2...sitmun-viewer-app/1.2.3
 [1.2.2]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.1...sitmun-viewer-app/1.2.2
