@@ -7,7 +7,7 @@ export const environment = {
   hideBackgroundImage: false,
   hideDNIEAccess: true,
   apiUrl: 'http://localhost:9000/backend',
-  version: '1.2.4',
+  version: '1.2.5',
   environmentName: 'Development',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
