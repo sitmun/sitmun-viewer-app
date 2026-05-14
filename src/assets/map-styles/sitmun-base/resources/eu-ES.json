@@ -23,5 +23,10 @@
   "search.list.placename": "Toponimoak",
   "helloWorld.title": "Kaixo Mundua",
   "helloWorld.message": "Kontrol hau Angular-etik erregistratuta dago eta Handlebars txantiloi baten bidez errendatzen da.",
-  "helloWorld.buttonLabel": "Agurtu"
+  "helloWorld.buttonLabel": "Agurtu",
+  "localizer.title": "Bilaketa",
+  "localizer.selectLocator": "Hautatu kokatzaile bat...",
+  "localizer.searchPlaceholder": "Idatzi bilaketa testua...",
+  "localizer.noResults": "Ez da emaitzarik aurkitu.",
+  "localizer.loading": "Bilatzen..."
 }

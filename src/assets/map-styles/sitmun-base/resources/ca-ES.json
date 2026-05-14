@@ -723,5 +723,10 @@
   "errorCarregarCapa": "Error al carregar la capa ",
   "helloWorld.title": "Hola Món",
   "helloWorld.message": "Aquest control està registrat des d'Angular i renderitzat mitjançant una plantilla Handlebars.",
-  "helloWorld.buttonLabel": "Saludar"
+  "helloWorld.buttonLabel": "Saludar",
+  "localizer.title": "Cercador",
+  "localizer.selectLocator": "Selecciona un localitzador...",
+  "localizer.searchPlaceholder": "Introduïu el text de cerca...",
+  "localizer.noResults": "No s'han trobat resultats.",
+  "localizer.loading": "Cercant..."
 }
