@@ -14,7 +14,7 @@ import {
   createPrototypeWrappers
 } from '../utils/sitna-patch-helpers';
 
-import { getLocalizerTasks, LocalizerTask, executeLocalizerSearch, getByPath } from '../../services/localizer.service';
+import { getLocalizerTasks, LocalizerTask, executeLocalizerSearch, getByPath, getTerritoryExtent } from '../../services/localizer.service';
 
 // ============================================================================
 // Configuration Constants
@@ -198,11 +198,23 @@ export class LocalizerControlLogic implements ControlLogicBase {
     this.setLoading(true);
 
     try {
-      // In proxy mode, bbox is always sent if available (proxy expands {bbox} in the command URL).
-      // In direct mode, bbox is only fetched if {bbox} is present in the URL template.
+      // Build template variables for URL substitution:
+      // - {bbox}       = territory extent in EPSG:4326 (west,south,east,north)
+      // - {focus_lat}  = latitude of the territory centre (EPSG:4326)
+      // - {focus_lon}  = longitude of the territory centre (EPSG:4326)
+      const templateVars: Record<string, string> = {};
       const needsBbox = task.scope === 'API' || task.url.includes('{bbox}');
-      const mapBbox = needsBbox ? this.getMapBbox() : undefined;
-      let results = await executeLocalizerSearch(task, searchText, mapBbox ?? undefined);
+      const needsFocus = task.scope === 'API' || task.url.includes('{focus_');
+      if (needsBbox || needsFocus) {
+        const bbox = this.getMapBbox();
+        if (bbox) templateVars['bbox'] = bbox;
+        const center = this.getTerritoryCenter();
+        if (center) {
+          templateVars['focus_lon'] = String(center[0]);
+          templateVars['focus_lat'] = String(center[1]);
+        }
+      }
+      let results = await executeLocalizerSearch(task, searchText, templateVars);
       if (task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
       }
@@ -225,15 +237,16 @@ export class LocalizerControlLogic implements ControlLogicBase {
   }
 
   /**
-   * Filters results to only those whose geometry point falls within the current map extent.
-   * Reprojects result coordinates from task.srs to the map's CRS using proj4 (available
-   * globally via the SITNA library) if the two CRS differ.
+   * Filters results to only those whose geometry point falls within the territory extent.
+   * Uses the map's initial extent (territory bounds) rather than the current visible area,
+   * so results are not excluded just because the user has zoomed in.
+   * Reprojects result coordinates from task.srs to the map's CRS before comparing.
    */
   private filterResultsByMapExtent(results: any[], task: LocalizerTask): any[] {
     const map = this.control.map;
     if (!map) return results;
 
-    const ext = this.getRawMapExtent();
+    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
     if (!ext) return results;
 
     const [xMin, yMin, xMax, yMax] = ext;
@@ -268,7 +281,8 @@ export class LocalizerControlLogic implements ControlLogicBase {
         }
       }
 
-      return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      const inside = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      return inside;
     });
   }
 
@@ -596,6 +610,28 @@ export class LocalizerControlLogic implements ControlLogicBase {
   }
 
   /**
+   * Returns the territory extent as [xMin, yMin, xMax, yMax] in the map's native CRS.
+   * Reads the value stored by LocalizerService from AppCfg.application.initialExtent,
+   * which is the authoritative territory extent as defined in the SITMUN backend.
+   * Falls back to map.initialExtent (SITNA) if the service value is not yet available.
+   */
+  private getInitialExtent(): [number, number, number, number] | null {
+    // Prefer the SITMUN-configured territory extent (authoritative, set once at startup).
+    const sitmunExtent = getTerritoryExtent();
+    if (sitmunExtent) return sitmunExtent;
+    // Fallback: read from the SITNA map object (should match, but may include adjacent areas).
+    const map = this.control.map;
+    if (!map) return null;
+    try {
+      const ext = map.initialExtent ?? map.options?.initialExtent;
+      if (Array.isArray(ext) && ext.length >= 4) {
+        return [ext[0], ext[1], ext[2], ext[3]];
+      }
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  /**
    * Returns the current map extent as [xMin, yMin, xMax, yMax] in the map's native CRS,
    * or null if the map API does not expose extent information.
    */
@@ -616,12 +652,48 @@ export class LocalizerControlLogic implements ControlLogicBase {
   }
 
   /**
-   * Returns the current map extent as 'west,south,east,north' for {bbox} URL substitution.
-   * Returns null if the map API does not expose extent information.
+   * Returns the territory extent as 'west,south,east,north' in EPSG:4326 for {bbox} substitution.
+   * Reprojects from the map's native CRS to geographic coordinates so geocoders receive degrees.
+   * Uses the initial extent (territory bounds) rather than the current visible area.
    */
   private getMapBbox(): string | null {
-    const ext = this.getRawMapExtent();
-    return ext ? `${ext[0]},${ext[1]},${ext[2]},${ext[3]}` : null;
+    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
+    if (!ext) return null;
+    const mapCrs = this.getMapCrs();
+    const wgs84 = 'EPSG:4326';
+    if (mapCrs !== wgs84) {
+      try {
+        const util = (globalThis as any).TC?.Util;
+        if (typeof util?.reprojectExtent === 'function') {
+          const geo = util.reprojectExtent(ext, mapCrs, wgs84);
+          return `${geo[0]},${geo[1]},${geo[2]},${geo[3]}`;
+        }
+      } catch { /* ignore — fall through to raw extent */ }
+    }
+    return `${ext[0]},${ext[1]},${ext[2]},${ext[3]}`;
+  }
+
+  /**
+   * Returns the centre of the territory extent as [lon, lat] in EPSG:4326.
+   * Used for {focus_lon} and {focus_lat} URL template substitution.
+   */
+  private getTerritoryCenter(): [number, number] | null {
+    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
+    if (!ext) return null;
+    const cx = (ext[0] + ext[2]) / 2;
+    const cy = (ext[1] + ext[3]) / 2;
+    const mapCrs = this.getMapCrs();
+    const wgs84 = 'EPSG:4326';
+    if (mapCrs !== wgs84) {
+      try {
+        const util = (globalThis as any).TC?.Util;
+        if (typeof util?.reproject === 'function') {
+          const [lon, lat] = util.reproject([cx, cy], mapCrs, wgs84);
+          return [lon, lat];
+        }
+      } catch { /* ignore */ }
+    }
+    return [cx, cy];
   }
 }
 

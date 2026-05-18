@@ -82,33 +82,40 @@ export function setLocalizerTasks(tasks: LocalizerTask[]): void {
   _tasks = tasks;
 }
 
+// Module-level cache for the territory extent from AppCfg (authoritative SITMUN territory bounds).
+let _territoryExtent: [number, number, number, number] | null = null;
+
+/**
+ * Returns the territory extent in the map's native CRS as defined by the SITMUN backend.
+ * This is the authoritative territory bounds, independent of what the map currently shows.
+ */
+export function getTerritoryExtent(): [number, number, number, number] | null {
+  return _territoryExtent;
+}
+
 /**
  * Execute a locator search using the task's URL template and parsing config.
- * @param task       The localizer task (URL template + parsing config).
- * @param searchText The text entered by the user.
- * @param mapBbox    Optional map extent as 'west,south,east,north' (for {bbox} substitution).
+ * @param task         The localizer task (URL template + parsing config).
+ * @param searchText   The text entered by the user.
+ * @param templateVars Optional map of template variable values ({bbox}, {focus_lat}, {focus_lon}…).
  */
 export async function executeLocalizerSearch(
   task: LocalizerTask,
   searchText: string,
-  mapBbox?: string
+  templateVars: Record<string, string> = {}
 ): Promise<any[]> {
   let url: string;
 
   if (task.scope === 'API') {
-    // Proxy mode: the SITMUN proxy expands {text} in the command URL server-side.
-    // The viewer appends the search text and optional bbox as query parameters.
-    // The query task must declare 'text' (and optionally 'bbox') as client-provided parameters.
-    const params = new URLSearchParams({ text: searchText });
-    if (mapBbox) {
-      params.set('bbox', mapBbox);
-    }
+    // Proxy mode: the SITMUN proxy expands template variables in the command URL server-side.
+    // The viewer appends search text and all template vars as query parameters.
+    const params = new URLSearchParams({ text: searchText, ...templateVars });
     url = `${task.url}?${params.toString()}`;
   } else {
-    // Direct mode (scope URL / RESOURCE): substitute placeholders client-side.
+    // Direct mode (scope URL / RESOURCE): substitute all placeholders client-side.
     url = task.url.replace(/\{text\}/gi, encodeURIComponent(searchText));
-    if (mapBbox) {
-      url = url.replace(/\{bbox\}/gi, mapBbox);
+    for (const [key, value] of Object.entries(templateVars)) {
+      url = url.replace(new RegExp(String.raw`\{${key}\}`, 'gi'), value);
     }
   }
   try {
@@ -145,6 +152,10 @@ export class LocalizerService {
 
   initialize(config: AppCfg): void {
     this.tasks = [];
+    // Store the territory extent from the SITMUN backend config.
+    // This is in the map's native CRS (application.srs) and is the authoritative extent
+    // of the current application's territory — independent of what the map renders.
+    _territoryExtent = config?.application?.initialExtent ?? null;
     if (!config?.tasks) {
       return;
     }
