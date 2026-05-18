@@ -31,13 +31,6 @@ export interface LocalizerTask {
   /** Coordinate reference system of the service response (e.g. 'EPSG:4326'). */
   srs: string;
   /**
-   * Fetch credentials mode sent to the geocoder API.
-   * Configurable from admin: 'omit' | 'same-origin' | 'include'.
-   * Default: 'same-origin' (browser default — does not send cookies to cross-origin APIs).
-   * Set to 'include' for SITMUN proxy (API scope) tasks that require session authentication.
-   */
-  credentials: RequestCredentials;
-  /**
    * When true, results are filtered client-side to only those whose geometry
    * falls within the current map extent. Useful for geocoders (e.g. ICGC) that
    * do not support server-side bbox filtering.
@@ -58,10 +51,6 @@ export const DEFAULT_TASK_CONFIG = {
   latField: '',
   lonField: '',
   srs: 'EPSG:4326',
-  // 'same-origin' is the browser fetch default: sends cookies only to the same origin.
-  // External public APIs (e.g. ICGC, Nominatim) are cross-origin → no cookies sent → no CORS issue.
-  // Set to 'include' in admin when the geocoder requires session credentials (e.g. proxy tasks).
-  credentials: 'same-origin' as RequestCredentials,
   // false = return all results regardless of map extent (global geocoders).
   // true  = filter client-side so only results within the current map view are shown.
   filterByExtent: false
@@ -123,9 +112,11 @@ export async function executeLocalizerSearch(
     }
   }
   try {
+    // Proxy tasks (scope=API) always need the session cookie; direct calls use public APIs → omit.
+    const credentials: RequestCredentials = task.scope === 'API' ? 'include' : 'omit';
     const response = await fetch(url, {
       headers: { Accept: 'application/json' },
-      credentials: task.credentials
+      credentials
     });
     if (!response.ok) {
       console.warn('[LocalizerService] Search request failed:', response.status);
@@ -174,7 +165,6 @@ export class LocalizerService {
         latField: p.latField ?? DEFAULT_TASK_CONFIG.latField,
         lonField: p.lonField ?? DEFAULT_TASK_CONFIG.lonField,
         srs: p.srs ?? DEFAULT_TASK_CONFIG.srs,
-        credentials: (p.credentials as RequestCredentials) ?? DEFAULT_TASK_CONFIG.credentials,
         filterByExtent: p.filterByExtent === 'true' || p.filterByExtent === true
       });
     });
