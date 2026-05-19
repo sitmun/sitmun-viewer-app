@@ -59,6 +59,13 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   }
 
   /**
+   * Get Raster prototype from TC namespace (same pattern as layer-catalog-control.handler).
+   */
+  private getRasterPrototype(TC: any): any {
+    return TC?.layer?.Raster?.prototype || TC?.wrap?.layer?.Raster?.prototype;
+  }
+
+  /**
    * Load patches for featureInfo control.
    * Patches:
    * 1. Map.addControl - Apply displayElevation config to featureInfo and featureTools
@@ -217,6 +224,89 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         this.patchManager.add(() => {
           meld.remove(displayResultsAdvice);
           delete fiProto.__sitmunMoreInfoDisplayResults;
+        });
+      }
+
+      // --- Patch A: Tolerate DescribeLayer failures (#155) ---
+      // SITNA's getFeatureInfo (api-sitna ol.js:7228) does:
+      //   const isFromRasterOrigin = (await layer.describeLayer(true)).every(...)
+      // without try/catch. WMS servers that don't implement DescribeLayer (e.g. Catastro)
+      // reply with a ServiceException, which Raster.describeLayer (Raster.js:2037) re-throws.
+      // That throw propagates out of getFeatureInfo and breaks identify for every layer.
+      const SITNA = this.sitnaApi.getSITNA() as any;
+      const RasterProto = this.getRasterPrototype(TC);
+      if (RasterProto?.describeLayer && !RasterProto.__sitmunDescribeLayerSafe) {
+        const describeAdvice = meld.around(
+          RasterProto,
+          'describeLayer',
+          function (this: unknown, jp: MeldJoinPoint): unknown {
+            const full = jp.args[0] as boolean | undefined;
+            const fallback = full ? [{ owsType: 'WMS' }] : { owsType: 'WMS' };
+            return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
+              () => fallback
+            );
+          }
+        );
+        RasterProto.__sitmunDescribeLayerSafe = true;
+        this.patchManager.add(() => {
+          meld.remove(describeAdvice);
+          delete RasterProto.__sitmunDescribeLayerSafe;
+        });
+      }
+
+      // --- Patch B: Per-service isolation for GetFeatureInfo (#155) ---
+      // SITNA's getFeatureInfo (api-sitna ol.js:7322) aggregates per-service GFI requests
+      // with Promise.all. A single rejected request (e.g. Catastro returning HTTP 500 from
+      // Proxification.js:1206) collapses the whole identify and triggers the global
+      // 'featureInfo.error' toast with featureCount:0.
+      // We intercept Proxification.fetch only for URLs whose query string contains
+      // REQUEST=GetFeatureInfo, and convert the rejection into an empty response shaped
+      // exactly like a real fulfilment ({ responseText, contentType }) so Promise.all resolves
+      // and OL renders the successful services normally.
+      const ProxProto = TC?.tool?.Proxification?.prototype;
+      if (ProxProto?.fetch && !ProxProto.__sitmunGfiIsolation) {
+        const fetchAdvice = meld.around(
+          ProxProto,
+          'fetch',
+          function (this: unknown, jp: MeldJoinPoint): unknown {
+            const url = jp.args[0];
+            if (
+              typeof url !== 'string' ||
+              !/[?&]REQUEST=GetFeatureInfo\b/i.test(url)
+            ) {
+              return jp.proceed();
+            }
+            const formatMatch = url.match(/[?&]INFO_FORMAT=([^&]+)/i);
+            const requestedFormat = formatMatch
+              ? decodeURIComponent(formatMatch[1])
+              : 'application/json';
+            // Return a structurally valid empty payload that matches INFO_FORMAT so the OL
+            // parser branch at ol.js:7339 (iFormat === requestedFormat) is taken and the
+            // try/catch at ol.js:7376 yields zero features, instead of the responseError
+            // branch that triggers the global error toast.
+            const emptyByFormat: Record<string, string> = {
+              'application/json':
+                '{"type":"FeatureCollection","features":[]}',
+              'application/vnd.ogc.gml':
+                '<?xml version="1.0"?><wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"/>',
+              'application/vnd.ogc.gml/3.1.1':
+                '<?xml version="1.0"?><wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"/>',
+              'application/vnd.esri.wms_featureinfo_xml':
+                '<FeatureInfoResponse/>'
+            };
+            const responseText = emptyByFormat[requestedFormat] ?? '';
+            return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
+              () => ({
+                responseText,
+                contentType: requestedFormat
+              })
+            );
+          }
+        );
+        ProxProto.__sitmunGfiIsolation = true;
+        this.patchManager.add(() => {
+          meld.remove(fetchAdvice);
+          delete ProxProto.__sitmunGfiIsolation;
         });
       }
     });
