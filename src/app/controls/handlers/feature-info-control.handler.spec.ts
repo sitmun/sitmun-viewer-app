@@ -1,8 +1,9 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { TranslateService } from '@ngx-translate/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { TranslateService } from '@ngx-translate/core';
+
 
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
@@ -32,8 +33,8 @@ describe('FeatureInfoControlHandler', () => {
     > as jest.Mocked<AppConfigService>;
 
     mockTranslateService = {
-      instant: jest.fn((key: string) => key),
-      get: jest.fn((key: string) => ({ subscribe: jest.fn() }))
+      instant: jest.fn((_key: string) => _key),
+      get: jest.fn((_key: string) => ({ subscribe: jest.fn() }))
     } as any;
 
     TestBed.configureTestingModule({
@@ -295,7 +296,7 @@ describe('FeatureInfoControlHandler', () => {
       // Arrange: fetch rejects on GetMap (not GetFeatureInfo)
       const getMapUrl =
         'http://example.com/wms?SERVICE=WMS&REQUEST=GetMap';
-      TC.tool.Proxification.prototype.fetch.mockImplementation((url: string) => {
+      TC.tool.Proxification.prototype.fetch.mockImplementation((_url: string) => {
         return Promise.reject(new Error('HTTP 500'));
       });
 

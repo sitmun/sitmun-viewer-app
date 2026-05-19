@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- GetFeatureInfo / identify keeps working for compatible WMS layers when another active layer's service does not support `DescribeLayer` or returns a failing GFI response (fixes [#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)). `FeatureInfoControlHandler.loadPatches` wraps `Raster.prototype.describeLayer` and `Proxification.prototype.fetch` (for GetFeatureInfo URLs only) to convert rejections into benign empty responses, so one incompatible service no longer breaks identify for all other layers.
+
 ## [1.2.6] - 2026-05-08
 
 ### Added

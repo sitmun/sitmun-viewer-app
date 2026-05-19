@@ -233,7 +233,6 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
       // without try/catch. WMS servers that don't implement DescribeLayer (e.g. Catastro)
       // reply with a ServiceException, which Raster.describeLayer (Raster.js:2037) re-throws.
       // That throw propagates out of getFeatureInfo and breaks identify for every layer.
-      const SITNA = this.sitnaApi.getSITNA() as any;
       const RasterProto = this.getRasterPrototype(TC);
       if (RasterProto?.describeLayer && !RasterProto.__sitmunDescribeLayerSafe) {
         const describeAdvice = meld.around(
