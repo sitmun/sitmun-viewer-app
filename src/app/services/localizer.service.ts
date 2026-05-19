@@ -22,8 +22,6 @@ export interface LocalizerTask {
   labelField: string;
   /** Dot-notation path to a GeoJSON geometry object within each result. */
   geometryField: string;
-  /** Dot-notation path to a bbox array [west, south, east, north] within each result. */
-  bboxField: string;
   /** Dot-notation path to the latitude value (alternative to GeoJSON geometry). */
   latField: string;
   /** Dot-notation path to the longitude value (alternative to GeoJSON geometry). */
@@ -47,7 +45,6 @@ export const DEFAULT_TASK_CONFIG = {
   resultsPath: 'features',
   labelField: 'properties.display_name',
   geometryField: 'geometry',
-  bboxField: '',
   latField: '',
   lonField: '',
   srs: 'EPSG:4326',
@@ -172,7 +169,6 @@ export class LocalizerService {
         resultsPath: p.resultsPath ?? DEFAULT_TASK_CONFIG.resultsPath,
         labelField: p.labelField ?? DEFAULT_TASK_CONFIG.labelField,
         geometryField: p.geometryField ?? DEFAULT_TASK_CONFIG.geometryField,
-        bboxField: p.bboxField ?? DEFAULT_TASK_CONFIG.bboxField,
         latField: p.latField ?? DEFAULT_TASK_CONFIG.latField,
         lonField: p.lonField ?? DEFAULT_TASK_CONFIG.lonField,
         srs: p.srs ?? DEFAULT_TASK_CONFIG.srs,

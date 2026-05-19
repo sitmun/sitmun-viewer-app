@@ -199,15 +199,11 @@ export class LocalizerControlLogic implements ControlLogicBase {
 
     try {
       // Build template variables for URL substitution:
-      // - {bbox}       = territory extent in EPSG:4326 (west,south,east,north)
       // - {focus_lat}  = latitude of the territory centre (EPSG:4326)
       // - {focus_lon}  = longitude of the territory centre (EPSG:4326)
       const templateVars: Record<string, string> = {};
-      const needsBbox = task.scope === 'API' || task.url.includes('{bbox}');
       const needsFocus = task.scope === 'API' || task.url.includes('{focus_');
-      if (needsBbox || needsFocus) {
-        const bbox = this.getMapBbox();
-        if (bbox) templateVars['bbox'] = bbox;
+      if (needsFocus) {
         const center = this.getTerritoryCenter();
         if (center) {
           templateVars['focus_lon'] = String(center[0]);
@@ -356,17 +352,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
     // Draw the geometry as a temporary feature on the map (async, does not block zoom)
     this.drawResultGeometry(item, task);
 
-    // 1. Prefer bbox (shows the full area, better UX)
-    if (task.bboxField) {
-      const rawBbox = getByPath(item, task.bboxField);
-      const bbox = this.parseBbox(rawBbox);
-      if (bbox) {
-        this.zoomToBbox(map, bbox, task.srs || 'EPSG:4326');
-        return;
-      }
-    }
-
-    // 2. GeoJSON geometry field
+    // 1. GeoJSON geometry field
     if (task.geometryField) {
       const geom = getByPath(item, task.geometryField);
       if (geom?.coordinates) {
@@ -513,21 +499,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
     }
   }
 
-  /**
-   * Parses a bbox value that may be either a number[] or a comma-separated string.
-   * Returns a [xmin, ymin, xmax, ymax] number array, or null if invalid.
-   */
-  private parseBbox(raw: any): number[] | null {
-    if (Array.isArray(raw) && raw.length >= 4) {
-      const nums = raw.slice(0, 4).map(Number);
-      return nums.every(n => !Number.isNaN(n)) ? nums : null;
-    }
-    if (typeof raw === 'string') {
-      const parts = raw.split(',').map(Number);
-      if (parts.length >= 4 && parts.every(n => !Number.isNaN(n))) return parts.slice(0, 4);
-    }
-    return null;
-  }
+
 
   /**
    * Zooms the map to a bounding box [west, south, east, north].
@@ -649,28 +621,6 @@ export class LocalizerControlLogic implements ControlLogicBase {
       // Map API does not expose extent
     }
     return null;
-  }
-
-  /**
-   * Returns the territory extent as 'west,south,east,north' in EPSG:4326 for {bbox} substitution.
-   * Reprojects from the map's native CRS to geographic coordinates so geocoders receive degrees.
-   * Uses the initial extent (territory bounds) rather than the current visible area.
-   */
-  private getMapBbox(): string | null {
-    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
-    if (!ext) return null;
-    const mapCrs = this.getMapCrs();
-    const wgs84 = 'EPSG:4326';
-    if (mapCrs !== wgs84) {
-      try {
-        const util = (globalThis as any).TC?.Util;
-        if (typeof util?.reprojectExtent === 'function') {
-          const geo = util.reprojectExtent(ext, mapCrs, wgs84);
-          return `${geo[0]},${geo[1]},${geo[2]},${geo[3]}`;
-        }
-      } catch { /* ignore — fall through to raw extent */ }
-    }
-    return `${ext[0]},${ext[1]},${ext[2]},${ext[3]}`;
   }
 
   /**
