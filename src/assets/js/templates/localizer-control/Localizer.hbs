@@ -1,9 +1,6 @@
-<button type="button" class="tc-ctl-loc-btn" title="{{i18n title}}"></button>
-<div class="tc-ctl-loc-panel" style="display:none">
-  <div class="tc-ctl-loc-header">
-    <span class="tc-ctl-loc-title">{{i18n title}}</span>
-  </div>
-  {{#if hasTasks}}
+<h2>{{i18n title}}</h2>
+{{#if hasTasks}}
+  <div class="tc-ctl-loc-body">
     <div class="tc-ctl-loc-select-row">
       <select class="tc-ctl-loc-select">
         <option value="">{{i18n selectLocator}}</option>
@@ -24,5 +21,5 @@
     <div class="tc-ctl-loc-loading" style="display:none">{{i18n loading}}</div>
     <ul class="tc-ctl-loc-results" style="display:none"></ul>
     <div class="tc-ctl-loc-no-results" style="display:none">{{i18n noResults}}</div>
-  {{/if}}
-</div>
+  </div>
+{{/if}}

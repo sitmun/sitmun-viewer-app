@@ -363,58 +363,23 @@
 
 /* ============================================================================
    Localizer Control Styling
+   (Rendered as a tab inside the left tools panel, not as a floating overlay)
    ============================================================================ */
 
-/* Position the localizer slot just below the SITNA search bar.
-   The search bar is at top: 3.7em and is 40px tall, so we place
-   the localizer at calc(3.7em + 44px), aligned with the search (left: 6%). */
-#tc-slot-localizer {
-  position: absolute;
-  left: 6%;
-  top: calc(3.7em + 44px);
-  z-index: 9998;
+/* Icon and cursor are set in custom-main.css following the same pattern as all other panel controls */
+
+/* Cancel SITNA's default 2% padding on .tc-ctl so content spans edge-to-edge
+   (same pattern as SITNA's own .tc-ctl-search { padding: 0 }) */
+.tc-ctl-loc {
+  padding: 0;
 }
 
-/* Main toggle button — same look as other SITNA left-toolbar buttons */
-.tc-ctl-loc-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 0px !important;
-  background-color: rgba(0, 0, 0, 0.8);
-  background-image: url(./img/search.png);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 26px 26px;
-  border: none;
-  cursor: pointer;
-  display: block;
-}
-
-.tc-ctl-loc-btn:hover,
-.tc-ctl-loc-btn--active {
-  background-color: rgba(0, 0, 0, 1);
-}
-
-/* Panel that opens to the right of the button */
-.tc-ctl-loc-panel {
-  position: absolute;
-  left: 48px;
-  top: 0;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  width: 280px;
-  z-index: 9999;
-  flex-direction: column;
-}
-
-.tc-ctl-loc-header {
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  padding: 8px 12px;
-  font-size: 0.85em;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* Body container: direct div child of .tc-ctl so SITNA's collapse CSS
+   (max-height:0; opacity:0 on .tc-ctl.tc-collapsed > div) applies to it,
+   hiding the form and ul elements that are not themselves divs */
+.tc-ctl-loc-body {
+  padding: 0;
+  margin: 0;
 }
 
 .tc-ctl-loc-select-row {
@@ -467,7 +432,7 @@
 }
 
 .tc-ctl-loc-loading {
-  padding: 8px 12px;
+  padding: 6px 8px;
   font-size: 0.8em;
   color: #666;
   font-style: italic;
@@ -482,7 +447,7 @@
 }
 
 .tc-ctl-loc-result-item {
-  padding: 7px 12px;
+  padding: 7px 8px;
   font-size: 0.82em;
   border-bottom: 1px solid #f0f0f0;
   cursor: pointer;
@@ -494,7 +459,7 @@
 }
 
 .tc-ctl-loc-no-results {
-  padding: 8px 12px;
+  padding: 6px 8px;
   font-size: 0.82em;
   color: #999;
   font-style: italic;

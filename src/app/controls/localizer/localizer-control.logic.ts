@@ -39,12 +39,10 @@ const LOCALIZER_RESULT_LAYER_ID = 'sitmun-localizer-result';
 
 export interface LocalizerControlInstance extends BaseCustomControlInstance {
   map: any;
-  _handleTogglePanel: () => void;
   _handleLocatorChange: (event: Event) => void;
   _handleSearchInput: (event: Event) => void;
   _handleSearchSubmit: (event: Event) => void;
   _searchDebounceTimer: ReturnType<typeof setTimeout> | null;
-  _panelOpen: boolean;
   _selectedTask: LocalizerTask | null;
   _isLoading: boolean;
   /** Cached reference to the temporary vector layer used to draw selected results. */
@@ -61,13 +59,11 @@ export class LocalizerControlLogic implements ControlLogicBase {
   // ---- ControlLogicBase implementation ----
 
   init(): void {
-    this.control._panelOpen = false;
     this.control._selectedTask = null;
     this.control._searchDebounceTimer = null;
     this.control._isLoading = false;
     this.control._resultLayer = null;
 
-    this.control._handleTogglePanel = this.handleTogglePanel.bind(this);
     this.control._handleLocatorChange = this.handleLocatorChange.bind(this);
     this.control._handleSearchInput = this.handleSearchInput.bind(this);
     this.control._handleSearchSubmit = this.handleSearchSubmit.bind(this);
@@ -106,10 +102,6 @@ export class LocalizerControlLogic implements ControlLogicBase {
     if (!root) return;
 
     root
-      .querySelector('.tc-ctl-loc-btn')
-      ?.addEventListener('click', this.control._handleTogglePanel);
-
-    root
       .querySelector('.tc-ctl-loc-select')
       ?.addEventListener('change', this.control._handleLocatorChange);
 
@@ -123,18 +115,6 @@ export class LocalizerControlLogic implements ControlLogicBase {
   }
 
   // ---- Event handlers ----
-
-  private handleTogglePanel(): void {
-    this.control._panelOpen = !this.control._panelOpen;
-    const panel = this.control.div?.querySelector<HTMLElement>('.tc-ctl-loc-panel');
-    const btn = this.control.div?.querySelector<HTMLElement>('.tc-ctl-loc-btn');
-    if (panel) {
-      panel.style.display = this.control._panelOpen ? 'flex' : 'none';
-    }
-    if (btn) {
-      btn.classList.toggle('tc-ctl-loc-btn--active', this.control._panelOpen);
-    }
-  }
 
   private handleLocatorChange(event: Event): void {
     const select = event.target as HTMLSelectElement;

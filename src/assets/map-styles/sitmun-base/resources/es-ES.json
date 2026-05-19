@@ -28,7 +28,7 @@
   "helloWorld.title": "Hola Mundo",
   "helloWorld.message": "Este control está registrado desde Angular y renderizado mediante una plantilla Handlebars.",
   "helloWorld.buttonLabel": "Saludar",
-  "localizer.title": "Buscador",
+  "localizer.title": "Localizador",
   "localizer.selectLocator": "Selecciona un localizador...",
   "localizer.searchPlaceholder": "Introduce el texto de búsqueda...",
   "localizer.noResults": "No se han encontrado resultados.",
