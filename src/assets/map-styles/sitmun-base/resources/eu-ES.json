@@ -24,9 +24,9 @@
   "helloWorld.title": "Kaixo Mundua",
   "helloWorld.message": "Kontrol hau Angular-etik erregistratuta dago eta Handlebars txantiloi baten bidez errendatzen da.",
   "helloWorld.buttonLabel": "Agurtu",
-  "localizer.title": "Bilaketa",
-  "localizer.selectLocator": "Hautatu kokatzaile bat...",
-  "localizer.searchPlaceholder": "Idatzi bilaketa testua...",
-  "localizer.noResults": "Ez da emaitzarik aurkitu.",
-  "localizer.loading": "Bilatzen..."
+  "locator.title": "Bilaketa",
+  "locator.selectLocator": "Hautatu kokatzaile bat...",
+  "locator.searchPlaceholder": "Idatzi bilaketa testua...",
+  "locator.noResults": "Ez da emaitzarik aurkitu.",
+  "locator.loading": "Bilatzen..."
 }

@@ -1,11 +1,11 @@
 /**
- * Localizer Control Logic - TypeScript implementation.
+ * Locator Control Logic - TypeScript implementation.
  *
  * Renders a button that opens a search panel with a dropdown
  * of all available locator tasks. Selecting a locator and entering
  * a search text executes the corresponding query.
  *
- * @see localizer-control.handler.ts (same folder) for wiring
+ * @see locator-control.handler.ts (same folder) for wiring
  */
 
 import {
@@ -14,7 +14,7 @@ import {
   createPrototypeWrappers
 } from '../utils/sitna-patch-helpers';
 
-import { getLocalizerTasks, LocalizerTask, executeLocalizerSearch, getByPath, getTerritoryExtent } from '../../services/localizer.service';
+import { getLocatorTasks, LocatorTask, executeLocatorSearch, getByPath, getTerritoryExtent } from '../../services/locator.service';
 
 // ============================================================================
 // Configuration Constants
@@ -22,7 +22,7 @@ import { getLocalizerTasks, LocalizerTask, executeLocalizerSearch, getByPath, ge
 
 /** Path to the Handlebars template */
 export const TEMPLATE_PATH =
-  'assets/js/templates/localizer-control/Localizer.hbs';
+  'assets/js/templates/locator-control/Locator.hbs';
 
 /** Minimum number of characters before triggering a search */
 const MIN_SEARCH_LENGTH = 2;
@@ -31,19 +31,19 @@ const MIN_SEARCH_LENGTH = 2;
 const SEARCH_DEBOUNCE_MS = 400;
 
 /** Identifier of the temporary vector layer used to highlight the selected result on the map. */
-const LOCALIZER_RESULT_LAYER_ID = 'sitmun-localizer-result';
+const LOCATOR_RESULT_LAYER_ID = 'sitmun-locator-result';
 
 // ============================================================================
 // Interfaces
 // ============================================================================
 
-export interface LocalizerControlInstance extends BaseCustomControlInstance {
+export interface LocatorControlInstance extends BaseCustomControlInstance {
   map: any;
   _handleLocatorChange: (event: Event) => void;
   _handleSearchInput: (event: Event) => void;
   _handleSearchSubmit: (event: Event) => void;
   _searchDebounceTimer: ReturnType<typeof setTimeout> | null;
-  _selectedTask: LocalizerTask | null;
+  _selectedTask: LocatorTask | null;
   _isLoading: boolean;
   /** Cached reference to the temporary vector layer used to draw selected results. */
   _resultLayer: any;
@@ -53,8 +53,8 @@ export interface LocalizerControlInstance extends BaseCustomControlInstance {
 // Logic Class
 // ============================================================================
 
-export class LocalizerControlLogic implements ControlLogicBase {
-  constructor(private readonly control: LocalizerControlInstance) {}
+export class LocatorControlLogic implements ControlLogicBase {
+  constructor(private readonly control: LocatorControlInstance) {}
 
   // ---- ControlLogicBase implementation ----
 
@@ -75,14 +75,14 @@ export class LocalizerControlLogic implements ControlLogicBase {
   }
 
   async render(callback?: () => void): Promise<void> {
-    const tasks = getLocalizerTasks();
+    const tasks = getLocatorTasks();
 
     const data = {
-      title: 'localizer.title',
-      searchPlaceholder: 'localizer.searchPlaceholder',
-      noResults: 'localizer.noResults',
-      loading: 'localizer.loading',
-      selectLocator: 'localizer.selectLocator',
+      title: 'locator.title',
+      searchPlaceholder: 'locator.searchPlaceholder',
+      noResults: 'locator.noResults',
+      loading: 'locator.loading',
+      selectLocator: 'locator.selectLocator',
       tasks: tasks.map((t) => ({ id: t.id, name: t.name })),
       hasTasks: tasks.length > 0
     };
@@ -119,7 +119,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
   private handleLocatorChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const taskId = select.value;
-    const tasks = getLocalizerTasks();
+    const tasks = getLocatorTasks();
     this.control._selectedTask = tasks.find((t) => t.id === taskId) ?? null;
 
     const inputRow = this.control.div?.querySelector<HTMLElement>('.tc-ctl-loc-search-row');
@@ -190,7 +190,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
           templateVars['focus_lat'] = String(center[1]);
         }
       }
-      let results = await executeLocalizerSearch(task, searchText, templateVars);
+      let results = await executeLocatorSearch(task, searchText, templateVars);
       if (task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
       }
@@ -218,7 +218,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
    * so results are not excluded just because the user has zoomed in.
    * Reprojects result coordinates from task.srs to the map's CRS before comparing.
    */
-  private filterResultsByMapExtent(results: any[], task: LocalizerTask): any[] {
+  private filterResultsByMapExtent(results: any[], task: LocatorTask): any[] {
     const map = this.control.map;
     if (!map) return results;
 
@@ -284,7 +284,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
     }
   }
 
-  private renderResults(results: any[], task: LocalizerTask): void {
+  private renderResults(results: any[], task: LocatorTask): void {
     const resultsList = this.control.div?.querySelector<HTMLElement>('.tc-ctl-loc-results');
     const noResults = this.control.div?.querySelector<HTMLElement>('.tc-ctl-loc-no-results');
     if (!resultsList) return;
@@ -310,7 +310,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
     });
   }
 
-  private extractLabel(item: any, task: LocalizerTask): string {
+  private extractLabel(item: any, task: LocatorTask): string {
     if (typeof item === 'string') return item;
     if (task.labelField) {
       const val = getByPath(item, task.labelField);
@@ -325,9 +325,9 @@ export class LocalizerControlLogic implements ControlLogicBase {
     );
   }
 
-  private handleResultClick(item: any, task: LocalizerTask): void {
+  private handleResultClick(item: any, task: LocatorTask): void {
     const map = this.control.map;
-    if (!map) { console.warn('[LocalizerControl] handleResultClick: map not available'); return; }
+    if (!map) { console.warn('[LocatorControl] handleResultClick: map not available'); return; }
 
     // Draw the geometry as a temporary feature on the map (async, does not block zoom)
     this.drawResultGeometry(item, task);
@@ -366,7 +366,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
 
     // Recover reference if the layer was already added to the map (e.g. after re-render)
     if (typeof map.getLayer === 'function') {
-      const existing = map.getLayer(LOCALIZER_RESULT_LAYER_ID);
+      const existing = map.getLayer(LOCATOR_RESULT_LAYER_ID);
       if (existing) {
         this.control._resultLayer = existing;
         return existing;
@@ -378,13 +378,13 @@ export class LocalizerControlLogic implements ControlLogicBase {
       const TC = (globalThis as any).TC;
       const vectorType: string = TC?.Consts?.layerType?.VECTOR ?? 'vector';
       const layer = await map.addLayer({
-        id: LOCALIZER_RESULT_LAYER_ID,
+        id: LOCATOR_RESULT_LAYER_ID,
         type: vectorType
       });
       this.control._resultLayer = layer;
       return layer;
     } catch (err) {
-      console.warn('[LocalizerControl] Could not create result layer:', err);
+      console.warn('[LocatorControl] Could not create result layer:', err);
       return null;
     }
   }
@@ -417,7 +417,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
    * Silently does nothing if the map or SITNA vector API is unavailable.
    * Coordinates are reprojected to the map CRS via TC.Util.reproject before drawing.
    */
-  private async drawResultGeometry(item: any, task: LocalizerTask): Promise<void> {
+  private async drawResultGeometry(item: any, task: LocatorTask): Promise<void> {
     const map = this.control.map;
     if (!map) return;
 
@@ -524,7 +524,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
     const isDeclaredGeographic = /4326|4258|4269|CRS84/i.test(declaredSrs);
     if (!isDeclaredGeographic && Math.abs(x) <= 180 && Math.abs(y) <= 90) {
       console.warn(
-        `[LocalizerControl] Coordinates [${x}, ${y}] look geographic but task.srs is "${declaredSrs}". ` +
+        `[LocatorControl] Coordinates [${x}, ${y}] look geographic but task.srs is "${declaredSrs}". ` +
         'Treating as EPSG:4326. Fix task.srs in the admin configuration.'
       );
       return 'EPSG:4326';
@@ -563,7 +563,7 @@ export class LocalizerControlLogic implements ControlLogicBase {
 
   /**
    * Returns the territory extent as [xMin, yMin, xMax, yMax] in the map's native CRS.
-   * Reads the value stored by LocalizerService from AppCfg.application.initialExtent,
+   * Reads the value stored by LocatorService from AppCfg.application.initialExtent,
    * which is the authoritative territory extent as defined in the SITMUN backend.
    * Falls back to map.initialExtent (SITNA) if the service value is not yet available.
    */
@@ -632,4 +632,4 @@ export class LocalizerControlLogic implements ControlLogicBase {
 // ============================================================================
 
 export const prototypeWrappers =
-  createPrototypeWrappers<LocalizerControlInstance>(LocalizerControlLogic);
+  createPrototypeWrappers<LocatorControlInstance>(LocatorControlLogic);

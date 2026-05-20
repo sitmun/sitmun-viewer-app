@@ -3,9 +3,9 @@ import { Injectable } from '@angular/core';
 import { AppCfg } from '@api/model/app-cfg';
 
 /**
- * Represents a single locator task (ui-control = 'sitmun.localizer').
+ * Represents a single locator task (ui-control = 'sitmun.locator').
  */
-export interface LocalizerTask {
+export interface LocatorTask {
   id: string;
   name: string;
   /** URL template. Use {text} for the search term, {bbox} for the map extent. */
@@ -62,20 +62,20 @@ export function getByPath(obj: any, path: string): any {
   return path.split('.').reduce((curr, key) => (curr == null ? undefined : curr[key]), obj);
 }
 
-/** Module-level cache of localizer tasks for use in non-Angular control logic. */
-let _tasks: LocalizerTask[] = [];
+/** Module-level cache of locator tasks for use in non-Angular control logic. */
+let _tasks: LocatorTask[] = [];
 
 /**
- * Get the current localizer tasks (for use outside Angular DI).
+ * Get the current locator tasks (for use outside Angular DI).
  */
-export function getLocalizerTasks(): LocalizerTask[] {
+export function getLocatorTasks(): LocatorTask[] {
   return _tasks;
 }
 
 /**
- * Set the localizer tasks cache (called by LocalizerService after initialization).
+ * Set the locator tasks cache (called by LocatorService after initialization).
  */
-export function setLocalizerTasks(tasks: LocalizerTask[]): void {
+export function setLocatorTasks(tasks: LocatorTask[]): void {
   _tasks = tasks;
 }
 
@@ -92,12 +92,12 @@ export function getTerritoryExtent(): [number, number, number, number] | null {
 
 /**
  * Execute a locator search using the task's URL template and parsing config.
- * @param task         The localizer task (URL template + parsing config).
+ * @param task         The locator task (URL template + parsing config).
  * @param searchText   The text entered by the user.
  * @param templateVars Optional map of template variable values ({bbox}, {focus_lat}, {focus_lon}…).
  */
-export async function executeLocalizerSearch(
-  task: LocalizerTask,
+export async function executeLocatorSearch(
+  task: LocatorTask,
   searchText: string,
   templateVars: Record<string, string> = {}
 ): Promise<any[]> {
@@ -123,7 +123,7 @@ export async function executeLocalizerSearch(
       credentials
     });
     if (!response.ok) {
-      console.warn('[LocalizerService] Search request failed:', response.status);
+      console.warn('[LocatorService] Search request failed:', response.status);
       return [];
     }
     const data = await response.json();
@@ -132,20 +132,20 @@ export async function executeLocalizerSearch(
     if (raw != null) return [raw];
     return [];
   } catch (error) {
-    console.error('[LocalizerService] Search error:', error);
+    console.error('[LocatorService] Search error:', error);
     return [];
   }
 }
 
 /**
- * Service for handling Localizer functionality.
+ * Service for handling Locator functionality.
  * Stores all locator tasks and exposes search execution.
  */
 @Injectable({
   providedIn: 'root'
 })
-export class LocalizerService {
-  private tasks: LocalizerTask[] = [];
+export class LocatorService {
+  private tasks: LocatorTask[] = [];
 
   initialize(config: AppCfg): void {
     this.tasks = [];
@@ -157,7 +157,7 @@ export class LocalizerService {
       return;
     }
     config.tasks.forEach((task: any) => {
-      if (task['ui-control'] !== 'sitmun.localizer') {
+      if (task['ui-control'] !== 'sitmun.locator') {
         return;
       }
       const p = task.parameters ?? {};
@@ -175,6 +175,6 @@ export class LocalizerService {
         filterByExtent: p.filterByExtent === 'true' || p.filterByExtent === true
       });
     });
-    setLocalizerTasks(this.tasks);
+    setLocatorTasks(this.tasks);
   }
 }

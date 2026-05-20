@@ -724,9 +724,9 @@
   "helloWorld.title": "Hola Món",
   "helloWorld.message": "Aquest control està registrat des d'Angular i renderitzat mitjançant una plantilla Handlebars.",
   "helloWorld.buttonLabel": "Saludar",
-  "localizer.title": "Cercador",
-  "localizer.selectLocator": "Selecciona un localizador...",
-  "localizer.searchPlaceholder": "Introdutz lo tèxte de recèrca...",
-  "localizer.noResults": "Cap resultat trobat.",
-  "localizer.loading": "Cercant..."
+  "locator.title": "Cercador",
+  "locator.selectLocator": "Selecciona un localizador...",
+  "locator.searchPlaceholder": "Introdutz lo tèxte de recèrca...",
+  "locator.noResults": "Cap resultat trobat.",
+  "locator.loading": "Cercant..."
 }

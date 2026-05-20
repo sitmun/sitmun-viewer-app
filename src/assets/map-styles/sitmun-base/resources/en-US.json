@@ -28,9 +28,9 @@
   "helloWorld.title": "Hello World",
   "helloWorld.message": "This control is registered from Angular and rendered via a Handlebars template.",
   "helloWorld.buttonLabel": "Say hello",
-  "localizer.title": "Search locator",
-  "localizer.selectLocator": "Select a locator...",
-  "localizer.searchPlaceholder": "Enter search text...",
-  "localizer.noResults": "No results found.",
-  "localizer.loading": "Searching..."
+  "locator.title": "Search locator",
+  "locator.selectLocator": "Select a locator...",
+  "locator.searchPlaceholder": "Enter search text...",
+  "locator.noResults": "No results found.",
+  "locator.loading": "Searching..."
 }

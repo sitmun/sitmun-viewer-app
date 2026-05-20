@@ -903,7 +903,7 @@ sitna-hello-world {
   color: var(--sitmun-collapsed-color);
 }
 
-/* Localizer control */
+/* Locator control */
 .tc-panel-content .tc-ctl-loc > h2 {
   background-image: url(./img/search.png);
   filter: brightness(0);
