@@ -42,8 +42,8 @@ export interface LocatorTask {
  * Matches the Nominatim/GeoJSON response format.
  */
 export const DEFAULT_TASK_CONFIG = {
-  resultsPath: 'features',
-  labelField: 'properties.display_name',
+  resultsPath: '',
+  labelField: '',
   geometryField: 'geometry',
   latField: '',
   lonField: '',
@@ -103,7 +103,12 @@ export async function executeLocatorSearch(
 ): Promise<any[]> {
   let url: string;
 
-  if (task.scope === 'API') {
+  // Tasks that go through the SITMUN proxy append params as query parameters.
+  // 'API' = HTTP external API via proxy; 'SQL' = database query via proxy.
+  // 'URL' / 'RESOURCE' = direct calls where the viewer substitutes placeholders itself.
+  const isProxyTask = task.scope === 'API' || task.scope === 'SQL';
+
+  if (isProxyTask) {
     // Proxy mode: the SITMUN proxy expands template variables in the command URL server-side.
     // The viewer appends search text and all template vars as query parameters.
     const params = new URLSearchParams({ text: searchText, ...templateVars });
@@ -116,8 +121,8 @@ export async function executeLocatorSearch(
     }
   }
   try {
-    // Proxy tasks (scope=API) always need the session cookie; direct calls use public APIs → omit.
-    const credentials: RequestCredentials = task.scope === 'API' ? 'include' : 'omit';
+    // Proxy tasks always need the session cookie; direct calls use public APIs → omit.
+    const credentials: RequestCredentials = isProxyTask ? 'include' : 'omit';
     const response = await fetch(url, {
       headers: { Accept: 'application/json' },
       credentials
@@ -130,6 +135,9 @@ export async function executeLocatorSearch(
     const raw = getByPath(data, task.resultsPath);
     if (Array.isArray(raw)) return raw;
     if (raw != null) return [raw];
+    // SQL tasks return a flat array at root; if the configured resultsPath doesn't
+    // resolve (e.g. default 'features' on a flat array), fall back to the root data.
+    if (Array.isArray(data)) return data;
     return [];
   } catch (error) {
     console.error('[LocatorService] Search error:', error);
