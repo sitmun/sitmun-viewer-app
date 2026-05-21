@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
+- Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
+- Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.
+- Fixed missing `Authorization` header on the first tile request after login; `proxy_token` is retried once after 500 ms.
+- Fixed stale proxy tokens causing unrecovered 401/403 errors; `ServiceWorker.js` now posts `AUTH_ERROR` to clients and `AuthenticationService` handles it with a signal-based in-flight guard against concurrent refresh calls.
+- Fixed tile requests racing ahead of proxy URL delivery; `MapServiceWorkerService.configureMiddleware()` now awaits `navigator.serviceWorker.ready` and `AbstractMapComponent` awaits `configureMiddleware()` before map creation.
+- Fixed duplicate `controllerchange` reload listeners stacking on repeated `configureMiddleware()` calls; guarded with `{ once: true }` and a per-instance flag.
+- Fixed unnecessary service worker overhead on non-proxy requests; `event.respondWith()` is now bypassed when `middlewareUrl` is already known.
+
 ## [1.2.6] - 2026-05-08
 
 ### Added
