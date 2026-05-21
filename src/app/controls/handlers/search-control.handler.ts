@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { SitnaControlConfig } from '../control-handler.interface';
+
 
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
+import { SitnaControlConfig } from '../control-handler.interface';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;

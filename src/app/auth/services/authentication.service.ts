@@ -22,6 +22,7 @@ import {
   Subscription,
   catchError,
   finalize,
+  from,
   map,
   of,
   switchMap,
@@ -54,7 +55,7 @@ export class AuthenticationService<T> {
   }
 
   private setupServiceWorkerListener(): void {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && navigator.serviceWorker) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'AUTH_ERROR') {
           console.debug(
@@ -75,7 +76,7 @@ export class AuthenticationService<T> {
       await this.indexedDb.init();
       this.indexedDbInitialized = true;
     } catch (err) {
-      console.warn('Failed to init IndexedDB:', err);
+      console.warn('[IDB] Failed to init IndexedDB:', err);
     }
   }
 
@@ -163,27 +164,29 @@ export class AuthenticationService<T> {
       .subscribe();
   }
 
-  private refreshProxyToken() {
+  private refreshProxyToken(): Observable<void> {
     if (this.isRefreshingProxyToken()) {
-      return of(null);
+      return of(undefined);
     }
 
     this.isRefreshingProxyToken.set(true);
     return this.http
       .post<{ proxy_token?: string }>(environment.apiUrl + URL_AUTH_PROXY, null)
       .pipe(
-        switchMap(async (response) => {
-          if (response.proxy_token) {
-            await this.indexedDb.set('proxy_token', response.proxy_token);
-          }
-          return response;
-        }),
+        switchMap((response) => from(this.persistProxyToken(response.proxy_token))),
         catchError((err) => {
-          console.warn('Error refreshing proxy token:', err);
-          return of(null);
+          console.warn('[Auth] Error refreshing proxy token:', err);
+          return of(undefined);
         }),
         finalize(() => this.isRefreshingProxyToken.set(false))
       );
+  }
+
+  /** Persists the proxy token returned by the auth endpoint. No-op if absent. */
+  private persistProxyToken(token: string | undefined): Promise<void> {
+    return token
+      ? this.indexedDb.set('proxy_token', token)
+      : Promise.resolve();
   }
 
   private stopProxyTokenRefresh(): void {
@@ -205,6 +208,6 @@ export class AuthenticationService<T> {
     this.stopProxyTokenRefresh();
     this.indexedDb
       .remove('proxy_token')
-      .catch((err) => console.warn('Error clearing proxy token:', err));
+      .catch((err) => console.warn('[IDB] Error clearing proxy token:', err));
   }
 }

@@ -5,14 +5,17 @@ const CONFIG_STORE_NAME = 'config';
 const READONLY = 'readonly';
 const ID = 'id';
 
+/** Enables verbose URL logging. Kept off in production to avoid leaking proxy endpoint paths. */
+const DEBUG = self.location.hostname === 'localhost';
+
 let middlewareUrl;
+let middlewareUrlLoadPromise = null; // single-flight guard — see loadMiddlewareUrlFromDB()
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    loadMiddlewareUrlFromDB().then(() => {
-      console.debug('[SW] Middleware URL loaded from IndexedDB');
-      return self.skipWaiting();
-    })
+    loadMiddlewareUrlFromDB()
+      .catch(() => {})     // IDB failure must not block installation
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -24,12 +27,12 @@ self.addEventListener('message', (event) => {
   const eventData = event.data;
   if (eventData.type === MIDDLEWARE_URL_KEY) {
     middlewareUrl = eventData.url;
-    console.debug('[SW] Middleware URL updated:', middlewareUrl);
+    if (DEBUG) console.debug('[SW] Middleware URL updated:', middlewareUrl);
 
     // CRITICAL for hard refresh - force claim clients so the SW regains control
-    self.clients.claim().then(() => {
-      console.debug('[SW] Re-claimed clients after message');
-    });
+    self.clients.claim()
+      .then(() => console.debug('[SW] Re-claimed clients after message'))
+      .catch((err) => console.warn('[SW] Failed to re-claim clients:', err));
   }
 });
 
@@ -37,32 +40,28 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
+  // Fast path: known middleware URL and request does not match — zero SW overhead
+  if (middlewareUrl && !url.href.startsWith(middlewareUrl)) {
+    return;
+  }
+
   event.respondWith((async () => {
 
-    // Restore state from DB if SW woke up from idle
-    if (!middlewareUrl) {
-      await loadMiddlewareUrlFromDB();
-    }
+    // Restore state from DB if SW woke up from idle (middlewareUrl was lost).
+    // If IDB is unavailable, fall through to the plain fetch below.
+    if (!middlewareUrl) await loadMiddlewareUrlFromDB().catch(() => {});
 
-    // Ignore non-proxy requests
-    if (!middlewareUrl || !url.toString().startsWith(middlewareUrl)) {
-      return fetch(request);
-    }
+    // Not a proxy request (or URL still unknown after failed DB restore)
+    if (!middlewareUrl || !url.href.startsWith(middlewareUrl)) return fetch(request);
 
     try {
-      let token = await getToken('proxy_token');
-
-      // Retry once after a short delay if token is missing (handles initial load race condition)
-      if (!token) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        token = await getToken('proxy_token');
-      }
+      const token = await getTokenWithRetry('proxy_token');
 
       const headers = new Headers(request.headers);
 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
-        console.debug(`[SW] Requested ${url} with Authorization header`);
+        if (DEBUG) console.debug(`[SW] Requested ${url} with Authorization header`);
       } else {
         console.warn(`[SW] Token not found!`);
       }
@@ -85,23 +84,39 @@ self.addEventListener('fetch', (event) => {
 });
 
 function notifyAppOfAuthError() {
-  self.clients.matchAll().then((clients) => {
-    clients.forEach((client) => {
-      client.postMessage({
-        type: 'AUTH_ERROR',
-        timestamp: Date.now()
+  self.clients.matchAll()
+    .then((clients) => {
+      clients.forEach((client) => {
+        client.postMessage({
+          type: 'AUTH_ERROR',
+          timestamp: Date.now()
+        });
       });
-    });
-  });
+    })
+    .catch((err) => console.warn('[SW] Failed to notify app of auth error:', err));
 }
 
-async function loadMiddlewareUrlFromDB() {
+/**
+ * Loads the middleware URL from IndexedDB into the in-memory `middlewareUrl`
+ * variable. Uses a single-flight guard (`middlewareUrlLoadPromise`) so that
+ * concurrent fetch events arriving while the SW is idle share one IDB read
+ * instead of each opening their own connection (IDB storm prevention).
+ */
+function loadMiddlewareUrlFromDB() {
+  if (!middlewareUrlLoadPromise) {
+    middlewareUrlLoadPromise = readMiddlewareUrlFromDB()
+      .finally(() => { middlewareUrlLoadPromise = null; });
+  }
+  return middlewareUrlLoadPromise;
+}
+
+async function readMiddlewareUrlFromDB() {
   let db = null;
   try {
     db = await openDB();
     middlewareUrl = await getConfigFromDB(db, 'middleware_url');
     if (middlewareUrl) {
-      console.debug('[SW] Middleware URL loaded from DB', middlewareUrl);
+      if (DEBUG) console.debug('[SW] Middleware URL loaded from DB', middlewareUrl);
     }
   } catch (error) {
     console.warn('[SW] Error loading middleware URL from DB', error);
@@ -111,13 +126,26 @@ async function loadMiddlewareUrlFromDB() {
   }
 }
 
+/**
+ * Reads a token from IDB, retrying once after a short delay.
+ * The delay handles the initial load race condition where the Angular app
+ * has not yet written the token to IDB by the time the first proxy request
+ * arrives.
+ */
+async function getTokenWithRetry(name, retryDelayMs = 500) {
+  const token = await getToken(name);
+  if (token) return token;
+  await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+  return getToken(name);
+}
+
 async function getToken(tokenName) {
   let db = null;
   try {
     db = await openDB();
     return await getTokenFromDB(db, tokenName);
   } catch (error) {
-    console.warn('Error retrieving proxy token', error);
+    console.warn('[IDB] Error retrieving proxy token', error);
     return null;
   } finally {
     if (db) db.close();
