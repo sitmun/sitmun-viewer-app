@@ -315,7 +315,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         views: this.mapConfig.toViews(appCfg)
       };
 
-      this.mapServiceWorker.loadMiddleware(appCfg);
+      await this.mapServiceWorker.configureMiddleware(appCfg);
 
       // We need to save the currentGeneralCfg and the currentAppCfg, so when the
       // catalog change, the map can be loaded again with the same configuration
