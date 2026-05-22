@@ -1,5 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
@@ -20,7 +21,6 @@ describe('ForgotPasswordComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         TranslateModule.forRoot(),
         NgOptimizedImage,
         MatIconModule
@@ -31,6 +31,8 @@ describe('ForgotPasswordComponent', () => {
         FormFieldInputComponent
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Router,
           useValue: {

@@ -1,5 +1,4 @@
 import { NgOptimizedImage } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +12,6 @@ describe('DashboardExpandButtonComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         NgOptimizedImage,
         TranslateModule.forRoot()
       ],

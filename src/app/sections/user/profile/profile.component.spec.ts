@@ -1,5 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -19,7 +20,6 @@ describe('ProfileComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         TranslateModule.forRoot(),
         NgOptimizedImage,
         MatIconModule,
@@ -32,6 +32,8 @@ describe('ProfileComponent', () => {
         PrimaryButtonComponent
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: NotificationService,
           useValue: {

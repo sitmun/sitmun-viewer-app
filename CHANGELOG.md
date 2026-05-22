@@ -4,8 +4,19 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+
+- Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
+- Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
+- `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
+
+### Removed
+
+- Unused `ApiModule` and `src/test.ts`.
+
 ### Fixed
 
+- ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
 - Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
 - Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
 - Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.

@@ -1,4 +1,5 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -47,7 +48,6 @@ describe('DashboardItemsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         TranslateModule.forRoot(),
         MatDialogModule
       ],
@@ -57,6 +57,8 @@ describe('DashboardItemsComponent', () => {
         DashboardTerritorySelectionDialogComponent
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Router, useValue: mockRouter },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]

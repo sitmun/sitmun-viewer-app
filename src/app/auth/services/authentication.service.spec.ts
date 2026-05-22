@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
@@ -12,7 +13,6 @@ import { CustomAuthConfig } from '@config/app.config';
 import { AuthenticationService } from './authentication.service';
 import { IndexedDbService } from './indexed-db.service';
 import { environment } from '../../../environments/environment';
-
 
 const PROXY_URL = environment.apiUrl + URL_AUTH_PROXY;
 
@@ -41,8 +41,9 @@ describe('AuthenticationService', () => {
     });
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         AuthenticationService,
         { provide: Router, useValue: { navigateByUrl: jest.fn().mockResolvedValue(true) } },
         { provide: IndexedDbService, useValue: mockIndexedDb },
@@ -82,8 +83,9 @@ describe('AuthenticationService', () => {
       expect(() => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
-          imports: [HttpClientTestingModule],
-          providers: [
+                    providers: [
+            provideHttpClient(),
+            provideHttpClientTesting(),
             AuthenticationService,
             { provide: Router, useValue: { navigateByUrl: jest.fn() } },
             { provide: IndexedDbService, useValue: mockIndexedDb },

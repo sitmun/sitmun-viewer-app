@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -23,8 +24,9 @@ describe('AppConfigService', () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [AppConfigService]
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),AppConfigService]
     });
     service = TestBed.inject(AppConfigService);
     httpMock = TestBed.inject(HttpTestingController);

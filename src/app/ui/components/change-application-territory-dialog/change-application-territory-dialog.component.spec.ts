@@ -1,4 +1,5 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,7 +42,6 @@ describe('ChangeApplicationTerritoryDialogComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         NoopAnimationsModule,
         FormsModule,
         TranslateModule.forRoot({
@@ -60,6 +60,8 @@ describe('ChangeApplicationTerritoryDialogComponent', () => {
         SelectableListComponent
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Router,
           useValue: {

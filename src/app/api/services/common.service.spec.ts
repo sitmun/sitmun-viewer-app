@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -33,8 +34,9 @@ describe('CommonService', () => {
       getCurrentLanguage: jest.fn().mockReturnValue('')
     };
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         CommonService,
         { provide: AppConfigService, useValue: appConfigService },
         { provide: LanguageService, useValue: languageService }
