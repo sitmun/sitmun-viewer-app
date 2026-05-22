@@ -36,6 +36,14 @@ export interface LocatorTask {
    */
   filterByExtent: boolean;
   /**
+   * When true, filters results client-side by comparing the configured response field
+   * with the territory code (startsWith). Falls back to extent if the field has no value.
+   * Configurable from admin: set 'filterByTerritoryCode' = 'true'.
+   */
+  filterByTerritoryCode: boolean;
+  /** Dot-notation path in the response to compare with the territory code. Only used when filterByTerritoryCode is true. */
+  territoryCodeResponseField: string;
+  /**
    * When true, results are filtered client-side to only those whose municipality code
    * starts with the territory's INE code. Useful to restrict geocoder results to the
    * configured territory without relying on geographic extent.
@@ -82,8 +90,8 @@ export const DEFAULT_TASK_CONFIG = {
   // false = return all results regardless of map extent (global geocoders).
   // true  = filter client-side so only results within the current map view are shown.
   filterByExtent: false,
-  // false = return all results regardless of municipality code.
-  // true  = filter client-side so only results whose municipality code starts with the territory code are shown.
+  filterByTerritoryCode: false,
+  territoryCodeResponseField: '',
   filterByMunicipalityCode: false,
   municipalityCodeFilters: [] as MunicipalityCodeFilter[]
 } as const;
@@ -270,6 +278,8 @@ export class LocatorService {
         lonField: p.lonField ?? DEFAULT_TASK_CONFIG.lonField,
         srs: p.srs ?? DEFAULT_TASK_CONFIG.srs,
         filterByExtent: p.filterByExtent === 'true' || p.filterByExtent === true,
+        filterByTerritoryCode: p.filterByTerritoryCode === 'true' || p.filterByTerritoryCode === true,
+        territoryCodeResponseField: p.territoryCodeResponseField ?? DEFAULT_TASK_CONFIG.territoryCodeResponseField,
         filterByMunicipalityCode: p.filterByMunicipalityCode === 'true' || p.filterByMunicipalityCode === true,
         municipalityCodeFilters: (() => {
           try {

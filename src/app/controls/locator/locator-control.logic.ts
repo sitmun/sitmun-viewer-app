@@ -214,7 +214,9 @@ export class LocatorControlLogic implements ControlLogicBase {
       }
 
       let results = await executeLocatorSearch(task, searchText, templateVars, extraQueryParams);
-      if (task.filterByMunicipalityCode) {
+      if (task.filterByTerritoryCode) {
+        results = this.filterResultsByTerritoryCode(results, task);
+      } else if (task.filterByMunicipalityCode) {
         results = this.filterResultsByMunicipalityCode(results, task);
       } else if (task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
@@ -315,6 +317,27 @@ export class LocatorControlLogic implements ControlLogicBase {
       case 'territory_center_y':          return getTerritoryCenterY();
       default:                            return field; // literal value
     }
+  }
+
+  /**
+   * Filters results by territory code using a single configured response field.
+   * Each feature's responseField is compared with the territory code (startsWith).
+   * If the field has no value for a feature, falls back to extent filtering.
+   */
+  private filterResultsByTerritoryCode(results: any[], task: LocatorTask): any[] {
+    const code = getTerritoryCode();
+    if (!code || !task.territoryCodeResponseField) return results;
+    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
+    const mapCrs = ext ? this.getMapCrs() : null;
+    return results.filter((item) => {
+      const val = getByPath(item, task.territoryCodeResponseField);
+      if (typeof val === 'string' && val !== '') {
+        return val.startsWith(code);
+      }
+      // No field value → fall back to extent
+      if (ext && mapCrs) return this.itemIsInsideExtent(item, task, ext, mapCrs);
+      return true;
+    });
   }
 
   /**
