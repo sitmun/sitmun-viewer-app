@@ -14,7 +14,7 @@ import {
   createPrototypeWrappers
 } from '../utils/sitna-patch-helpers';
 
-import { getLocatorTasks, LocatorTask, executeLocatorSearch, getByPath, getTerritoryExtent } from '../../services/locator.service';
+import { getLocatorTasks, LocatorTask, executeLocatorSearch, getByPath, getTerritoryExtent, getTerritoryCode, getTerritoryName, getTerritoryDescription, getTerritoryAuthorityName, getTerritoryAuthorityAddress, getTerritoryTypeName, getTerritoryCenterX, getTerritoryCenterY } from '../../services/locator.service';
 
 // ============================================================================
 // Configuration Constants
@@ -178,9 +178,8 @@ export class LocatorControlLogic implements ControlLogicBase {
     this.setLoading(true);
 
     try {
-      // Build template variables for URL substitution:
-      // - {focus_lat}  = latitude of the territory centre (EPSG:4326)
-      // - {focus_lon}  = longitude of the territory centre (EPSG:4326)
+      // Build template variables for URL substitution.
+      // All territory field tokens are available as {token} placeholders in the URL template.
       const templateVars: Record<string, string> = {};
       const needsFocus = task.scope === 'API' || task.url.includes('{focus_');
       if (needsFocus) {
@@ -190,8 +189,34 @@ export class LocatorControlLogic implements ControlLogicBase {
           templateVars['focus_lat'] = String(center[1]);
         }
       }
-      let results = await executeLocatorSearch(task, searchText, templateVars);
-      if (task.filterByExtent) {
+      const allTerritoryTokens = [
+        'territory_code', 'territory_name', 'territory_description',
+        'territory_authority_name', 'territory_authority_address',
+        'territory_type_name', 'territory_center_x', 'territory_center_y'
+      ];
+      for (const token of allTerritoryTokens) {
+        const val = this.resolveTerritoryField(token);
+        if (val != null) templateVars[token] = val;
+      }
+
+      // When filterByMunicipalityCode is active, send each configured request parameter
+      // to the server (server-side filter) and apply client-side check as a safety net.
+      // Each filter's territoryField is resolved: known tokens (territory_code, territory_name)
+      // are substituted with the current territory data; anything else is used as a literal value.
+      const extraQueryParams: Record<string, string> = {};
+      if (task.filterByMunicipalityCode) {
+        for (const f of task.municipalityCodeFilters) {
+          if (f.requestParam) {
+            const val = this.resolveTerritoryField(f.territoryField);
+            if (val != null) extraQueryParams[f.requestParam] = val;
+          }
+        }
+      }
+
+      let results = await executeLocatorSearch(task, searchText, templateVars, extraQueryParams);
+      if (task.filterByMunicipalityCode) {
+        results = this.filterResultsByMunicipalityCode(results, task);
+      } else if (task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
       }
       this.renderResults(results, task);
@@ -213,6 +238,48 @@ export class LocatorControlLogic implements ControlLogicBase {
   }
 
   /**
+   * Checks whether a single result item falls within the given extent.
+   * Returns true (keep) if coordinates cannot be determined or reprojection fails.
+   */
+  private itemIsInsideExtent(
+    item: any,
+    task: LocatorTask,
+    ext: [number, number, number, number],
+    mapCrs: string
+  ): boolean {
+    const [xMin, yMin, xMax, yMax] = ext;
+    const taskSrs: string = task.srs || 'EPSG:4326';
+
+    const geom = task.geometryField ? getByPath(item, task.geometryField) : null;
+    let lon: number | undefined;
+    let lat: number | undefined;
+
+    if (geom?.type?.toLowerCase() === 'point' && Array.isArray(geom.coordinates)) {
+      [lon, lat] = geom.coordinates;
+    } else if (task.lonField && task.latField) {
+      lon = Number(getByPath(item, task.lonField));
+      lat = Number(getByPath(item, task.latField));
+    }
+
+    if (lon == null || lat == null || Number.isNaN(lon) || Number.isNaN(lat)) return true; // no coords → keep
+
+    let x = lon;
+    let y = lat;
+    if (mapCrs !== taskSrs) {
+      try {
+        const util = (globalThis as any).TC?.Util;
+        if (typeof util?.reproject === 'function') {
+          [x, y] = util.reproject([lon, lat], taskSrs, mapCrs);
+        }
+      } catch {
+        return true; // reprojection failed → keep the result
+      }
+    }
+
+    return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+  }
+
+  /**
    * Filters results to only those whose geometry point falls within the territory extent.
    * Uses the map's initial extent (territory bounds) rather than the current visible area,
    * so results are not excluded just because the user has zoomed in.
@@ -225,40 +292,62 @@ export class LocatorControlLogic implements ControlLogicBase {
     const ext = this.getInitialExtent() ?? this.getRawMapExtent();
     if (!ext) return results;
 
-    const [xMin, yMin, xMax, yMax] = ext;
     const mapCrs: string = this.getMapCrs();
-    const taskSrs: string = task.srs || 'EPSG:4326';
+    return results.filter((item) => this.itemIsInsideExtent(item, task, ext, mapCrs));
+  }
+
+  /**
+   * Resolves a territory field token to its current value.
+   * Known tokens map to fields from the territory data sent in AppCfg.
+   * Any other non-empty string is returned as-is (literal value).
+   * Empty string defaults to territory_code.
+   */
+  private resolveTerritoryField(field: string): string | null {
+    if (!field) return getTerritoryCode(); // default: use territory_code
+    switch (field) {
+      case 'territory_code':              return getTerritoryCode();
+      case 'territory_name':              return getTerritoryName();
+      case 'territory_description':       return getTerritoryDescription();
+      case 'territory_authority_name':    return getTerritoryAuthorityName();
+      case 'territory_authority_address': return getTerritoryAuthorityAddress();
+      case 'territory_type_name':         return getTerritoryTypeName();
+      case 'territory_center_x':          return getTerritoryCenterX();
+      case 'territory_center_y':          return getTerritoryCenterY();
+      default:                            return field; // literal value
+    }
+  }
+
+  /**
+   * Filters results by territory code using the configured filter entries (OR semantics).
+   * For each feature, checks each filter's responseField against the resolved territory value.
+   * A feature passes if ANY configured responseField has a value that startsWith the resolved value.
+   * If no field has a value (feature has no territory codes), falls back to extent filtering.
+   */
+  private filterResultsByMunicipalityCode(results: any[], task: LocatorTask): any[] {
+    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
+    const mapCrs = ext ? this.getMapCrs() : null;
+
+    const activeFilters = task.municipalityCodeFilters
+      .filter(f => !!f.responseField)
+      .map(f => ({ responseField: f.responseField, resolvedValue: this.resolveTerritoryField(f.territoryField) }))
+      .filter(f => f.resolvedValue != null) as { responseField: string; resolvedValue: string }[];
+
+    if (activeFilters.length === 0) return results;
 
     return results.filter((item) => {
-      const geom = task.geometryField ? getByPath(item, task.geometryField) : null;
-      let lon: number | undefined;
-      let lat: number | undefined;
-
-      if (geom?.type?.toLowerCase() === 'point' && Array.isArray(geom.coordinates)) {
-        [lon, lat] = geom.coordinates;
-      } else if (task.lonField && task.latField) {
-        lon = Number(getByPath(item, task.lonField));
-        lat = Number(getByPath(item, task.latField));
-      }
-
-      if (lon == null || lat == null || Number.isNaN(lon) || Number.isNaN(lat)) return true; // no coords → keep
-
-      // Reproject to map CRS if needed
-      let x = lon;
-      let y = lat;
-      if (mapCrs !== taskSrs) {
-        try {
-          const util = (globalThis as any).TC?.Util;
-          if (typeof util?.reproject === 'function') {
-            [x, y] = util.reproject([lon, lat], taskSrs, mapCrs);
-          }
-        } catch {
-          return true; // reprojection failed → keep the result
+      let anyFieldFound = false;
+      for (const { responseField, resolvedValue } of activeFilters) {
+        const featureVal = getByPath(item, responseField);
+        if (typeof featureVal === 'string' && featureVal !== '') {
+          anyFieldFound = true;
+          if (featureVal.startsWith(resolvedValue)) return true;
         }
       }
-
-      const inside = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
-      return inside;
+      // If any field had a value but none matched → discard
+      if (anyFieldFound) return false;
+      // No field had a value → fall back to extent
+      if (ext && mapCrs) return this.itemIsInsideExtent(item, task, ext, mapCrs);
+      return true;
     });
   }
 

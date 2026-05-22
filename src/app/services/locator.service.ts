@@ -35,6 +35,37 @@ export interface LocatorTask {
    * Configurable from admin: set 'filterByExtent' = 'true'.
    */
   filterByExtent: boolean;
+  /**
+   * When true, results are filtered client-side to only those whose municipality code
+   * starts with the territory's INE code. Useful to restrict geocoder results to the
+   * configured territory without relying on geographic extent.
+   * Configurable from admin: set 'filterByMunicipalityCode' = 'true'.
+   */
+  filterByMunicipalityCode: boolean;
+  /**
+   * List of territory code filters. Each entry can send a request parameter to the server
+   * and/or check a response field client-side. A feature passes if any entry's response field
+   * matches the territory code (OR semantics); falls back to extent if no field has a value.
+   */
+  municipalityCodeFilters: MunicipalityCodeFilter[];
+}
+
+/**
+ * A single territory code filter entry.
+ * Combines a server-side request parameter with a client-side response field check.
+ */
+export interface MunicipalityCodeFilter {
+  /** Query parameter name to send to the server (e.g. 'id_municipi'). Empty = not sent. */
+  requestParam: string;
+  /**
+   * Territory field token used as the parameter value, or a literal value.
+   * Known tokens: 'territory_code' (INE code), 'territory_name' (territory name).
+   * Any other non-empty string is used as a literal value.
+   * Empty = use 'territory_code' automatically.
+   */
+  territoryField: string;
+  /** Dot-notation path in the response to compare with the resolved territory value (e.g. 'properties.id_municipi'). Empty = skip client-side check. */
+  responseField: string;
 }
 
 /**
@@ -50,7 +81,11 @@ export const DEFAULT_TASK_CONFIG = {
   srs: 'EPSG:4326',
   // false = return all results regardless of map extent (global geocoders).
   // true  = filter client-side so only results within the current map view are shown.
-  filterByExtent: false
+  filterByExtent: false,
+  // false = return all results regardless of municipality code.
+  // true  = filter client-side so only results whose municipality code starts with the territory code are shown.
+  filterByMunicipalityCode: false,
+  municipalityCodeFilters: [] as MunicipalityCodeFilter[]
 } as const;
 
 /**
@@ -90,6 +125,45 @@ export function getTerritoryExtent(): [number, number, number, number] | null {
   return _territoryExtent;
 }
 
+// Module-level cache for the territory INE code from AppCfg.
+let _territoryCode: string | null = null;
+
+/**
+ * Returns the territory geographic code (INE code) as defined in the SITMUN backend.
+ * Used to filter geocoder results by municipality code.
+ */
+export function getTerritoryCode(): string | null {
+  return _territoryCode;
+}
+
+// Module-level cache for the territory name from AppCfg.
+let _territoryName: string | null = null;
+
+/**
+ * Returns the territory name as defined in the SITMUN backend.
+ */
+export function getTerritoryName(): string | null {
+  return _territoryName;
+}
+
+let _territoryDescription: string | null = null;
+export function getTerritoryDescription(): string | null { return _territoryDescription; }
+
+let _territoryAuthorityName: string | null = null;
+export function getTerritoryAuthorityName(): string | null { return _territoryAuthorityName; }
+
+let _territoryAuthorityAddress: string | null = null;
+export function getTerritoryAuthorityAddress(): string | null { return _territoryAuthorityAddress; }
+
+let _territoryTypeName: string | null = null;
+export function getTerritoryTypeName(): string | null { return _territoryTypeName; }
+
+let _territoryCenterX: string | null = null;
+export function getTerritoryCenterX(): string | null { return _territoryCenterX; }
+
+let _territoryCenterY: string | null = null;
+export function getTerritoryCenterY(): string | null { return _territoryCenterY; }
+
 /**
  * Execute a locator search using the task's URL template and parsing config.
  * @param task         The locator task (URL template + parsing config).
@@ -99,7 +173,8 @@ export function getTerritoryExtent(): [number, number, number, number] | null {
 export async function executeLocatorSearch(
   task: LocatorTask,
   searchText: string,
-  templateVars: Record<string, string> = {}
+  templateVars: Record<string, string> = {},
+  extraQueryParams: Record<string, string> = {}
 ): Promise<any[]> {
   let url: string;
 
@@ -110,14 +185,19 @@ export async function executeLocatorSearch(
 
   if (isProxyTask) {
     // Proxy mode: the SITMUN proxy expands template variables in the command URL server-side.
-    // The viewer appends search text and all template vars as query parameters.
-    const params = new URLSearchParams({ text: searchText, ...templateVars });
+    // The viewer appends search text, template vars and any extra params as query parameters.
+    const params = new URLSearchParams({ text: searchText, ...templateVars, ...extraQueryParams });
     url = `${task.url}?${params.toString()}`;
   } else {
     // Direct mode (scope URL / RESOURCE): substitute all placeholders client-side.
     url = task.url.replace(/\{text\}/gi, encodeURIComponent(searchText));
     for (const [key, value] of Object.entries(templateVars)) {
       url = url.replace(new RegExp(String.raw`\{${key}\}`, 'gi'), value);
+    }
+    // Append extra query params (e.g. server-side municipality filter) to the URL.
+    const extraStr = new URLSearchParams(extraQueryParams).toString();
+    if (extraStr) {
+      url += (url.includes('?') ? '&' : '?') + extraStr;
     }
   }
   try {
@@ -161,6 +241,15 @@ export class LocatorService {
     // This is in the map's native CRS (application.srs) and is the authoritative extent
     // of the current application's territory — independent of what the map renders.
     _territoryExtent = config?.application?.initialExtent ?? null;
+    _territoryCode = config?.application?.territoryCode ?? null;
+    _territoryName = config?.application?.territoryName ?? null;
+    _territoryDescription = config?.application?.territoryDescription ?? null;
+    _territoryAuthorityName = config?.application?.territorialAuthorityName ?? null;
+    _territoryAuthorityAddress = config?.application?.territorialAuthorityAddress ?? null;
+    _territoryTypeName = config?.application?.territoryTypeName ?? null;
+    const _poi = config?.application?.pointOfInterest;
+    _territoryCenterX = _poi?.x != null ? String(_poi.x) : null;
+    _territoryCenterY = _poi?.y != null ? String(_poi.y) : null;
     if (!config?.tasks) {
       return;
     }
@@ -180,7 +269,15 @@ export class LocatorService {
         latField: p.latField ?? DEFAULT_TASK_CONFIG.latField,
         lonField: p.lonField ?? DEFAULT_TASK_CONFIG.lonField,
         srs: p.srs ?? DEFAULT_TASK_CONFIG.srs,
-        filterByExtent: p.filterByExtent === 'true' || p.filterByExtent === true
+        filterByExtent: p.filterByExtent === 'true' || p.filterByExtent === true,
+        filterByMunicipalityCode: p.filterByMunicipalityCode === 'true' || p.filterByMunicipalityCode === true,
+        municipalityCodeFilters: (() => {
+          try {
+            const raw = p.municipalityCodeFilters;
+            if (typeof raw === 'string' && raw) return JSON.parse(raw) as MunicipalityCodeFilter[];
+          } catch {}
+          return DEFAULT_TASK_CONFIG.municipalityCodeFilters;
+        })()
       });
     });
     setLocatorTasks(this.tasks);

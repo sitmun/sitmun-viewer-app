@@ -40,6 +40,13 @@ export interface AppApplication {
   srs: string;
   'situation-map'?: string;
   initialExtent: [number, number, number, number];
+  pointOfInterest?: { x: number; y: number };
+  territoryCode?: string;
+  territoryName?: string;
+  territoryDescription?: string;
+  territorialAuthorityName?: string;
+  territorialAuthorityAddress?: string;
+  territoryTypeName?: string;
 }
 
 export interface AppBackground {
