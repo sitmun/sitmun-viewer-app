@@ -25,6 +25,7 @@ export interface DashboardItem {
   title?: string;
   name: string;
   type?: string;
+  externalUrl?: string;
   logo?: string;
   headerParams: any; // JSON OBJECT
   description?: string;

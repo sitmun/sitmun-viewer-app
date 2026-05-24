@@ -39,6 +39,7 @@ export class DashboardItemsComponent implements OnInit, OnChanges {
   totalItems = 0;
   totalPrivateItems = 0;
   totalPublicItems = 0;
+  isExpanded = false;
 
   readonly MAX_HIDDEN_MODE_ITEMS: number = 3;
 
@@ -48,21 +49,46 @@ export class DashboardItemsComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
-      if (this.isPublic()) {
-        this.displayAllApplications(false);
-      } else {
-        this.displayAllApplicationsPrivate(false, true);
-        this.displayAllApplicationsPrivate(false, false);
-      }
+      this.isExpanded = false;
+      this.refreshDisplayedItems();
     }
   }
 
   ngOnInit() {
+    this.refreshDisplayedItems();
+  }
+
+  onExpandAll(expanded: boolean): void {
+    this.isExpanded = expanded;
+    this.refreshDisplayedItems();
+  }
+
+  hasMorePublicItems(): boolean {
+    return this.totalItems > this.MAX_HIDDEN_MODE_ITEMS;
+  }
+
+  hasMorePrivateItems(): boolean {
+    return this.totalPrivateItems > this.MAX_HIDDEN_MODE_ITEMS;
+  }
+
+  hasMoreAuthenticatedPublicItems(): boolean {
+    return this.totalPublicItems > this.MAX_HIDDEN_MODE_ITEMS;
+  }
+
+  shouldShowExpandButton(): boolean {
     if (this.isPublic()) {
-      this.displayAllApplications(false);
+      return this.hasMorePublicItems();
+    }
+    return this.hasMorePrivateItems() || this.hasMoreAuthenticatedPublicItems();
+  }
+
+  private refreshDisplayedItems(): void {
+    const displayAll = this.isExpanded;
+    if (this.isPublic()) {
+      this.displayAllApplications(displayAll);
     } else {
-      this.displayAllApplicationsPrivate(false, true);
-      this.displayAllApplicationsPrivate(false, false);
+      this.displayAllApplicationsPrivate(displayAll, true);
+      this.displayAllApplicationsPrivate(displayAll, false);
     }
   }
 

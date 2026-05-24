@@ -7,6 +7,9 @@
         (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
+  <app-dashboard-expand-button
+    *ngIf="shouldShowExpandButton()"
+    (expandAll)="onExpandAll($event)" />
 </div>
 
 <!-- Public Applications -->
@@ -40,3 +43,7 @@
     *ngIf="privateItems.length > 0 && publicItems.length > 0"
     class="separation-line" />
 </div>
+
+<app-dashboard-expand-button
+  *ngIf="!isPublic() && shouldShowExpandButton()"
+  (expandAll)="onExpandAll($event)" />

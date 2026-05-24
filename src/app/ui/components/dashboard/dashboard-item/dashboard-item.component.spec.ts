@@ -15,14 +15,21 @@ import {
 } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 import { DashboardItemComponent } from './dashboard-item.component';
 
 describe('DashboardItemComponent', () => {
   let component: DashboardItemComponent;
   let fixture: ComponentFixture<DashboardItemComponent>;
+  let router: { navigateByUrl: jest.Mock; url: string };
 
   beforeEach(() => {
+    router = {
+      navigateByUrl: jest.fn(),
+      url: '/user/dashboard'
+    };
+
     TestBed.configureTestingModule({
       imports: [
         NgOptimizedImage,
@@ -39,11 +46,7 @@ describe('DashboardItemComponent', () => {
         provideHttpClientTesting(),
         {
           provide: Router,
-          useValue: {
-            navigate: jest.fn(),
-            navigateByUrl: jest.fn(),
-            url: '/user/dashboard'
-          }
+          useValue: router
         },
         {
           provide: CommonService,
@@ -60,6 +63,17 @@ describe('DashboardItemComponent', () => {
             success: jest.fn(),
             info: jest.fn(),
             warning: jest.fn()
+          }
+        },
+        {
+          provide: AppConfigService,
+          useValue: {
+            isExternalLinkApplication: jest.fn(
+              (app: { type?: string }) => app.type === 'E'
+            ),
+            applicationHasTerritory: jest.fn(
+              (app: { type?: string }) => app.type !== 'E'
+            )
           }
         }
       ]
@@ -83,5 +97,33 @@ describe('DashboardItemComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('opens external URL in a new tab for type E', () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    component.item = {
+      ...component.item,
+      type: 'E',
+      externalUrl: 'https://www.idee.es'
+    };
+
+    component.navigateToMap(component.item.id);
+
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://www.idee.es',
+      '_blank',
+      'noopener,noreferrer'
+    );
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  it('navigates to map for internal applications', () => {
+    component.listOfTerritories = [{ id: 4 }];
+    component.nbTerritory = 1;
+
+    component.navigateToMap(component.item.id);
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/user/map/1/4');
   });
 });

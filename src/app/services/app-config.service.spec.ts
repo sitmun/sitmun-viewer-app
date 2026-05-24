@@ -187,6 +187,29 @@ describe('AppConfigService', () => {
     });
   });
 
+  describe('external link application types', () => {
+    it('should return an empty list when config is not loaded', () => {
+      expect(service.getExternalLinkTypes()).toEqual([]);
+      expect(service.isExternalLinkApplication({ type: 'E' })).toBe(false);
+      expect(service.applicationHasTerritory({ type: 'E' })).toBe(true);
+    });
+
+    it('should use configured external link types', async () => {
+      const loadPromise = service.loadConfig();
+
+      const req = httpMock.expectOne('assets/config/app-config.json');
+      req.flush({
+        ...mockConfig,
+        externalLinkTypes: ['E', 'X']
+      });
+
+      await loadPromise;
+
+      expect(service.isExternalLinkApplication({ type: 'X' })).toBe(true);
+      expect(service.isExternalLinkApplication({ type: 'I' })).toBe(false);
+    });
+  });
+
   describe('getAttribution', () => {
     it('should return attribution when configured', async () => {
       const configWithAttribution: AppConfig = {

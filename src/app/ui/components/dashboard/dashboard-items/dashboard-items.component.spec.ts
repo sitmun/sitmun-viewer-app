@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -6,6 +7,7 @@ import { Router } from '@angular/router';
 
 import { DashboardItem } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { DashboardExpandButtonComponent } from '@ui/components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
 import { DashboardItemComponent } from '@ui/components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardTerritorySelectionDialogComponent } from '@ui/components/dashboard/dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 import { AppConfigService } from 'src/app/services/app-config.service';
@@ -48,12 +50,14 @@ describe('DashboardItemsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
+        NgOptimizedImage,
         TranslateModule.forRoot(),
         MatDialogModule
       ],
       declarations: [
         DashboardItemsComponent,
         DashboardItemComponent,
+        DashboardExpandButtonComponent,
         DashboardTerritorySelectionDialogComponent
       ],
       providers: [
@@ -169,6 +173,53 @@ describe('DashboardItemsComponent', () => {
 
       expect(component.allItems.length).toBe(2);
       expect(component.totalItems).toBe(2);
+    });
+
+    it('should truncate public dashboard items until expanded', () => {
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(false);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+
+      component.items = Array.from({ length: 5 }, (_, index) =>
+        createMockItem(index + 1, `App${index + 1}`, 'E')
+      );
+      component.ngOnInit();
+
+      expect(component.allItems.length).toBe(3);
+      expect(component.totalItems).toBe(5);
+      expect(component.shouldShowExpandButton()).toBe(true);
+
+      component.onExpandAll(true);
+
+      expect(component.allItems.length).toBe(5);
+      expect(component.isExpanded).toBe(true);
+    });
+
+    it('should reset expansion when items change', () => {
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(false);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+
+      component.items = Array.from({ length: 5 }, (_, index) =>
+        createMockItem(index + 1, `App${index + 1}`, 'E')
+      );
+      component.onExpandAll(true);
+
+      const nextItems = [createMockItem(1, 'App1', 'E')];
+      component.items = nextItems;
+      component.ngOnChanges({
+        items: {
+          previousValue: [],
+          currentValue: nextItems,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      });
+
+      expect(component.isExpanded).toBe(false);
+      expect(component.allItems.length).toBe(1);
     });
   });
 

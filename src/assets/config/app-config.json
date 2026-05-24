@@ -2,9 +2,14 @@
   "attribution": "<a href=\"https://github.com/sitmun\" target=\"_blank\">SITMUN</a>",
   "testConfigFile": null,
   "dashboard": {
+    "allowedTypes": ["I", "E"],
+    "filteringEnabled": true
+  },
+  "mapSwitcher": {
     "allowedTypes": ["I"],
     "filteringEnabled": true
   },
+  "externalLinkTypes": ["E"],
   "defaultLanguage": "es",
   "languages": [
     {

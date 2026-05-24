@@ -4,11 +4,31 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 /**
- * Interface for dashboard configuration
+ * Interface for application type filtering (dashboard, map switcher, …).
  */
-export interface DashboardConfig {
+export interface ApplicationTypeFilterConfig {
   allowedTypes: string[];
   filteringEnabled: boolean;
+}
+
+/** @deprecated Use {@link ApplicationTypeFilterConfig}. */
+export type DashboardConfig = ApplicationTypeFilterConfig;
+
+/**
+ * Interface for application configuration
+ */
+export interface AppConfig {
+  attribution?: string;
+  testConfigFile?: string | null; // Path to test configuration file (relative to assets/config), null to disable
+  dashboard: ApplicationTypeFilterConfig;
+  mapSwitcher?: ApplicationTypeFilterConfig;
+  /** Application types that open an external URL instead of map/territory navigation. */
+  externalLinkTypes?: string[];
+  defaultLanguage?: string; // Moved from languages.defaultLanguage
+  languages?: LanguageItem[]; // Changed from object with defaultLanguages array to direct array
+  enabledByDefault?: string[]; // Array of control identifiers that should be enabled even if backend doesn't request them
+  disabledControls?: string[]; // Array of control identifiers that should be disabled even if backend or enabledByDefault requests them (takes precedence)
+  controlDefaults?: Record<string, ControlDefaultConfig>; // Control identifier to default config mapping
 }
 
 /**
@@ -30,20 +50,6 @@ export interface ControlDefaultConfig {
 }
 
 /**
- * Interface for application configuration
- */
-export interface AppConfig {
-  attribution?: string;
-  testConfigFile?: string | null; // Path to test configuration file (relative to assets/config), null to disable
-  dashboard: DashboardConfig;
-  defaultLanguage?: string; // Moved from languages.defaultLanguage
-  languages?: LanguageItem[]; // Changed from object with defaultLanguages array to direct array
-  enabledByDefault?: string[]; // Array of control identifiers that should be enabled even if backend doesn't request them
-  disabledControls?: string[]; // Array of control identifiers that should be disabled even if backend or enabledByDefault requests them (takes precedence)
-  controlDefaults?: Record<string, ControlDefaultConfig>; // Control identifier to default config mapping
-}
-
-/**
  * Service to load and manage application configuration from JSON file
  * Configuration is loaded during app initialization and cached
  */
@@ -53,11 +59,19 @@ export interface AppConfig {
 export class AppConfigService {
   private readonly http = inject(HttpClient);
   private config: AppConfig | null = null;
+  private readonly DEFAULT_EXTERNAL_LINK_TYPES = [];
+  private readonly DEFAULT_MAP_SWITCHER_CONFIG: ApplicationTypeFilterConfig = {
+    allowedTypes: [],
+    filteringEnabled: false
+  };
+  private readonly DEFAULT_DASHBOARD_CONFIG: ApplicationTypeFilterConfig = {
+    allowedTypes: [],
+    filteringEnabled: false
+  };
   private readonly DEFAULT_CONFIG: AppConfig = {
-    dashboard: {
-      allowedTypes: [],
-      filteringEnabled: false
-    }
+    dashboard: this.DEFAULT_DASHBOARD_CONFIG,
+    mapSwitcher: this.DEFAULT_MAP_SWITCHER_CONFIG,
+    externalLinkTypes: this.DEFAULT_EXTERNAL_LINK_TYPES
   };
 
   /**
@@ -100,8 +114,60 @@ export class AppConfigService {
   /**
    * Get the complete dashboard configuration
    */
-  getDashboardConfig(): DashboardConfig {
+  getDashboardConfig(): ApplicationTypeFilterConfig {
     return this.config?.dashboard ?? this.DEFAULT_CONFIG.dashboard;
+  }
+
+  /**
+   * Get allowed application types for the map application/territory switcher.
+   */
+  getMapSwitcherAllowedTypes(): string[] {
+    return this.getMapSwitcherConfig().allowedTypes ?? [];
+  }
+
+  /**
+   * Check if map switcher type filtering is enabled.
+   */
+  isMapSwitcherFilteringEnabled(): boolean {
+    return this.getMapSwitcherConfig().filteringEnabled ?? false;
+  }
+
+  /**
+   * Get the complete map switcher configuration.
+   */
+  getMapSwitcherConfig(): ApplicationTypeFilterConfig {
+    return this.config?.mapSwitcher ?? this.DEFAULT_MAP_SWITCHER_CONFIG;
+  }
+
+  /**
+   * Filter applications by type using the given filter configuration.
+   */
+  filterApplicationsByType(
+    items: Array<{ type?: string }>,
+    config: ApplicationTypeFilterConfig
+  ): Array<{ type?: string }> {
+    if (!config.filteringEnabled) {
+      return items;
+    }
+    const allowedTypes = config.allowedTypes ?? [];
+    return items.filter(
+      (item) => item.type != null && allowedTypes.includes(item.type)
+    );
+  }
+
+  /**
+   * Application types configured as external links (no map/territory flow).
+   */
+  getExternalLinkTypes(): string[] {
+    return this.config?.externalLinkTypes ?? this.DEFAULT_EXTERNAL_LINK_TYPES;
+  }
+
+  isExternalLinkApplication(app: { type?: string }): boolean {
+    return app.type != null && this.getExternalLinkTypes().includes(app.type);
+  }
+
+  applicationHasTerritory(app: { type?: string }): boolean {
+    return !this.isExternalLinkApplication(app);
   }
 
   /**

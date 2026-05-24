@@ -5,12 +5,14 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  inject
 } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { CommonService, DashboardItem } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 /**
  * Component for displaying a single application card in the dashboard.
@@ -38,10 +40,14 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
   listOfTerritories: any;
   mediaQueryListener: any;
 
+  private readonly appConfigService = inject(AppConfigService);
+
   constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
-    this.fillTerritory(this.item.id);
+    if (this.hasTerritory()) {
+      this.fillTerritory(this.item.id);
+    }
     this.checkWindowSize();
   }
 
@@ -113,6 +119,12 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
   }
 
   navigateToMap(idApp: number) {
+    if (this.isExternalLink()) {
+      if (this.item.externalUrl) {
+        this.openExternalUrl();
+      }
+      return;
+    }
     if (this.nbTerritory == 1) {
       void this.router.navigateByUrl(
         this.getMapUrl(idApp, this.listOfTerritories[0].id)
@@ -120,5 +132,17 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
     } else {
       this.displayTerritoriesTag(this.item);
     }
+  }
+
+  private hasTerritory(): boolean {
+    return this.appConfigService.applicationHasTerritory(this.item);
+  }
+
+  private isExternalLink(): boolean {
+    return this.appConfigService.isExternalLinkApplication(this.item);
+  }
+
+  private openExternalUrl(): void {
+    window.open(this.item.externalUrl!, '_blank', 'noopener,noreferrer');
   }
 }

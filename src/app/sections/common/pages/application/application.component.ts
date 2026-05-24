@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { UserDto } from '@api/model/user';
@@ -13,6 +13,7 @@ import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 @Component({
   standalone: false,
@@ -27,6 +28,7 @@ export class ApplicationComponent implements OnInit, OnDestroy {
   groupedTerritories: { group?: string; items: any[] }[] = [];
   searchValue = '';
   private readonly destroy$ = new Subject<void>();
+  private readonly appConfigService = inject(AppConfigService);
 
   constructor(
     private location: Location,
@@ -54,6 +56,20 @@ export class ApplicationComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  isExternalLink(): boolean {
+    return (
+      this.application != null &&
+      this.appConfigService.isExternalLinkApplication(this.application)
+    );
+  }
+
+  hasTerritory(): boolean {
+    return (
+      this.application != null &&
+      this.appConfigService.applicationHasTerritory(this.application)
+    );
+  }
+
   private loadData(): void {
     this.commonService
       .fetchDashboardItems(DashboardTypes.APPLICATIONS)
@@ -62,30 +78,45 @@ export class ApplicationComponent implements OnInit, OnDestroy {
           this.application = res.content.find((app: DashboardItem) => {
             return app.id == this.applicationId;
           });
-          if (this.application.creator != null) {
-            if (this.application.id != null) {
-              if (this.router.url.startsWith('/public')) {
-                this.accountService
-                  .getUserByIDPublic(this.application.creator)
-                  .subscribe({
-                    next: (res: UserDto) => {
-                      this.application.creator = res.username;
-                    }
-                  });
-              } else {
-                this.accountService
-                  .getUserByID(this.application.creator)
-                  .subscribe({
-                    next: (res: UserDto) => {
-                      this.application.creator = res.username;
-                    }
-                  });
-              }
-            }
+          if (!this.application) {
+            return;
           }
+          this.resolveCreatorUsername();
+          if (!this.hasTerritory()) {
+            this.territories = [];
+            this.groupedTerritories = [];
+            this.searchValue = '';
+            return;
+          }
+          this.loadTerritories();
         }
       });
+  }
 
+  private resolveCreatorUsername(): void {
+    if (this.application.creator == null || this.application.id == null) {
+      return;
+    }
+    if (this.router.url.startsWith('/public')) {
+      this.accountService
+        .getUserByIDPublic(this.application.creator)
+        .subscribe({
+          next: (res: UserDto) => {
+            this.application.creator = res.username;
+          }
+        });
+    } else {
+      this.accountService
+        .getUserByID(this.application.creator)
+        .subscribe({
+          next: (res: UserDto) => {
+            this.application.creator = res.username;
+          }
+        });
+    }
+  }
+
+  private loadTerritories(): void {
     this.commonService
       .fetchTerritoriesByApplication(this.applicationId)
       .subscribe({

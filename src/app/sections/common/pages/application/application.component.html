@@ -4,11 +4,11 @@
     <div id="application-title">
       <h1>{{ application.title || application.name }}</h1>
     </div>
-    <div id="application-details">
+    <div id="application-details" [class.application-details--external]="isExternalLink()">
       <div id="left-side">
         <app-application-details [application]="application" />
       </div>
-      <div id="right-side">
+      <div id="right-side" *ngIf="hasTerritory()">
         <div id="associated-territories">
           <app-selectable-list
             [items]="groupedTerritories"
