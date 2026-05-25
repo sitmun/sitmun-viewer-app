@@ -76,10 +76,12 @@ export interface MunicipalityCodeFilter {
   responseField: string;
   /**
    * When true and territoryField is 'territory_center_x' or 'territory_center_y',
-   * the coordinate is reprojected from the map CRS to WGS84 before being sent.
-   * 'territory_center_x' → longitude (WGS84), 'territory_center_y' → latitude (WGS84).
+   * the coordinate is reprojected from the map CRS to the specified targetCrs before being sent.
+   * 'territory_center_x' → first coordinate (e.g. longitude), 'territory_center_y' → second (e.g. latitude).
    */
-  convertToWgs84?: boolean;
+  convertProjection?: boolean;
+  /** Target CRS for reprojection when convertProjection is true (e.g. 'EPSG:4326'). */
+  targetCrs?: string;
 }
 
 /**

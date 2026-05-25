@@ -208,10 +208,18 @@ export class LocatorControlLogic implements ControlLogicBase {
         for (const f of task.municipalityCodeFilters) {
           if (f.requestParam) {
             let val: string | null = null;
-            if (f.convertToWgs84 && (f.territoryField === 'territory_center_x' || f.territoryField === 'territory_center_y')) {
-              const center = this.getTerritoryCenter();
-              if (center) {
-                val = f.territoryField === 'territory_center_x' ? String(center[0]) : String(center[1]);
+            if (f.convertProjection && f.targetCrs && (f.territoryField === 'territory_center_x' || f.territoryField === 'territory_center_y')) {
+              const rawX = getTerritoryCenterX();
+              const rawY = getTerritoryCenterY();
+              if (rawX && rawY) {
+                const mapCrs = this.getMapCrs();
+                const util = (globalThis as any).TC?.Util;
+                if (typeof util?.reproject === 'function') {
+                  try {
+                    const reprojected: [number, number] = util.reproject([Number.parseFloat(rawX), Number.parseFloat(rawY)], mapCrs, f.targetCrs);
+                    val = f.territoryField === 'territory_center_x' ? String(reprojected[0]) : String(reprojected[1]);
+                  } catch { /* ignore reprojection errors */ }
+                }
               }
             } else {
               val = this.resolveTerritoryField(f.territoryField);
