@@ -74,6 +74,12 @@ export interface MunicipalityCodeFilter {
   territoryField: string;
   /** Dot-notation path in the response to compare with the resolved territory value (e.g. 'properties.id_municipi'). Empty = skip client-side check. */
   responseField: string;
+  /**
+   * When true and territoryField is 'territory_center_x' or 'territory_center_y',
+   * the coordinate is reprojected from the map CRS to WGS84 before being sent.
+   * 'territory_center_x' → longitude (WGS84), 'territory_center_y' → latitude (WGS84).
+   */
+  convertToWgs84?: boolean;
 }
 
 /**

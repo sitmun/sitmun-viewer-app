@@ -207,7 +207,15 @@ export class LocatorControlLogic implements ControlLogicBase {
       if (task.filterByMunicipalityCode) {
         for (const f of task.municipalityCodeFilters) {
           if (f.requestParam) {
-            const val = this.resolveTerritoryField(f.territoryField);
+            let val: string | null = null;
+            if (f.convertToWgs84 && (f.territoryField === 'territory_center_x' || f.territoryField === 'territory_center_y')) {
+              const center = this.getTerritoryCenter();
+              if (center) {
+                val = f.territoryField === 'territory_center_x' ? String(center[0]) : String(center[1]);
+              }
+            } else {
+              val = this.resolveTerritoryField(f.territoryField);
+            }
             if (val != null) extraQueryParams[f.requestParam] = val;
           }
         }
