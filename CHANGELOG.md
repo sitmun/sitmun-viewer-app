@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fixed tile requests racing ahead of proxy URL delivery; `MapServiceWorkerService.configureMiddleware()` now awaits `navigator.serviceWorker.ready` and `AbstractMapComponent` awaits `configureMiddleware()` before map creation.
 - Fixed duplicate `controllerchange` reload listeners stacking on repeated `configureMiddleware()` calls; guarded with `{ once: true }` and a per-instance flag.
 - Fixed unnecessary service worker overhead on non-proxy requests; `event.respondWith()` is now bypassed when `middlewareUrl` is already known.
+- Fixed SITNA map initialization drift by reapplying the configured `initialExtent` with `map.setExtent(..., { animate: false })` after `SITNA.Map.loaded`.
 
 ## [1.2.6] - 2026-05-08
 

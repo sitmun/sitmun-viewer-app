@@ -494,6 +494,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         if (thisLoadId === this.loadId && !this.componentDestroyed.closed) {
           this.loadingState = 'loaded';
           this.mapInterface.updateInterface();
+          this.applyInitialExtentAfterLoad(cfg);
         }
         resolve();
       });
@@ -519,6 +520,41 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  private applyInitialExtentAfterLoad(cfg: GeneralCfg): void {
+    if (!cfg.initialExtent || typeof this.map?.setExtent !== 'function') {
+      return;
+    }
+
+    const requestedExtent = cfg.initialExtent;
+    const previousExtent =
+      typeof this.map.getExtent === 'function' ? this.map.getExtent() : undefined;
+
+    this.map.setExtent(
+      requestedExtent,
+      { animate: false },
+      (actualExtent: [number, number, number, number]) => {
+        console.info('[AbstractMapComponent] Applied SITNA initial extent', {
+          previousExtent: previousExtent,
+          requestedExtent: requestedExtent,
+          actualExtent: actualExtent,
+          delta: this.getExtentDelta(requestedExtent, actualExtent)
+        });
+      }
+    );
+  }
+
+  private getExtentDelta(
+    requestedExtent: [number, number, number, number],
+    actualExtent: [number, number, number, number]
+  ): [number, number, number, number] {
+    return actualExtent.map((value, index) => value - requestedExtent[index]) as [
+      number,
+      number,
+      number,
+      number
+    ];
   }
 
   abstract navigateToDashboard(): any;
