@@ -324,6 +324,7 @@ export class LocatorControlLogic implements ControlLogicBase {
     if (!field) return getTerritoryCode(); // default: use territory_code
     switch (field) {
       case 'territory_code':              return getTerritoryCode();
+      case 'territory_idescat_code':      return this.computeIdescatCode(getTerritoryCode());
       case 'territory_name':              return getTerritoryName();
       case 'territory_description':       return getTerritoryDescription();
       case 'territory_authority_name':    return getTerritoryAuthorityName();
@@ -333,6 +334,25 @@ export class LocatorControlLogic implements ControlLogicBase {
       case 'territory_center_y':          return getTerritoryCenterY();
       default:                            return field; // literal value
     }
+  }
+
+  /**
+   * Computes the 6-digit IDESCAT municipality code from a 5-digit INE code.
+   * Appends the Luhn-like control digit used by the IDESCAT.
+   * Formula: tables [C,B,A,C,B] applied to each digit, sum mod 10, complement to 10.
+   * Returns null if the input is not a valid 5-digit code.
+   */
+  private computeIdescatCode(code: string | null): string | null {
+    if (!code) return null;
+    const c5 = code.padStart(5, '0').slice(0, 5);
+    if (!/^\d{5}$/.test(c5)) return null;
+    const A = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const B = [0, 3, 8, 2, 7, 4, 1, 5, 9, 6];
+    const C = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
+    const tables = [C, B, A, C, B];
+    const total = tables.reduce((sum, table, i) => sum + table[Number(c5[i])], 0);
+    const digit = (10 - (total % 10)) % 10;
+    return c5 + String(digit);
   }
 
   /**
