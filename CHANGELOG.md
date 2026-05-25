@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file. The format 
 - Dashboard: server-side infinite scroll; page size from `dashboard.initialBatchSize` / `batchIncrement`.
 - Authenticated dashboard: public/private tabs.
 - Shared page shell for dashboard, territory, and application pages.
+- Map: apply territory `defaultZoomLevel` from the client profile after the initial extent fit (OpenLayers `view.setZoom`, with resolution fallback).
+- `GeneralCfg.defaultZoomLevel` and `MapConfigurationService.toDefaultZoomLevel()` map the profile field into SITNA map configuration.
 
 ### Changed
 
@@ -17,6 +19,7 @@ All notable changes to this project will be documented in this file. The format 
 - Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
 - Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
 - `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
+- Map load: unified `applyInitialViewAfterLoad` applies extent then zoom from `GeneralCfg` instead of reading `AppCfg` post-load.
 
 ### Removed
 

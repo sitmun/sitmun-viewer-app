@@ -49,6 +49,13 @@ export class MapConfigurationService {
   }
 
   /**
+   * Get default zoom level from application config
+   */
+  toDefaultZoomLevel(apiConfig: AppCfg): number | undefined {
+    return apiConfig.application?.defaultZoomLevel;
+  }
+
+  /**
    * Convert AppCfg backgrounds to SITNA base layers
    *
    * WARNING
