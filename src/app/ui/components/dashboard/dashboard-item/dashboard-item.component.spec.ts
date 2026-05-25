@@ -23,11 +23,22 @@ describe('DashboardItemComponent', () => {
   let component: DashboardItemComponent;
   let fixture: ComponentFixture<DashboardItemComponent>;
   let router: { navigateByUrl: jest.Mock; url: string };
+  let tagSpy: jest.SpyInstance;
+  let notificationService: {
+    warning: jest.Mock;
+    error: jest.Mock;
+    success: jest.Mock;
+  };
 
   beforeEach(() => {
     router = {
       navigateByUrl: jest.fn(),
       url: '/user/dashboard'
+    };
+    notificationService = {
+      warning: jest.fn(),
+      error: jest.fn(),
+      success: jest.fn()
     };
 
     TestBed.configureTestingModule({
@@ -44,10 +55,7 @@ describe('DashboardItemComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        {
-          provide: Router,
-          useValue: router
-        },
+        { provide: Router, useValue: router },
         {
           provide: CommonService,
           useValue: {
@@ -56,15 +64,7 @@ describe('DashboardItemComponent', () => {
               .mockReturnValue(of({ content: [] }))
           }
         },
-        {
-          provide: NotificationService,
-          useValue: {
-            error: jest.fn(),
-            success: jest.fn(),
-            info: jest.fn(),
-            warning: jest.fn()
-          }
-        },
+        { provide: NotificationService, useValue: notificationService },
         {
           provide: AppConfigService,
           useValue: {
@@ -80,7 +80,7 @@ describe('DashboardItemComponent', () => {
     });
     fixture = TestBed.createComponent(DashboardItemComponent);
     component = fixture.componentInstance;
-    // Set required input before detectChanges
+    tagSpy = jest.spyOn(component.tag, 'emit');
     component.item = {
       id: 1,
       name: 'Test App',
@@ -106,6 +106,7 @@ describe('DashboardItemComponent', () => {
       type: 'E',
       externalUrl: 'https://www.idee.es'
     };
+    component.territoriesLoaded = true;
 
     component.navigateToMap(component.item.id);
 
@@ -118,12 +119,45 @@ describe('DashboardItemComponent', () => {
     openSpy.mockRestore();
   });
 
+  it('warns when external application has no URL', () => {
+    component.item = { ...component.item, type: 'E', externalUrl: undefined };
+    component.territoriesLoaded = true;
+
+    component.navigateToMap(component.item.id);
+
+    expect(notificationService.warning).toHaveBeenCalled();
+  });
+
   it('navigates to map for internal applications', () => {
-    component.listOfTerritories = [{ id: 4 }];
+    component.listOfTerritories = [{ id: 4, name: 'T' }];
     component.nbTerritory = 1;
+    component.territoriesLoaded = true;
 
     component.navigateToMap(component.item.id);
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/user/map/1/4');
+  });
+
+  it('does not open territory dialog before territories load', () => {
+    component.territoriesLoading = true;
+    component.territoriesLoaded = false;
+    component.nbTerritory = 0;
+
+    component.navigateToMap(component.item.id);
+
+    expect(tagSpy).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('notifies when internal app has no territories after load', () => {
+    component.territoriesLoaded = true;
+    component.territoriesLoading = false;
+    component.nbTerritory = 0;
+    component.listOfTerritories = [];
+
+    component.navigateToMap(component.item.id);
+
+    expect(notificationService.warning).toHaveBeenCalled();
+    expect(tagSpy).not.toHaveBeenCalled();
   });
 });

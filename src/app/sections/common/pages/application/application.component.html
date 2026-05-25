@@ -1,33 +1,52 @@
 <div id="content">
-  <div id="application" *ngIf="application">
-    <app-return-button></app-return-button>
-    <div id="application-title">
-      <h1>{{ application.title || application.name }}</h1>
-    </div>
-    <div id="application-details" [class.application-details--external]="isExternalLink()">
-      <div id="left-side">
-        <app-application-details [application]="application" />
-      </div>
-      <div id="right-side" *ngIf="hasTerritory()">
-        <div id="associated-territories">
-          <app-selectable-list
-            [items]="groupedTerritories"
-            [showTitle]="true"
-            [title]="'application.territoriesAssociated' | translate"
-            [showCloseButton]="false"
-            [showCount]="true"
-            [totalCount]="territories.length"
-            [countLabel]="'dashboardPage.nbTerritoriesTitle' | translate"
-            [logoProperty]="'territorialAuthorityLogo'"
-            [nameProperty]="'name'"
-            [defaultIcon]="'language'"
-            [showSearch]="territories.length > 1"
-            [searchPlaceholder]="
-              'dashboardDialogTag.inputPlaceholder' | translate
-            "
-            [searchValue]="searchValue"
-            (searchValueChange)="onSearchChange($event)"
-            (itemClicked)="onTerritoryClick($event)"></app-selectable-list>
+  <div id="application-page">
+    <header class="page-header">
+      <h1 *ngIf="application && !loading && !loadError">
+        {{ application.title || application.name }}
+      </h1>
+      <app-return-button labelKey="application.back" [fallbackUrl]="fallbackUrl"></app-return-button>
+    </header>
+
+    <p *ngIf="loading" class="page-status" role="status">
+      {{ 'dashboardPage.loading' | translate }}
+    </p>
+
+    <p *ngIf="loadError && !loading" class="page-status page-status--error" role="alert">
+      {{ 'dashboardPage.loadError' | translate }}
+    </p>
+
+    <p *ngIf="notFound && !loading && !loadError" class="page-status" role="status">
+      {{ 'application.notFound' | translate }}
+    </p>
+
+    <div id="application" *ngIf="!loading && !loadError && application">
+      <div
+        id="application-details"
+        [class.application-details--external]="isExternalLink()">
+        <div id="left-side">
+          <app-application-details [application]="application" />
+        </div>
+        <div id="right-side" *ngIf="hasTerritory()">
+          <div id="associated-territories">
+            <app-selectable-list
+              [items]="groupedTerritories"
+              [showTitle]="true"
+              [title]="'application.territoriesAssociated' | translate"
+              [showCloseButton]="false"
+              [showCount]="true"
+              [totalCount]="territories.length"
+              [countLabel]="'dashboardPage.nbTerritoriesTitle' | translate"
+              [logoProperty]="'territorialAuthorityLogo'"
+              [nameProperty]="'name'"
+              [defaultIcon]="'language'"
+              [showSearch]="territories.length > 1"
+              [searchPlaceholder]="
+                'dashboardDialogTag.inputPlaceholder' | translate
+              "
+              [searchValue]="searchValue"
+              (searchValueChange)="onSearchChange($event)"
+              (itemClicked)="onTerritoryClick($event)"></app-selectable-list>
+          </div>
         </div>
       </div>
     </div>

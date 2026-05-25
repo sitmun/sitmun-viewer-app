@@ -3,7 +3,9 @@
   "testConfigFile": null,
   "dashboard": {
     "allowedTypes": ["I", "E"],
-    "filteringEnabled": true
+    "filteringEnabled": true,
+    "initialBatchSize": 12,
+    "batchIncrement": 6
   },
   "mapSwitcher": {
     "allowedTypes": ["I"],

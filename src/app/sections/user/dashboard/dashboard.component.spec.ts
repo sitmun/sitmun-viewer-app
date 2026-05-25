@@ -38,6 +38,9 @@ describe('DashboardComponent', () => {
             fetchDashboardItems: jest
               .fn()
               .mockReturnValue(of({ content: [], totalElements: 0 })),
+            fetchDashboardApplications: jest
+              .fn()
+              .mockReturnValue(of({ content: [], totalElements: 0 })),
             fetchTerritoriesByApplication: jest
               .fn()
               .mockReturnValue(of({ content: [] }))

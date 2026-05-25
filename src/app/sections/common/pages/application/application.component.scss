@@ -1,91 +1,93 @@
+@use 'page-shell';
 @use 'colors';
 @use 'dimensions';
 
 #content {
   background-color: colors.$blue-light;
 
-  #application {
+  #application-page {
     padding-top: 50px;
+    padding-left: dimensions.$page-inline-gutter;
+    padding-right: dimensions.$page-inline-gutter;
     margin: 0 auto;
-    width: 93%;
+    width: dimensions.$page-content-width;
     min-height: 100vh;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    box-sizing: border-box;
 
-    #application-title,
-    app-return-button {
-      padding-left: 20px;
-    }
-
-    #application-details {
+    #application {
       display: flex;
-      gap: 24px;
+      flex-direction: column;
 
-      &.application-details--external {
-        #left-side {
-          flex: 1;
-          max-width: 100%;
-        }
-      }
+      #application-details {
+        display: flex;
+        gap: 24px;
 
-      #left-side {
-        flex: 2;
-        max-width: 70%;
-
-        app-application-details {
-          width: 100%;
-        }
-      }
-
-      #right-side {
-        flex: 1;
-
-        #associated-territories {
-          box-sizing: border-box;
-          height: 400px;
-          min-height: 400px;
-          max-height: 400px;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-
-          app-selectable-list {
-            display: flex;
+        &.application-details--external {
+          #left-side {
             flex: 1;
-            min-height: 0;
+            max-width: 100%;
+          }
+        }
+
+        #left-side {
+          flex: 2;
+          max-width: 70%;
+
+          app-application-details {
+            width: 100%;
+          }
+        }
+
+        #right-side {
+          flex: 1;
+
+          #associated-territories {
+            box-sizing: border-box;
+            height: 400px;
+            min-height: 400px;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
 
-            ::ng-deep mat-card.embedded mat-card-content {
-              padding: 0;
+            app-selectable-list {
+              display: flex;
+              flex: 1;
+              min-height: 0;
+              overflow: hidden;
+
+              ::ng-deep mat-card.embedded mat-card-content {
+                padding: 0;
+              }
             }
           }
         }
       }
-    }
 
-    button:not(.mat-mdc-button) {
-      all: unset;
-      padding-left: 20px;
-    }
+      button:not(.mat-mdc-button) {
+        all: unset;
+      }
 
-    button:not(.mat-mdc-button):hover {
-      cursor: pointer;
-      color: colors.$primary-orange;
+      button:not(.mat-mdc-button):hover {
+        cursor: pointer;
+        color: colors.$primary-orange;
+      }
     }
   }
 }
 
 @media (max-width: dimensions.$base-layout-breakpoint-small) {
-  #application {
+  #application-page {
     width: 100% !important;
     margin-top: 20px;
-    padding: 0px;
+    padding-top: 20px;
+    padding-left: dimensions.$base-margin-3;
+    padding-right: dimensions.$base-margin-3;
   }
 
   #application-details {
     flex-direction: column;
-    padding-left: 0px;
+    padding-left: 0;
 
     #left-side,
     #right-side {
@@ -94,7 +96,7 @@
     }
 
     #right-side {
-      width: 100vw;
+      width: 100%;
       margin-bottom: 150px;
 
       #associated-territories {

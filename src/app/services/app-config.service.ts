@@ -11,8 +11,10 @@ export interface ApplicationTypeFilterConfig {
   filteringEnabled: boolean;
 }
 
-/** @deprecated Use {@link ApplicationTypeFilterConfig}. */
-export type DashboardConfig = ApplicationTypeFilterConfig;
+export interface DashboardConfig extends ApplicationTypeFilterConfig {
+  initialBatchSize?: number;
+  batchIncrement?: number;
+}
 
 /**
  * Interface for application configuration
@@ -20,7 +22,7 @@ export type DashboardConfig = ApplicationTypeFilterConfig;
 export interface AppConfig {
   attribution?: string;
   testConfigFile?: string | null; // Path to test configuration file (relative to assets/config), null to disable
-  dashboard: ApplicationTypeFilterConfig;
+  dashboard: DashboardConfig;
   mapSwitcher?: ApplicationTypeFilterConfig;
   /** Application types that open an external URL instead of map/territory navigation. */
   externalLinkTypes?: string[];
@@ -64,9 +66,11 @@ export class AppConfigService {
     allowedTypes: [],
     filteringEnabled: false
   };
-  private readonly DEFAULT_DASHBOARD_CONFIG: ApplicationTypeFilterConfig = {
+  private readonly DEFAULT_DASHBOARD_CONFIG: Required<DashboardConfig> = {
     allowedTypes: [],
-    filteringEnabled: false
+    filteringEnabled: false,
+    initialBatchSize: 3,
+    batchIncrement: 3
   };
   private readonly DEFAULT_CONFIG: AppConfig = {
     dashboard: this.DEFAULT_DASHBOARD_CONFIG,
@@ -81,9 +85,10 @@ export class AppConfigService {
    */
   async loadConfig(): Promise<void> {
     try {
-      this.config = await firstValueFrom(
+      const loaded = await firstValueFrom(
         this.http.get<AppConfig>('assets/config/app-config.json')
       );
+      this.config = this.mergeWithDefaults(loaded);
     } catch (error: unknown) {
       // Use console directly here as this is bootstrap code before Angular services are fully available
        
@@ -100,7 +105,7 @@ export class AppConfigService {
    * Returns empty array if config not loaded or filtering disabled
    */
   getAllowedTypes(): string[] {
-    return this.config?.dashboard.allowedTypes ?? [];
+    return this.config?.dashboard?.allowedTypes ?? [];
   }
 
   /**
@@ -108,14 +113,33 @@ export class AppConfigService {
    * Returns false if config not loaded
    */
   isFilteringEnabled(): boolean {
-    return this.config?.dashboard.filteringEnabled ?? false;
+    return this.config?.dashboard?.filteringEnabled ?? false;
   }
 
   /**
    * Get the complete dashboard configuration
    */
-  getDashboardConfig(): ApplicationTypeFilterConfig {
-    return this.config?.dashboard ?? this.DEFAULT_CONFIG.dashboard;
+  getDashboardConfig(): Required<DashboardConfig> {
+    return (
+      this.config?.dashboard ?? this.DEFAULT_DASHBOARD_CONFIG
+    ) as Required<DashboardConfig>;
+  }
+
+  private mergeWithDefaults(loaded: AppConfig): AppConfig {
+    return {
+      ...this.DEFAULT_CONFIG,
+      ...loaded,
+      dashboard: {
+        ...this.DEFAULT_DASHBOARD_CONFIG,
+        ...loaded.dashboard
+      },
+      mapSwitcher: {
+        ...this.DEFAULT_MAP_SWITCHER_CONFIG,
+        ...loaded.mapSwitcher
+      },
+      externalLinkTypes:
+        loaded.externalLinkTypes ?? this.DEFAULT_EXTERNAL_LINK_TYPES
+    };
   }
 
   /**

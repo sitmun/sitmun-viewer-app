@@ -44,4 +44,13 @@ describe('ReturnButtonComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('defaults to profile.back label key', () => {
+    expect(component.labelKey).toBe('profile.back');
+  });
+
+  it('accepts a custom label key', () => {
+    component.labelKey = 'territory.back';
+    expect(component.labelKey).toBe('territory.back');
+  });
 });

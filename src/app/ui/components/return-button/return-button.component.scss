@@ -3,20 +3,27 @@
 .return-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex-shrink: 0;
+  color: colors.$primary-orange;
+  border-color: colors.$primary-orange;
+  font-weight: 600;
 
   mat-icon {
     font-size: 20px;
     width: 20px;
     height: 20px;
     line-height: 20px;
+    color: colors.$primary-orange;
   }
 
   &:hover {
-    color: colors.$primary-orange;
+    color: colors.$secondary-orange;
+    border-color: colors.$secondary-orange;
+    background-color: rgba(colors.$primary-orange, 0.08);
 
     mat-icon {
-      color: colors.$primary-orange;
+      color: colors.$secondary-orange;
     }
   }
 }

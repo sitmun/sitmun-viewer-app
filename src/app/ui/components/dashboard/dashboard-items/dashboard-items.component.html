@@ -1,49 +1,63 @@
 <!-- Public section: single list of all items -->
 <div *ngIf="isPublic()" class="dashboard-items-container">
   <div class="cards-container">
-    <div *ngFor="let item of allItems" class="dashboard-item">
+    <div *ngFor="let item of allItems; trackBy: trackByItemId" class="dashboard-card-slot">
       <app-dashboard-item
         [item]="item"
         (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
     </div>
   </div>
-  <app-dashboard-expand-button
-    *ngIf="shouldShowExpandButton()"
-    (expandAll)="onExpandAll($event)" />
-</div>
-
-<!-- Public Applications -->
-<div *ngIf="!isPublic() && publicItems.length > 0">
-  <h3>{{ 'dashboardPage.applicationPublic' | translate }}</h3>
-  <div class="cards-container">
-    <div *ngFor="let item of publicItems" class="dashboard-item">
-      <app-dashboard-item
-        [item]="item"
-        (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
+  <div *ngIf="hasMorePages" class="loading-sentinel" data-section="all">
+    <div *ngIf="loadingMore" class="loading-indicator" aria-live="polite">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span class="sr-only">{{ 'dashboardPage.loadingMore' | translate }}</span>
     </div>
   </div>
 </div>
 
-<!-- User section: private and public separated -->
-<div *ngIf="!isPublic() && privateItems.length > 0">
-  <!-- Private Applications -->
-  <div *ngIf="privateItems.length > 0">
-    <h3>{{ 'dashboardPage.applicationPrivate' | translate }}</h3>
-    <div class="cards-container">
-      <div *ngFor="let item of privateItems" class="dashboard-item">
-        <app-dashboard-item
-          [item]="item"
-          (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
+<!-- User section: tabs for private and public applications -->
+<mat-tab-group *ngIf="!isPublic()" class="applications-tabs">
+  <!-- Public Applications Tab -->
+  <mat-tab [label]="'dashboardPage.applicationPublic' | translate">
+    <div class="tab-content">
+      <div class="cards-container" *ngIf="publicItems.length > 0">
+        <div *ngFor="let item of publicItems; trackBy: trackByItemId" class="dashboard-card-slot">
+          <app-dashboard-item
+            [item]="item"
+            (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
+        </div>
       </div>
+      <div *ngIf="hasMorePages" class="loading-sentinel" data-section="public">
+        <div *ngIf="loadingMore" class="loading-indicator" aria-live="polite">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span class="sr-only">{{ 'dashboardPage.loadingMore' | translate }}</span>
+        </div>
+      </div>
+      <p *ngIf="publicItems.length === 0" class="empty-message">
+        {{ 'dashboardPage.noPublicApplications' | translate }}
+      </p>
     </div>
-  </div>
+  </mat-tab>
 
-  <!-- Separation line -->
-  <hr
-    *ngIf="privateItems.length > 0 && publicItems.length > 0"
-    class="separation-line" />
-</div>
-
-<app-dashboard-expand-button
-  *ngIf="!isPublic() && shouldShowExpandButton()"
-  (expandAll)="onExpandAll($event)" />
+  <!-- Private Applications Tab -->
+  <mat-tab [label]="'dashboardPage.applicationPrivate' | translate">
+    <div class="tab-content">
+      <div class="cards-container" *ngIf="privateItems.length > 0">
+        <div *ngFor="let item of privateItems; trackBy: trackByItemId" class="dashboard-card-slot">
+          <app-dashboard-item
+            [item]="item"
+            (tag)="displayTerritoriesTag($event)"></app-dashboard-item>
+        </div>
+      </div>
+      <div *ngIf="hasMorePages" class="loading-sentinel" data-section="private">
+        <div *ngIf="loadingMore" class="loading-indicator" aria-live="polite">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span class="sr-only">{{ 'dashboardPage.loadingMore' | translate }}</span>
+        </div>
+      </div>
+      <p *ngIf="privateItems.length === 0" class="empty-message">
+        {{ 'dashboardPage.noPrivateApplications' | translate }}
+      </p>
+    </div>
+  </mat-tab>
+</mat-tab-group>

@@ -136,4 +136,17 @@ describe('ApplicationComponent', () => {
     expect(commonService.fetchTerritoriesByApplication).not.toHaveBeenCalled();
     expect(component.isExternalLink()).toBe(true);
   });
+
+  it('sets notFound when application id is missing from list', () => {
+    commonService.fetchDashboardItems.mockReturnValue(
+      of({ content: [], totalElements: 0 })
+    );
+
+    fixture = TestBed.createComponent(ApplicationComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.notFound).toBe(true);
+    expect(component.application).toBeUndefined();
+  });
 });
