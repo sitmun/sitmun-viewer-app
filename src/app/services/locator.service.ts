@@ -43,16 +43,15 @@ export interface LocatorTask {
    */
   filterByMunicipalityCode: boolean;
   /**
-   * List of territory code filters. Each entry can send a request parameter to the server
-   * and/or check a response field client-side. A feature passes if any entry's response field
-   * matches the territory code (OR semantics); falls back to extent if no field has a value.
+   * List of service parameters. Each entry sends a request parameter to the server
+   * with the resolved territory field value (server-side filtering).
    */
   municipalityCodeFilters: MunicipalityCodeFilter[];
 }
 
 /**
  * A single territory code filter entry.
- * Combines a server-side request parameter with a client-side response field check.
+ * Sends a server-side request parameter with the resolved territory field value.
  */
 export interface MunicipalityCodeFilter {
   /** Query parameter name to send to the server (e.g. 'id_municipi'). Empty = not sent. */
@@ -64,8 +63,6 @@ export interface MunicipalityCodeFilter {
    * Empty = use 'territory_code' automatically.
    */
   territoryField: string;
-  /** Dot-notation path in the response to compare with the resolved territory value (e.g. 'properties.id_municipi'). Empty = skip client-side check. */
-  responseField: string;
   /**
    * When true and territoryField is 'territory_center_x' or 'territory_center_y',
    * the coordinate is reprojected from the map CRS to the specified targetCrs before being sent.

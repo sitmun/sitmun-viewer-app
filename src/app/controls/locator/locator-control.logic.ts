@@ -230,9 +230,7 @@ export class LocatorControlLogic implements ControlLogicBase {
       }
 
       let results = await executeLocatorSearch(task, searchText, templateVars, extraQueryParams);
-      if (task.filterByMunicipalityCode) {
-        results = this.filterResultsByMunicipalityCode(results, task);
-      } else if (task.filterByExtent) {
+      if (!task.filterByMunicipalityCode && task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
       }
       this.renderResults(results, task);
@@ -351,40 +349,6 @@ export class LocatorControlLogic implements ControlLogicBase {
     const total = tables.reduce((sum, table, i) => sum + table[Number(c5[i])], 0);
     const digit = (10 - (total % 10)) % 10;
     return c5 + String(digit);
-  }
-
-  /**
-   * Filters results by territory code using the configured filter entries (OR semantics).
-   * For each feature, checks each filter's responseField against the resolved territory value.
-   * A feature passes if ANY configured responseField has a value that startsWith the resolved value.
-   * If no field has a value (feature has no territory codes), falls back to extent filtering.
-   */
-  private filterResultsByMunicipalityCode(results: any[], task: LocatorTask): any[] {
-    const ext = this.getInitialExtent() ?? this.getRawMapExtent();
-    const mapCrs = ext ? this.getMapCrs() : null;
-
-    const activeFilters = task.municipalityCodeFilters
-      .filter(f => !!f.responseField)
-      .map(f => ({ responseField: f.responseField, resolvedValue: this.resolveTerritoryField(f.territoryField) }))
-      .filter(f => f.resolvedValue != null) as { responseField: string; resolvedValue: string }[];
-
-    if (activeFilters.length === 0) return results;
-
-    return results.filter((item) => {
-      let anyFieldFound = false;
-      for (const { responseField, resolvedValue } of activeFilters) {
-        const featureVal = getByPath(item, responseField);
-        if (typeof featureVal === 'string' && featureVal !== '') {
-          anyFieldFound = true;
-          if (featureVal.startsWith(resolvedValue)) return true;
-        }
-      }
-      // If any field had a value but none matched → discard
-      if (anyFieldFound) return false;
-      // No field had a value → fall back to extent
-      if (ext && mapCrs) return this.itemIsInsideExtent(item, task, ext, mapCrs);
-      return true;
-    });
   }
 
   private setLoading(loading: boolean): void {
