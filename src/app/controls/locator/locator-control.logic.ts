@@ -230,7 +230,7 @@ export class LocatorControlLogic implements ControlLogicBase {
       }
 
       let results = await executeLocatorSearch(task, searchText, templateVars, extraQueryParams);
-      if (!task.filterByMunicipalityCode && task.filterByExtent) {
+      if (task.filterByExtent) {
         results = this.filterResultsByMapExtent(results, task);
       }
       this.renderResults(results, task);
