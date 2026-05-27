@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- Left-panel tool controls (including custom controls such as Hello World) expand and collapse when legend is disabled for a role/territory ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
+
 ## [1.2.6] - 2026-05-08
 
 ### Added
