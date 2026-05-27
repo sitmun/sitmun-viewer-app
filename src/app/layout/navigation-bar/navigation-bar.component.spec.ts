@@ -1,5 +1,6 @@
 import { Location, NgOptimizedImage } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -43,7 +44,6 @@ describe('NavigationBarComponent', () => {
       declarations: [NavigationBarComponent, MenuComponent],
       imports: [
         BrowserAnimationsModule,
-        HttpClientTestingModule,
         NgOptimizedImage,
         TranslateModule.forRoot({
           loader: { provide: TranslateLoader, useClass: TranslateFakeLoader }
@@ -59,6 +59,8 @@ describe('NavigationBarComponent', () => {
         RouterModule
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Router, useValue: routerSpy },
         {
           provide: CommonService,

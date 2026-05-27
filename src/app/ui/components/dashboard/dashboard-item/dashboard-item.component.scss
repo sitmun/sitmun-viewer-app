@@ -1,6 +1,11 @@
 @use 'dimensions';
 @use 'colors';
 
+:host {
+  display: block;
+  width: 100%;
+}
+
 :host ::ng-deep mat-card-title {
   font-weight: 700 !important;
   font-size: 16px !important;
@@ -75,6 +80,7 @@
 }
 
 .dashboard-item {
+  width: 100%;
   height: 180px;
   display: flex !important;
   flex-direction: row !important;
@@ -82,8 +88,17 @@
   gap: 0;
   border: 1px rgba(128, 128, 128, 0.466) solid;
   border-radius: 12px;
+  box-sizing: border-box;
   padding: 0 !important;
   overflow: hidden;
+  box-shadow: none !important;
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+    box-shadow: none !important;
+    border: 1px rgba(128, 128, 128, 0.466) solid;
+  }
 }
 
 .dashboard-item-image-container {

@@ -397,7 +397,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const effectiveLayerNames: string[] = Array.isArray(
             layerOptions.layerNames
           )
-            ? layerOptions.layerNames.filter((name): name is string => true)
+            ? layerOptions.layerNames.filter((_name): _name is string => true)
             : layerOptions.layerNames != null
             ? [String(layerOptions.layerNames)]
             : [];

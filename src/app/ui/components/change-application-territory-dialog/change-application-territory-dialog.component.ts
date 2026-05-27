@@ -40,7 +40,6 @@ export class ChangeApplicationTerritoryDialogComponent
   // Store the last selected territory to restore when territories are loaded
   private lastSelectedTerritoryId = '';
   private readonly destroy$ = new Subject<void>();
-
   private readonly appConfigService = inject(AppConfigService);
 
   constructor(
@@ -52,29 +51,29 @@ export class ChangeApplicationTerritoryDialogComponent
   ) {}
 
   /**
-   * Filter dashboard items by type based on app configuration.
-   * Returns only items matching the allowed types from the dashboard filter.
+   * Filter switcher applications by type based on app configuration.
    */
-  private filterByType(items: DashboardItem[]): DashboardItem[] {
-    const dashboardConfig = this.appConfigService.getDashboardConfig();
-    if (!dashboardConfig || !dashboardConfig.filteringEnabled) {
-      return items;
-    }
-    const allowedTypes = dashboardConfig.allowedTypes || [];
-    return items.filter(
-      (item) => item.type != null && allowedTypes.includes(item.type)
-    );
+  private filterSwitcherApplications(items: DashboardItem[]): DashboardItem[] {
+    return this.appConfigService.filterApplicationsByType(
+      items,
+      this.appConfigService.getMapSwitcherConfig()
+    ) as DashboardItem[];
+  }
+
+  private isApplicationAllowedInSwitcher(app: DashboardItem): boolean {
+    return this.filterSwitcherApplications([app]).length > 0;
   }
 
   /**
    * Update cached grouped applications when data or search changes.
    */
   private updateGroupedApplications(): void {
-    // Apply type filtering first (same as dashboard)
-    const typeFiltered = this.filterByType(this.listApplications || []);
+    const switcherApps = this.filterSwitcherApplications(
+      this.listApplications || []
+    );
 
     // Filter out unavailable applications (under maintenance)
-    const availableApps = typeFiltered.filter((app) => !app.isUnavailable);
+    const availableApps = switcherApps.filter((app) => !app.isUnavailable);
 
     let filtered = availableApps;
 
@@ -94,6 +93,7 @@ export class ChangeApplicationTerritoryDialogComponent
         );
         if (
           selectedApp &&
+          this.isApplicationAllowedInSwitcher(selectedApp) &&
           !filtered.some((app) => String(app.id) === String(selectedApp.id))
         ) {
           filtered.unshift(selectedApp); // Add at the beginning
@@ -194,13 +194,38 @@ export class ChangeApplicationTerritoryDialogComponent
     this.destroy$.complete();
   }
 
+  /**
+   * Territory selection applies only to map applications (not external links).
+   */
+  showTerritorySelection(): boolean {
+    return this.hasApplication() && this.selectedApplicationHasTerritory();
+  }
+
+  private getSelectedApplication(): DashboardItem | undefined {
+    if (!this.hasApplication()) {
+      return undefined;
+    }
+    return this.listApplications?.find(
+      (app) => String(app.id) === String(this.applicationSelectedId)
+    );
+  }
+
+  isSelectedApplicationExternalLink(): boolean {
+    const app = this.getSelectedApplication();
+    return app != null && this.appConfigService.isExternalLinkApplication(app);
+  }
+
+  selectedApplicationHasTerritory(): boolean {
+    const app = this.getSelectedApplication();
+    return app != null && this.appConfigService.applicationHasTerritory(app);
+  }
+
   private loadDialogData(): void {
     // Get applicationID and territoryID from route parameters
     const { applicationId, territoryId } = this.getRouteParams();
     this.applicationSelectedId = applicationId;
     this.territorySelectedId = territoryId;
 
-    // We get all applications
     this.commonService
       .fetchDashboardItems(DashboardTypes.APPLICATIONS)
       .subscribe((res: DashboardItemsResponse) => {
@@ -209,18 +234,25 @@ export class ChangeApplicationTerritoryDialogComponent
         this.listApplications = res.content;
         this.updateCachedUnavailableIds();
         this.updateGroupedApplications();
-      });
 
-    // We get all territories linked to the applicationSelected (only if applicationSelectedId is valid)
-    if (this.hasApplication()) {
-      this.getAllTerritoriesFromApplicationSelected();
-    } else {
-      this.listTerritories = [];
-      this.updateGroupedTerritories();
-    }
+        if (this.showTerritorySelection()) {
+          this.getAllTerritoriesFromApplicationSelected();
+        } else {
+          this.listTerritories = [];
+          this.territorySelectedId = '';
+          this.updateGroupedTerritories();
+        }
+      });
   }
 
   getAllTerritoriesFromApplicationSelected() {
+    if (this.isSelectedApplicationExternalLink()) {
+      this.listTerritories = [];
+      this.territorySelectedId = '';
+      this.updateGroupedTerritories();
+      return;
+    }
+
     this.commonService
       .fetchTerritoriesByApplication(Number(this.applicationSelectedId))
       .subscribe((res: any) => {
@@ -253,7 +285,7 @@ export class ChangeApplicationTerritoryDialogComponent
     const app = this.listApplications?.find(
       (a) => String(a.id) === String(appSelectedId)
     );
-    if (app && app.isUnavailable) {
+    if (!app || !this.isApplicationAllowedInSwitcher(app) || app.isUnavailable) {
       return;
     }
 
@@ -271,8 +303,13 @@ export class ChangeApplicationTerritoryDialogComponent
       this.territorySelectedId = '';
       this.searchValueTerritory = ''; // Clear territory search when changing application
 
-      // Update listTerritories - will auto-select last selected territory if available
-      this.getAllTerritoriesFromApplicationSelected();
+      if (this.isSelectedApplicationExternalLink()) {
+        this.listTerritories = [];
+        this.updateGroupedTerritories();
+      } else {
+        // Update listTerritories - will auto-select last selected territory if available
+        this.getAllTerritoriesFromApplicationSelected();
+      }
     }
   }
 
@@ -327,7 +364,13 @@ export class ChangeApplicationTerritoryDialogComponent
   }
 
   isSelectionValid(): boolean {
-    return this.hasApplication() && this.hasTerritory();
+    if (!this.hasApplication()) {
+      return false;
+    }
+    if (this.isSelectedApplicationExternalLink()) {
+      return !!this.getSelectedApplication()?.externalUrl;
+    }
+    return this.hasTerritory();
   }
 
   /**
@@ -339,13 +382,26 @@ export class ChangeApplicationTerritoryDialogComponent
 
   switchMap() {
     if (!this.isSelectionValid()) {
-      if (!this.hasTerritory()) {
+      if (
+        this.hasApplication() &&
+        !this.isSelectedApplicationExternalLink() &&
+        !this.hasTerritory()
+      ) {
         this.translateService
           .get('map.errorNoTerritorySelected')
           .subscribe((trad) => {
             this.notificationService.error(trad);
           });
       }
+      return;
+    }
+
+    if (this.isSelectedApplicationExternalLink()) {
+      const externalUrl = this.getSelectedApplication()?.externalUrl;
+      if (externalUrl) {
+        window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      }
+      this.closeEvent();
       return;
     }
 

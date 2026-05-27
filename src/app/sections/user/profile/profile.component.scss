@@ -1,8 +1,8 @@
+@use 'page-shell';
 @use 'colors';
 @use 'dimensions';
 
 $padding-left-base: 15px;
-$page-width: 90%;
 
 h2 {
   padding-top: 20px;
@@ -39,9 +39,29 @@ h2 {
   margin-bottom: 0;
   margin-left: auto;
   margin-right: auto;
-  width: $page-width;
+  width: dimensions.$page-content-width;
   height: 100svh;
   scroll-margin-top: 64px;
+
+  .page-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+    margin-bottom: dimensions.$base-margin-4;
+
+    h1 {
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+    }
+
+    app-return-button {
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+  }
 
   #saveButton {
     width: 250px;
@@ -84,7 +104,7 @@ h2 {
     margin-bottom: 0;
     margin-left: auto;
     margin-right: auto;
-    width: $page-width;
+    width: dimensions.$page-content-width;
 
     .territory-button-item {
       all: unset;

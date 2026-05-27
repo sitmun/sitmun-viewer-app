@@ -4,8 +4,29 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- Dashboard: server-side infinite scroll; page size from `dashboard.initialBatchSize` / `batchIncrement`.
+- Authenticated dashboard: public/private tabs.
+- Shared page shell for dashboard, territory, and application pages.
+
+### Changed
+
+- Dashboard search filters loaded pages client-side.
+- Unified list page layout (dashboard, territory, application).
+- Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
+- Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
+- `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
+
+### Removed
+
+- Legacy dashboard pagination/show-more components.
+- Unused `ApiModule` and `src/test.ts`.
+
 ### Fixed
 
+- Dashboard capped at three applications ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
+- ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
 - Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
 - Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
 - Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.
