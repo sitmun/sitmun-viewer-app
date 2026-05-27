@@ -5,16 +5,16 @@
         [ngSrc]="
           application.logo ? application.logo : 'assets/img/card-no-image.svg'
         "
-        alt=""
+        [alt]="application.title || application.name"
         width="150"
         height="150" />
     </div>
     <div id="application-information-details">
-      <p [ngClass]="{ 'value-missing': !application.updateDate }">
+      <p [ngClass]="{ 'value-missing': !hasLastUpdate() }">
         <span>{{ 'application.lastUpdateDate' | translate }} :</span>
         {{
-          application.lastUpdate
-            ? (application.lastUpdate | date : 'dd/MM/yyyy')
+          hasLastUpdate()
+            ? (displayLastUpdate() | date : 'dd/MM/yyyy')
             : ('application.valueMissing' | translate)
         }}
       </p>

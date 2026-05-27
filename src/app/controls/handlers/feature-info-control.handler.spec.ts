@@ -1,7 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
@@ -30,8 +32,10 @@ describe('FeatureInfoControlHandler', () => {
     > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [TranslateModule.forRoot()],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         FeatureInfoControlHandler,
         { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }

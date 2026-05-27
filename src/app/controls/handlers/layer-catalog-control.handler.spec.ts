@@ -1,9 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
-
 
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
@@ -77,8 +77,9 @@ describe('LayerCatalogControlHandler', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         LayerCatalogControlHandler,
         { provide: SitnaApiService, useValue: mockSitnaApi },
         {

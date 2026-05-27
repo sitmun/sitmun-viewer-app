@@ -1,82 +1,46 @@
 <div id="searchbox">
-  <form
-    (submit)="handleSubmit()"
-    #inputForm
-    (keydown)="loseFocus($event)"
-    tabindex="0">
-    <div>
-      <button type="submit">
-        <img ngSrc="assets/img/search.svg" alt="Search" height="20" width="20" />
-      </button>
+  <form (submit)="handleSubmit(); $event.preventDefault()">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>{{ 'dashboardDialog.inputPlaceholder' | translate }}</mat-label>
       <input
-        #inputSearch
-        class="text-input"
         type="text"
-        placeholder="{{ 'dashboardDialog.inputPlaceholder' | translate }}"
-        [(ngModel)]="input"
-        name="text-input"
-        (keyup)="onKeywordsChange()"
-        (focus)="onFocus()"
+        matInput
+        [formControl]="searchControl"
+        [matAutocomplete]="auto"
+        [attr.aria-label]="'dashboardDialog.inputPlaceholder' | translate"
         autocomplete="off" />
       <button
-        id="clear-text-button"
-        (click)="clearSearchText()"
+        *ngIf="searchControl.value"
+        matSuffix
+        mat-icon-button
         type="button"
-        tabindex="0">
-        <img ngSrc="assets/img/fi_992660.svg" alt="deleteText" height="20" width="20" />
+        (click)="clearSearch()"
+        [attr.aria-label]="'dashboardPage.searchClear' | translate">
+        <mat-icon>close</mat-icon>
       </button>
-    </div>
+      <mat-icon matPrefix>search</mat-icon>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="displayFn"
+        (optionSelected)="onOptionSelected($event.option.value)">
+        <mat-option
+          *ngFor="let option of suggestions"
+          [value]="option"
+          [attr.aria-label]="option.type + ': ' + option.name">
+          <div class="suggestion-option">
+            <mat-icon class="suggestion-icon">{{ getOptionIcon(option) }}</mat-icon>
+            <span class="suggestion-name">{{ option.name }}</span>
+            <img
+              *ngIf="option.logo"
+              [src]="option.logo"
+              [alt]="option.name"
+              class="suggestion-logo" />
+          </div>
+        </mat-option>
+        <mat-option *ngIf="loading" disabled>
+          <mat-spinner diameter="24"></mat-spinner>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
   </form>
-
-  <!-- Liste des propositions de territoires -->
-  <div #suggestionsDiv *ngIf="showSuggestions" class="suggestions-list">
-    <div *ngIf="filterTerritories().length > 0">
-      <p class="suggestion-title">
-        {{ 'dashboardPage.coveredTerritories' | translate }}
-      </p>
-      <button
-        class="item-app item-territory"
-        *ngFor="let territory of filterTerritories()"
-        (click)="navigateToTerritoryPresentation(territory.id)"
-        type="button"
-        tabindex="0">
-        <p
-          class="territory-name"
-          [innerHTML]="researchHighlight(territory.name)"></p>
-        <p class="territory-totalApp" *ngIf="showDetailedSuggestions">
-          {{ totalTerritories() }}
-          {{ 'dashboardPage.shortAppTitle' | translate }}
-        </p>
-      </button>
-    </div>
-
-    <!-- Liste des propositions d'applications -->
-    <div *ngIf="showDetailedSuggestions && filterApplications().length > 0">
-      <p class="suggestion-title">Applications</p>
-      <button
-        class="item-app item-application"
-        *ngFor="let application of filterApplications()"
-        (click)="navigateToApplicationPresentation(application.id)"
-        type="button"
-        tabindex="0">
-        <p
-          [innerHTML]="
-            researchHighlight(application.title || application.name)
-          "></p>
-        <div>
-          <img
-            [ngSrc]="
-              application.logo
-                ? application.logo
-                : 'assets/img/card-no-image.svg'
-            "
-            width="40"
-            height="40"
-            [alt]="
-              application.title || application.name || 'Application logo'
-            " />
-        </div>
-      </button>
-    </div>
-  </div>
 </div>

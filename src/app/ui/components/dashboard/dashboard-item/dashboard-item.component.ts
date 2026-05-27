@@ -1,89 +1,74 @@
 import {
   Component,
   EventEmitter,
-  HostListener,
   Input,
-  OnDestroy,
   OnInit,
-  Output
+  Output,
+  inject
 } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { CommonService, DashboardItem } from '@api/services/common.service';
+import { CommonService, DashboardItem, ItemDto } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
+import { NotificationService } from 'src/app/notifications/services/NotificationService';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
-/**
- * Component for displaying a single application card in the dashboard.
- *
- * This component handles the "selection of territory given an application" logic:
- * - When an application with a single territory is clicked, it automatically navigates to the map
- * - When an application with multiple territories is clicked, it shows the territories list
- *
- * This is separate from the ChangeApplicationTerritoryDialogComponent, which handles
- * the dialog-based application/territory selection UI.
- */
+export interface DashboardTerritoryTagPayload {
+  application: DashboardItem;
+  territories: ItemDto[];
+}
+
 @Component({
   standalone: false,
   selector: 'app-dashboard-item',
   templateUrl: './dashboard-item.component.html',
   styleUrls: ['./dashboard-item.component.scss']
 })
-export class DashboardItemComponent implements OnInit, OnDestroy {
+export class DashboardItemComponent implements OnInit {
   @Input() item!: DashboardItem;
-  @Input() itemWidth!: string;
-  @Output() tag = new EventEmitter<any>();
-  DESCRIPTION_MAX_CHARACTER = 100;
+  @Output() tag = new EventEmitter<DashboardTerritoryTagPayload>();
+
   nbTerritory = 0;
-  applicationId = 0;
-  listOfTerritories: any;
-  mediaQueryListener: any;
+  listOfTerritories: ItemDto[] = [];
+  territoriesLoading = false;
+  territoriesLoaded = false;
+
+  private readonly appConfigService = inject(AppConfigService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly translateService = inject(TranslateService);
 
   constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
-    this.fillTerritory(this.item.id);
-    this.checkWindowSize();
-  }
-
-  ngOnDestroy() {
-    if (this.mediaQueryListener) {
-      this.mediaQueryListener.removeListener();
+    // Use enriched dashboard data instead of eager territory fetch
+    if (this.item.territoryCount !== undefined) {
+      this.nbTerritory = this.item.territoryCount;
+      this.territoriesLoaded = true;
+      // For single-territory apps, prepare the territory list for navigation
+      if (this.item.singleTerritoryId) {
+        this.listOfTerritories = [
+          { id: this.item.singleTerritoryId, name: '' }
+        ];
+      }
+    } else if (this.isExternalLink()) {
+      this.territoriesLoaded = true;
+    } else if (this.hasTerritory()) {
+      // Fallback: eager fetch if territoryCount not provided (should not happen with new API)
+      this.fillTerritory(this.item.id);
     }
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize(_event: any) {
-    this.checkWindowSize();
-  }
-
-  private checkWindowSize() {
-    const width = window.innerWidth;
-    if (width <= 640) {
-      this.DESCRIPTION_MAX_CHARACTER = 30;
-    } else {
-      this.DESCRIPTION_MAX_CHARACTER = 75;
-    }
-  }
-
-  /**
-   * Determines if the current route is in the public section.
-   */
   private isPublicSection(): boolean {
     return this.router.url.startsWith(NavigationPath.Section.Public.Base);
   }
 
-  /**
-   * Gets the appropriate map URL based on the current section (public or user).
-   */
   private getMapUrl(applicationId: number, territoryId: number): string {
     return this.isPublicSection()
       ? NavigationPath.Section.Public.Map(applicationId, territoryId)
       : NavigationPath.Section.User.Map(applicationId, territoryId);
   }
 
-  /**
-   * Gets the appropriate application URL based on the current section (public or user).
-   */
   private getApplicationUrl(applicationId: number): string {
     return this.isPublicSection()
       ? NavigationPath.Section.Public.Application(applicationId)
@@ -91,11 +76,24 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
   }
 
   fillTerritory(appId: number) {
-    this.applicationId = appId;
+    this.territoriesLoading = true;
+    this.territoriesLoaded = false;
     this.commonService.fetchTerritoriesByApplication(appId).subscribe({
       next: (res) => {
         this.listOfTerritories = res.content;
         this.nbTerritory = res.content.length;
+        this.territoriesLoading = false;
+        this.territoriesLoaded = true;
+        // Auto-display territory picker after lazy load
+        if (this.nbTerritory > 1) {
+          this.displayTerritoriesTag(this.item);
+        }
+      },
+      error: () => {
+        this.listOfTerritories = [];
+        this.nbTerritory = 0;
+        this.territoriesLoading = false;
+        this.territoriesLoaded = true;
       }
     });
   }
@@ -104,21 +102,116 @@ export class DashboardItemComponent implements OnInit, OnDestroy {
     void this.router.navigateByUrl(this.getApplicationUrl(idApp));
   }
 
-  displayTerritoriesTag(application: any) {
-    const object = {
-      application: application,
+  displayTerritoriesTag(application: DashboardItem) {
+    this.tag.emit({
+      application,
       territories: this.listOfTerritories
-    };
-    this.tag.emit(object);
+    });
   }
 
   navigateToMap(idApp: number) {
-    if (this.nbTerritory == 1) {
+    if (this.item.isUnavailable) {
+      return;
+    }
+    if (this.isExternalLink()) {
+      if (this.item.externalUrl) {
+        this.openExternalUrl();
+      } else {
+        this.notifyMissingExternalUrl();
+      }
+      return;
+    }
+    if (this.territoriesLoading) {
+      return;
+    }
+
+    // For single-territory apps, navigate directly
+    if (this.nbTerritory === 1 && this.listOfTerritories.length > 0) {
       void this.router.navigateByUrl(
         this.getMapUrl(idApp, this.listOfTerritories[0].id)
       );
+    } else if (this.nbTerritory > 1) {
+      // Lazy load full territory list only when user clicks multi-territory app
+      if (this.listOfTerritories.length === 0) {
+        this.fillTerritory(idApp);
+        // After filling, the method will be called again via user interaction
+      } else {
+        this.displayTerritoriesTag(this.item);
+      }
     } else {
-      this.displayTerritoriesTag(this.item);
+      this.notifyNoTerritories();
     }
+  }
+
+  isPrimaryActionDisabled(): boolean {
+    if (this.item.isUnavailable) {
+      return true;
+    }
+    if (this.isExternalLink()) {
+      return !this.item.externalUrl;
+    }
+    // Allow interaction if we have territory count data (even if list not loaded yet)
+    return this.territoriesLoading || (this.nbTerritory === 0 && !this.territoriesLoaded);
+  }
+
+  primaryActionAriaLabel(): string {
+    if (this.isExternalLink()) {
+      return 'dashboardPage.openExternal';
+    }
+    return 'dashboardPage.openMap';
+  }
+
+  imageActionAriaLabel(): string {
+    return this.primaryActionAriaLabel();
+  }
+
+  titleActionAriaLabel(): string {
+    if (this.isExternalLink()) {
+      return 'dashboardPage.openExternal';
+    }
+    return 'dashboardPage.access';
+  }
+
+  primaryButtonIcon(): string {
+    return this.isExternalLink() ? 'open_in_new' : 'map';
+  }
+
+  primaryButtonLabelKey(): string {
+    return this.isExternalLink()
+      ? 'dashboardPage.openExternal'
+      : 'dashboardPage.access';
+  }
+
+  onImageKeydown(event: KeyboardEvent, idApp: number): void {
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      this.navigateToMap(idApp);
+    }
+  }
+
+  private hasTerritory(): boolean {
+    return this.appConfigService.applicationHasTerritory(this.item);
+  }
+
+  private isExternalLink(): boolean {
+    return this.appConfigService.isExternalLinkApplication(this.item);
+  }
+
+  private openExternalUrl(): void {
+    window.open(this.item.externalUrl!, '_blank', 'noopener,noreferrer');
+  }
+
+  private notifyMissingExternalUrl(): void {
+    this.translateService
+      .get('dashboardPage.externalUrlMissing')
+      .subscribe((message) => this.notificationService.warning(message));
+  }
+
+  private notifyNoTerritories(): void {
+    this.translateService
+      .get('dashboardPage.noTerritoriesInApplication')
+      .subscribe((message) => this.notificationService.warning(message));
   }
 }

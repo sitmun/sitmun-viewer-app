@@ -1,33 +1,30 @@
 <mat-card
   class="dashboard-item"
   [ngClass]="{ 'dashboard-item-maintenance': item.isUnavailable }">
-  <!-- Left side: Image -->
   <div class="dashboard-item-image-container">
     <img
       mat-card-image
       class="dashboard-item-image-clickable"
-      [class.disabled]="item.isUnavailable"
+      [class.disabled]="item.isUnavailable || isPrimaryActionDisabled()"
       role="button"
-      [attr.tabindex]="item.isUnavailable ? -1 : 0"
-      [attr.aria-label]="'dashboardPage.openMap' | translate"
-      [attr.aria-disabled]="item.isUnavailable"
+      [attr.tabindex]="item.isUnavailable || isPrimaryActionDisabled() ? -1 : 0"
+      [attr.aria-label]="imageActionAriaLabel() | translate"
+      [attr.aria-disabled]="item.isUnavailable || isPrimaryActionDisabled()"
       [ngSrc]="item.logo || 'assets/img/card-no-image.svg'"
       width="180"
       height="180"
       [alt]="item.title || item.name"
       (click)="!item.isUnavailable && navigateToMap(item.id)"
-      (keydown.enter)="!item.isUnavailable && navigateToMap(item.id)"
-      (keydown.space)="!item.isUnavailable && navigateToMap(item.id)" />
+      (keydown)="onImageKeydown($event, item.id)" />
   </div>
 
-  <!-- Right side: Header and Content -->
   <div class="dashboard-item-right-section">
     <mat-card-header>
       <mat-card-title>
         <button
           class="title-button"
-          [disabled]="item.isUnavailable"
-          [attr.aria-label]="'dashboardPage.access' | translate"
+          [disabled]="item.isUnavailable || isPrimaryActionDisabled()"
+          [attr.aria-label]="titleActionAriaLabel() | translate"
           (click)="navigateToMap(item.id)">
           {{ item.title || item.name }}
         </button>
@@ -51,11 +48,12 @@
         <button
           mat-flat-button
           class="primary-button"
-          [attr.aria-label]="'dashboardPage.access' | translate"
+          [disabled]="isPrimaryActionDisabled()"
+          [attr.aria-label]="primaryActionAriaLabel() | translate"
           (click)="navigateToMap(item.id)">
-          <mat-icon>map</mat-icon>
+          <mat-icon>{{ primaryButtonIcon() }}</mat-icon>
           <span class="button-text">
-            {{ 'dashboardPage.access' | translate }}
+            {{ primaryButtonLabelKey() | translate }}
           </span>
         </button>
         <button

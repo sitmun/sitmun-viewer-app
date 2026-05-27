@@ -1,19 +1,35 @@
 import {
   Component,
   EventEmitter,
-  OnInit,
   Output,
-  Input,
-  ElementRef,
-  HostListener,
-  ViewChild
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  inject
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { FormControl } from '@angular/forms';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { Router } from '@angular/router';
 
-import { CommonService, ResponseDto } from '@api/services/common.service';
+import { CommonService, DashboardSuggestion } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-import { TranslateService } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  takeUntil,
+  filter,
+  tap
+} from 'rxjs/operators';
+
+export interface SuggestionOption {
+  type: 'application' | 'territory';
+  id: number;
+  name: string;
+  logo?: string;
+  isPrivate?: boolean;
+}
 
 @Component({
   standalone: false,
@@ -21,164 +37,119 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './dashboard-searchbox.component.html',
   styleUrls: ['./dashboard-searchbox.component.scss']
 })
-export class DashboardSearchboxComponent implements OnInit {
-  @ViewChild('inputForm') inputForm!: ElementRef;
-  @ViewChild('suggestionsDiv') suggestionsDiv!: ElementRef;
-  @ViewChild('inputSearch') inputSearch!: ElementRef;
-
-  @Input() applications: any;
-
+export class DashboardSearchboxComponent implements OnInit, OnDestroy {
   @Output() keywords = new EventEmitter<string>();
+  @ViewChild(MatAutocompleteTrigger) autocompleteTrigger?: MatAutocompleteTrigger;
 
-  input: string;
-  territories: any = [];
-  showSuggestions = false;
-  filteredSuggestions: string[] = [];
-  showDetailedSuggestions = false;
+  searchControl = new FormControl('');
+  suggestions: SuggestionOption[] = [];
+  loading = false;
 
-  constructor(
-    private commonService: CommonService,
-    private sanitizer: DomSanitizer,
-    private translate: TranslateService,
-    private router: Router
-  ) {
-    this.input = '';
-  }
+  private readonly destroy$ = new Subject<void>();
+  private readonly commonService = inject(CommonService);
+  private readonly router = inject(Router);
 
-  /**
-   * Hide suggestions div when lose focus
-   */
-  @HostListener('document:click', ['$event'])
-  handleClickOutside(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-
-    if (this.inputForm && this.suggestionsDiv) {
-      if (
-        !this.inputForm.nativeElement.contains(target) &&
-        !this.suggestionsDiv.nativeElement.contains(target)
-      ) {
-        this.showSuggestions = false;
-      }
-    }
-  }
-
-  ngOnInit() {
-    this.applications.forEach((application: any) => {
-      this.commonService
-        .fetchTerritoriesByApplication(application.id)
-        .subscribe({
-          next: (res: ResponseDto) => {
-            res.content.forEach((territory: any) => {
-              let existingTerritory = this.territories.find(
-                (t: any) => t.name === territory.name
-              );
-
-              if (!existingTerritory) {
-                existingTerritory = {
-                  id: territory.id,
-                  name: territory.name,
-                  application: []
-                };
-                this.territories.push(existingTerritory);
-              }
-
-              existingTerritory.application.push(application);
-              application.territories = res.content;
-            });
+  ngOnInit(): void {
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        filter((value) => typeof value === 'string'),
+        tap((query: string) => {
+          this.keywords.emit(query.trim());
+        }),
+        switchMap((query: string) => {
+          if (query.trim().length < 2) {
+            this.suggestions = [];
+            return [];
           }
-        });
-    });
-  }
+          this.loading = true;
+          return this.commonService.fetchDashboardSuggestions(query);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (result: DashboardSuggestion) => {
+          const applicationSuggestions =
+            result.applications?.map((app) => ({
+              type: 'application',
+              id: app.id,
+              name: app.title || app.name,
+              logo: app.logo,
+              isPrivate: app.appPrivate
+            }) satisfies SuggestionOption) ?? [];
+          const territorySuggestions =
+            result.territories?.map((terr) => ({
+              type: 'territory',
+              id: terr.id,
+              name: terr.name,
+              logo: terr.territorialAuthorityLogo
+            }) satisfies SuggestionOption) ?? [];
 
-  filterTerritories() {
-    return this.territories.filter((item: any) =>
-      item.name.toLowerCase().includes(this.input.toLowerCase())
-    );
-  }
-
-  filterApplications() {
-    const filteredApps = this.applications.filter((item: any) =>
-      (item.title || item.name).toLowerCase().includes(this.input.toLowerCase())
-    );
-    return filteredApps;
-  }
-
-  onFocus(): void {
-    this.showSuggestions = true;
-  }
-
-  loseFocus(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      this.showSuggestions = false;
-      this.inputSearch.nativeElement.blur();
-    }
-  }
-
-  navigateToTerritoryPresentation(territoryId: number): void {
-    if (this.router.url.startsWith('/public')) {
-      void this.router.navigateByUrl(
-        NavigationPath.Section.Public.Territory(territoryId)
-      );
-    } else {
-      void this.router.navigateByUrl(
-        NavigationPath.Section.User.Territory(territoryId)
-      );
-    }
-  }
-
-  navigateToApplicationPresentation(applicationId: number): void {
-    this.showSuggestions = false;
-    if (this.router.url.startsWith('/public')) {
-      void this.router.navigateByUrl(
-        NavigationPath.Section.Public.Application(applicationId)
-      );
-    } else {
-      void this.router.navigateByUrl(
-        NavigationPath.Section.User.Application(applicationId)
-      );
-    }
-  }
-
-  onKeywordsChange() {
-    this.showDetailedSuggestions = this.input.length >= 3;
-  }
-
-  totalTerritories(): number {
-    let counterOfTerritories = 0;
-
-    this.applications.forEach((application: any) => {
-      application.territories.forEach((territory: any) => {
-        if (territory.name.toLowerCase().includes(this.input.toLowerCase())) {
-          counterOfTerritories += 1;
+          this.suggestions = [...territorySuggestions, ...applicationSuggestions];
+          this.loading = false;
+        },
+        error: () => {
+          this.suggestions = [];
+          this.loading = false;
         }
       });
-    });
-
-    return counterOfTerritories;
   }
 
-  /**
-   * Add highlight where input is in application title
-   * @param value application name
-   * @returns
-   */
-  researchHighlight(value: string) {
-    if (this.input) {
-      const regex = new RegExp(`(${this.input})`, 'gi');
-      value = value.replace(
-        regex,
-        `<span style='background-color:antiquewhite;'>$1</span>`
-      );
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onOptionSelected(option: SuggestionOption): void {
+    const isPublic = this.router.url.startsWith('/public');
+
+    if (option.type === 'application') {
+      const url = isPublic
+        ? NavigationPath.Section.Public.Application(option.id)
+        : NavigationPath.Section.User.Application(option.id);
+      void this.router.navigateByUrl(url);
+    } else if (option.type === 'territory') {
+      const url = isPublic
+        ? NavigationPath.Section.Public.Territory(option.id)
+        : NavigationPath.Section.User.Territory(option.id);
+      void this.router.navigateByUrl(url);
     }
-    return this.sanitizer.bypassSecurityTrustHtml(value);
+
+    this.searchControl.setValue('', { emitEvent: false });
+    this.suggestions = [];
+    this.closeSuggestionsPanel();
   }
 
-  clearSearchText() {
-    this.input = '';
+  displayFn(option: SuggestionOption | null): string {
+    return option?.name || '';
   }
 
-  handleSubmit() {
-    this.keywords.emit(this.input);
-    this.showDetailedSuggestions = false;
+  clearSearch(): void {
+    this.searchControl.setValue('');
+    this.suggestions = [];
+    this.closeSuggestionsPanel();
+    this.keywords.emit('');
+  }
+
+  handleSubmit(): void {
+    const value = this.searchControl.value || '';
+    this.keywords.emit(value);
+    this.closeSuggestionsPanel();
+  }
+
+  getOptionLabel(option: SuggestionOption): string {
+    return option.name;
+  }
+
+  getOptionIcon(option: SuggestionOption): string {
+    if (option.type === 'application') {
+      return 'apps';
+    }
+    return 'location_on';
+  }
+
+  private closeSuggestionsPanel(): void {
+    queueMicrotask(() => this.autocompleteTrigger?.closePanel());
   }
 }

@@ -4,9 +4,38 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- Dashboard: server-side infinite scroll; page size from `dashboard.initialBatchSize` / `batchIncrement`.
+- Authenticated dashboard: public/private tabs.
+- Shared page shell for dashboard, territory, and application pages.
+
+### Changed
+
+- Dashboard search filters loaded pages client-side.
+- Unified list page layout (dashboard, territory, application).
+- Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
+- Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
+- `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
+
+### Removed
+
+- Legacy dashboard pagination/show-more components.
+- Unused `ApiModule` and `src/test.ts`.
+
 ### Fixed
 
 - Left-panel tool controls (including custom controls such as Hello World) expand and collapse when legend is disabled for a role/territory ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
+- Dashboard capped at three applications ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
+- ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
+- Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
+- Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
+- Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.
+- Fixed missing `Authorization` header on the first tile request after login; `proxy_token` is retried once after 500 ms.
+- Fixed stale proxy tokens causing unrecovered 401/403 errors; `ServiceWorker.js` now posts `AUTH_ERROR` to clients and `AuthenticationService` handles it with a signal-based in-flight guard against concurrent refresh calls.
+- Fixed tile requests racing ahead of proxy URL delivery; `MapServiceWorkerService.configureMiddleware()` now awaits `navigator.serviceWorker.ready` and `AbstractMapComponent` awaits `configureMiddleware()` before map creation.
+- Fixed duplicate `controllerchange` reload listeners stacking on repeated `configureMiddleware()` calls; guarded with `{ once: true }` and a per-instance flag.
+- Fixed unnecessary service worker overhead on non-proxy requests; `event.respondWith()` is now bypassed when `middlewareUrl` is already known.
 
 ## [1.2.6] - 2026-05-08
 

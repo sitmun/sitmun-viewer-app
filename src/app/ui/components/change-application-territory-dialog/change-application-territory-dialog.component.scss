@@ -45,6 +45,10 @@ $spacing-xl: 32px;
     flex: 1;
     min-height: 0;
     overflow: hidden;
+
+    &.selection-grid--application-only {
+      grid-template-columns: 1fr;
+    }
   }
 
   .selection-section {
