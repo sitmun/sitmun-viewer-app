@@ -199,12 +199,12 @@ export class LocatorControlLogic implements ControlLogicBase {
         if (val != null) templateVars[token] = val;
       }
 
-      // When filterByMunicipalityCode is active, send each configured request parameter
-      // to the server (server-side filter) and apply client-side check as a safety net.
+      // When enableServiceParams is active, send each configured request parameter
+      // to the server (server-side filter).
       // Each filter's territoryField is resolved: known tokens (territory_code, territory_name)
       // are substituted with the current territory data; anything else is used as a literal value.
       const extraQueryParams: Record<string, string> = {};
-      if (task.filterByMunicipalityCode) {
+      if (task.enableServiceParams) {
         for (const f of task.municipalityCodeFilters) {
           if (f.requestParam) {
             let val: string | null = null;
