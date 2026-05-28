@@ -187,10 +187,12 @@ export async function executeLocatorSearch(
   const isProxyTask = task.scope === 'API' || task.scope === 'SQL';
 
   if (isProxyTask) {
-    // Proxy mode: the SITMUN proxy expands template variables in the command URL server-side.
-    // The viewer appends search text, template vars and any extra params as query parameters.
-    const params = new URLSearchParams({ text: searchText, ...templateVars, ...extraQueryParams });
+    // Proxy mode: the SITMUN proxy resolves territory context from the session server-side.
+    // The viewer only sends the search text and explicitly configured filter params.
+    const params = new URLSearchParams({ text: searchText, ...extraQueryParams });
     url = `${task.url}?${params.toString()}`;
+    // Note: templateVars are intentionally omitted — proxy tasks have no {placeholders}
+    // in their proxy URL; any {variable} substitution happens inside the proxy.
   } else {
     // Direct mode (scope URL / RESOURCE): substitute all placeholders client-side.
     url = task.url.replace(/\{text\}/gi, encodeURIComponent(searchText));

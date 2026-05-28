@@ -179,10 +179,11 @@ export class LocatorControlLogic implements ControlLogicBase {
 
     try {
       // Build template variables for URL substitution.
-      // All territory field tokens are available as {token} placeholders in the URL template.
+      // Only tokens actually referenced as {token} in the task URL are included,
+      // so proxy tasks (whose URL is a proxy path with no {placeholders}) get an
+      // empty templateVars and no unnecessary params are forwarded.
       const templateVars: Record<string, string> = {};
-      const needsFocus = task.scope === 'API' || task.url.includes('{focus_');
-      if (needsFocus) {
+      if (task.url.includes('{focus_lon}') || task.url.includes('{focus_lat}')) {
         const center = this.getTerritoryCenter();
         if (center) {
           templateVars['focus_lon'] = String(center[0]);
@@ -195,6 +196,7 @@ export class LocatorControlLogic implements ControlLogicBase {
         'territory_type_name', 'territory_center_x', 'territory_center_y'
       ];
       for (const token of allTerritoryTokens) {
+        if (!task.url.includes(`{${token}}`)) continue;
         const val = this.resolveTerritoryField(token);
         if (val != null) templateVars[token] = val;
       }
