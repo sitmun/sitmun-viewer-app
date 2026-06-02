@@ -244,8 +244,19 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
 
+    // Fully cleanup all control handlers (removes DOM artifacts, restores patches)
+    this.controlRegistry.unregisterAll();
+
     // Clear map resources
     this.clearMap();
+  }
+
+  /**
+   * Remove MIA popup overlay from DOM without destroying the handler.
+   * Used during map rebuild (clearMap) to avoid stale overlays.
+   */
+  private removeMiaOverlayFromDom(): void {
+    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
   }
 
   removeSitnaDivs() {
@@ -433,6 +444,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       // If no old div exists, just append
       this.renderer.appendChild(mapFather, div);
     }
+
+    // Cleanup control handlers (removes MIA overlay and other DOM artifacts)
+    this.removeMiaOverlayFromDom();
 
     // Body
     this.removeSitnaDivs();

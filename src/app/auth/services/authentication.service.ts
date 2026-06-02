@@ -200,6 +200,8 @@ export class AuthenticationService<T> {
 
   clearSessionAndRedirectToLogin(): void {
     this.clearSession();
+    // Remove any floating MIA popups that live on document.body
+    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
     void this.router.navigateByUrl(this.config.routes.loginPath);
   }
 

@@ -27,5 +27,10 @@
   "search.list.placename": "Placename",
   "helloWorld.title": "Hello World",
   "helloWorld.message": "This control is registered from Angular and rendered via a Handlebars template.",
-  "helloWorld.buttonLabel": "Say hello"
+  "helloWorld.buttonLabel": "Say hello",
+  "locator.title": "Search locator",
+  "locator.selectLocator": "Select a locator...",
+  "locator.searchPlaceholder": "Enter search text...",
+  "locator.noResults": "No results found.",
+  "locator.loading": "Searching..."
 }

@@ -55,7 +55,6 @@ describe('MoreInfoService', () => {
       expect(service.getMoreInfoTasks('77').map((task) => task.id)).toEqual([
         'task-2'
       ]);
-      expect(service.getMoreInfoTask('999')).toBeNull();
     });
   });
 

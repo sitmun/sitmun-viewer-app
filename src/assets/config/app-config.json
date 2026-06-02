@@ -47,7 +47,8 @@
   ],
   "enabledByDefault": [
     "sitna.loadingIndicator",
-    "sitna.helloWorld"
+    "sitna.helloWorld",
+    "sitmun.locator"
   ],
   "disabledControls": [
     "sitna.WFSEdit",
@@ -174,6 +175,9 @@
     },
     "sitna.helloWorld": {
       "div": "tc-slot-hello-world"
+    },
+    "sitmun.locator": {
+      "div": "tc-slot-locator"
     }
   }
 }

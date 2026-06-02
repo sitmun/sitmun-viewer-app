@@ -28,6 +28,8 @@ export class AuthenticationGuard {
     const isAuthenticated = this.authenticationService.isLoggedIn();
 
     if (!isPublicUrl && !isAuthenticated) {
+      // Remove any floating MIA popups before redirecting to login
+      document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
       // Sent to login (+ url to redirect after successfully)
       this.router
         .navigate([AUTH_CONFIG.routes.loginPath], {

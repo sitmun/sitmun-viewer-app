@@ -20,16 +20,6 @@ const meld = require('meld') as Meld;
  * - Elevation display configuration
  * - More Info functionality: Adds "Més informació" field to features with moreInfo tasks
  * Configuration: Optional parameters (active, persistentHighlights, displayElevation, etc.)
- *
- * Elevation Display:
- * - Set `displayElevation: true` in controlDefaults or task parameters to enable elevation in popup
- * - Elevation values are fetched from elevation services configured at map level or control level
- * - If `displayElevation` is boolean true, uses map's elevation tool or creates default elevation tool
- * - If `displayElevation` is an object, uses that configuration for elevation services
- * More Info Functionality:
- * - Automatically adds "Més informació" field to features when cartography has moreInfo task
- * - Field appears as clickable link with info icon
- * - Executes configured query (URL redirect or SQL query) when clicked
  */
 @Injectable({
   providedIn: 'root'
@@ -60,13 +50,8 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
   /**
    * Load patches for featureInfo control.
-   * Patches:
-   * 1. Map.addControl - Apply displayElevation config to featureInfo and featureTools
-   * 2. FeatureInfo.register - Apply displayElevation from map config
-   * 3. FeatureInfo.responseCallback - Inject "Més informació" field into features
    */
   override async loadPatches(context: AppCfg): Promise<void> {
-    // Initialize MoreInfo service and store config
     this.moreInfoService.initialize(context);
     this.appConfig = context;
     await this.withTCAsync(async (TC) => {
@@ -114,6 +99,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           (jp: MeldJoinPoint) => {
             const control = jp.target as any;
             const [map] = jp.args as [any];
+
             if (
               control.options?.displayElevation === undefined &&
               map?.options?.controls?.featureInfo?.displayElevation !==
@@ -155,10 +141,10 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
             return result;
           }
         );
-        mapProto.__sitmunFiRegister = true;
+        fiProto.__sitmunFiRegister = true;
         this.patchManager.add(() => {
           meld.remove(registerAdvice);
-          delete mapProto.__sitmunFiRegister;
+          delete fiProto.__sitmunFiRegister;
           while (this.mapEventCleanups.length > 0) {
             const cleanup = this.mapEventCleanups.pop();
             cleanup?.();
