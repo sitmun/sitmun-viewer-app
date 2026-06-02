@@ -8,13 +8,13 @@
  * @see locator-control.handler.ts (same folder) for wiring
  */
 
+import { getLocatorTasks, LocatorTask, executeLocatorSearch, getByPath, getTerritoryExtent, getTerritoryCode, getTerritoryName, getTerritoryDescription, getTerritoryAuthorityName, getTerritoryAuthorityAddress, getTerritoryTypeName, getTerritoryCenterX, getTerritoryCenterY } from '../../services/locator.service';
 import {
   BaseCustomControlInstance,
   ControlLogicBase,
   createPrototypeWrappers
 } from '../utils/sitna-patch-helpers';
 
-import { getLocatorTasks, LocatorTask, executeLocatorSearch, getByPath, getTerritoryExtent, getTerritoryCode, getTerritoryName, getTerritoryDescription, getTerritoryAuthorityName, getTerritoryAuthorityAddress, getTerritoryTypeName, getTerritoryCenterX, getTerritoryCenterY } from '../../services/locator.service';
 
 // ============================================================================
 // Configuration Constants

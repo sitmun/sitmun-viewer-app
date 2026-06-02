@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import DOMPurify from 'dompurify';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import DOMPurify from 'dompurify';
+
 
 import { MoreInfoAdvancedService, MiaRenderedTask, MiaTask } from '../../services/more-info-advanced.service';
 import { SitnaApiService } from '../../services/sitna-api.service';

@@ -281,7 +281,9 @@ export class LocatorService {
           try {
             const raw = p.municipalityCodeFilters;
             if (typeof raw === 'string' && raw) return JSON.parse(raw) as MunicipalityCodeFilter[];
-          } catch {}
+          } catch {
+            // Ignore invalid municipalityCodeFilters JSON and fall back to defaults.
+          }
           return DEFAULT_TASK_CONFIG.municipalityCodeFilters;
         })()
       });
