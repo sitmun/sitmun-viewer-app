@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Inject, Injectable, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -17,6 +17,7 @@ import {
   AuthenticationRequest
 } from '@auth/authentication.options';
 import { NavigationPath, QueryParam } from '@config/app.config';
+import { TranslateService } from '@ngx-translate/core';
 import {
   Observable,
   Subscription,
@@ -32,6 +33,9 @@ import {
 
 import { IndexedDbService } from './indexed-db.service';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from '../../notifications/services/NotificationService';
+
+const PROXY_ERROR_THRESHOLD = 3;
 
 @Injectable({
   providedIn: 'root'
@@ -43,11 +47,15 @@ export class AuthenticationService<T> {
   private proxyRefreshSubscription: Subscription | null = null;
   private isRefreshingProxyToken = signal(false);
   private indexedDbInitialized = false;
+  private proxyForbiddenNotified = false;
+  private consecutiveProxyErrors = 0;
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly indexedDb: IndexedDbService,
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService,
     @Inject(AUTH_CONFIG_DI) private readonly config: AuthConfig<T>
   ) {
     this.USERNAME_KEY = this.config.localStoragePrefix + '_username';
@@ -156,6 +164,9 @@ export class AuthenticationService<T> {
       this.proxyRefreshSubscription.unsubscribe();
     }
 
+    this.proxyForbiddenNotified = false;
+    this.consecutiveProxyErrors = 0;
+
     this.proxyRefreshSubscription = timer(
       0,
       environment.proxyTokenRefreshIntervalMs
@@ -173,9 +184,34 @@ export class AuthenticationService<T> {
     return this.http
       .post<{ proxy_token?: string }>(environment.apiUrl + URL_AUTH_PROXY, null)
       .pipe(
-        switchMap((response) => from(this.persistProxyToken(response.proxy_token))),
-        catchError((err) => {
-          console.warn('[Auth] Error refreshing proxy token:', err);
+        switchMap((response) => {
+          this.consecutiveProxyErrors = 0;
+          return from(this.persistProxyToken(response.proxy_token));
+        }),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            this.stopProxyTokenRefresh();
+            this.clearSession();
+            void this.router.navigate([this.config.routes.loginPath], {
+              queryParams: { 'session-expired': 'true' }
+            });
+          } else if (err.status === 403) {
+            console.error('[Auth] Proxy token refresh forbidden — check server authorization config');
+            if (!this.proxyForbiddenNotified) {
+              this.proxyForbiddenNotified = true;
+              this.translate.get('auth.proxyForbidden').subscribe((msg) => {
+                this.notificationService.warning(msg, 8000);
+              });
+            }
+          } else {
+            console.warn('[Auth] Error refreshing proxy token:', err);
+            this.consecutiveProxyErrors++;
+            if (this.consecutiveProxyErrors === PROXY_ERROR_THRESHOLD) {
+              this.translate.get('auth.proxyUnavailable').subscribe((msg) => {
+                this.notificationService.warning(msg, 8000);
+              });
+            }
+          }
           return of(undefined);
         }),
         finalize(() => this.isRefreshingProxyToken.set(false))

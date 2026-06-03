@@ -76,4 +76,48 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('shows a session-expired notification when session-expired=true is in query params', async () => {
+    const notificationService = TestBed.inject(NotificationService) as jest.Mocked<NotificationService>;
+
+    await TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot(), NgOptimizedImage, MatIconModule],
+      declarations: [
+        LoginComponent,
+        PrimaryButtonComponent,
+        SecondaryButtonComponent,
+        FormFieldInputComponent
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Router, useValue: { navigate: jest.fn(), navigateByUrl: jest.fn() } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: { 'session-expired': 'true' } } }
+        },
+        {
+          provide: AuthenticationService,
+          useValue: {
+            login: jest.fn(),
+            isLoggedIn: jest.fn().mockReturnValue(false),
+            getAuthConfig: jest.fn(),
+            getAuthMethods: jest.fn().mockReturnValue(of([])),
+            getLoggedDetails: jest.fn()
+          }
+        },
+        {
+          provide: NotificationService,
+          useValue: notificationService
+        }
+      ]
+    }).compileComponents();
+
+    const f = TestBed.createComponent(LoginComponent);
+    f.detectChanges();
+    await f.whenStable();
+
+    expect(notificationService.warning).toHaveBeenCalled();
+  });
 });

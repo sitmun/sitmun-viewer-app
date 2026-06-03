@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
-import { URL_AUTH_LOGOUT } from '@api/api-config';
+import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
 import { throwError } from 'rxjs';
 
 import { AuthenticationInterceptor } from './authentication.interceptor';
@@ -86,6 +86,27 @@ describe('AuthenticationInterceptor', () => {
         )
     };
     const req = new HttpRequest('GET', '/api/x');
+    interceptor.intercept(req, next).subscribe({
+      error: () => {
+        expect(authService.logout).not.toHaveBeenCalled();
+        expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  });
+
+  it('does not invoke session helpers on 401 from proxy refresh URL', (done) => {
+    const next: HttpHandler = {
+      handle: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 401,
+              url: `https://example.test${URL_AUTH_PROXY}`
+            })
+        )
+    };
+    const req = new HttpRequest('GET', URL_AUTH_PROXY);
     interceptor.intercept(req, next).subscribe({
       error: () => {
         expect(authService.logout).not.toHaveBeenCalled();

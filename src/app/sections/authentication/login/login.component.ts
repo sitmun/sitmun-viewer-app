@@ -87,6 +87,12 @@ export class LoginComponent implements OnInit {
         (environment as any).hideBackgroundImage ?? true
       );
     }
+
+    if (this.route.snapshot.queryParams['session-expired'] === 'true') {
+      this.translate.get('loginPage.sessionExpired').subscribe((msg) => {
+        this.notificationService.warning(msg);
+      });
+    }
   }
 
   login() {

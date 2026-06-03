@@ -33,6 +33,9 @@ All notable changes to this project will be documented in this file. The format 
 - ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
 - Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
 - Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
+- **Auth**: proxy token refresh (`POST /api/authenticate/proxy`) now distinguishes HTTP 401 from 403 and network errors. A 401 stops the refresh timer, clears the session, and redirects to the login page with a visible "session expired" notification; a 403 or transient error logs a warning without ending the session (issue #256).
+- **Auth**: `AuthenticationInterceptor` no longer intercepts 401 responses from the proxy-refresh URL; the `AuthenticationService` handles those responses directly.
+- **UX**: the login page shows a warning notification when the `session-expired=true` query parameter is present, replacing the previous silent redirect.
 - Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.
 - Fixed missing `Authorization` header on the first tile request after login; `proxy_token` is retried once after 500 ms.
 - Fixed stale proxy tokens causing unrecovered 401/403 errors; `ServiceWorker.js` now posts `AUTH_ERROR` to clients and `AuthenticationService` handles it with a signal-based in-flight guard against concurrent refresh calls.
