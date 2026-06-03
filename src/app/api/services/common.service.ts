@@ -122,7 +122,7 @@ export class CommonService {
 
   private mapConfigCache = new Map<string, MapConfigCacheEntry>();
   private readonly territoriesByApplicationId = new Map<
-    number,
+    string,
     Observable<ResponseDto>
   >();
   private readonly CONFIG_CACHE_TTL_MS = 60_000;
@@ -161,14 +161,16 @@ export class CommonService {
         environment.apiUrl + this.withLang(path)
       );
     }
-    const cached = this.territoriesByApplicationId.get(id);
+    const lang = this.languageService.getCurrentLanguage()?.trim() || '';
+    const cacheKey = `${id}:${lang}`;
+    const cached = this.territoriesByApplicationId.get(cacheKey);
     if (cached) {
       return cached;
     }
     const request = this.http
       .get<ResponseDto>(environment.apiUrl + this.withLang(path))
       .pipe(shareReplay({ bufferSize: 1, refCount: true }));
-    this.territoriesByApplicationId.set(id, request);
+    this.territoriesByApplicationId.set(cacheKey, request);
     return request;
   }
 

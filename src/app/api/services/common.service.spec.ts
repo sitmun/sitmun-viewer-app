@@ -139,6 +139,57 @@ describe('CommonService', () => {
   });
 
 
+  describe('fetchTerritoriesByApplication', () => {
+    it('makes a new request when language changes between calls', () => {
+      languageService.getCurrentLanguage.mockReturnValue('es');
+      const mockResponse = { content: [], totalElements: 0 } as any;
+
+      // First request with lang=es
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=es')
+        )
+        .flush(mockResponse);
+
+      // Switch language
+      languageService.getCurrentLanguage.mockReturnValue('fr');
+
+      // Second request must use lang=fr
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=fr')
+        )
+        .flush(mockResponse);
+    });
+
+    it('reuses cache when same app and same language', () => {
+      languageService.getCurrentLanguage.mockReturnValue('es');
+      const mockResponse = { content: [], totalElements: 0 } as any;
+
+      // First request
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=es')
+        )
+        .flush(mockResponse);
+
+      // Second request: same id, same language → cache hit, no new HTTP call
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock.expectNone(
+        (r) => r.url.includes('/api/config/client/application/1/territories')
+      );
+    });
+  });
+
   describe('fetchMapConfiguration cache', () => {
     it('should use cache on second call within TTL', (done) => {
       const url = environment.apiUrl + URL_API_MAP_CONFIG(5, 10);
