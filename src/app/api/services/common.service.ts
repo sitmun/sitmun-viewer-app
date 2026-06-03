@@ -35,7 +35,7 @@ export interface DashboardItem {
   appPrivate: boolean;
   updateDate: Date;
   createdDate: Date;
-  creator: string;
+  pointOfContact?: string;
   // Dashboard enrichment fields
   territoryCount?: number;
   singleTerritoryId?: number;

@@ -89,7 +89,7 @@ describe('DashboardItemComponent', () => {
       isUnavailable: false,
       updateDate: new Date(),
       createdDate: new Date(),
-      creator: 'test',
+      pointOfContact: 'gis-office@example.com',
       headerParams: {}
     };
     fixture.detectChanges();

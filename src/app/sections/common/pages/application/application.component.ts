@@ -1,8 +1,6 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { UserDto } from '@api/model/user';
-import { AccountService } from '@api/services/account.service';
 import {
   CommonService,
   DashboardItem,
@@ -39,7 +37,6 @@ export class ApplicationComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private commonService: CommonService,
     private router: Router,
-    private accountService: AccountService,
     private translateService: TranslateService
   ) {
     const appId = this.route.snapshot.paramMap.get('applicationId');
@@ -111,7 +108,6 @@ export class ApplicationComponent implements OnInit, OnDestroy {
             this.notFound = true;
             return;
           }
-          this.resolveCreatorUsername();
           if (!this.hasTerritory()) {
             this.territories = [];
             this.groupedTerritories = [];
@@ -124,31 +120,6 @@ export class ApplicationComponent implements OnInit, OnDestroy {
           this.loadError = true;
         }
       });
-  }
-
-  private resolveCreatorUsername(): void {
-    if (!this.application || this.application.creator == null) {
-      return;
-    }
-    if (this.router.url.startsWith('/public')) {
-      this.accountService
-        .getUserByIDPublic(this.application.creator)
-        .subscribe({
-          next: (res: UserDto) => {
-            if (this.application) {
-              this.application.creator = res.username;
-            }
-          }
-        });
-    } else {
-      this.accountService.getUserByID(this.application.creator).subscribe({
-        next: (res: UserDto) => {
-          if (this.application) {
-            this.application.creator = res.username;
-          }
-        }
-      });
-    }
   }
 
   private loadTerritories(): void {

@@ -5,7 +5,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { AccountService } from '@api/services/account.service';
 import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -67,17 +66,6 @@ describe('ApplicationComponent', () => {
           }
         },
         {
-          provide: AccountService,
-          useValue: {
-            getUserByID: jest
-              .fn()
-              .mockReturnValue(of({ username: 'test' } as any)),
-            getUserByIDPublic: jest
-              .fn()
-              .mockReturnValue(of({ username: 'test' } as any))
-          }
-        },
-        {
           provide: AppConfigService,
           useValue: {
             isExternalLinkApplication: jest.fn(
@@ -97,6 +85,45 @@ describe('ApplicationComponent', () => {
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
+  });
+
+  it('renders pointOfContact from the application DTO without any account lookup', () => {
+    commonService.fetchDashboardItems.mockReturnValue(
+      of({
+        content: [
+          {
+            id: 1,
+            type: 'I',
+            name: 'Test App',
+            pointOfContact: 'gis-office@example.com'
+          }
+        ],
+        totalElements: 1
+      } as any)
+    );
+
+    fixture = TestBed.createComponent(ApplicationComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.application?.pointOfContact).toBe(
+      'gis-office@example.com'
+    );
+  });
+
+  it('pointOfContact is undefined when not provided by the API', () => {
+    commonService.fetchDashboardItems.mockReturnValue(
+      of({
+        content: [{ id: 1, type: 'I', name: 'No contact app' }],
+        totalElements: 1
+      } as any)
+    );
+
+    fixture = TestBed.createComponent(ApplicationComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    expect(component.application?.pointOfContact).toBeUndefined();
   });
 
   it('loads territories for internal applications', () => {

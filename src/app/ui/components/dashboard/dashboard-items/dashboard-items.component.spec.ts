@@ -47,7 +47,7 @@ describe('DashboardItemsComponent', () => {
     isUnavailable: false,
     updateDate: new Date(),
     createdDate: new Date(),
-    creator: 'test',
+    pointOfContact: 'gis-office@example.com',
     headerParams: {}
   });
 
