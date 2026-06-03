@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
-
+import { AppConfigService } from './app-config.service';
 import { ConfigLookupService } from './config-lookup.service';
 import { LanguageService } from './language.service';
 import { LayerInfoService } from './layer-info.service';
@@ -35,6 +35,13 @@ describe('VirtualWmsCapabilitiesService', () => {
         {
           provide: LanguageService,
           useValue: { getCurrentLanguage: () => 'en' }
+        },
+        {
+          provide: AppConfigService,
+          useValue: {
+            getDefaultLanguage: () => 'en',
+            getDefaultLanguages: () => []
+          }
         }
       ]
     });

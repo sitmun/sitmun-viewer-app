@@ -2,10 +2,14 @@ import { TestBed } from '@angular/core/testing';
 
 import { TranslateService } from '@ngx-translate/core';
 
+import { AppConfigService } from './app-config.service';
 import { LayerInfoService } from './layer-info.service';
 
 describe('LayerInfoService', () => {
   let service: LayerInfoService;
+  let appConfigService: jest.Mocked<
+    Pick<AppConfigService, 'getDefaultLanguage' | 'getDefaultLanguages'>
+  >;
 
   const translateInstant = (key: string): string =>
     (
@@ -20,10 +24,21 @@ describe('LayerInfoService', () => {
     )[key] ?? key;
 
   beforeEach(() => {
+    appConfigService = {
+      getDefaultLanguage: jest.fn().mockReturnValue('es'),
+      getDefaultLanguages: jest.fn().mockReturnValue([
+        { name: 'Español', shortname: 'es' },
+        { name: 'English', shortname: 'en' },
+        { name: 'Français', shortname: 'fr' },
+        { name: 'Català', shortname: 'ca' },
+        { name: 'Aranés', shortname: 'oc-aranes' }
+      ])
+    };
     TestBed.configureTestingModule({
       providers: [
         LayerInfoService,
-        { provide: TranslateService, useValue: { instant: translateInstant } }
+        { provide: TranslateService, useValue: { instant: translateInstant } },
+        { provide: AppConfigService, useValue: appConfigService }
       ]
     });
     service = TestBed.inject(LayerInfoService);
@@ -71,6 +86,31 @@ describe('LayerInfoService', () => {
       expect(service.extractLanguageAwareText(textField, 'es-ES')).toBe(
         'First'
       );
+    });
+
+    it('falls back to configured defaultLanguage when preferred not found', () => {
+      // 'de' not in data; defaultLanguage is 'es'
+      const textField = { es: 'Español', en: 'English' };
+      expect(service.extractLanguageAwareText(textField, 'de')).toBe('Español');
+    });
+
+    it('matches oc-aranes as full shortname from config, not collapsed to oc', () => {
+      const textField = { 'oc-aranes': 'Aranés', oc: 'Occitan generic' };
+      expect(service.extractLanguageAwareText(textField, 'oc-aranes')).toBe(
+        'Aranés'
+      );
+    });
+
+    it('falls back to configured oc-aranes when oc-aranes is the default language', () => {
+      appConfigService.getDefaultLanguage.mockReturnValue('oc-aranes');
+      const textField = { 'oc-aranes': 'Aranés', en: 'English' };
+      expect(service.extractLanguageAwareText(textField, 'de')).toBe('Aranés');
+    });
+
+    it('tries oc-aranes from configured list before falling back to first value', () => {
+      // preferred 'de' not found; fallback chain: 'es'(miss), 'en'(miss), 'fr'(miss), 'ca'(miss), 'oc-aranes'(hit)
+      const textField = { 'oc-aranes': 'Aranés', pt: 'Português' };
+      expect(service.extractLanguageAwareText(textField, 'de')).toBe('Aranés');
     });
 
     it('falls back to common languages when preferred not found', () => {
