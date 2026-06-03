@@ -184,8 +184,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         continue;
       }
 
+      // Sort children by node.order so catalog entries follow admin-defined order.
+      const sortedChildren = [...rootNode.children].sort((a, b) => {
+        const orderA = this.configLookup.findNode(a)?.order ?? 999;
+        const orderB = this.configLookup.findNode(b)?.order ?? 999;
+        return orderA - orderB;
+      });
+
       // Create a virtual service for each child of the root node
-      for (const childId of rootNode.children) {
+      for (const childId of sortedChildren) {
         const childNode = this.configLookup.findNode(childId);
         if (!childNode) {
           continue;

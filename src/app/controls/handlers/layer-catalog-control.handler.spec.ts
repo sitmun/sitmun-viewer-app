@@ -628,6 +628,82 @@ describe('LayerCatalogControlHandler', () => {
       expect(config?.enableSearch).toBe(true);
       expect(config?.collapsed).toBe(false);
     });
+
+    it('should order catalog layers by node order even when children array is scrambled', () => {
+      // Array order: ['node3', 'node1', 'node2', 'node4']  (scrambled)
+      // Node orders:   node1→1, node2→2, node3→3, node4→4
+      // Expected output: node1, node2, node3, node4  (sorted by order, not array position)
+      const context: AppCfg = {
+        trees: [
+          {
+            id: 'tree1',
+            rootNode: 'root',
+            nodes: {
+              root: {
+                title: 'Root',
+                resource: '',
+                isRadio: false,
+                children: ['node3', 'node1', 'node2', 'node4'],
+                order: 0
+              } as AppNodeInfo,
+              node1: {
+                title: 'Node 1',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 1
+              } as AppNodeInfo,
+              node2: {
+                title: 'Node 2',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 2
+              } as AppNodeInfo,
+              node3: {
+                title: 'Node 3',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 3
+              } as AppNodeInfo,
+              node4: {
+                title: 'Node 4',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 4
+              } as AppNodeInfo
+            },
+            title: 'Tree 1',
+            image: null
+          }
+        ]
+      } as any;
+      const task: AppTasks = {
+        'ui-control': 'sitna.layerCatalog',
+        parameters: {}
+      } as any;
+
+      const mockTree = context.trees[0] as AppTree;
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
+        return (context.trees[0].nodes as Record<string, AppNodeInfo>)[nodeId];
+      });
+      mockVirtualCapabilities.generateVirtualUrl.mockImplementation(
+        (nodeId: string) => `virtual://sitmun/${nodeId}`
+      );
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toBeDefined();
+      expect(config?.layers).toHaveLength(4);
+      expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/node1');
+      expect(config?.layers?.[1]?.url).toBe('virtual://sitmun/node2');
+      expect(config?.layers?.[2]?.url).toBe('virtual://sitmun/node3');
+      expect(config?.layers?.[3]?.url).toBe('virtual://sitmun/node4');
+    });
   });
 
   describe('patchLayerCatalogAddLayerToMap', () => {
