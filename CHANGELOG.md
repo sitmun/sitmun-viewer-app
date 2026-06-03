@@ -29,8 +29,8 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - **Point of contact**: the application details page now renders `pointOfContact` from the API response directly. The previous `resolveCreatorUsername()` account lookup has been removed; it was resolving against `/api/account` without an id, which returned the current session user instead of the configured contact. Fixes [#159](https://github.com/sitmun/sitmun-viewer-app/issues/159).
-
 - Left-panel tool controls (including custom controls such as Hello World) expand and collapse when legend is disabled for a role/territory ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
+- GetFeatureInfo / identify keeps working for compatible WMS layers when another active layer's service does not support `DescribeLayer` or returns a failing GFI response (fixes [#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)). `FeatureInfoControlHandler.loadPatches` wraps `Raster.prototype.describeLayer` and `Proxification.prototype.fetch` (for GetFeatureInfo URLs only) to convert rejections into benign empty responses, so one incompatible service no longer breaks identify for all other layers.
 - Dashboard capped at three applications ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
 - ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
 - Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
