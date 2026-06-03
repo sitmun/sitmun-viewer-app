@@ -18,22 +18,15 @@
             : ('application.valueMissing' | translate)
         }}
       </p>
-      <p [ngClass]="{ 'value-missing': !application.createdDate }">
+      <p *ngIf="application.createdDate; else emptyRow">
         <span>{{ 'application.creationDate' | translate }} :</span>
-        {{
-          application.createdDate
-            ? (application.createdDate | date : 'dd/MM/yyyy')
-            : ('application.valueMissing' | translate)
-        }}
+        {{ application.createdDate | date : 'dd/MM/yyyy' }}
       </p>
-      <p [ngClass]="{ 'value-missing': !application.creator }">
+      <p *ngIf="application.pointOfContact; else emptyRow">
         <span>{{ 'application.contact' | translate }} :</span>
-        {{
-          application.creator
-            ? application.creator
-            : ('application.valueMissing' | translate)
-        }}
+        {{ application.pointOfContact }}
       </p>
+      <ng-template #emptyRow><p aria-hidden="true">&nbsp;</p></ng-template>
     </div>
   </div>
   <div id="application-description">
