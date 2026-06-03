@@ -35,8 +35,9 @@ export class LanguageService {
    * Should be called during app initialization (e.g., in AppComponent)
    */
   initializeTranslateService(): void {
+    const defaultLang = this.appConfigService.getDefaultLanguage();
     const lang = this.getCurrentLanguage();
-    this.translateService.setDefaultLang(lang);
+    this.translateService.setDefaultLang(defaultLang);
     this.translateService.use(lang);
   }
 
