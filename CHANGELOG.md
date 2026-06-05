@@ -6,60 +6,46 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- **Auth**: `publicAuthClearGuard` (`CanActivateFn`) added to all `/public/**` routes. Before any public route activates, the guard calls `AuthenticationService.clearAuthentication()`, which expires the backend HttpOnly `access_token` cookie via `POST /api/authenticate/logout` and clears local viewer state (sessionStorage, proxy token in IndexedDB). If the backend rejects the logout, the guard returns `false` and shows an error notification so the stale cookie is never silently forwarded to public config requests.
-- **Auth**: `AuthenticationService.clearAuthentication(): Observable<void>` — shared primitive for backend cookie expiry plus local viewer cleanup. Always attempts local cleanup even when the backend request fails, then re-emits the error so callers can decide whether to proceed.
-- **Auth**: `SUPPRESS_AUTH_REDIRECT_ON_401` (`HttpContextToken<boolean>`) in `auth-http-context.ts`. When set on a request, `AuthenticationInterceptor` skips its 401-redirect side effects so that `clearAuthentication()` failures propagate to the caller (public guard or logout handler) rather than triggering an implicit login redirect.
-- **Auth**: `suppressAuthRedirectContext()` helper that stamps the above token on the logout request inside `clearAuthentication()`.
-- Dashboard: server-side infinite scroll; page size from `dashboard.initialBatchSize` / `batchIncrement`.
-- Authenticated dashboard: public/private tabs.
-- Shared page shell for dashboard, territory, and application pages.
-- Map: apply territory `defaultZoomLevel` from the client profile after the initial extent fit (OpenLayers `view.setZoom`, with resolution fallback).
-- `GeneralCfg.defaultZoomLevel` and `MapConfigurationService.toDefaultZoomLevel()` map the profile field into SITNA map configuration.
-- Jest: `publicAuthClearGuard` spec covering guard activation, async wait for IndexedDB cleanup, and error-path behaviour.
-- Jest: `AuthenticationService` specs for `clearAuthentication` (success, 4xx, 5xx, network error, async IndexedDB sequencing) and the refactored `logout` (success navigation, error notification).
-- Jest: `AuthenticationInterceptor` specs for the `SUPPRESS_AUTH_REDIRECT_ON_401` context token.
+- **Auth**: `publicAuthClearGuard` now protects all `/public/**` routes and clears stale authenticated session state before route activation, preventing anonymous/public pages from resolving as a previous user.
+- **Auth**: `AuthenticationService.clearAuthentication()` centralizes backend cookie expiry (`POST /api/authenticate/logout`) plus local cleanup (sessionStorage and IndexedDB proxy token) with caller-visible error propagation.
+- **Auth**: `SUPPRESS_AUTH_REDIRECT_ON_401` (`HttpContextToken`) and `suppressAuthRedirectContext()` allow explicit cleanup requests to surface errors without triggering implicit login redirects.
+- **Dashboard**: server-side infinite scroll with configurable batch size (`dashboard.initialBatchSize` / `batchIncrement`) and authenticated public/private tabs.
+- **Navigation**: shared list/page shell for dashboard, territory, and application sections.
+- **Map**: territory `defaultZoomLevel` from client profile is now applied after initial extent fit via SITNA/OpenLayers mapping.
+- **Tests**: focused Jest coverage added for `publicAuthClearGuard`, `AuthenticationService.clearAuthentication()`, and interceptor redirect-suppression behavior.
 
 ### Changed
 
-- **Auth**: `logout()` now reuses `clearAuthentication()` instead of calling the logout endpoint directly. On failure it shows a user-visible error notification and does not navigate to the login page, so the user is not silently left with an active session cookie.
-- **Auth**: `clearSession()` now returns `Promise<void>` and awaits `IndexedDbService.remove('proxy_token')` before resolving, so `clearAuthentication()` only completes after the proxy token has been removed.
-- Dashboard search filters loaded pages client-side.
-- Unified list page layout (dashboard, territory, application).
-- Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
-- Jest specs: `TestRequest.error(new ErrorEvent(...))` replaced with `TestRequest.error(new ProgressEvent(...))` throughout; the `ErrorEvent` overload is deprecated in `@angular/common/http/testing`.
-- Jest specs: `creator` fixture field in `DashboardItem` test objects replaced with `pointOfContact` to match the current interface.
-- Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
-- `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
-- Map load: unified `applyInitialViewAfterLoad` applies extent then zoom from `GeneralCfg` instead of reading `AppCfg` post-load.
+- **Auth**: `logout()` now reuses `clearAuthentication()` and only navigates on successful cleanup; failures stay visible to the user.
+- **Auth**: `clearSession()` now awaits IndexedDB proxy-token removal before resolving.
+- **Dashboard**: search now filters already loaded pages client-side.
+- **Navigation**: unified list page layout (dashboard, territory, application).
+- **Tests**: Angular/Jest test utilities updated to current providers (`provideHttpClient`, `provideHttpClientTesting`, `provideRouter`) and current HTTP testing error primitives (`ProgressEvent`).
+- **Tests**: dashboard fixtures now use `pointOfContact` instead of deprecated `creator`.
+- **Toolchain**: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
+- **TypeScript**: `tsconfig.json` excludes `**/*.spec.ts` from root config (Jest types remain in `tsconfig.spec.json`).
+- **Map**: `applyInitialViewAfterLoad` now consistently applies extent then zoom from `GeneralCfg`.
 
 ### Removed
 
-- Legacy dashboard pagination/show-more components.
-- Unused `ApiModule` and `src/test.ts`.
+- **Dashboard**: legacy pagination/show-more components removed.
+- **Cleanup**: unused `ApiModule` and `src/test.ts` removed.
 
 ### Fixed
 
-- Map panel tooltips: layers icon shows "Layers" instead of "Tools"; overview map shows localized label instead of "ovmap" (fixes [#137](https://github.com/sitmun/sitmun-viewer-app/issues/137)).
-- **i18n**: add missing ngx-translate keys for French, Catalan, and Aranese (`error.*`, `systemInfo.*`, auth messages); fixes [#139](https://github.com/sitmun/sitmun-viewer-app/issues/139) for viewer UI strings.
-- Available layer catalog: clicking the same layer no longer loads it multiple times; catalog nodes are correctly marked as already added after the first load (fixes [#140](https://github.com/sitmun/sitmun-viewer-app/issues/140)).
-- **Auth**: entering a `/public/**` URL while an `access_token` cookie from a previous authenticated session was present caused backend config/profile requests to resolve as the previous user instead of anonymous. The `publicAuthClearGuard` now expires that cookie before the route loads.
-- **Point of contact**: the application details page now renders `pointOfContact` from the API response directly. The previous `resolveCreatorUsername()` account lookup has been removed; it was resolving against `/api/account` without an id, which returned the current session user instead of the configured contact. Fixes [#159](https://github.com/sitmun/sitmun-viewer-app/issues/159).
-- Left-panel tool controls (including custom controls such as Hello World) expand and collapse when legend is disabled for a role/territory ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
-- GetFeatureInfo / identify keeps working for compatible WMS layers when another active layer's service does not support `DescribeLayer` or returns a failing GFI response (fixes [#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)). `FeatureInfoControlHandler.loadPatches` wraps `Raster.prototype.describeLayer` and `Proxification.prototype.fetch` (for GetFeatureInfo URLs only) to convert rejections into benign empty responses, so one incompatible service no longer breaks identify for all other layers.
-- Dashboard capped at three applications ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
-- ESLint: unused type-predicate param in `LayerCatalogControlHandler`.
-- Fixed proxy requests losing the `Authorization` header after service worker idle wake-up; `middlewareUrl` is now restored from IndexedDB via a single shared promise, preventing concurrent IDB reads on the first tile burst.
-- Fixed IDB connection leaks in `ServiceWorker.js`; connections are now closed in `finally` blocks, preventing contention and deadlocks.
-- **Auth**: proxy token refresh (`POST /api/authenticate/proxy`) now distinguishes HTTP 401 from 403 and network errors. A 401 stops the refresh timer, clears the session, and redirects to the login page with a visible "session expired" notification; a 403 or transient error logs a warning without ending the session (issue #256).
-- **Auth**: `AuthenticationInterceptor` no longer intercepts 401 responses from the proxy-refresh URL; the `AuthenticationService` handles those responses directly.
-- **UX**: the login page shows a warning notification when the `session-expired=true` query parameter is present, replacing the previous silent redirect.
-- Fixed hard-refreshed pages remaining uncontrolled until the next navigation; `ServiceWorker.js` now calls `clients.claim()` when `MIDDLEWARE_URL` is received.
-- Fixed missing `Authorization` header on the first tile request after login; `proxy_token` is retried once after 500 ms.
-- Fixed stale proxy tokens causing unrecovered 401/403 errors; `ServiceWorker.js` now posts `AUTH_ERROR` to clients and `AuthenticationService` handles it with a signal-based in-flight guard against concurrent refresh calls.
-- Fixed tile requests racing ahead of proxy URL delivery; `MapServiceWorkerService.configureMiddleware()` now awaits `navigator.serviceWorker.ready` and `AbstractMapComponent` awaits `configureMiddleware()` before map creation.
-- Fixed duplicate `controllerchange` reload listeners stacking on repeated `configureMiddleware()` calls; guarded with `{ once: true }` and a per-instance flag.
-- Fixed unnecessary service worker overhead on non-proxy requests; `event.respondWith()` is now bypassed when `middlewareUrl` is already known.
-- Fixed SITNA map initialization drift by reapplying the configured `initialExtent` with `map.setExtent(..., { animate: false })` after `SITNA.Map.loaded`.
+- **Map UI**: panel/i18n labeling issues fixed for tooltips and overview labels ([#137](https://github.com/sitmun/sitmun-viewer-app/issues/137), [#139](https://github.com/sitmun/sitmun-viewer-app/issues/139)).
+- **Layer catalog**: duplicate layer loads are blocked and already-added nodes are marked correctly ([#140](https://github.com/sitmun/sitmun-viewer-app/issues/140)).
+- **Auth**: public-route auth leakage fixed by expiring stale authenticated cookies before `/public/**` loads.
+- **Application details**: API-provided `pointOfContact` is rendered directly (removes incorrect account-lookup fallback) ([#159](https://github.com/sitmun/sitmun-viewer-app/issues/159)).
+- **Controls**: left-panel custom controls now expand/collapse correctly when legend is disabled ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
+- **GetFeatureInfo**: identify remains resilient when one active WMS service lacks `DescribeLayer`/GFI compatibility ([#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)).
+- **Dashboard**: result list enforces the intended three-application cap ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
+- **ESLint**: fixed unused type-predicate param in `LayerCatalogControlHandler`.
+- **Service worker**: IndexedDB sequencing now preserves proxy `Authorization` headers across login, hard refresh, and idle wake-up scenarios.
+- **Service worker**: lifecycle handling improved (`clients.claim`, controller-change guard, middleware readiness) to prevent map-bootstrap race conditions.
+- **Auth**: proxy token refresh now distinguishes 401 vs 403/network outcomes; session-expiry UX and redirect behavior are explicit ([#256](https://github.com/sitmun/sitmun-viewer-app/issues/256)).
+- **Auth**: `AuthenticationInterceptor` no longer intercepts proxy-refresh 401 responses; refresh failures are handled in `AuthenticationService`.
+- **Map**: SITNA initial extent is reapplied post-load to prevent initialization drift.
 
 ## [1.2.6] - 2026-05-08
 
