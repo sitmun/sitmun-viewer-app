@@ -6,7 +6,7 @@ import {
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { URL_AUTH_PROXY } from '@api/api-config';
+import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
 import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
@@ -18,6 +18,7 @@ import { environment } from '../../../environments/environment';
 import { NotificationService } from '../../notifications/services/NotificationService';
 
 const PROXY_URL = environment.apiUrl + URL_AUTH_PROXY;
+const LOGOUT_URL = environment.apiUrl + URL_AUTH_LOGOUT;
 const USERNAME_KEY = 'sitmun_viewer_app_username';
 
 describe('AuthenticationService', () => {
@@ -197,7 +198,7 @@ describe('AuthenticationService', () => {
 
       dispatchAuthError();
       tick();
-      httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+      httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
       tick();
 
       expect(warn).toHaveBeenCalledWith(
@@ -288,6 +289,7 @@ describe('AuthenticationService', () => {
 
     it('does not clear session when proxy refresh returns 403', fakeAsync(() => {
       jest.spyOn(console, 'warn').mockImplementation(() => {});
+      jest.spyOn(console, 'error').mockImplementation(() => {});
 
       dispatchAuthError();
       tick();
@@ -324,7 +326,7 @@ describe('AuthenticationService', () => {
       dispatchAuthError();
       tick();
 
-      httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+      httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
       tick();
 
       expect(sessionStorage.getItem(USERNAME_KEY)).toBe('testuser');
@@ -370,7 +372,7 @@ describe('AuthenticationService', () => {
       for (let i = 0; i < 3; i++) {
         dispatchAuthError();
         tick();
-        httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
         tick();
       }
 
@@ -387,7 +389,7 @@ describe('AuthenticationService', () => {
       for (let i = 0; i < 2; i++) {
         dispatchAuthError();
         tick();
-        httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
         tick();
       }
 
@@ -401,7 +403,7 @@ describe('AuthenticationService', () => {
       for (let i = 0; i < 2; i++) {
         dispatchAuthError();
         tick();
-        httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
         tick();
       }
 
@@ -415,11 +417,173 @@ describe('AuthenticationService', () => {
       for (let i = 0; i < 2; i++) {
         dispatchAuthError();
         tick();
-        httpMock.expectOne(PROXY_URL).error(new ErrorEvent('network'));
+        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
         tick();
       }
 
       expect(mockNotification.warning).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('clearAuthentication', () => {
+    beforeEach(() => {
+      sessionStorage.setItem(USERNAME_KEY, 'testuser');
+    });
+
+    afterEach(() => {
+      sessionStorage.removeItem(USERNAME_KEY);
+    });
+
+    it('sends POST to the logout URL', fakeAsync(() => {
+      let completed = false;
+      service.clearAuthentication().subscribe({ complete: () => { completed = true; } });
+      tick();
+
+      const req = httpMock.expectOne(LOGOUT_URL);
+      expect(req.request.method).toBe('POST');
+      req.flush(null);
+      tick();
+
+      expect(completed).toBe(true);
+    }));
+
+    it('clears sessionStorage username after successful logout', fakeAsync(() => {
+      service.clearAuthentication().subscribe();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
+    }));
+
+    it('removes proxy_token from IndexedDbService after successful logout', fakeAsync(() => {
+      service.clearAuthentication().subscribe();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
+    }));
+
+    it('does not navigate to login after successful logout', fakeAsync(() => {
+      service.clearAuthentication().subscribe();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
+      expect(mockRouter.navigate).not.toHaveBeenCalled();
+    }));
+
+    it('still clears local state when backend logout returns 4xx', fakeAsync(() => {
+      let capturedError: unknown;
+      service.clearAuthentication().subscribe({
+        error: (err: unknown) => { capturedError = err; }
+      });
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 403, statusText: 'Forbidden' });
+      tick();
+
+      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
+      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
+      expect(capturedError).toBeDefined();
+    }));
+
+    it('still clears local state when backend logout returns 5xx', fakeAsync(() => {
+      let capturedError: unknown;
+      service.clearAuthentication().subscribe({
+        error: (err: unknown) => { capturedError = err; }
+      });
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick();
+
+      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
+      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
+      expect(capturedError).toBeDefined();
+    }));
+
+    it('still clears local state on network error and emits the error', fakeAsync(() => {
+      let capturedError: unknown;
+      service.clearAuthentication().subscribe({
+        error: (err: unknown) => { capturedError = err; }
+      });
+      tick();
+      httpMock.expectOne(LOGOUT_URL).error(new ProgressEvent('network'));
+      tick();
+
+      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
+      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
+      expect(capturedError).toBeDefined();
+    }));
+
+    it('completes only after IndexedDB proxy_token removal has resolved', fakeAsync(() => {
+      let removeResolve!: () => void;
+      mockIndexedDb.remove.mockReturnValue(new Promise<void>(res => { removeResolve = res; }));
+
+      let completed = false;
+      service.clearAuthentication().subscribe({ complete: () => { completed = true; } });
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(completed).toBe(false);
+
+      removeResolve();
+      tick();
+
+      expect(completed).toBe(true);
+    }));
+  });
+
+  describe('logout', () => {
+    beforeEach(() => {
+      sessionStorage.setItem(USERNAME_KEY, 'testuser');
+    });
+
+    afterEach(() => {
+      sessionStorage.removeItem(USERNAME_KEY);
+    });
+
+    it('sends POST to the logout URL', fakeAsync(() => {
+      service.logout();
+      tick();
+
+      const req = httpMock.expectOne(LOGOUT_URL);
+      expect(req.request.method).toBe('POST');
+      req.flush(null);
+      tick();
+    }));
+
+    it('navigates to loginPath after successful logout', fakeAsync(() => {
+      service.logout();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(mockRouter.navigateByUrl).toHaveBeenCalledWith(
+        CustomAuthConfig.routes.loginPath
+      );
+    }));
+
+    it('clears sessionStorage on successful logout', fakeAsync(() => {
+      service.logout();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null);
+      tick();
+
+      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
+    }));
+
+    it('shows error notification and does not navigate when clearAuthentication fails', fakeAsync(() => {
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+      service.logout();
+      tick();
+      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick();
+
+      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
+      expect(mockNotification.error).toHaveBeenCalled();
     }));
   });
 });

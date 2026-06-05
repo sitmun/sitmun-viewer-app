@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Inject, Injectable, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+
 import {
   URL_API_USER_ACCOUNT,
   URL_AUTH_LOGIN,
@@ -28,9 +29,11 @@ import {
   of,
   switchMap,
   tap,
+  throwError,
   timer
 } from 'rxjs';
 
+import { suppressAuthRedirectContext } from './auth-http-context';
 import { IndexedDbService } from './indexed-db.service';
 import { environment } from '../../../environments/environment';
 import { NotificationService } from '../../notifications/services/NotificationService';
@@ -115,12 +118,33 @@ export class AuthenticationService<T> {
     }
   }
 
+  clearAuthentication(): Observable<void> {
+    return this.http
+      .post<void>(environment.apiUrl + URL_AUTH_LOGOUT, null, {
+        context: suppressAuthRedirectContext()
+      })
+      .pipe(
+        switchMap(() => from(this.clearSession())),
+        catchError((error: unknown) =>
+          from(this.clearSession()).pipe(
+            switchMap(() => throwError(() => error))
+          )
+        )
+      );
+  }
+
   logout(): void {
-    this.http
-      .post<void>(environment.apiUrl + URL_AUTH_LOGOUT, null)
-      .subscribe(() => {
-        this.clearSessionAndRedirectToLogin();
-      });
+    this.clearAuthentication().subscribe({
+      next: () => {
+        void this.router.navigateByUrl(this.config.routes.loginPath);
+      },
+      error: (err: unknown) => {
+        console.error('[Auth] Logout failed:', err);
+        this.translate.get('auth.logoutFailed').subscribe((msg) => {
+          this.notificationService.error(msg);
+        });
+      }
+    });
   }
 
   getAuthMethods() {
@@ -191,7 +215,7 @@ export class AuthenticationService<T> {
         catchError((err: HttpErrorResponse) => {
           if (err.status === 401) {
             this.stopProxyTokenRefresh();
-            this.clearSession();
+            this.clearSession().catch((e: unknown) => console.warn('[IDB] Error during session clear on 401:', e));
             void this.router.navigate([this.config.routes.loginPath], {
               queryParams: { 'session-expired': 'true' }
             });
@@ -241,11 +265,11 @@ export class AuthenticationService<T> {
     void this.router.navigateByUrl(this.config.routes.loginPath);
   }
 
-  private clearSession(): void {
+  private clearSession(): Promise<void> {
     sessionStorage.removeItem(this.USERNAME_KEY);
     this.stopProxyTokenRefresh();
-    this.indexedDb
+    return this.indexedDb
       .remove('proxy_token')
-      .catch((err) => console.warn('[IDB] Error clearing proxy token:', err));
+      .catch((err: unknown) => console.warn('[IDB] Error clearing proxy token:', err));
   }
 }
