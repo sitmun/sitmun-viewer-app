@@ -1,5 +1,9 @@
 {
   "tools": "Tools",
+  "legend": "Legend",
+  "layers": "Layers",
+  "overviewMap": "Overview Map",
+  "overviewMap.tooltip": "Overview Map",
   "layerInfo": "Layer information",
   "abstract": "Layer description",
   "groupAbstract": "Layer group description",

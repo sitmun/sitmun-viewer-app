@@ -1,5 +1,9 @@
 {
   "tools": "Tresnak",
+  "legend": "Legenda",
+  "layers": "Geruzak",
+  "overviewMap": "Kokapena mapan",
+  "overviewMap.tooltip": "Kokapena mapan",
   "layerInfo": "Geruzaren informazioa",
   "abstract": "Geruzaren deskribapena",
   "groupAbstract": "Geruza taldearen deskribapena",

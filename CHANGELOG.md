@@ -39,6 +39,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- Map panel tooltips: layers icon shows "Layers" instead of "Tools"; overview map shows localized label instead of "ovmap" (fixes [#137](https://github.com/sitmun/sitmun-viewer-app/issues/137)).
 - **i18n**: add missing ngx-translate keys for French, Catalan, and Aranese (`error.*`, `systemInfo.*`, auth messages); fixes [#139](https://github.com/sitmun/sitmun-viewer-app/issues/139) for viewer UI strings.
 - Available layer catalog: clicking the same layer no longer loads it multiple times; catalog nodes are correctly marked as already added after the first load (fixes [#140](https://github.com/sitmun/sitmun-viewer-app/issues/140)).
 - **Auth**: entering a `/public/**` URL while an `access_token` cookie from a previous authenticated session was present caused backend config/profile requests to resolve as the previous user instead of anonymous. The `publicAuthClearGuard` now expires that cookie before the route loads.

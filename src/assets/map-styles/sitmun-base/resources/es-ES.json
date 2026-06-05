@@ -1,5 +1,9 @@
 {
   "tools": "Herramientas",
+  "legend": "Leyenda",
+  "layers": "Capas",
+  "overviewMap": "Mapa situación",
+  "overviewMap.tooltip": "Mapa de situación",
   "layerInfo": "Información de capa",
   "abstract": "Descripción de la capa",
   "groupAbstract": "Descripción del grupo de capas",
