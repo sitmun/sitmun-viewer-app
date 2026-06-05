@@ -6,17 +6,28 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Auth**: `publicAuthClearGuard` (`CanActivateFn`) added to all `/public/**` routes. Before any public route activates, the guard calls `AuthenticationService.clearAuthentication()`, which expires the backend HttpOnly `access_token` cookie via `POST /api/authenticate/logout` and clears local viewer state (sessionStorage, proxy token in IndexedDB). If the backend rejects the logout, the guard returns `false` and shows an error notification so the stale cookie is never silently forwarded to public config requests.
+- **Auth**: `AuthenticationService.clearAuthentication(): Observable<void>` — shared primitive for backend cookie expiry plus local viewer cleanup. Always attempts local cleanup even when the backend request fails, then re-emits the error so callers can decide whether to proceed.
+- **Auth**: `SUPPRESS_AUTH_REDIRECT_ON_401` (`HttpContextToken<boolean>`) in `auth-http-context.ts`. When set on a request, `AuthenticationInterceptor` skips its 401-redirect side effects so that `clearAuthentication()` failures propagate to the caller (public guard or logout handler) rather than triggering an implicit login redirect.
+- **Auth**: `suppressAuthRedirectContext()` helper that stamps the above token on the logout request inside `clearAuthentication()`.
 - Dashboard: server-side infinite scroll; page size from `dashboard.initialBatchSize` / `batchIncrement`.
 - Authenticated dashboard: public/private tabs.
 - Shared page shell for dashboard, territory, and application pages.
 - Map: apply territory `defaultZoomLevel` from the client profile after the initial extent fit (OpenLayers `view.setZoom`, with resolution fallback).
 - `GeneralCfg.defaultZoomLevel` and `MapConfigurationService.toDefaultZoomLevel()` map the profile field into SITNA map configuration.
+- Jest: `publicAuthClearGuard` spec covering guard activation, async wait for IndexedDB cleanup, and error-path behaviour.
+- Jest: `AuthenticationService` specs for `clearAuthentication` (success, 4xx, 5xx, network error, async IndexedDB sequencing) and the refactored `logout` (success navigation, error notification).
+- Jest: `AuthenticationInterceptor` specs for the `SUPPRESS_AUTH_REDIRECT_ON_401` context token.
 
 ### Changed
 
+- **Auth**: `logout()` now reuses `clearAuthentication()` instead of calling the logout endpoint directly. On failure it shows a user-visible error notification and does not navigate to the login page, so the user is not silently left with an active session cookie.
+- **Auth**: `clearSession()` now returns `Promise<void>` and awaits `IndexedDbService.remove('proxy_token')` before resolving, so `clearAuthentication()` only completes after the proxy token has been removed.
 - Dashboard search filters loaded pages client-side.
 - Unified list page layout (dashboard, territory, application).
 - Jest specs: replace deprecated `HttpClientTestingModule` / `RouterTestingModule` with `provideHttpClient`, `provideHttpClientTesting`, `provideRouter`, and `RouterOutlet`.
+- Jest specs: `TestRequest.error(new ErrorEvent(...))` replaced with `TestRequest.error(new ProgressEvent(...))` throughout; the `ErrorEvent` overload is deprecated in `@angular/common/http/testing`.
+- Jest specs: `creator` fixture field in `DashboardItem` test objects replaced with `pointOfContact` to match the current interface.
 - Toolchain: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
 - `tsconfig.json`: exclude `**/*.spec.ts` from root config (Jest types in `tsconfig.spec.json`).
 - Map load: unified `applyInitialViewAfterLoad` applies extent then zoom from `GeneralCfg` instead of reading `AppCfg` post-load.
@@ -28,6 +39,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Auth**: entering a `/public/**` URL while an `access_token` cookie from a previous authenticated session was present caused backend config/profile requests to resolve as the previous user instead of anonymous. The `publicAuthClearGuard` now expires that cookie before the route loads.
 - **Point of contact**: the application details page now renders `pointOfContact` from the API response directly. The previous `resolveCreatorUsername()` account lookup has been removed; it was resolving against `/api/account` without an id, which returned the current session user instead of the configured contact. Fixes [#159](https://github.com/sitmun/sitmun-viewer-app/issues/159).
 - Left-panel tool controls (including custom controls such as Hello World) expand and collapse when legend is disabled for a role/territory ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
 - GetFeatureInfo / identify keeps working for compatible WMS layers when another active layer's service does not support `DescribeLayer` or returns a failing GFI response (fixes [#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)). `FeatureInfoControlHandler.loadPatches` wraps `Raster.prototype.describeLayer` and `Proxification.prototype.fetch` (for GetFeatureInfo URLs only) to convert rejections into benign empty responses, so one incompatible service no longer breaks identify for all other layers.
