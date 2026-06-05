@@ -11,7 +11,10 @@ import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+import { SUPPRESS_AUTH_REDIRECT_ON_401 } from './auth-http-context';
 import { AuthenticationService } from './authentication.service';
+
+export { SUPPRESS_AUTH_REDIRECT_ON_401 } from './auth-http-context';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +30,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
+        if (err.status === 401 && !req.context.get(SUPPRESS_AUTH_REDIRECT_ON_401)) {
           if (req.url.includes(URL_AUTH_PROXY)) {
             // Handled by AuthenticationService.refreshProxyToken — do not intercept.
           } else if (req.url.includes(URL_AUTH_LOGOUT)) {
@@ -37,9 +40,9 @@ export class AuthenticationInterceptor implements HttpInterceptor {
           }
         }
 
-        // Let the app keep running by returning an empty result
         return throwError(() => err);
       })
     );
   }
 }
+
