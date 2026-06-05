@@ -77,6 +77,21 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('publicDashboard navigates to the public dashboard URL', () => {
+    const router = TestBed.inject(Router) as jest.Mocked<Router>;
+    component.publicDashboard();
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      expect.stringContaining('public')
+    );
+  });
+
+  it('publicDashboard does not call any auth-clearing method', () => {
+    const authService = TestBed.inject(AuthenticationService) as jest.Mocked<AuthenticationService<unknown>>;
+    component.publicDashboard();
+    expect(authService.login).not.toHaveBeenCalled();
+    expect((authService as any).clearAuthentication).toBeUndefined();
+  });
+
   it('shows a session-expired notification when session-expired=true is in query params', async () => {
     const notificationService = TestBed.inject(NotificationService) as jest.Mocked<NotificationService>;
 
