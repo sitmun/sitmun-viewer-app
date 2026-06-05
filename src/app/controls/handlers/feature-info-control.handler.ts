@@ -20,16 +20,6 @@ const meld = require('meld') as Meld;
  * - Elevation display configuration
  * - More Info functionality: Adds "Més informació" field to features with moreInfo tasks
  * Configuration: Optional parameters (active, persistentHighlights, displayElevation, etc.)
- *
- * Elevation Display:
- * - Set `displayElevation: true` in controlDefaults or task parameters to enable elevation in popup
- * - Elevation values are fetched from elevation services configured at map level or control level
- * - If `displayElevation` is boolean true, uses map's elevation tool or creates default elevation tool
- * - If `displayElevation` is an object, uses that configuration for elevation services
- * More Info Functionality:
- * - Automatically adds "Més informació" field to features when cartography has moreInfo task
- * - Field appears as clickable link with info icon
- * - Executes configured query (URL redirect or SQL query) when clicked
  */
 @Injectable({
   providedIn: 'root'
@@ -59,14 +49,16 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   }
 
   /**
+   * Get Raster prototype from TC namespace (same pattern as layer-catalog-control.handler).
+   */
+  private getRasterPrototype(TC: any): any {
+    return TC?.layer?.Raster?.prototype || TC?.wrap?.layer?.Raster?.prototype;
+  }
+
+  /**
    * Load patches for featureInfo control.
-   * Patches:
-   * 1. Map.addControl - Apply displayElevation config to featureInfo and featureTools
-   * 2. FeatureInfo.register - Apply displayElevation from map config
-   * 3. FeatureInfo.responseCallback - Inject "Més informació" field into features
    */
   override async loadPatches(context: AppCfg): Promise<void> {
-    // Initialize MoreInfo service and store config
     this.moreInfoService.initialize(context);
     this.appConfig = context;
     await this.withTCAsync(async (TC) => {
@@ -114,6 +106,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           (jp: MeldJoinPoint) => {
             const control = jp.target as any;
             const [map] = jp.args as [any];
+
             if (
               control.options?.displayElevation === undefined &&
               map?.options?.controls?.featureInfo?.displayElevation !==
@@ -155,10 +148,10 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
             return result;
           }
         );
-        mapProto.__sitmunFiRegister = true;
+        fiProto.__sitmunFiRegister = true;
         this.patchManager.add(() => {
           meld.remove(registerAdvice);
-          delete mapProto.__sitmunFiRegister;
+          delete fiProto.__sitmunFiRegister;
           while (this.mapEventCleanups.length > 0) {
             const cleanup = this.mapEventCleanups.pop();
             cleanup?.();
@@ -217,6 +210,88 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         this.patchManager.add(() => {
           meld.remove(displayResultsAdvice);
           delete fiProto.__sitmunMoreInfoDisplayResults;
+        });
+      }
+
+      // --- Patch A: Tolerate DescribeLayer failures (#155) ---
+      // SITNA's getFeatureInfo (api-sitna ol.js:7228) does:
+      //   const isFromRasterOrigin = (await layer.describeLayer(true)).every(...)
+      // without try/catch. WMS servers that don't implement DescribeLayer (e.g. Catastro)
+      // reply with a ServiceException, which Raster.describeLayer (Raster.js:2037) re-throws.
+      // That throw propagates out of getFeatureInfo and breaks identify for every layer.
+      const RasterProto = this.getRasterPrototype(TC);
+      if (RasterProto?.describeLayer && !RasterProto.__sitmunDescribeLayerSafe) {
+        const describeAdvice = meld.around(
+          RasterProto,
+          'describeLayer',
+          function (this: unknown, jp: MeldJoinPoint): unknown {
+            const full = jp.args[0] as boolean | undefined;
+            const fallback = full ? [{ owsType: 'WMS' }] : { owsType: 'WMS' };
+            return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
+              () => fallback
+            );
+          }
+        );
+        RasterProto.__sitmunDescribeLayerSafe = true;
+        this.patchManager.add(() => {
+          meld.remove(describeAdvice);
+          delete RasterProto.__sitmunDescribeLayerSafe;
+        });
+      }
+
+      // --- Patch B: Per-service isolation for GetFeatureInfo (#155) ---
+      // SITNA's getFeatureInfo (api-sitna ol.js:7322) aggregates per-service GFI requests
+      // with Promise.all. A single rejected request (e.g. Catastro returning HTTP 500 from
+      // Proxification.js:1206) collapses the whole identify and triggers the global
+      // 'featureInfo.error' toast with featureCount:0.
+      // We intercept Proxification.fetch only for URLs whose query string contains
+      // REQUEST=GetFeatureInfo, and convert the rejection into an empty response shaped
+      // exactly like a real fulfilment ({ responseText, contentType }) so Promise.all resolves
+      // and OL renders the successful services normally.
+      const ProxProto = TC?.tool?.Proxification?.prototype;
+      if (ProxProto?.fetch && !ProxProto.__sitmunGfiIsolation) {
+        const fetchAdvice = meld.around(
+          ProxProto,
+          'fetch',
+          function (this: unknown, jp: MeldJoinPoint): unknown {
+            const url = jp.args[0];
+            if (
+              typeof url !== 'string' ||
+              !/[?&]REQUEST=GetFeatureInfo\b/i.test(url)
+            ) {
+              return jp.proceed();
+            }
+            const formatMatch = url.match(/[?&]INFO_FORMAT=([^&]+)/i);
+            const requestedFormat = formatMatch
+              ? decodeURIComponent(formatMatch[1])
+              : 'application/json';
+            // Return a structurally valid empty payload that matches INFO_FORMAT so the OL
+            // parser branch at ol.js:7339 (iFormat === requestedFormat) is taken and the
+            // try/catch at ol.js:7376 yields zero features, instead of the responseError
+            // branch that triggers the global error toast.
+            const emptyByFormat: Record<string, string> = {
+              'application/json':
+                '{"type":"FeatureCollection","features":[]}',
+              'application/vnd.ogc.gml':
+                '<?xml version="1.0"?><wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"/>',
+              'application/vnd.ogc.gml/3.1.1':
+                '<?xml version="1.0"?><wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"/>',
+              'application/vnd.esri.wms_featureinfo_xml':
+                '<FeatureInfoResponse/>'
+            };
+            const responseText = emptyByFormat[requestedFormat] ?? '';
+            return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
+              () => ({
+                responseText,
+                contentType: requestedFormat
+              })
+            );
+          }
+        );
+        ProxProto.__sitmunGfiIsolation = true;
+        this.patchManager.add(() => {
+          meld.remove(fetchAdvice);
+          delete ProxProto.__sitmunGfiIsolation;
         });
       }
     });

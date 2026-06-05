@@ -60,11 +60,6 @@ export class MoreInfoService {
     return this.moreInfoTasks.get(String(cartographyId)) || [];
   }
 
-  getMoreInfoTask(cartographyId: string): any {
-    const tasks = this.getMoreInfoTasks(cartographyId);
-    return tasks.length > 0 ? tasks[0] : null;
-  }
-
   hasMoreInfoTasks(): boolean {
     return this.moreInfoTasks.size > 0;
   }

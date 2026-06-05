@@ -184,8 +184,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         continue;
       }
 
+      // Sort children by node.order so catalog entries follow admin-defined order.
+      const sortedChildren = [...rootNode.children].sort((a, b) => {
+        const orderA = this.configLookup.findNode(a)?.order ?? 999;
+        const orderB = this.configLookup.findNode(b)?.order ?? 999;
+        return orderA - orderB;
+      });
+
       // Create a virtual service for each child of the root node
-      for (const childId of rootNode.children) {
+      for (const childId of sortedChildren) {
         const childNode = this.configLookup.findNode(childId);
         if (!childNode) {
           continue;
@@ -397,7 +404,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const effectiveLayerNames: string[] = Array.isArray(
             layerOptions.layerNames
           )
-            ? layerOptions.layerNames.filter((name): name is string => true)
+            ? layerOptions.layerNames.filter((_name): _name is string => true)
             : layerOptions.layerNames != null
             ? [String(layerOptions.layerNames)]
             : [];
@@ -592,16 +599,17 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             return [];
           }
 
-          const selector = layerObj.nodeId
-            ? `li[data-layer-name="${layerObj.nodeId}"]`
-            : `li[data-layer-name="${layerObj.options.layerNames}"]`;
+          const nodeId = layerObj.options?.nodeId ?? layerObj.nodeId;
+          const selector = nodeId
+            ? `li[data-layer-name="${nodeId}"]`
+            : `li[data-layer-name="${layerObj.options?.layerNames}"]`;
 
           for (let i = 0; i < rootNodes.length; i++) {
             const rootNode = rootNodes[i];
             const liLayer = rootNode.querySelector(selector);
             if (liLayer) {
-              // This is a workaround to remove the loading class from the node
               liLayer.classList.remove(TC.Consts.classes.LOADING);
+              result.push(liLayer);
               liLayer.querySelectorAll('li').forEach((li: Element) => {
                 result.push(li);
               });

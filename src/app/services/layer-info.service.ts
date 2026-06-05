@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 
 import { TranslateService } from '@ngx-translate/core';
 
+import { AppConfigService } from './app-config.service';
 import {
   WMSLayer,
   WmsOnlineResourceLink
@@ -65,6 +66,25 @@ export function inferOgcLinkFormat(
 })
 export class LayerInfoService {
   private readonly translate = inject(TranslateService);
+  private readonly appConfigService = inject(AppConfigService);
+
+  /** Ordered fallback chain: defaultLanguage then all configured shortnames, excluding preferredLang. */
+  private buildFallbackChain(preferredLang: string): string[] {
+    const seen = new Set<string>([preferredLang, preferredLang.split('-')[0]]);
+    const chain: string[] = [];
+    const defaultLang = this.appConfigService.getDefaultLanguage();
+    if (defaultLang && !seen.has(defaultLang)) {
+      chain.push(defaultLang);
+      seen.add(defaultLang);
+    }
+    for (const { shortname } of this.appConfigService.getDefaultLanguages()) {
+      if (shortname && !seen.has(shortname)) {
+        chain.push(shortname);
+        seen.add(shortname);
+      }
+    }
+    return chain;
+  }
   /**
    * Extract text in preferred language from multi-language fields.
    * Used for extracting abstracts and titles from WMS capabilities or any multi-language source.
@@ -112,8 +132,8 @@ export class LayerInfoService {
         return textField[matchingKey];
       }
 
-      // Try common fallbacks in priority order
-      const fallbacks = ['es', 'en', 'ca', 'fr', 'de'];
+      // Try configured fallback chain: defaultLanguage then configured languages
+      const fallbacks = this.buildFallbackChain(preferredLang);
       for (const fallback of fallbacks) {
         const fallbackKey = Object.keys(textField).find(
           (key) => key === fallback || key.startsWith(fallback + '-')
@@ -149,8 +169,8 @@ export class LayerInfoService {
         }
       }
 
-      // Try common fallback languages in order
-      const fallbacks = ['es', 'en', 'ca', 'fr', 'de'];
+      // Try configured fallback chain for arrays
+      const fallbacks = this.buildFallbackChain(preferredLang);
       for (const fallback of fallbacks) {
         const fallbackMatch = this.findTextInArray(textField, fallback);
         if (fallbackMatch) {

@@ -22,8 +22,6 @@ export class DashboardComponent
   ) {
     super(router, commonService, modal);
   }
-  application: any;
-  territories: any;
 }
 
 export interface MapTerritory {

@@ -8,7 +8,7 @@ import {
 } from '@api/api-config';
 import { AppCfg } from '@api/model/app-cfg';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { shareReplay, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 import { AppConfigService } from '../../services/app-config.service';
@@ -25,6 +25,7 @@ export interface DashboardItem {
   title?: string;
   name: string;
   type?: string;
+  externalUrl?: string;
   logo?: string;
   headerParams: any; // JSON OBJECT
   description?: string;
@@ -34,12 +35,37 @@ export interface DashboardItem {
   appPrivate: boolean;
   updateDate: Date;
   createdDate: Date;
-  creator: string;
+  pointOfContact?: string;
+  // Dashboard enrichment fields
+  territoryCount?: number;
+  singleTerritoryId?: number;
+  hasTerritories?: boolean;
 }
 
 export interface DashboardItemsResponse {
   content: Array<DashboardItem>;
   totalElements: number;
+  page?: {
+    size: number;
+    number: number;
+    totalElements?: number;
+    totalPages?: number;
+  };
+}
+
+export interface DashboardSuggestion {
+  applications: Array<{
+    id: number;
+    name: string;
+    title?: string;
+    logo?: string;
+    appPrivate?: boolean;
+  }>;
+  territories: Array<{
+    id: number;
+    name: string;
+    territorialAuthorityLogo?: string;
+  }>;
 }
 
 export interface ResponseDto {
@@ -95,6 +121,10 @@ export class CommonService {
   private languageService = inject(LanguageService);
 
   private mapConfigCache = new Map<string, MapConfigCacheEntry>();
+  private readonly territoriesByApplicationId = new Map<
+    string,
+    Observable<ResponseDto>
+  >();
   private readonly CONFIG_CACHE_TTL_MS = 60_000;
 
   constructor(private http: HttpClient) {}
@@ -108,7 +138,7 @@ export class CommonService {
     return `${path}${separator}lang=${encodeURIComponent(lang)}`;
   }
 
-  fetchDashboardItems(dashboardType: DashboardTypes, keywords?: string) {
+  fetchDashboardItems(dashboardType: DashboardTypes) {
     let path;
     switch (dashboardType) {
       case DashboardTypes.APPLICATIONS:
@@ -118,9 +148,6 @@ export class CommonService {
         path = URL_API_TERRITORIES;
         break;
     }
-    if (keywords) {
-      path += '?keywords=' + keywords;
-    }
     return this.http.get<DashboardItemsResponse>(
       environment.apiUrl + this.withLang(path)
     );
@@ -129,17 +156,88 @@ export class CommonService {
   fetchTerritoriesByApplication(id: number, keywords?: string) {
     let path = `${URL_API_APPLICATIONS}/${id}/territories`;
     if (keywords) {
-      path += '?keywords=' + keywords;
+      path += `?keywords=${encodeURIComponent(keywords)}`;
+      return this.http.get<ResponseDto>(
+        environment.apiUrl + this.withLang(path)
+      );
     }
-    return this.http.get<ResponseDto>(environment.apiUrl + this.withLang(path));
+    const lang = this.languageService.getCurrentLanguage()?.trim() || '';
+    const cacheKey = `${id}:${lang}`;
+    const cached = this.territoriesByApplicationId.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    const request = this.http
+      .get<ResponseDto>(environment.apiUrl + this.withLang(path))
+      .pipe(shareReplay({ bufferSize: 1, refCount: true }));
+    this.territoriesByApplicationId.set(cacheKey, request);
+    return request;
   }
 
   fetchApplicationsByTerritory(id: number, keywords?: string) {
     let path = `${URL_API_TERRITORIES}/${id}/applications`;
     if (keywords) {
-      path += '?keywords=' + keywords;
+      path += `?keywords=${encodeURIComponent(keywords)}`;
     }
     return this.http.get<ResponseDto>(environment.apiUrl + this.withLang(path));
+  }
+
+  /**
+   * Fetch dashboard applications enriched with territory counts.
+   * Uses the new /dashboard/applications endpoint.
+   */
+  fetchDashboardApplications(params?: {
+    page?: number;
+    size?: number;
+    sort?: string;
+  }): Observable<DashboardItemsResponse> {
+    const path = '/api/config/client/dashboard/applications';
+    let url = environment.apiUrl + path;
+
+    const queryParams: string[] = [];
+    if (params?.page !== undefined) {
+      queryParams.push(`page=${params.page}`);
+    }
+    if (params?.size !== undefined) {
+      queryParams.push(`size=${params.size}`);
+    }
+    if (params?.sort) {
+      queryParams.push(`sort=${encodeURIComponent(params.sort)}`);
+    }
+
+    const lang = this.languageService.getCurrentLanguage()?.trim();
+    if (lang) {
+      queryParams.push(`lang=${encodeURIComponent(lang)}`);
+    }
+
+    if (queryParams.length > 0) {
+      url += '?' + queryParams.join('&');
+    }
+
+    return this.http.get<DashboardItemsResponse>(url);
+  }
+
+  /**
+   * Fetch dashboard suggestions (applications and territories) for search.
+   */
+  fetchDashboardSuggestions(keywords: string): Observable<DashboardSuggestion> {
+    const path = '/api/config/client/dashboard/suggestions';
+    let url = environment.apiUrl + path;
+
+    const queryParams: string[] = [`keywords=${encodeURIComponent(keywords)}`];
+    const lang = this.languageService.getCurrentLanguage()?.trim();
+    if (lang) {
+      queryParams.push(`lang=${encodeURIComponent(lang)}`);
+    }
+
+    url += '?' + queryParams.join('&');
+
+    return this.http.get<DashboardSuggestion>(url);
+  }
+
+  /** Clears in-memory territory cache (e.g. after language change if needed). */
+  clearTerritoriesCache(): void {
+    this.territoriesByApplicationId.clear();
   }
 
   fetchMapConfiguration(

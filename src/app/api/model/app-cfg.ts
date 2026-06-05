@@ -19,6 +19,8 @@ export interface GeneralCfg {
   locale?: string;
   crs?: string;
   initialExtent?: [number, number, number, number];
+  /** OpenLayers zoom level from territory profile; applied after initial extent on map load. */
+  defaultZoomLevel?: number;
   attribution?: string;
   layout: {
     config: string;
@@ -40,6 +42,15 @@ export interface AppApplication {
   srs: string;
   'situation-map'?: string;
   initialExtent: [number, number, number, number];
+  /** OpenLayers zoom level from territory profile; applied after initial extent on map load. */
+  defaultZoomLevel?: number;
+  pointOfInterest?: { x: number; y: number };
+  territoryCode?: string;
+  territoryName?: string;
+  territoryDescription?: string;
+  territorialAuthorityName?: string;
+  territorialAuthorityAddress?: string;
+  territoryTypeName?: string;
 }
 
 export interface AppBackground {
@@ -119,6 +130,9 @@ export interface AppTasks {
   id: string;
   parameters: any;
   'ui-control': string;
+  typeId?: number;
+  name?: string;
+  cartographyId?: string;
 }
 
 export interface AppTree {

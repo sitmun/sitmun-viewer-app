@@ -1,14 +1,15 @@
 import {
+  HttpContext,
   HttpErrorResponse,
   HttpHandler,
   HttpRequest
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
-import { URL_AUTH_LOGOUT } from '@api/api-config';
+import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
 import { throwError } from 'rxjs';
 
-import { AuthenticationInterceptor } from './authentication.interceptor';
+import { AuthenticationInterceptor , SUPPRESS_AUTH_REDIRECT_ON_401 } from './authentication.interceptor';
 import { AuthenticationService } from './authentication.service';
 
 describe('AuthenticationInterceptor', () => {
@@ -92,6 +93,91 @@ describe('AuthenticationInterceptor', () => {
         expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
         done();
       }
+    });
+  });
+
+  it('does not invoke session helpers on 401 from proxy refresh URL', (done) => {
+    const next: HttpHandler = {
+      handle: () =>
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 401,
+              url: `https://example.test${URL_AUTH_PROXY}`
+            })
+        )
+    };
+    const req = new HttpRequest('GET', URL_AUTH_PROXY);
+    interceptor.intercept(req, next).subscribe({
+      error: () => {
+        expect(authService.logout).not.toHaveBeenCalled();
+        expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  });
+
+  describe('SUPPRESS_AUTH_REDIRECT_ON_401 context token', () => {
+    it('does not call clearSessionAndRedirectToLogin on logout 401 when context suppresses redirect', (done) => {
+      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
+      const next: HttpHandler = {
+        handle: () =>
+          throwError(
+            () =>
+              new HttpErrorResponse({
+                status: 401,
+                url: `https://example.test${URL_AUTH_LOGOUT}`
+              })
+          )
+      };
+      const req = new HttpRequest('POST', URL_AUTH_LOGOUT, null, { context });
+      interceptor.intercept(req, next).subscribe({
+        error: () => {
+          expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
+          expect(authService.logout).not.toHaveBeenCalled();
+          done();
+        }
+      });
+    });
+
+    it('does not call logout on non-logout 401 when context suppresses redirect', (done) => {
+      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
+      const next: HttpHandler = {
+        handle: () =>
+          throwError(
+            () =>
+              new HttpErrorResponse({
+                status: 401,
+                url: '/api/config'
+              })
+          )
+      };
+      const req = new HttpRequest('GET', '/api/config', null, { context });
+      interceptor.intercept(req, next).subscribe({
+        error: () => {
+          expect(authService.logout).not.toHaveBeenCalled();
+          expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
+          done();
+        }
+      });
+    });
+
+    it('still propagates the error when context suppresses redirect', (done) => {
+      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
+      const next: HttpHandler = {
+        handle: () =>
+          throwError(
+            () =>
+              new HttpErrorResponse({ status: 401, url: `https://example.test${URL_AUTH_LOGOUT}` })
+          )
+      };
+      const req = new HttpRequest('POST', URL_AUTH_LOGOUT, null, { context });
+      interceptor.intercept(req, next).subscribe({
+        error: (err: unknown) => {
+          expect(err).toBeInstanceOf(HttpErrorResponse);
+          done();
+        }
+      });
     });
   });
 });

@@ -1,4 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+import { NgOptimizedImage } from '@angular/common';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -10,6 +15,18 @@ import { DashboardTerritorySelectionDialogComponent } from '@ui/components/dashb
 import { AppConfigService } from 'src/app/services/app-config.service';
 
 import { DashboardItemsComponent } from './dashboard-items.component';
+
+// Mock IntersectionObserver for tests
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(public callback: IntersectionObserverCallback) {}
+  observe = jest.fn();
+  disconnect = jest.fn();
+  unobserve = jest.fn();
+  takeRecords = jest.fn();
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+} as any;
 
 describe('DashboardItemsComponent', () => {
   let component: DashboardItemsComponent;
@@ -30,7 +47,7 @@ describe('DashboardItemsComponent', () => {
     isUnavailable: false,
     updateDate: new Date(),
     createdDate: new Date(),
-    creator: 'test',
+    pointOfContact: 'gis-office@example.com',
     headerParams: {}
   });
 
@@ -40,14 +57,29 @@ describe('DashboardItemsComponent', () => {
     } as Partial<Router> as jest.Mocked<Router>;
     mockAppConfigService = {
       isFilteringEnabled: jest.fn(),
-      getAllowedTypes: jest.fn()
+      getAllowedTypes: jest.fn(),
+      getDashboardConfig: jest.fn(() => ({
+        allowedTypes: mockAppConfigService.getAllowedTypes(),
+        filteringEnabled: mockAppConfigService.isFilteringEnabled(),
+        initialBatchSize: 3,
+        batchIncrement: 3
+      })),
+      filterApplicationsByType: jest.fn((items, config) => {
+        if (!config.filteringEnabled) {
+          return items;
+        }
+        const allowedTypes = config.allowedTypes ?? [];
+        return items.filter(
+          (item) => item.type != null && allowedTypes.includes(item.type)
+        );
+      })
     } as Partial<
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
 
     await TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
+        NgOptimizedImage,
         TranslateModule.forRoot(),
         MatDialogModule
       ],
@@ -57,6 +89,8 @@ describe('DashboardItemsComponent', () => {
         DashboardTerritorySelectionDialogComponent
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Router, useValue: mockRouter },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
@@ -156,6 +190,9 @@ describe('DashboardItemsComponent', () => {
     it('should apply type filtering before displaying applications', () => {
       mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
       mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
 
       component.items = [
         createMockItem(1, 'App1', 'I'),
@@ -163,10 +200,50 @@ describe('DashboardItemsComponent', () => {
         createMockItem(3, 'App3', 'I')
       ];
 
-      component.displayAllApplications(true);
+      component.ngOnInit();
 
       expect(component.allItems.length).toBe(2);
-      expect(component.totalItems).toBe(2);
+    });
+
+    it('should display all items from input', () => {
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(false);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+
+      component.items = Array.from({ length: 9 }, (_, index) =>
+        createMockItem(index + 1, `App${index + 1}`, 'E')
+      );
+      component.ngOnInit();
+
+      expect(component.allItems.length).toBe(9);
+    });
+
+    it('should update displayed items when input changes', () => {
+      mockAppConfigService.isFilteringEnabled.mockReturnValue(false);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+
+      component.items = Array.from({ length: 15 }, (_, index) =>
+        createMockItem(index + 1, `App${index + 1}`, 'E')
+      );
+      component.ngOnInit();
+
+      expect(component.allItems.length).toBe(15);
+
+      const nextItems = [createMockItem(1, 'App1', 'E')];
+      component.items = nextItems;
+      component.ngOnChanges({
+        items: {
+          previousValue: [],
+          currentValue: nextItems,
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      });
+
+      expect(component.allItems.length).toBe(1);
     });
   });
 
@@ -174,6 +251,9 @@ describe('DashboardItemsComponent', () => {
     it('should apply type filtering before filtering by private/public', () => {
       mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
       mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/user/dashboard'
+      });
 
       component.items = [
         createMockItem(1, 'App1', 'I', true),
@@ -182,16 +262,18 @@ describe('DashboardItemsComponent', () => {
         createMockItem(4, 'App4', 'E', false)
       ];
 
-      component.displayAllApplicationsPrivate(true, true);
+      component.ngOnInit();
 
       expect(component.privateItems.length).toBe(1);
-      expect(component.totalPrivateItems).toBe(1);
       expect(component.privateItems[0].name).toBe('App1');
     });
 
     it('should handle public items with type filtering', () => {
       mockAppConfigService.isFilteringEnabled.mockReturnValue(true);
       mockAppConfigService.getAllowedTypes.mockReturnValue(['I']);
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/user/dashboard'
+      });
 
       component.items = [
         createMockItem(1, 'App1', 'I', true),
@@ -200,10 +282,9 @@ describe('DashboardItemsComponent', () => {
         createMockItem(4, 'App4', 'E', false)
       ];
 
-      component.displayAllApplicationsPrivate(true, false);
+      component.ngOnInit();
 
       expect(component.publicItems.length).toBe(1);
-      expect(component.totalPublicItems).toBe(1);
       expect(component.publicItems[0].name).toBe('App3');
     });
   });
@@ -226,29 +307,116 @@ describe('DashboardItemsComponent', () => {
     });
   });
 
-  describe('isDashboard', () => {
-    it('should return true for user dashboard route', () => {
-      Object.defineProperty(mockRouter, 'url', {
-        get: () => '/user/dashboard'
-      });
+  it('declares full-width block host layout for stable filtered grids', () => {
+    const scss = readFileSync(
+      join(__dirname, 'dashboard-items.component.scss'),
+      'utf8'
+    );
+    expect(scss).toContain(':host');
+    expect(scss).toMatch(/display:\s*block/);
+    expect(scss).toMatch(/width:\s*100%/);
+  });
 
-      expect(component.isDashboard()).toBe(true);
+  describe('Infinite Scroll', () => {
+    beforeEach(() => {
+      mockAppConfigService.getDashboardConfig.mockReturnValue({
+        allowedTypes: [],
+        filteringEnabled: false,
+        initialBatchSize: 12,
+        batchIncrement: 6
+      });
     });
 
-    it('should return true for public dashboard route', () => {
+    it('should setup observers after view init', () => {
       Object.defineProperty(mockRouter, 'url', {
         get: () => '/public/dashboard'
       });
-
-      expect(component.isDashboard()).toBe(true);
+      component.items = Array.from({ length: 20 }, (_, i) =>
+        createMockItem(i + 1, `App${i + 1}`, 'E')
+      );
+      component.hasMorePages = true;
+      component.ngOnInit();
+      
+      component.ngAfterViewInit();
+      
+      expect(component['observers']).toBeDefined();
+      expect(Array.isArray(component['observers'])).toBe(true);
     });
 
-    it('should return false for non-dashboard routes', () => {
+    it('should emit loadMore event when sentinel visible', () => {
       Object.defineProperty(mockRouter, 'url', {
-        get: () => '/user/map'
+        get: () => '/public/dashboard'
       });
+      component.items = Array.from({ length: 12 }, (_, i) =>
+        createMockItem(i + 1, `App${i + 1}`, 'E')
+      );
+      component.hasMorePages = true;
+      component.loadingMore = false;
+      component.ngOnInit();
 
-      expect(component.isDashboard()).toBe(false);
+      const loadMoreSpy = jest.spyOn(component.loadMore, 'emit');
+
+      component['onSentinelVisible']();
+
+      expect(loadMoreSpy).toHaveBeenCalled();
+    });
+
+    it('should prevent simultaneous loads', () => {
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.items = Array.from({ length: 12 }, (_, i) =>
+        createMockItem(i + 1, `App${i}`, 'E')
+      );
+      component.hasMorePages = true;
+      component.loadingMore = true;
+      component.ngOnInit();
+
+      const loadMoreSpy = jest.spyOn(component.loadMore, 'emit');
+
+      component['onSentinelVisible']();
+
+      expect(loadMoreSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not emit when no more pages', () => {
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.items = Array.from({ length: 12 }, (_, i) =>
+        createMockItem(i + 1, `App${i}`, 'E')
+      );
+      component.hasMorePages = false;
+      component.loadingMore = false;
+      component.ngOnInit();
+
+      const loadMoreSpy = jest.spyOn(component.loadMore, 'emit');
+
+      component['onSentinelVisible']();
+
+      expect(loadMoreSpy).not.toHaveBeenCalled();
+    });
+
+    it('should cleanup observers on destroy', () => {
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.items = [];
+      component.ngOnInit();
+      component.ngAfterViewInit();
+
+      const mockObserver = {
+        disconnect: jest.fn(),
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+        takeRecords: jest.fn()
+      };
+      component['observers'] = [mockObserver as any];
+
+      component.ngOnDestroy();
+
+      expect(mockObserver.disconnect).toHaveBeenCalled();
+      expect(component['observers'].length).toBe(0);
     });
   });
 });

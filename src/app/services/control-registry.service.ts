@@ -215,27 +215,28 @@ export class ControlRegistryService {
           }
           (sitnaControls as any)[controlKey] = config;
 
-          if (this.needsPatches(handler)) {
-            const loadStart = performance.now();
-            patchLoaders.push(
-              handler
-                .loadPatches(context)
-                .then(() => {
-                  const entry = this.controlTimings.get(bid);
-                  if (entry)
-                    entry.loadPatchesMs = performance.now() - loadStart;
-                })
-                .catch((err: unknown) => {
-                  console.error(
-                    `[ControlRegistry] Failed to load patches for ${bid}:`,
-                    err
-                  );
-                  const entry = this.controlTimings.get(bid);
-                  if (entry)
-                    entry.loadPatchesMs = performance.now() - loadStart;
-                })
-            );
-          }
+        }
+
+        if (this.needsPatches(handler)) {
+          const loadStart = performance.now();
+          patchLoaders.push(
+            handler
+              .loadPatches(context)
+              .then(() => {
+                const entry = this.controlTimings.get(bid);
+                if (entry)
+                  entry.loadPatchesMs = performance.now() - loadStart;
+              })
+              .catch((err: unknown) => {
+                console.error(
+                  `[ControlRegistry] Failed to load patches for ${bid}:`,
+                  err
+                );
+                const entry = this.controlTimings.get(bid);
+                if (entry)
+                  entry.loadPatchesMs = performance.now() - loadStart;
+              })
+          );
         }
       } catch (error) {
         console.error(
@@ -481,7 +482,13 @@ export class ControlRegistryService {
    * Unregister all handlers and clean up.
    */
   unregisterAll(): void {
-    this.handlers.forEach((handler) => handler.cleanup?.());
+    this.handlers.forEach((handler, key) => {
+      try {
+        handler.cleanup?.();
+      } catch (e) {
+        console.warn(`[ControlRegistry] cleanup failed for '${key}':`, e);
+      }
+    });
     this.handlers.clear();
   }
 

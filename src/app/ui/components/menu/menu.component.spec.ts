@@ -1,5 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,7 +27,6 @@ describe('MenuComponent', () => {
       declarations: [MenuComponent],
       imports: [
         BrowserAnimationsModule,
-        HttpClientTestingModule,
         NgOptimizedImage,
         TranslateModule.forRoot(),
         FormsModule,
@@ -39,6 +39,8 @@ describe('MenuComponent', () => {
         MatSelectModule
       ],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Router,
           useValue: {

@@ -1,4 +1,6 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -6,10 +8,9 @@ import { Router } from '@angular/router';
 
 import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { DashboardItemsComponent } from '@ui/components/dashboard/dashboard-items/dashboard-items.component';
-import { DashboardSearchboxComponent } from '@ui/components/dashboard/dashboard-searchbox/dashboard-searchbox.component';
 import { OpenModalService } from '@ui/modal/service/open-modal.service';
 import { of } from 'rxjs';
+import { AppConfigService } from 'src/app/services/app-config.service';
 
 import { PublicDashboardComponent } from './public-dashboard.component';
 
@@ -19,37 +20,105 @@ describe('PublicDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        TranslateModule.forRoot(),
-        MatDialogModule,
-        FormsModule
-      ],
-      declarations: [
-        PublicDashboardComponent,
-        DashboardItemsComponent,
-        DashboardSearchboxComponent
-      ],
+      imports: [TranslateModule.forRoot(), MatDialogModule, FormsModule],
+      declarations: [PublicDashboardComponent],
+      schemas: [NO_ERRORS_SCHEMA],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Router,
           useValue: {
             navigate: jest.fn(),
             navigateByUrl: jest.fn(),
-            url: '/public'
+            url: '/public/dashboard'
           }
         },
         {
           provide: CommonService,
           useValue: {
-            fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [] })),
+            fetchDashboardItems: jest.fn().mockReturnValue(
+              of({
+                content: [
+                  {
+                    id: 1,
+                    name: 'Menorca',
+                    title: 'Menorca',
+                    type: 'I',
+                    appPrivate: false,
+                    isUnavailable: false,
+                    updateDate: new Date(),
+                    createdDate: new Date(),
+                    pointOfContact: 'u',
+                    headerParams: {}
+                  },
+                  {
+                    id: 2,
+                    name: 'Navarra',
+                    title: 'Navarra',
+                    type: 'I',
+                    appPrivate: false,
+                    isUnavailable: false,
+                    updateDate: new Date(),
+                    createdDate: new Date(),
+                    pointOfContact: 'u',
+                    headerParams: {}
+                  }
+                ],
+                totalElements: 2
+              })
+            ),
+            fetchDashboardApplications: jest.fn().mockReturnValue(
+              of({
+                content: [
+                  {
+                    id: 1,
+                    name: 'Menorca',
+                    title: 'Menorca',
+                    type: 'I',
+                    appPrivate: false,
+                    isUnavailable: false,
+                    updateDate: new Date(),
+                    createdDate: new Date(),
+                    pointOfContact: 'u',
+                    headerParams: {}
+                  },
+                  {
+                    id: 2,
+                    name: 'Navarra',
+                    title: 'Navarra',
+                    type: 'I',
+                    appPrivate: false,
+                    isUnavailable: false,
+                    updateDate: new Date(),
+                    createdDate: new Date(),
+                    pointOfContact: 'u',
+                    headerParams: {}
+                  }
+                ],
+                totalElements: 2
+              })
+            ),
+            fetchTerritoriesByApplication: jest
+              .fn()
+              .mockReturnValue(of({ content: [] })),
+            clearTerritoriesCache: jest.fn(),
             message$: of(null)
           }
         },
         {
           provide: OpenModalService,
+          useValue: { open: jest.fn() }
+        },
+        {
+          provide: AppConfigService,
           useValue: {
-            open: jest.fn()
+            filterApplicationsByType: (items: unknown[]) => items,
+            getDashboardConfig: () => ({
+              allowedTypes: ['I'],
+              filteringEnabled: true
+            }),
+            applicationHasTerritory: () => true
           }
         }
       ]
@@ -62,5 +131,16 @@ describe('PublicDashboardComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('filters displayed items on keyword search without refetching', () => {
+    const commonService = TestBed.inject(CommonService);
+    const fetchSpy = commonService.fetchDashboardApplications as jest.Mock;
+
+    component.onKeywordsSearch('Navarra');
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(component.items).toHaveLength(1);
+    expect(component.items[0].name).toBe('Navarra');
   });
 });

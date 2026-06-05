@@ -18,6 +18,7 @@ import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { LegendControlHandler } from './legend-control.handler';
 import { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 import { MeasureControlHandler } from './measure-control.handler';
+import { MoreInfoAdvancedControlHandler } from './more-info-advanced-control.handler';
 import { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 import { NavBarControlHandler } from './navbar-control.handler';
 import { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
@@ -35,6 +36,7 @@ import { WFSEditControlHandler } from './wfs-edit-control.handler';
 import { WFSQueryControlHandler } from './wfs-query-control.handler';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 import { HelloWorldControlHandler } from '../hello-world/hello-world-control.handler';
+import { LocatorControlHandler } from '../locator/locator-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -54,6 +56,7 @@ export { FeatureInfoControlHandler } from './feature-info-control.handler';
 export { GeolocationControlHandler } from './geolocation-control.handler';
 export { LoadingIndicatorControlHandler } from './loading-indicator-control.handler';
 export { MeasureControlHandler } from './measure-control.handler';
+export { MoreInfoAdvancedControlHandler } from './more-info-advanced-control.handler';
 export { MultiFeatureInfoControlHandler } from './multi-feature-info-control.handler';
 export { OfflineMapMakerControlHandler } from './offline-map-maker-control.handler';
 export { PrintMapControlHandler } from './print-map-control.handler';
@@ -69,6 +72,7 @@ export { WFSQueryControlHandler } from './wfs-query-control.handler';
 
 // Custom Controls
 export { HelloWorldControlHandler } from '../hello-world/hello-world-control.handler';
+export { LocatorControlHandler } from '../locator/locator-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -96,6 +100,7 @@ export const ALL_CONTROL_HANDLERS = [
   GeolocationControlHandler,
   LoadingIndicatorControlHandler,
   MeasureControlHandler,
+  MoreInfoAdvancedControlHandler,
   MultiFeatureInfoControlHandler,
   OfflineMapMakerControlHandler,
   PrintMapControlHandler,
@@ -123,5 +128,6 @@ export const ALL_CONTROL_HANDLERS = [
   WFSQueryControlHandler,
 
   // Custom Controls
-  HelloWorldControlHandler
+  HelloWorldControlHandler,
+  LocatorControlHandler
 ] as const;

@@ -1,0 +1,25 @@
+<h2>{{i18n title}}</h2>
+{{#if hasTasks}}
+  <div class="tc-ctl-loc-body">
+    <div class="tc-ctl-loc-select-row">
+      <select class="tc-ctl-loc-select">
+        <option value="">{{i18n selectLocator}}</option>
+        {{#each tasks}}
+          <option value="{{id}}">{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <form class="tc-ctl-loc-form" onsubmit="return false;">
+      <div class="tc-ctl-loc-search-row" style="display:none">
+        <input type="text"
+               class="tc-ctl-loc-input"
+               placeholder="{{i18n searchPlaceholder}}"
+               autocomplete="off" />
+        <button type="submit" class="tc-ctl-loc-search-btn"></button>
+      </div>
+    </form>
+    <div class="tc-ctl-loc-loading" style="display:none">{{i18n loading}}</div>
+    <ul class="tc-ctl-loc-results" style="display:none"></ul>
+    <div class="tc-ctl-loc-no-results" style="display:none">{{i18n noResults}}</div>
+  </div>
+{{/if}}

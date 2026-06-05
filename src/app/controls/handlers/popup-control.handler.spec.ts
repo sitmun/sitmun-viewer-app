@@ -1,4 +1,5 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
@@ -35,8 +36,9 @@ describe('PopupControlHandler', () => {
     > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         PopupControlHandler,
         { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
