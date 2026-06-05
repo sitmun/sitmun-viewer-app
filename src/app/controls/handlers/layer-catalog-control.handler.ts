@@ -599,16 +599,17 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             return [];
           }
 
-          const selector = layerObj.nodeId
-            ? `li[data-layer-name="${layerObj.nodeId}"]`
-            : `li[data-layer-name="${layerObj.options.layerNames}"]`;
+          const nodeId = layerObj.options?.nodeId ?? layerObj.nodeId;
+          const selector = nodeId
+            ? `li[data-layer-name="${nodeId}"]`
+            : `li[data-layer-name="${layerObj.options?.layerNames}"]`;
 
           for (let i = 0; i < rootNodes.length; i++) {
             const rootNode = rootNodes[i];
             const liLayer = rootNode.querySelector(selector);
             if (liLayer) {
-              // This is a workaround to remove the loading class from the node
               liLayer.classList.remove(TC.Consts.classes.LOADING);
+              result.push(liLayer);
               liLayer.querySelectorAll('li').forEach((li: Element) => {
                 result.push(li);
               });

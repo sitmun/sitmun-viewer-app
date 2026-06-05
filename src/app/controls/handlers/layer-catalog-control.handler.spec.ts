@@ -971,6 +971,130 @@ describe('LayerCatalogControlHandler', () => {
     });
   });
 
+  describe('patchLayerCatalogGetLayerNodes', () => {
+    const LOADING_CLASS = 'tc-loading';
+
+    function buildMockTCForGetLayerNodes() {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.getLayerNodes = function () {};
+      return {
+        TC: {
+          Consts: { classes: { LOADING: LOADING_CLASS } },
+          control: { LayerCatalog }
+        }
+      };
+    }
+
+    function buildDiv(nodeId: string, children: string[] = []): HTMLElement {
+      const div = document.createElement('div');
+      div.classList.add('tc-ctl-lcat-tree');
+      const ul = document.createElement('ul');
+      ul.classList.add('tc-ctl-lcat-branch');
+      const rootLi = document.createElement('li');
+      rootLi.classList.add('tc-ctl-lcat-node');
+
+      const leafLi = document.createElement('li');
+      leafLi.setAttribute('data-layer-name', nodeId);
+
+      for (const childId of children) {
+        const childLi = document.createElement('li');
+        childLi.setAttribute('data-layer-name', childId);
+        leafLi.appendChild(childLi);
+      }
+
+      rootLi.appendChild(leafLi);
+      ul.appendChild(rootLi);
+      div.appendChild(ul);
+      return div;
+    }
+
+    it('returns the matched leaf when nodeId is in options.nodeId', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/1' } }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).toContain(leafLi);
+    });
+
+    it('returns the matched leaf when nodeId is top-level (backward compatibility)', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { nodeId: 'node/1' }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).toContain(leafLi);
+    });
+
+    it('removes the loading class from the matched leaf', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]')!;
+      leafLi.classList.add(LOADING_CLASS);
+      expect(leafLi.classList.contains(LOADING_CLASS)).toBe(true);
+
+      TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        { div },
+        { options: { nodeId: 'node/1' } }
+      );
+
+      expect(leafLi.classList.contains(LOADING_CLASS)).toBe(false);
+    });
+
+    it('includes leaf descendants in the result', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1', ['node/1/sub']);
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/1' } }
+      );
+
+      const subLi = div.querySelector('li[data-layer-name="node/1/sub"]');
+      expect(result).toContain(subLi);
+    });
+
+    it('returns empty list when nodeId does not match any node', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/99' } }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).not.toContain(leafLi);
+    });
+  });
+
   describe('Integration', () => {
     it('should handle full workflow', async () => {
       const context: AppCfg = {
