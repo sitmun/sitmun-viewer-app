@@ -11,7 +11,7 @@ function item(partial: Partial<DashboardItem> & { id: number; name: string }): D
     isUnavailable: false,
     updateDate: new Date(),
     createdDate: new Date(),
-    creator: 'c',
+    pointOfContact: 'c',
     headerParams: {},
     ...partial
   };

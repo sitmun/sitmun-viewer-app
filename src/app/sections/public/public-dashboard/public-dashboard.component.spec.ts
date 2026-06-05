@@ -49,7 +49,7 @@ describe('PublicDashboardComponent', () => {
                     isUnavailable: false,
                     updateDate: new Date(),
                     createdDate: new Date(),
-                    creator: 'u',
+                    pointOfContact: 'u',
                     headerParams: {}
                   },
                   {
@@ -61,7 +61,7 @@ describe('PublicDashboardComponent', () => {
                     isUnavailable: false,
                     updateDate: new Date(),
                     createdDate: new Date(),
-                    creator: 'u',
+                    pointOfContact: 'u',
                     headerParams: {}
                   }
                 ],
@@ -80,7 +80,7 @@ describe('PublicDashboardComponent', () => {
                     isUnavailable: false,
                     updateDate: new Date(),
                     createdDate: new Date(),
-                    creator: 'u',
+                    pointOfContact: 'u',
                     headerParams: {}
                   },
                   {
@@ -92,7 +92,7 @@ describe('PublicDashboardComponent', () => {
                     isUnavailable: false,
                     updateDate: new Date(),
                     createdDate: new Date(),
-                    creator: 'u',
+                    pointOfContact: 'u',
                     headerParams: {}
                   }
                 ],

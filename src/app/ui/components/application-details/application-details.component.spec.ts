@@ -24,7 +24,7 @@ describe('ApplicationDetailsComponent', () => {
       isUnavailable: false,
       updateDate: new Date('2024-01-02'),
       createdDate: new Date(),
-      creator: 'u',
+      pointOfContact: 'u',
       headerParams: {}
     };
     fixture.detectChanges();

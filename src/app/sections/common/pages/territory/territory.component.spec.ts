@@ -24,7 +24,7 @@ describe('TerritoryComponent', () => {
       isUnavailable: false,
       updateDate: new Date(),
       createdDate: new Date(),
-      creator: 'u',
+      pointOfContact: 'u',
       headerParams: {}
     }) as DashboardItem;
 
@@ -38,7 +38,7 @@ describe('TerritoryComponent', () => {
       isUnavailable: false,
       updateDate: new Date(),
       createdDate: new Date(),
-      creator: 'u',
+      pointOfContact: 'u',
       headerParams: {}
     },
     {
@@ -50,7 +50,7 @@ describe('TerritoryComponent', () => {
       isUnavailable: false,
       updateDate: new Date(),
       createdDate: new Date(),
-      creator: 'u',
+      pointOfContact: 'u',
       headerParams: {}
     }
   ];

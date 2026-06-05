@@ -33,7 +33,7 @@ function dashboardItem(id: number, name: string): DashboardItem {
     isUnavailable: false,
     updateDate: new Date(),
     createdDate: new Date(),
-    creator: 'u',
+    pointOfContact: 'u',
     headerParams: {}
   };
 }
