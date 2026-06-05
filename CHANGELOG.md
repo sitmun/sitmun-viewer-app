@@ -39,6 +39,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **i18n**: add missing ngx-translate keys for French, Catalan, and Aranese (`error.*`, `systemInfo.*`, auth messages); fixes [#139](https://github.com/sitmun/sitmun-viewer-app/issues/139) for viewer UI strings.
 - Available layer catalog: clicking the same layer no longer loads it multiple times; catalog nodes are correctly marked as already added after the first load (fixes [#140](https://github.com/sitmun/sitmun-viewer-app/issues/140)).
 - **Auth**: entering a `/public/**` URL while an `access_token` cookie from a previous authenticated session was present caused backend config/profile requests to resolve as the previous user instead of anonymous. The `publicAuthClearGuard` now expires that cookie before the route loads.
 - **Point of contact**: the application details page now renders `pointOfContact` from the API response directly. The previous `resolveCreatorUsername()` account lookup has been removed; it was resolving against `/api/account` without an id, which returned the current session user instead of the configured contact. Fixes [#159](https://github.com/sitmun/sitmun-viewer-app/issues/159).
