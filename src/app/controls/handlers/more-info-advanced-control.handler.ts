@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { MoreInfoAdvancedService, MiaRenderedTask, MiaTask } from '../../services/more-info-advanced.service';
+import { MoreInfoAdvancedService, MiaExportAction, MiaRenderedTask, MiaTask, TemplateExportResult } from '../../services/more-info-advanced.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
@@ -24,6 +24,20 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private appConfig: AppCfg | null = null;
   private miaOverlayElement: HTMLElement | null = null;
   private floatingZIndex = 10050;
+  private static readonly EXPORT_BUTTON_CONFIG: Record<string, { label: string; ariaLabel: string; icon: string; loadingLabel: string }> = {
+    pdf: {
+      label: 'Exportar PDF',
+      ariaLabel: 'Exportar plantilla en PDF',
+      icon: 'pdf',
+      loadingLabel: 'Generant PDF...'
+    },
+    xml: {
+      label: 'Descarregar XML',
+      ariaLabel: 'Descarregar plantilla en XML',
+      icon: 'xml',
+      loadingLabel: 'Preparant XML...'
+    }
+  };
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
@@ -200,6 +214,11 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     const contentDiv = overlay.querySelector('.tc-ctl-popup-content') as HTMLElement | null;
     if (!contentDiv) return;
     contentDiv.innerHTML = this.buildMiasHtml(popupId, miaTasks);
+      const exportActions = Array.from(new Map(
+        miaTasks
+          .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
+          .map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])
+      ).values());
 
     const position = this.getInitialMiaOverlayPosition(overlay);
     this.placeMiaOverlayAt(position.left, position.top);
@@ -210,7 +229,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     this.wireBackendRenderedTabs(contentDiv);
 
     this.miaService.renderMiaTasks(miaTasks, featureData).subscribe({
-      next: (renderedTasks) => this.fillRenderedMiaTasks(contentDiv, renderedTasks),
+      next: (renderedTasks) => this.fillRenderedMiaTasks(contentDiv, renderedTasks, exportActions),
       error: (error) => this.fillRenderedMiaError(contentDiv, error?.message || 'MIA rendering failed')
     });
   }
@@ -327,14 +346,20 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
   private fillRenderedMiaTasks(
     contentDiv: HTMLElement,
-    renderedTasks: MiaRenderedTask[]
+    renderedTasks: MiaRenderedTask[],
+    fallbackExportActions: MiaExportAction[]
   ): void {
     renderedTasks.forEach((renderedTask) => {
       const target = contentDiv.querySelector(`[data-mia-task-id="${renderedTask.taskId}"]`);
       if (!target) return;
       target.innerHTML = renderedTask.error
         ? `<div class="sitmun-mia-error">${this.escapeHtml(renderedTask.error)}</div>`
-        : DOMPurify.sanitize(renderedTask.html || '<div class="sitmun-mia-empty">Sense dades</div>');
+        : DOMPurify.sanitize(renderedTask.html || '<div class="sitmun-mia-empty">Sense dades</div>', {
+            ADD_ATTR: ['data-mia-export-template', 'data-mia-template-task-id'],
+          });
+
+      // Inject download buttons for template children that carry the export annotation.
+      this.injectDownloadButtons(target as HTMLElement, fallbackExportActions);
     });
   }
 
@@ -342,6 +367,126 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     contentDiv.querySelectorAll('[data-mia-task-id]').forEach((target) => {
       target.innerHTML = `<div class="sitmun-mia-error">${this.escapeHtml(message)}</div>`;
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Download button injection
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Scans the given container for rendered template wrappers and injects one button per available
+   * document export action before each template content block.
+   */
+  private injectDownloadButtons(container: HTMLElement, fallbackExportActions: MiaExportAction[] = []): void {
+    const exportWrappers = container.querySelectorAll<HTMLElement>('[data-mia-export-template]');
+    exportWrappers.forEach((wrapper) => {
+      if (wrapper.querySelector('.sitmun-mia-download-bar')) {
+        // Already injected (guard against double calls)
+        return;
+      }
+
+      const actions = fallbackExportActions;
+      if (actions.length === 0) {
+        return;
+      }
+
+      const bar = document.createElement('div');
+      bar.className = 'sitmun-mia-download-bar';
+
+      actions.forEach((action) => {
+        const descriptor = this.getExportButtonDescriptor(action.output, action.label);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `sitmun-mia-download-btn sitmun-mia-download-btn--${descriptor.icon}`;
+        btn.dataset['miaExportButtonOutput'] = action.output;
+        btn.setAttribute('aria-label', descriptor.ariaLabel);
+        btn.innerHTML = `<span class="sitmun-mia-download-btn-icon" aria-hidden="true"></span><span class="sitmun-mia-download-btn-label">${this.escapeHtml(descriptor.label)}</span>`;
+
+        btn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          this.triggerMiaExport(wrapper, action, btn, descriptor);
+        });
+
+        bar.appendChild(btn);
+      });
+
+      wrapper.insertBefore(bar, wrapper.firstChild);
+    });
+  }
+
+  /**
+   * Calls the backend export endpoint and triggers a browser file download.
+   */
+  private triggerMiaExport(
+    wrapper: HTMLElement,
+    action: MiaExportAction,
+    btn: HTMLButtonElement,
+    descriptor: { label: string; loadingLabel: string }
+  ): void {
+    btn.disabled = true;
+    const btnLabel = btn.querySelector<HTMLElement>('.sitmun-mia-download-btn-label');
+    if (btnLabel) {
+      btnLabel.textContent = descriptor.loadingLabel;
+    }
+
+    const downloadBar = wrapper.querySelector('.sitmun-mia-download-bar');
+    const htmlContent = downloadBar
+      ? wrapper.innerHTML.replace(downloadBar.outerHTML, '')
+      : wrapper.innerHTML;
+    const exportTemplate = action.output === 'xml' ? '' : htmlContent;
+    const templateTaskId = this.resolveRenderedTemplateTaskId(wrapper);
+    const export$ = this.miaService.exportTemplate(exportTemplate, action.output, action.taskId, templateTaskId);
+
+    export$.subscribe({
+      next: (result: TemplateExportResult) => {
+        const url = URL.createObjectURL(result.blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = result.filename || `report.${action.output}`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+
+        btn.disabled = false;
+        if (btnLabel) {
+          btnLabel.textContent = descriptor.label;
+        }
+      },
+      error: (err: any) => {
+        console.error('[MIA] Export failed', err);
+        btn.disabled = false;
+        if (btnLabel) {
+          btnLabel.textContent = descriptor.label;
+        }
+      }
+    });
+  }
+
+  private resolveRenderedTemplateTaskId(wrapper: HTMLElement): number | null {
+    const rawTaskId = wrapper.getAttribute('data-mia-template-task-id');
+    if (!rawTaskId) {
+      return null;
+    }
+
+    const parsedTaskId = Number(rawTaskId);
+    return Number.isFinite(parsedTaskId) ? parsedTaskId : null;
+  }
+
+  private getExportButtonDescriptor(output: string, label?: string | null): { label: string; ariaLabel: string; icon: string; loadingLabel: string } {
+    const defaultDescriptor = MoreInfoAdvancedControlHandler.EXPORT_BUTTON_CONFIG[output] || {
+      label: `Exportar ${output.toUpperCase()}`,
+      ariaLabel: `Exportar plantilla en format ${output.toUpperCase()}`,
+      icon: 'generic',
+      loadingLabel: `Preparant ${output.toUpperCase()}...`
+    };
+    if (!label) {
+      return defaultDescriptor;
+    }
+    return {
+      ...defaultDescriptor,
+      ariaLabel: `${defaultDescriptor.ariaLabel} (${label})`
+    };
   }
 
   private getMiaPanelId(popupId: string, miaIndex: number): string {
