@@ -1,9 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
-
 
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
@@ -77,8 +77,9 @@ describe('LayerCatalogControlHandler', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         LayerCatalogControlHandler,
         { provide: SitnaApiService, useValue: mockSitnaApi },
         {
@@ -627,6 +628,82 @@ describe('LayerCatalogControlHandler', () => {
       expect(config?.enableSearch).toBe(true);
       expect(config?.collapsed).toBe(false);
     });
+
+    it('should order catalog layers by node order even when children array is scrambled', () => {
+      // Array order: ['node3', 'node1', 'node2', 'node4']  (scrambled)
+      // Node orders:   node1→1, node2→2, node3→3, node4→4
+      // Expected output: node1, node2, node3, node4  (sorted by order, not array position)
+      const context: AppCfg = {
+        trees: [
+          {
+            id: 'tree1',
+            rootNode: 'root',
+            nodes: {
+              root: {
+                title: 'Root',
+                resource: '',
+                isRadio: false,
+                children: ['node3', 'node1', 'node2', 'node4'],
+                order: 0
+              } as AppNodeInfo,
+              node1: {
+                title: 'Node 1',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 1
+              } as AppNodeInfo,
+              node2: {
+                title: 'Node 2',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 2
+              } as AppNodeInfo,
+              node3: {
+                title: 'Node 3',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 3
+              } as AppNodeInfo,
+              node4: {
+                title: 'Node 4',
+                resource: '',
+                isRadio: false,
+                children: [],
+                order: 4
+              } as AppNodeInfo
+            },
+            title: 'Tree 1',
+            image: null
+          }
+        ]
+      } as any;
+      const task: AppTasks = {
+        'ui-control': 'sitna.layerCatalog',
+        parameters: {}
+      } as any;
+
+      const mockTree = context.trees[0] as AppTree;
+      mockConfigLookup.findTreeContainingNode.mockReturnValue(mockTree);
+      mockConfigLookup.findNode.mockImplementation((nodeId: string) => {
+        return (context.trees[0].nodes as Record<string, AppNodeInfo>)[nodeId];
+      });
+      mockVirtualCapabilities.generateVirtualUrl.mockImplementation(
+        (nodeId: string) => `virtual://sitmun/${nodeId}`
+      );
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toBeDefined();
+      expect(config?.layers).toHaveLength(4);
+      expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/node1');
+      expect(config?.layers?.[1]?.url).toBe('virtual://sitmun/node2');
+      expect(config?.layers?.[2]?.url).toBe('virtual://sitmun/node3');
+      expect(config?.layers?.[3]?.url).toBe('virtual://sitmun/node4');
+    });
   });
 
   describe('patchLayerCatalogAddLayerToMap', () => {
@@ -891,6 +968,130 @@ describe('LayerCatalogControlHandler', () => {
 
     it('uses zIndex 0 without realLayerConfig', async () => {
       await expectZIndexOnAddLayer(null, 0);
+    });
+  });
+
+  describe('patchLayerCatalogGetLayerNodes', () => {
+    const LOADING_CLASS = 'tc-loading';
+
+    function buildMockTCForGetLayerNodes() {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.getLayerNodes = function () {};
+      return {
+        TC: {
+          Consts: { classes: { LOADING: LOADING_CLASS } },
+          control: { LayerCatalog }
+        }
+      };
+    }
+
+    function buildDiv(nodeId: string, children: string[] = []): HTMLElement {
+      const div = document.createElement('div');
+      div.classList.add('tc-ctl-lcat-tree');
+      const ul = document.createElement('ul');
+      ul.classList.add('tc-ctl-lcat-branch');
+      const rootLi = document.createElement('li');
+      rootLi.classList.add('tc-ctl-lcat-node');
+
+      const leafLi = document.createElement('li');
+      leafLi.setAttribute('data-layer-name', nodeId);
+
+      for (const childId of children) {
+        const childLi = document.createElement('li');
+        childLi.setAttribute('data-layer-name', childId);
+        leafLi.appendChild(childLi);
+      }
+
+      rootLi.appendChild(leafLi);
+      ul.appendChild(rootLi);
+      div.appendChild(ul);
+      return div;
+    }
+
+    it('returns the matched leaf when nodeId is in options.nodeId', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/1' } }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).toContain(leafLi);
+    });
+
+    it('returns the matched leaf when nodeId is top-level (backward compatibility)', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { nodeId: 'node/1' }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).toContain(leafLi);
+    });
+
+    it('removes the loading class from the matched leaf', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]')!;
+      leafLi.classList.add(LOADING_CLASS);
+      expect(leafLi.classList.contains(LOADING_CLASS)).toBe(true);
+
+      TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        { div },
+        { options: { nodeId: 'node/1' } }
+      );
+
+      expect(leafLi.classList.contains(LOADING_CLASS)).toBe(false);
+    });
+
+    it('includes leaf descendants in the result', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1', ['node/1/sub']);
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/1' } }
+      );
+
+      const subLi = div.querySelector('li[data-layer-name="node/1/sub"]');
+      expect(result).toContain(subLi);
+    });
+
+    it('returns empty list when nodeId does not match any node', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const ctxThis = { div };
+
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        ctxThis,
+        { options: { nodeId: 'node/99' } }
+      );
+
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).not.toContain(leafLi);
     });
   });
 

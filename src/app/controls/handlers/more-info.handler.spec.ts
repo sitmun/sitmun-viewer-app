@@ -1,3 +1,4 @@
+import { TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { FeatureInfoMoreInfoHandler } from './more-info.handler';
@@ -6,8 +7,8 @@ import { MoreInfoService } from '../../services/more-info.service';
 describe('FeatureInfoMoreInfoHandler', () => {
   let handler: FeatureInfoMoreInfoHandler;
   let mockMoreInfoService: jest.Mocked<MoreInfoService>;
+  let mockTranslateService: Pick<TranslateService, 'instant'>;
   const getAppConfig = jest.fn();
-  const showJsonResult = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -17,6 +18,12 @@ describe('FeatureInfoMoreInfoHandler', () => {
       getMoreInfoTasks: jest.fn(),
       executeMoreInfo: jest.fn()
     } as Partial<jest.Mocked<MoreInfoService>> as jest.Mocked<MoreInfoService>;
+
+    mockTranslateService = {
+      instant: jest.fn((key: string | string[]) =>
+        Array.isArray(key) ? key[0] : key
+      )
+    };
 
     getAppConfig.mockReturnValue({
       layers: [
@@ -30,7 +37,7 @@ describe('FeatureInfoMoreInfoHandler', () => {
     handler = new FeatureInfoMoreInfoHandler(
       mockMoreInfoService,
       getAppConfig,
-      showJsonResult
+      mockTranslateService as TranslateService
     );
   });
 
@@ -123,13 +130,13 @@ describe('FeatureInfoMoreInfoHandler', () => {
       );
       const apiField = apiFieldKey ? injected[apiFieldKey] : undefined;
 
-      expect(sqlField).toContain('class="sitmun-more-info-placeholder"');
+      expect(sqlField).toContain('sitmun-more-info-placeholder');
       expect(sqlField).toContain('data-task-id="task-sql"');
-      expect(sqlField).toContain('(Carregant...)');
+      expect(sqlField).toContain('Carregant...');
 
-      expect(apiField).toContain('class="sitmun-more-info-placeholder"');
+      expect(apiField).toContain('sitmun-more-info-placeholder');
       expect(apiField).toContain('data-task-id="task-api"');
-      expect(apiField).toContain('(Carregant...)');
+      expect(apiField).toContain('Carregant...');
     });
 
     it('should keep original command when task parameters JSON is invalid', () => {
@@ -167,7 +174,17 @@ describe('FeatureInfoMoreInfoHandler', () => {
   });
 
   describe('attachMoreInfoListeners', () => {
-    it('should execute link task by task-id and call showJsonResult with normalized rows', () => {
+    let alertSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      alertSpy.mockRestore();
+    });
+
+    it('should execute link task by task-id and alert normalized JSON data', () => {
       const table = document.createElement('table');
       table.className = 'tc-attr';
       table.innerHTML = `
@@ -211,9 +228,10 @@ describe('FeatureInfoMoreInfoHandler', () => {
           nom: 'Barcelona'
         })
       );
-      expect(showJsonResult).toHaveBeenCalledWith('Dades API', [
-        { city: 'Barcelona', count: 2 }
-      ]);
+      expect(alertSpy).toHaveBeenCalledWith(
+        'More info:\n' +
+          JSON.stringify({ city: 'Barcelona', count: 2 }, null, 2)
+      );
     });
 
     it('should fallback to task-index when task-id is missing', () => {
@@ -358,7 +376,7 @@ describe('FeatureInfoMoreInfoHandler', () => {
         '[data-placeholder-id="ph-redirect"]'
       ) as HTMLElement;
       expect(placeholder.innerHTML).toBe('pending');
-      expect(showJsonResult).not.toHaveBeenCalled();
+      expect(alertSpy).not.toHaveBeenCalled();
     });
 
     it('should flush pending result when placeholder appears later', () => {

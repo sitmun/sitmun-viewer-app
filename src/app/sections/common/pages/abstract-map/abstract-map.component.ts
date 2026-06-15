@@ -303,11 +303,14 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       );
 
       const attribution = this.mapConfig.toAttribution();
+      const initialExtent = this.mapConfig.toInitialExtent(appCfg);
+      const defaultZoomLevel = this.mapConfig.toDefaultZoomLevel(appCfg);
 
       this.currentGeneralCfg = {
         locale: this.locale,
         crs: this.mapConfig.toCrs(appCfg),
-        initialExtent: this.mapConfig.toInitialExtent(appCfg),
+        initialExtent,
+        defaultZoomLevel,
         attribution: attribution,
         layout: this.mapConfig.toLayout(appCfg),
         baseLayers: this.mapConfig.toBaseLayers(appCfg),
@@ -315,7 +318,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         views: this.mapConfig.toViews(appCfg)
       };
 
-      this.mapServiceWorker.loadMiddleware(appCfg);
+      await this.mapServiceWorker.configureMiddleware(appCfg);
 
       // We need to save the currentGeneralCfg and the currentAppCfg, so when the
       // catalog change, the map can be loaded again with the same configuration
@@ -508,6 +511,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         if (thisLoadId === this.loadId && !this.componentDestroyed.closed) {
           this.loadingState = 'loaded';
           this.mapInterface.updateInterface();
+          this.applyInitialViewAfterLoad(cfg);
         }
         resolve();
       });
@@ -533,6 +537,129 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  /**
+   * Applies initial view configuration after map is loaded.
+   * Sets extent first, then applies configured zoom level if present.
+   */
+  private applyInitialViewAfterLoad(cfg: GeneralCfg): void {
+    if (!cfg.initialExtent || typeof this.map?.setExtent !== 'function') {
+      return;
+    }
+
+    const requestedExtent = cfg.initialExtent;
+    const previousExtent =
+      typeof this.map.getExtent === 'function' ? this.map.getExtent() : undefined;
+
+    this.map.setExtent(
+      requestedExtent,
+      { animate: false },
+      (actualExtent: [number, number, number, number]) => {
+        console.info('[AbstractMapComponent] Applied SITNA initial extent', {
+          previousExtent: previousExtent,
+          requestedExtent: requestedExtent,
+          actualExtent: actualExtent,
+          delta: this.getExtentDelta(requestedExtent, actualExtent)
+        });
+
+        // Apply configured zoom level after extent, keeping the center
+        this.applyDefaultZoomLevel(cfg);
+      }
+    );
+  }
+
+  /**
+   * Applies territory defaultZoomLevel from GeneralCfg after initial extent.
+   * Prefers OpenLayers View.setZoom for a more natural zoom-level API; falls back
+   * to manual resolution conversion if setZoom is unavailable. Keeps the center
+   * from the extent fit and overrides zoom/resolution only.
+   */
+  private applyDefaultZoomLevel(cfg: GeneralCfg): void {
+    const level = cfg.defaultZoomLevel;
+    if (level == null) {
+      return; // No log for unset value (common case)
+    }
+
+    const olView = this.map.wrap?.map?.getView?.();
+    if (!olView) {
+      console.warn(
+        '[AbstractMapComponent] defaultZoomLevel configured but OpenLayers view is unavailable',
+        { defaultZoomLevel: level }
+      );
+      return;
+    }
+
+    // Capture previous state for logging
+    const previousZoom = typeof olView.getZoom === 'function' ? olView.getZoom() : undefined;
+    const previousResolution = olView.getResolution();
+
+    // Prefer setZoom when available (more natural for a zoom-level field)
+    if (typeof olView.setZoom === 'function') {
+      olView.setZoom(level);
+
+      const actualZoom = typeof olView.getZoom === 'function' ? olView.getZoom() : undefined;
+      const actualResolution = olView.getResolution();
+
+      console.info('[AbstractMapComponent] Applied defaultZoomLevel via OpenLayers view.setZoom', {
+        defaultZoomLevel: level,
+        previousZoom: previousZoom,
+        previousResolution: previousResolution,
+        actualZoom: actualZoom,
+        actualResolution: actualResolution
+      });
+      return;
+    }
+
+    // Fallback: manual resolution conversion via getResolutionForZoom + SITNA setResolution
+    if (
+      typeof olView.getResolutionForZoom !== 'function' ||
+      typeof this.map?.setResolution !== 'function'
+    ) {
+      console.warn(
+        '[AbstractMapComponent] defaultZoomLevel configured but fallback APIs (getResolutionForZoom or map.setResolution) are unavailable',
+        { defaultZoomLevel: level }
+      );
+      return;
+    }
+
+    const resolution = olView.getResolutionForZoom(level);
+    if (resolution == null || Number.isNaN(resolution)) {
+      console.warn(
+        '[AbstractMapComponent] Could not resolve defaultZoomLevel to a map resolution',
+        { defaultZoomLevel: level, resolution }
+      );
+      return;
+    }
+
+    this.map.setResolution(resolution);
+
+    const actualResolution =
+      typeof this.map.getResolution === 'function'
+        ? this.map.getResolution()
+        : olView.getResolution();
+
+    console.info(
+      '[AbstractMapComponent] Applied defaultZoomLevel via fallback (getResolutionForZoom + setResolution)',
+      {
+        defaultZoomLevel: level,
+        requestedResolution: resolution,
+        previousResolution: previousResolution,
+        actualResolution: actualResolution
+      }
+    );
+  }
+
+  private getExtentDelta(
+    requestedExtent: [number, number, number, number],
+    actualExtent: [number, number, number, number]
+  ): [number, number, number, number] {
+    return actualExtent.map((value, index) => value - requestedExtent[index]) as [
+      number,
+      number,
+      number,
+      number
+    ];
   }
 
   abstract navigateToDashboard(): any;

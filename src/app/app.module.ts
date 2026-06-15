@@ -38,7 +38,6 @@ import { LoginModalComponent } from '@sections/common/modals/login-modal/login-m
 import { WarningModalComponent } from '@sections/common/modals/warning-modal/warning-modal.component';
 import { EmbeddedMapComponent } from '@sections/embedded/embedded-map/embedded-map.component';
 import { UiModule } from '@ui/ui.module';
-import { NgxPaginationModule } from 'ngx-pagination';
 
 import { SharedPipesModule } from './../util/pipe/SharedPipesModule';
 import { AppRoutingModule } from './app-routing.module';
@@ -96,7 +95,6 @@ registerLocaleData(localeEs);
       }
     }),
     FormsModule,
-    NgxPaginationModule,
     BrowserAnimationsModule,
     SharedPipesModule,
     MatToolbarModule,

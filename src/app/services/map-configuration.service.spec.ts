@@ -165,6 +165,46 @@ describe('MapConfigurationService', () => {
     });
   });
 
+  describe('toDefaultZoomLevel', () => {
+    it('should return defaultZoomLevel from application config', () => {
+      const cfgWithZoom: AppCfg = {
+        ...mockAppCfg,
+        application: {
+          ...mockAppCfg.application,
+          defaultZoomLevel: 10
+        }
+      };
+      const result = service.toDefaultZoomLevel(cfgWithZoom);
+      expect(result).toBe(10);
+    });
+
+    it('should return undefined if defaultZoomLevel not configured', () => {
+      const result = service.toDefaultZoomLevel(mockAppCfg);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined if application is undefined', () => {
+      const cfgWithoutApp: AppCfg = {
+        ...mockAppCfg,
+        application: undefined as any
+      };
+      const result = service.toDefaultZoomLevel(cfgWithoutApp);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle zero as a valid zoom level', () => {
+      const cfgWithZeroZoom: AppCfg = {
+        ...mockAppCfg,
+        application: {
+          ...mockAppCfg.application,
+          defaultZoomLevel: 0
+        }
+      };
+      const result = service.toDefaultZoomLevel(cfgWithZeroZoom);
+      expect(result).toBe(0);
+    });
+  });
+
   describe('toLayout', () => {
     it('should return default layout for sitmun-base theme', () => {
       const result = service.toLayout(mockAppCfg);

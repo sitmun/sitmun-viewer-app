@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, RouterOutlet } from '@angular/router';
 
 import { PublicLayoutComponent } from './public-layout.component';
 
@@ -13,8 +13,9 @@ describe('PublicLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, StubNavigationBarComponent],
-      declarations: [PublicLayoutComponent]
+      imports: [RouterOutlet, StubNavigationBarComponent],
+      declarations: [PublicLayoutComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PublicLayoutComponent);

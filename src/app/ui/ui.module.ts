@@ -1,6 +1,6 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,22 +13,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { DashboardSearchboxComponent } from '@ui/components/dashboard/dashboard-searchbox/dashboard-searchbox.component';
 import { ModalModule } from '@ui/modal/modal.module';
-import { NgxPaginationModule } from 'ngx-pagination';
 
 import { ApplicationDetailsComponent } from './components/application-details/application-details.component';
 import { ChangeApplicationTerritoryDialogComponent } from './components/change-application-territory-dialog/change-application-territory-dialog.component';
-import { DashboardButtonsComponent } from './components/dashboard/dashboard-buttons/dashboard-buttons.component';
-import { DashboardExpandButtonComponent } from './components/dashboard/dashboard-expand-button/dashboard-expand-button.component';
 import { DashboardItemComponent } from './components/dashboard/dashboard-item/dashboard-item.component';
 import { DashboardItemsComponent } from './components/dashboard/dashboard-items/dashboard-items.component';
-import { DashboardPaginationComponent } from './components/dashboard/dashboard-pagination/dashboard-pagination.component';
 import { DashboardTerritorySelectionDialogComponent } from './components/dashboard/dashboard-territory-selection-dialog/dashboard-territory-selection-dialog.component';
 import { FormFieldInputComponent } from './components/form-field-input/form-field-input.component';
 import { MenuComponent } from './components/menu/menu.component';
@@ -46,15 +44,17 @@ import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
     CommonModule,
     TranslateModule,
     FormsModule,
-    NgxPaginationModule,
+    ReactiveFormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
     MatSelectModule,
     MatExpansionModule,
+    MatProgressSpinnerModule,
     SharedPipesModule,
     MatButtonModule,
+    MatTabsModule,
     MatTooltipModule,
     MatCardModule,
     MatMenuModule,
@@ -68,16 +68,13 @@ import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
   ],
   declarations: [
     DashboardItemsComponent,
-    DashboardButtonsComponent,
     DashboardSearchboxComponent,
     MenuComponent,
-    DashboardPaginationComponent,
     PrimaryButtonComponent,
     SecondaryButtonComponent,
     FormFieldInputComponent,
     NotificationComponent,
     DashboardItemComponent,
-    DashboardExpandButtonComponent,
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
     ProfileInformationComponent,
@@ -88,16 +85,13 @@ import { SharedPipesModule } from '../../util/pipe/SharedPipesModule';
   ],
   exports: [
     DashboardItemsComponent,
-    DashboardButtonsComponent,
     DashboardSearchboxComponent,
     ModalModule,
-    DashboardPaginationComponent,
     MenuComponent,
     PrimaryButtonComponent,
     SecondaryButtonComponent,
     FormFieldInputComponent,
     NotificationComponent,
-    DashboardExpandButtonComponent,
     ApplicationDetailsComponent,
     TerritoryDetailsComponent,
     ChangeApplicationTerritoryDialogComponent,

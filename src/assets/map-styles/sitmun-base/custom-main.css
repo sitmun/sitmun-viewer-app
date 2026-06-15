@@ -792,7 +792,8 @@ input[type='range']:focus {
 .tc-panel-content .tc-ctl-dmm > h2,
 .tc-panel-content .tc-ctl-prnmap > h2,
 .tc-panel-content .tc-ctl-share > h2,
-.tc-panel-content .tc-ctl-hw > h2 {
+.tc-panel-content .tc-ctl-hw > h2,
+.tc-panel-content .tc-ctl-loc > h2 {
   display: flex;
   align-items: center;
   background-position: -6px 0px;
@@ -898,6 +899,19 @@ sitna-hello-world {
 
 .tc-panel-content .tc-ctl-hw.tc-collapsed > h2 {
   background-image: url(./img/tools.png);
+  filter: brightness(0) opacity(0.5);
+  color: var(--sitmun-collapsed-color);
+}
+
+/* Locator control */
+.tc-panel-content .tc-ctl-loc > h2 {
+  background-image: url(./img/search.png);
+  filter: brightness(0);
+  cursor: pointer;
+}
+
+.tc-panel-content .tc-ctl-loc.tc-collapsed > h2 {
+  background-image: url(./img/search.png);
   filter: brightness(0) opacity(0.5);
   color: var(--sitmun-collapsed-color);
 }

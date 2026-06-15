@@ -563,13 +563,20 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           }
           if (tab.tagName === 'H2') {
             // Only handle h2 clicks when tools tab is active
+            // Keep in sync with left-panel-tools-tab-active.ts
             const toolsTab = leftPanel.querySelector('#tools-tab');
+            const legendTab = leftPanel.querySelector('#legend-tab');
             const legend = leftPanel.querySelector('.tc-ctl-legend');
+            const isVisible = function (el) {
+              return !!el && !el.classList.contains('tc-hidden');
+            };
+            const isHiddenOrMissing = function (el) {
+              return !el || el.classList.contains('tc-hidden');
+            };
             const isToolsTabActive =
-              toolsTab &&
-              !toolsTab.classList.contains('tc-hidden') &&
-              legend &&
-              legend.classList.contains('tc-hidden');
+              isVisible(toolsTab) &&
+              isHiddenOrMissing(legendTab) &&
+              isHiddenOrMissing(legend);
 
             if (isToolsTabActive) {
               // Find the control that contains this h2

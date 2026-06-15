@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Inject, Injectable, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 
 import {
   URL_API_USER_ACCOUNT,
@@ -17,10 +18,27 @@ import {
   AuthenticationRequest
 } from '@auth/authentication.options';
 import { NavigationPath, QueryParam } from '@config/app.config';
-import { Observable, Subscription, catchError, map, of, switchMap, tap, timer } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import {
+  Observable,
+  Subscription,
+  catchError,
+  finalize,
+  from,
+  map,
+  of,
+  switchMap,
+  tap,
+  throwError,
+  timer
+} from 'rxjs';
 
+import { suppressAuthRedirectContext } from './auth-http-context';
 import { IndexedDbService } from './indexed-db.service';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from '../../notifications/services/NotificationService';
+
+const PROXY_ERROR_THRESHOLD = 3;
 
 @Injectable({
   providedIn: 'root'
@@ -30,15 +48,34 @@ export class AuthenticationService<T> {
   private readonly USERNAME_KEY: string;
 
   private proxyRefreshSubscription: Subscription | null = null;
+  private isRefreshingProxyToken = signal(false);
   private indexedDbInitialized = false;
+  private proxyForbiddenNotified = false;
+  private consecutiveProxyErrors = 0;
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
     private readonly indexedDb: IndexedDbService,
+    private readonly notificationService: NotificationService,
+    private readonly translate: TranslateService,
     @Inject(AUTH_CONFIG_DI) private readonly config: AuthConfig<T>
   ) {
     this.USERNAME_KEY = this.config.localStoragePrefix + '_username';
+    this.setupServiceWorkerListener();
+  }
+
+  private setupServiceWorkerListener(): void {
+    if ('serviceWorker' in navigator && navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'AUTH_ERROR') {
+          console.debug(
+            '[AuthService] Received AUTH_ERROR from SW. Refreshing token...'
+          );
+          this.refreshProxyToken().subscribe();
+        }
+      });
+    }
   }
 
   async initializeIndexedDb(): Promise<void> {
@@ -50,7 +87,7 @@ export class AuthenticationService<T> {
       await this.indexedDb.init();
       this.indexedDbInitialized = true;
     } catch (err) {
-      console.warn('Failed to init IndexedDB:', err);
+      console.warn('[IDB] Failed to init IndexedDB:', err);
     }
   }
 
@@ -81,12 +118,33 @@ export class AuthenticationService<T> {
     }
   }
 
+  clearAuthentication(): Observable<void> {
+    return this.http
+      .post<void>(environment.apiUrl + URL_AUTH_LOGOUT, null, {
+        context: suppressAuthRedirectContext()
+      })
+      .pipe(
+        switchMap(() => from(this.clearSession())),
+        catchError((error: unknown) =>
+          from(this.clearSession()).pipe(
+            switchMap(() => throwError(() => error))
+          )
+        )
+      );
+  }
+
   logout(): void {
-    this.http
-      .post<void>(environment.apiUrl + URL_AUTH_LOGOUT, null)
-      .subscribe(() => {
-        this.clearSessionAndRedirectToLogin();
-      });
+    this.clearAuthentication().subscribe({
+      next: () => {
+        void this.router.navigateByUrl(this.config.routes.loginPath);
+      },
+      error: (err: unknown) => {
+        console.error('[Auth] Logout failed:', err);
+        this.translate.get('auth.logoutFailed').subscribe((msg) => {
+          this.notificationService.error(msg);
+        });
+      }
+    });
   }
 
   getAuthMethods() {
@@ -130,6 +188,9 @@ export class AuthenticationService<T> {
       this.proxyRefreshSubscription.unsubscribe();
     }
 
+    this.proxyForbiddenNotified = false;
+    this.consecutiveProxyErrors = 0;
+
     this.proxyRefreshSubscription = timer(
       0,
       environment.proxyTokenRefreshIntervalMs
@@ -138,21 +199,54 @@ export class AuthenticationService<T> {
       .subscribe();
   }
 
-  private refreshProxyToken() {
+  private refreshProxyToken(): Observable<void> {
+    if (this.isRefreshingProxyToken()) {
+      return of(undefined);
+    }
+
+    this.isRefreshingProxyToken.set(true);
     return this.http
       .post<{ proxy_token?: string }>(environment.apiUrl + URL_AUTH_PROXY, null)
       .pipe(
-        switchMap(async (response) => {
-          if (response.proxy_token) {
-            await this.indexedDb.set('proxy_token', response.proxy_token);
-          }
-          return response;
+        switchMap((response) => {
+          this.consecutiveProxyErrors = 0;
+          return from(this.persistProxyToken(response.proxy_token));
         }),
-        catchError((err) => {
-          console.warn('Error refreshing proxy token:', err);
-          return of(null);
-        })
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            this.stopProxyTokenRefresh();
+            this.clearSession().catch((e: unknown) => console.warn('[IDB] Error during session clear on 401:', e));
+            void this.router.navigate([this.config.routes.loginPath], {
+              queryParams: { 'session-expired': 'true' }
+            });
+          } else if (err.status === 403) {
+            console.error('[Auth] Proxy token refresh forbidden — check server authorization config');
+            if (!this.proxyForbiddenNotified) {
+              this.proxyForbiddenNotified = true;
+              this.translate.get('auth.proxyForbidden').subscribe((msg) => {
+                this.notificationService.warning(msg, 8000);
+              });
+            }
+          } else {
+            console.warn('[Auth] Error refreshing proxy token:', err);
+            this.consecutiveProxyErrors++;
+            if (this.consecutiveProxyErrors === PROXY_ERROR_THRESHOLD) {
+              this.translate.get('auth.proxyUnavailable').subscribe((msg) => {
+                this.notificationService.warning(msg, 8000);
+              });
+            }
+          }
+          return of(undefined);
+        }),
+        finalize(() => this.isRefreshingProxyToken.set(false))
       );
+  }
+
+  /** Persists the proxy token returned by the auth endpoint. No-op if absent. */
+  private persistProxyToken(token: string | undefined): Promise<void> {
+    return token
+      ? this.indexedDb.set('proxy_token', token)
+      : Promise.resolve();
   }
 
   private stopProxyTokenRefresh(): void {
@@ -171,11 +265,11 @@ export class AuthenticationService<T> {
     void this.router.navigateByUrl(this.config.routes.loginPath);
   }
 
-  private clearSession(): void {
+  private clearSession(): Promise<void> {
     sessionStorage.removeItem(this.USERNAME_KEY);
     this.stopProxyTokenRefresh();
-    this.indexedDb
+    return this.indexedDb
       .remove('proxy_token')
-      .catch((err) => console.warn('Error clearing proxy token:', err));
+      .catch((err: unknown) => console.warn('[IDB] Error clearing proxy token:', err));
   }
 }

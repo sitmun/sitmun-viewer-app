@@ -4,6 +4,51 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-06-05
+
+### Added
+
+- **Auth**: `publicAuthClearGuard` now protects all `/public/**` routes and clears stale authenticated session state before route activation, preventing anonymous/public pages from resolving as a previous user.
+- **Auth**: `AuthenticationService.clearAuthentication()` centralizes backend cookie expiry (`POST /api/authenticate/logout`) plus local cleanup (sessionStorage and IndexedDB proxy token) with caller-visible error propagation.
+- **Auth**: `SUPPRESS_AUTH_REDIRECT_ON_401` (`HttpContextToken`) and `suppressAuthRedirectContext()` allow explicit cleanup requests to surface errors without triggering implicit login redirects.
+- **Dashboard**: server-side infinite scroll with configurable batch size (`dashboard.initialBatchSize` / `batchIncrement`) and authenticated public/private tabs.
+- **Navigation**: shared list/page shell for dashboard, territory, and application sections.
+- **Map**: territory `defaultZoomLevel` from client profile is now applied after initial extent fit via SITNA/OpenLayers mapping.
+- **Tests**: focused Jest coverage added for `publicAuthClearGuard`, `AuthenticationService.clearAuthentication()`, and interceptor redirect-suppression behavior.
+
+### Changed
+
+- **Auth**: `logout()` now reuses `clearAuthentication()` and only navigates on successful cleanup; failures stay visible to the user.
+- **Auth**: `clearSession()` now awaits IndexedDB proxy-token removal before resolving.
+- **Dashboard**: search now filters already loaded pages client-side.
+- **Navigation**: unified list page layout (dashboard, territory, application).
+- **Tests**: Angular/Jest test utilities updated to current providers (`provideHttpClient`, `provideHttpClientTesting`, `provideRouter`) and current HTTP testing error primitives (`ProgressEvent`).
+- **Tests**: dashboard fixtures now use `pointOfContact` instead of deprecated `creator`.
+- **Toolchain**: TypeScript `~5.8.3`, `@typescript-eslint` 8.54.x, `@types/node` 20.x.
+- **TypeScript**: `tsconfig.json` excludes `**/*.spec.ts` from root config (Jest types remain in `tsconfig.spec.json`).
+- **Map**: `applyInitialViewAfterLoad` now consistently applies extent then zoom from `GeneralCfg`.
+
+### Removed
+
+- **Dashboard**: legacy pagination/show-more components removed.
+- **Cleanup**: unused `ApiModule` and `src/test.ts` removed.
+
+### Fixed
+
+- **Map UI**: panel/i18n labeling issues fixed for tooltips and overview labels ([#137](https://github.com/sitmun/sitmun-viewer-app/issues/137), [#139](https://github.com/sitmun/sitmun-viewer-app/issues/139)).
+- **Layer catalog**: duplicate layer loads are blocked and already-added nodes are marked correctly ([#140](https://github.com/sitmun/sitmun-viewer-app/issues/140)).
+- **Auth**: public-route auth leakage fixed by expiring stale authenticated cookies before `/public/**` loads.
+- **Application details**: API-provided `pointOfContact` is rendered directly (removes incorrect account-lookup fallback) ([#159](https://github.com/sitmun/sitmun-viewer-app/issues/159)).
+- **Controls**: left-panel custom controls now expand/collapse correctly when legend is disabled ([#156](https://github.com/sitmun/sitmun-viewer-app/issues/156)).
+- **GetFeatureInfo**: identify remains resilient when one active WMS service lacks `DescribeLayer`/GFI compatibility ([#155](https://github.com/sitmun/sitmun-viewer-app/issues/155)).
+- **Dashboard**: result list enforces the intended three-application cap ([#145](https://github.com/sitmun/sitmun-viewer-app/issues/145)).
+- **ESLint**: fixed unused type-predicate param in `LayerCatalogControlHandler`.
+- **Service worker**: IndexedDB sequencing now preserves proxy `Authorization` headers across login, hard refresh, and idle wake-up scenarios.
+- **Service worker**: lifecycle handling improved (`clients.claim`, controller-change guard, middleware readiness) to prevent map-bootstrap race conditions.
+- **Auth**: proxy token refresh now distinguishes 401 vs 403/network outcomes; session-expiry UX and redirect behavior are explicit ([#256](https://github.com/sitmun/sitmun-viewer-app/issues/256)).
+- **Auth**: `AuthenticationInterceptor` no longer intercepts proxy-refresh 401 responses; refresh failures are handled in `AuthenticationService`.
+- **Map**: SITNA initial extent is reapplied post-load to prevent initialization drift.
+
 ## [1.2.6] - 2026-05-08
 
 ### Added
@@ -284,7 +329,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...HEAD
+[1.2.7]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...sitmun-viewer-app/1.2.7
 [1.2.6]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...sitmun-viewer-app/1.2.6
 [1.2.5]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...sitmun-viewer-app/1.2.5
 [1.2.4]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.3...sitmun-viewer-app/1.2.4

@@ -5,35 +5,28 @@
         [ngSrc]="
           application.logo ? application.logo : 'assets/img/card-no-image.svg'
         "
-        alt=""
+        [alt]="application.title || application.name"
         width="150"
         height="150" />
     </div>
     <div id="application-information-details">
-      <p [ngClass]="{ 'value-missing': !application.updateDate }">
+      <p [ngClass]="{ 'value-missing': !hasLastUpdate() }">
         <span>{{ 'application.lastUpdateDate' | translate }} :</span>
         {{
-          application.lastUpdate
-            ? (application.lastUpdate | date : 'dd/MM/yyyy')
+          hasLastUpdate()
+            ? (displayLastUpdate() | date : 'dd/MM/yyyy')
             : ('application.valueMissing' | translate)
         }}
       </p>
-      <p [ngClass]="{ 'value-missing': !application.createdDate }">
+      <p *ngIf="application.createdDate; else emptyRow">
         <span>{{ 'application.creationDate' | translate }} :</span>
-        {{
-          application.createdDate
-            ? (application.createdDate | date : 'dd/MM/yyyy')
-            : ('application.valueMissing' | translate)
-        }}
+        {{ application.createdDate | date : 'dd/MM/yyyy' }}
       </p>
-      <p [ngClass]="{ 'value-missing': !application.creator }">
+      <p *ngIf="application.pointOfContact; else emptyRow">
         <span>{{ 'application.contact' | translate }} :</span>
-        {{
-          application.creator
-            ? application.creator
-            : ('application.valueMissing' | translate)
-        }}
+        {{ application.pointOfContact }}
       </p>
+      <ng-template #emptyRow><p aria-hidden="true">&nbsp;</p></ng-template>
     </div>
   </div>
   <div id="application-description">

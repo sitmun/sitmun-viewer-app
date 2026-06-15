@@ -1,5 +1,9 @@
 {
   "tools": "Tresnak",
+  "legend": "Legenda",
+  "layers": "Geruzak",
+  "overviewMap": "Kokapena mapan",
+  "overviewMap.tooltip": "Kokapena mapan",
   "layerInfo": "Geruzaren informazioa",
   "abstract": "Geruzaren deskribapena",
   "groupAbstract": "Geruza taldearen deskribapena",
@@ -23,5 +27,10 @@
   "search.list.placename": "Toponimoak",
   "helloWorld.title": "Kaixo Mundua",
   "helloWorld.message": "Kontrol hau Angular-etik erregistratuta dago eta Handlebars txantiloi baten bidez errendatzen da.",
-  "helloWorld.buttonLabel": "Agurtu"
+  "helloWorld.buttonLabel": "Agurtu",
+  "locator.title": "Bilaketa",
+  "locator.selectLocator": "Hautatu kokatzaile bat...",
+  "locator.searchPlaceholder": "Idatzi bilaketa testua...",
+  "locator.noResults": "Ez da emaitzarik aurkitu.",
+  "locator.loading": "Bilatzen..."
 }
