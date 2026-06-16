@@ -12,6 +12,26 @@ import { SitnaControlConfig } from '../control-handler.interface';
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
 
+const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
+  ADD_TAGS: ['iframe'],
+  ADD_ATTR: [
+    'allow',
+    'allowfullscreen',
+    'frameborder',
+    'scrolling',
+    'src',
+    'title',
+    'width',
+    'height',
+    'data-mia-export-template',
+    'data-mia-template-task-id'
+  ],
+};
+
+export function sanitizeMiaRenderedHtml(html: string): string {
+  return DOMPurify.sanitize(html || '<div class="sitmun-mia-empty">Sense dades</div>', MIA_HTML_SANITIZE_OPTIONS);
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -354,11 +374,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       if (!target) return;
       target.innerHTML = renderedTask.error
         ? `<div class="sitmun-mia-error">${this.escapeHtml(renderedTask.error)}</div>`
-        : DOMPurify.sanitize(renderedTask.html || '<div class="sitmun-mia-empty">Sense dades</div>', {
-            ADD_ATTR: ['data-mia-export-template', 'data-mia-template-task-id'],
-          });
+        : sanitizeMiaRenderedHtml(renderedTask.html || '');
 
-      // Inject download buttons for template children that carry the export annotation.
       this.injectDownloadButtons(target as HTMLElement, fallbackExportActions);
     });
   }
