@@ -7,7 +7,7 @@
   </button>
 
   <div mat-dialog-content>
-    <div class="selection-grid">
+    <div class="selection-grid" [class.selection-grid--application-only]="!showTerritorySelection()">
       <div class="selection-section">
         <h3 class="mat-subtitle-1">
           {{ 'map.territoriesApplication.applicationsTitle' | translate }}
@@ -31,7 +31,7 @@
           (itemClicked)="onApplicationClick($event)"></app-selectable-list>
       </div>
 
-      <div class="selection-section">
+      <div class="selection-section" *ngIf="showTerritorySelection()">
         <h3 class="mat-subtitle-1">
           {{ 'map.territoriesApplication.territoriesTitle' | translate }}
         </h3>

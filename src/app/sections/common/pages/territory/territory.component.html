@@ -1,25 +1,110 @@
 <div id="content">
-  <div id="territory" *ngIf="territory">
-    <app-return-button></app-return-button>
-    <h1 class="territory-name">{{ territory.name }}</h1>
-    <div id="territory-details">
-      <div id="left-side" *ngIf="applications">
-        <div id="research">
-          <app-dashboard-searchbox [applications]="applications" />
+  <!-- Public territory: dashboard shell with full-width cards -->
+  <div class="dashboard-container" *ngIf="isPublic()">
+    <header class="page-header">
+      <h1 *ngIf="territory && !loading && !loadError && !notFound">{{ territory.name }}</h1>
+      <app-return-button labelKey="territory.back" [fallbackUrl]="fallbackUrl"></app-return-button>
+    </header>
+
+    <p *ngIf="loading" class="page-status" role="status">
+      {{ 'territory.loading' | translate }}
+    </p>
+
+    <p *ngIf="loadError && !loading" class="page-status page-status--error" role="alert">
+      {{ 'territory.loadError' | translate }}
+    </p>
+
+    <p *ngIf="notFound && !loading && !loadError" class="page-status" role="status">
+      {{ 'territory.notFound' | translate }}
+    </p>
+
+    <div id="research" *ngIf="!loading && !loadError && !notFound && allApplications.length > 0">
+      <app-dashboard-searchbox
+        (keywords)="onKeywordsSearch($event)" />
+    </div>
+
+    <p
+      *ngIf="!loading && !loadError && !notFound && allApplications.length === 0"
+      class="page-status"
+      role="status">
+      {{ 'territory.noApplications' | translate }}
+    </p>
+
+    <p
+      *ngIf="!loading && !loadError && !notFound && allApplications.length > 0 && applications.length === 0"
+      class="page-status"
+      role="status">
+      {{ 'territory.noSearchResults' | translate }}
+    </p>
+
+    <app-dashboard-items
+      *ngIf="!loading && !loadError && !notFound && applications.length > 0"
+      [items]="applications"
+      [hasMorePages]="false"
+      [loadingMore]="false"
+      (loadMore)="loadMoreItems()" />
+  </div>
+
+  <!-- User territory: keep sidebar layout -->
+  <div id="territory" *ngIf="!isPublic()">
+    <header class="page-header">
+      <h1 class="territory-name" *ngIf="territory && !loading && !loadError && !notFound">{{ territory.name }}</h1>
+      <app-return-button labelKey="territory.back" [fallbackUrl]="fallbackUrl"></app-return-button>
+    </header>
+
+    <p *ngIf="loading" class="page-status" role="status">
+      {{ 'territory.loading' | translate }}
+    </p>
+
+    <p *ngIf="loadError && !loading" class="page-status page-status--error" role="alert">
+      {{ 'territory.loadError' | translate }}
+    </p>
+
+    <p *ngIf="notFound && !loading && !loadError" class="page-status" role="status">
+      {{ 'territory.notFound' | translate }}
+    </p>
+
+    <div id="territory-details" *ngIf="!loading && !loadError && !notFound && territory">
+      <div
+        id="left-side"
+        [class.left-side--full]="!showTerritoryInformationPanel">
+        <div id="research" *ngIf="allApplications.length > 0">
+          <app-dashboard-searchbox
+            (keywords)="onKeywordsSearch($event)" />
         </div>
-        <app-dashboard-items [items]="applications" />
+
+        <p
+          *ngIf="allApplications.length === 0"
+          class="page-status"
+          role="status">
+          {{ 'territory.noApplications' | translate }}
+        </p>
+
+        <p
+          *ngIf="allApplications.length > 0 && applications.length === 0"
+          class="page-status"
+          role="status">
+          {{ 'territory.noSearchResults' | translate }}
+        </p>
+
+        <app-dashboard-items
+          *ngIf="applications.length > 0"
+          [items]="applications"
+          [hasMorePages]="false"
+          [loadingMore]="false"
+          (loadMore)="loadMoreItems()" />
       </div>
-      <div id="right-side">
+      <div id="right-side" *ngIf="showTerritoryInformationPanel">
         <div id="territory-information">
           <h2>{{ 'territory.information' | translate }}</h2>
-          <h3>{{ 'territory.description' | translate }}</h3>
-          <p [ngClass]="{ 'no-description': !territory.description }">
+          <p class="territory-app-count">
             {{
-              territory.description
-                ? territory.description
-                : ('territory.descriptionMissing' | translate)
+              'territory.applicationCount'
+                | translate: { count: applicationCount }
             }}
           </p>
+          <h3>{{ 'territory.description' | translate }}</h3>
+          <p>{{ territory.description }}</p>
         </div>
       </div>
     </div>

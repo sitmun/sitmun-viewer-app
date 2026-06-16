@@ -10,4 +10,13 @@ import { DashboardItem } from '@api/services/common.service';
 })
 export class ApplicationDetailsComponent {
   @Input() application!: DashboardItem;
+
+  hasLastUpdate(): boolean {
+    return !!(this.application.lastUpdate ?? this.application.updateDate);
+  }
+
+  displayLastUpdate(): Date {
+    return (this.application.lastUpdate ??
+      this.application.updateDate) as Date;
+  }
 }

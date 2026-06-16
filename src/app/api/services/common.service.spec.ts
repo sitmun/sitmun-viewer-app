@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -25,6 +26,15 @@ describe('CommonService', () => {
     tasks: []
   };
 
+  const mockDashboardApp = {
+    id: 1,
+    title: 'Test App',
+    name: 'test-app',
+    territoryCount: 2,
+    hasTerritories: true,
+    singleTerritoryId: null
+  };
+
   beforeEach(() => {
     appConfigService = {
       getTestConfigFile: jest.fn().mockReturnValue(null)
@@ -33,8 +43,9 @@ describe('CommonService', () => {
       getCurrentLanguage: jest.fn().mockReturnValue('')
     };
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         CommonService,
         { provide: AppConfigService, useValue: appConfigService },
         { provide: LanguageService, useValue: languageService }
@@ -46,6 +57,137 @@ describe('CommonService', () => {
 
   afterEach(() => {
     httpMock.verify();
+  });
+
+  describe('fetchDashboardApplications', () => {
+    it('should call dashboard applications endpoint with pagination', (done) => {
+      const response = {
+        content: [mockDashboardApp],
+        page: { size: 20, number: 0, totalElements: 1, totalPages: 1 }
+      };
+
+      service.fetchDashboardApplications({ page: 0, size: 20 }).subscribe((data) => {
+        expect(data.content).toHaveLength(1);
+        expect(data.content[0].territoryCount).toBe(2);
+        expect(data.content[0].hasTerritories).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url.includes('/api/config/client/dashboard/applications') &&
+          r.url.includes('page=0') &&
+          r.url.includes('size=20')
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(response);
+    });
+
+    it('should add lang parameter when language is set', (done) => {
+      languageService.getCurrentLanguage.mockReturnValue('ca');
+      const response = { content: [], page: { size: 20, number: 0 } };
+
+      service.fetchDashboardApplications({ page: 0, size: 20 }).subscribe(() => {
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url.includes('/api/config/client/dashboard/applications') &&
+          r.url.includes('lang=ca')
+      );
+      req.flush(response);
+    });
+  });
+
+  describe('fetchDashboardSuggestions', () => {
+    it('should call dashboard suggestions endpoint with keywords', (done) => {
+      const response = {
+        applications: [{ id: 1, title: 'Test', name: 'test' }],
+        territories: [{ id: 10, name: 'Territory' }]
+      };
+
+      service.fetchDashboardSuggestions('test').subscribe((data) => {
+        expect(data.applications).toHaveLength(1);
+        expect(data.territories).toHaveLength(1);
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url.includes('/api/config/client/dashboard/suggestions') &&
+          r.url.includes('keywords=test')
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush(response);
+    });
+
+    it('should return empty for short keywords', (done) => {
+      const response = { applications: [], territories: [] };
+
+      service.fetchDashboardSuggestions('t').subscribe((data) => {
+        expect(data.applications).toHaveLength(0);
+        expect(data.territories).toHaveLength(0);
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (r) => r.url.includes('/api/config/client/dashboard/suggestions')
+      );
+      req.flush(response);
+    });
+  });
+
+
+  describe('fetchTerritoriesByApplication', () => {
+    it('makes a new request when language changes between calls', () => {
+      languageService.getCurrentLanguage.mockReturnValue('es');
+      const mockResponse = { content: [], totalElements: 0 } as any;
+
+      // First request with lang=es
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=es')
+        )
+        .flush(mockResponse);
+
+      // Switch language
+      languageService.getCurrentLanguage.mockReturnValue('fr');
+
+      // Second request must use lang=fr
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=fr')
+        )
+        .flush(mockResponse);
+    });
+
+    it('reuses cache when same app and same language', () => {
+      languageService.getCurrentLanguage.mockReturnValue('es');
+      const mockResponse = { content: [], totalElements: 0 } as any;
+
+      // First request
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock
+        .expectOne(
+          (r) =>
+            r.url.includes('/api/config/client/application/1/territories') &&
+            r.url.includes('lang=es')
+        )
+        .flush(mockResponse);
+
+      // Second request: same id, same language → cache hit, no new HTTP call
+      service.fetchTerritoriesByApplication(1).subscribe();
+      httpMock.expectNone(
+        (r) => r.url.includes('/api/config/client/application/1/territories')
+      );
+    });
   });
 
   describe('fetchMapConfiguration cache', () => {

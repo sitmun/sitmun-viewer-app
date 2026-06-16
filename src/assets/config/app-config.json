@@ -2,9 +2,16 @@
   "attribution": "<a href=\"https://github.com/sitmun\" target=\"_blank\">SITMUN</a>",
   "testConfigFile": null,
   "dashboard": {
+    "allowedTypes": ["I", "E"],
+    "filteringEnabled": true,
+    "initialBatchSize": 12,
+    "batchIncrement": 6
+  },
+  "mapSwitcher": {
     "allowedTypes": ["I"],
     "filteringEnabled": true
   },
+  "externalLinkTypes": ["E"],
   "defaultLanguage": "es",
   "languages": [
     {
@@ -40,7 +47,8 @@
   ],
   "enabledByDefault": [
     "sitna.loadingIndicator",
-    "sitna.helloWorld"
+    "sitna.helloWorld",
+    "sitmun.locator"
   ],
   "disabledControls": [
     "sitna.WFSEdit",
@@ -167,6 +175,9 @@
     },
     "sitna.helloWorld": {
       "div": "tc-slot-hello-world"
+    },
+    "sitmun.locator": {
+      "div": "tc-slot-locator"
     }
   }
 }

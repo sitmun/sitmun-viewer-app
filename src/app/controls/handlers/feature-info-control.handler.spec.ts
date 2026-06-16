@@ -1,7 +1,9 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { FeatureInfoControlHandler } from './feature-info-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
@@ -30,8 +32,10 @@ describe('FeatureInfoControlHandler', () => {
     > as jest.Mocked<AppConfigService>;
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [TranslateModule.forRoot()],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         FeatureInfoControlHandler,
         { provide: SitnaApiService, useValue: mockSitnaApi },
         { provide: AppConfigService, useValue: mockAppConfigService }
@@ -168,6 +172,151 @@ describe('FeatureInfoControlHandler', () => {
       const config = handler.buildConfiguration(task, context);
 
       expect(config).toEqual({});
+    });
+  });
+
+  describe('loadPatches() — GFI resilience (#155)', () => {
+    let TC: any;
+    let SITNA: any;
+
+    beforeEach(() => {
+      // Build mock TC and SITNA with prototypes that can be wrapped by meld
+      TC = {
+        Map: { prototype: {} },
+        control: {
+          FeatureInfo: { prototype: {} }
+        },
+        layer: {
+          Raster: {
+            prototype: {
+              describeLayer: jest.fn()
+            }
+          }
+        },
+        tool: {
+          Proxification: {
+            prototype: {
+              fetch: jest.fn()
+            }
+          }
+        }
+      };
+
+      SITNA = {
+        layer: {
+          Raster: {
+            prototype: TC.layer.Raster.prototype
+          }
+        }
+      };
+
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      mockSitnaApi.getSITNA.mockReturnValue(SITNA);
+    });
+
+    it('should wrap Raster.describeLayer to resolve with WMS fallback when full=true and rejection occurs', async () => {
+      // Arrange: describeLayer rejects (simulates Catastro ServiceException)
+      TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
+        new Error('Petición REQUEST no soportada')
+      );
+
+      // Act: loadPatches installs meld.around wrapper
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert: wrapped describeLayer resolves instead of rejecting
+      const result = await TC.layer.Raster.prototype.describeLayer(true);
+      expect(result).toEqual([{ owsType: 'WMS' }]);
+    });
+
+    it('should wrap Raster.describeLayer to resolve with WMS fallback when full=false and rejection occurs', async () => {
+      // Arrange
+      TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
+        new Error('Petición REQUEST no soportada')
+      );
+
+      // Act
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert
+      const result = await TC.layer.Raster.prototype.describeLayer(false);
+      expect(result).toEqual({ owsType: 'WMS' });
+    });
+
+    it('should wrap Proxification.fetch to resolve with empty JSON when GFI request fails', async () => {
+      // Arrange: fetch rejects on GFI URL
+      const gfiUrl =
+        'http://example.com/wms?SERVICE=WMS&REQUEST=GetFeatureInfo&INFO_FORMAT=application/json';
+      TC.tool.Proxification.prototype.fetch.mockImplementation((url: string) => {
+        if (url.includes('REQUEST=GetFeatureInfo')) {
+          return Promise.reject(new Error('HTTP 500'));
+        }
+        return Promise.resolve({ responseText: 'ok', contentType: 'text/plain' });
+      });
+
+      // Act
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert: wrapped fetch resolves with empty FeatureCollection
+      const result = await TC.tool.Proxification.prototype.fetch(gfiUrl);
+      expect(result).toEqual({
+        responseText: '{"type":"FeatureCollection","features":[]}',
+        contentType: 'application/json'
+      });
+    });
+
+    it('should wrap Proxification.fetch to resolve with empty GML when GFI request with GML format fails', async () => {
+      // Arrange
+      const gfiUrl =
+        'http://example.com/wms?SERVICE=WMS&REQUEST=GetFeatureInfo&INFO_FORMAT=application/vnd.ogc.gml';
+      TC.tool.Proxification.prototype.fetch.mockImplementation((url: string) => {
+        if (url.includes('REQUEST=GetFeatureInfo')) {
+          return Promise.reject(new Error('HTTP 500'));
+        }
+        return Promise.resolve({ responseText: 'ok', contentType: 'text/plain' });
+      });
+
+      // Act
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert
+      const result = await TC.tool.Proxification.prototype.fetch(gfiUrl);
+      expect(result).toEqual({
+        responseText:
+          '<?xml version="1.0"?><wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"/>',
+        contentType: 'application/vnd.ogc.gml'
+      });
+    });
+
+    it('should NOT wrap non-GFI Proxification.fetch rejections (regression guard)', async () => {
+      // Arrange: fetch rejects on GetMap (not GetFeatureInfo)
+      const getMapUrl =
+        'http://example.com/wms?SERVICE=WMS&REQUEST=GetMap';
+      TC.tool.Proxification.prototype.fetch.mockImplementation((_url: string) => {
+        return Promise.reject(new Error('HTTP 500'));
+      });
+
+      // Act
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert: non-GFI rejection still propagates
+      await expect(
+        TC.tool.Proxification.prototype.fetch(getMapUrl)
+      ).rejects.toThrow('HTTP 500');
+    });
+
+    it('should be idempotent when loadPatches is called twice', async () => {
+      // Arrange
+      TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
+        new Error('ServiceException')
+      );
+
+      // Act: call loadPatches twice
+      await handler.loadPatches({} as AppCfg);
+      await handler.loadPatches({} as AppCfg);
+
+      // Assert: still works correctly (no double-wrap)
+      const result = await TC.layer.Raster.prototype.describeLayer(true);
+      expect(result).toEqual([{ owsType: 'WMS' }]);
     });
   });
 });

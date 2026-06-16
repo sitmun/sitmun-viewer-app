@@ -7,18 +7,19 @@ import { TerritoryComponent } from '@sections/common/pages/territory/territory.c
 import { PublicDashboardComponent } from '@sections/public/public-dashboard/public-dashboard.component';
 import { PublicMapComponent } from '@sections/public/public-map/public-map.component';
 
+import { publicAuthClearGuard } from './public-auth-clear.guard';
 import { sitnaMapGuard } from '../../guards/sitna-map.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: RoutingDefault.Auth, pathMatch: 'full' },
-  { path: 'dashboard', component: PublicDashboardComponent },
+  { path: 'dashboard', component: PublicDashboardComponent, canActivate: [publicAuthClearGuard] },
   {
     path: 'map/:applicationId/:territoryId',
     component: PublicMapComponent,
-    canActivate: [sitnaMapGuard]
+    canActivate: [publicAuthClearGuard, sitnaMapGuard]
   },
-  { path: 'territory/:territoryId', component: TerritoryComponent },
-  { path: 'application/:applicationId', component: ApplicationComponent }
+  { path: 'territory/:territoryId', component: TerritoryComponent, canActivate: [publicAuthClearGuard] },
+  { path: 'application/:applicationId', component: ApplicationComponent, canActivate: [publicAuthClearGuard] }
 ];
 
 @NgModule({

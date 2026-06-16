@@ -1,5 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
+  provideHttpClientTesting,
   HttpTestingController
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -13,7 +14,9 @@ describe('AppConfigService', () => {
   const mockConfig: AppConfig = {
     dashboard: {
       allowedTypes: ['I', 'E'],
-      filteringEnabled: true
+      filteringEnabled: true,
+      initialBatchSize: 6,
+      batchIncrement: 3
     }
   };
 
@@ -23,8 +26,9 @@ describe('AppConfigService', () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [AppConfigService]
+            providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),AppConfigService]
     });
     service = TestBed.inject(AppConfigService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -164,6 +168,21 @@ describe('AppConfigService', () => {
     });
   });
 
+  describe('partial config merge', () => {
+    it('merges missing dashboard section with defaults', async () => {
+      const loadPromise = service.loadConfig();
+
+      const req = httpMock.expectOne('assets/config/app-config.json');
+      req.flush({ defaultLanguage: 'es' } as AppConfig);
+
+      await loadPromise;
+
+      expect(service.getAllowedTypes()).toEqual([]);
+      expect(service.isFilteringEnabled()).toBe(false);
+      expect(service.getDefaultLanguage()).toBe('es');
+    });
+  });
+
   describe('getDashboardConfig', () => {
     it('should return dashboard config when loaded', async () => {
       const loadPromise = service.loadConfig();
@@ -176,12 +195,39 @@ describe('AppConfigService', () => {
       const dashboardConfig = service.getDashboardConfig();
       expect(dashboardConfig.allowedTypes).toEqual(['I', 'E']);
       expect(dashboardConfig.filteringEnabled).toBe(true);
+      expect(dashboardConfig.initialBatchSize).toBe(6);
+      expect(dashboardConfig.batchIncrement).toBe(3);
     });
 
     it('should return default config when not loaded', () => {
       const dashboardConfig = service.getDashboardConfig();
       expect(dashboardConfig.allowedTypes).toEqual([]);
       expect(dashboardConfig.filteringEnabled).toBe(false);
+      expect(dashboardConfig.initialBatchSize).toBe(3);
+      expect(dashboardConfig.batchIncrement).toBe(3);
+    });
+  });
+
+  describe('external link application types', () => {
+    it('should return an empty list when config is not loaded', () => {
+      expect(service.getExternalLinkTypes()).toEqual([]);
+      expect(service.isExternalLinkApplication({ type: 'E' })).toBe(false);
+      expect(service.applicationHasTerritory({ type: 'E' })).toBe(true);
+    });
+
+    it('should use configured external link types', async () => {
+      const loadPromise = service.loadConfig();
+
+      const req = httpMock.expectOne('assets/config/app-config.json');
+      req.flush({
+        ...mockConfig,
+        externalLinkTypes: ['E', 'X']
+      });
+
+      await loadPromise;
+
+      expect(service.isExternalLinkApplication({ type: 'X' })).toBe(true);
+      expect(service.isExternalLinkApplication({ type: 'I' })).toBe(false);
     });
   });
 

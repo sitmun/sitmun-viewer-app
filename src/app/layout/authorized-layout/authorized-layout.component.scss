@@ -16,3 +16,11 @@ router-outlet {
   flex-direction: column;
   min-height: 0; // Allow flex item to shrink below content size
 }
+
+::ng-deep router-outlet + app-dashboard,
+::ng-deep router-outlet + app-territory,
+::ng-deep router-outlet + app-application,
+::ng-deep router-outlet + app-profile {
+  overflow-x: hidden;
+  overflow-y: auto;
+}

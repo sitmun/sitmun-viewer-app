@@ -3,9 +3,9 @@
 @use 'dimensions';
 
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
- 
+
 /* You can add global styles to this file, and also import other style files */
- 
+
 body {
 
   margin: 0;
@@ -15,7 +15,7 @@ body {
   background-color: white;
 
 }
- 
+
 /* CDK Overlay Container - ensures Material menus and overlays appear above all content */
 
 /* This fixes z-index issues when menu is in a different DOM hierarchy than the map */
@@ -25,13 +25,13 @@ body {
   z-index: 100000 !important; // Higher than toolbar (z-index: 99999) and map content
 
 }
- 
+
 .cdk-overlay-pane {
 
   z-index: 100000 !important; // Higher than toolbar (z-index: 99999) and map content
 
 }
- 
+
 /* Hide the hardcoded "API SITNA" GitHub link in attribution control */
 
 .tc-ctl-attrib .tc-github {
@@ -39,7 +39,7 @@ body {
   display: none !important;
 
 }
- 
+
 /* Feature info horizontal scroll (SITNA popup + more-info tables) */
 
 .tc-ctl-popup-content .tc-ctl-finfo,
@@ -57,7 +57,7 @@ body {
   min-width: 0;
 
 }
- 
+
 .tc-ctl-popup-content .tc-ctl-finfo-layer-content,
 
 .tc-ctl-popup-content .tc-ctl-finfo-content {
@@ -71,7 +71,7 @@ body {
   padding-right: 8px;
 
 }
- 
+
 .tc-ctl-popup-content table.tc-attr {
 
   width: 100%;
@@ -79,7 +79,7 @@ body {
   table-layout: auto;
 
 }
- 
+
 .tc-ctl-popup-content .sitmun-more-info-placeholder {
 
   display: block;
@@ -91,7 +91,7 @@ body {
   -webkit-overflow-scrolling: touch;
 
 }
- 
+
 .tc-ctl-popup-content .sitmun-more-info-placeholder .sitmun-json-table {
 
   width: max-content;
@@ -99,7 +99,7 @@ body {
   min-width: 100%;
 
 }
- 
+
 .tc-ctl-popup-content .sitmun-more-info-placeholder .sitmun-json-table th,
 
 .tc-ctl-popup-content .sitmun-more-info-placeholder .sitmun-json-table td {
@@ -244,7 +244,7 @@ body {
 
   display: none;
 
-} 
+}
 
 .sitmun-mia-popup-overlay {
   background: #fff;
@@ -252,18 +252,25 @@ body {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   display: none;
+  flex-direction: column;
+  height: min(70vh, calc(100vh - 70px));
   left: 12px;
+  max-height: calc(100vh - 70px);
   max-width: min(760px, calc(100vw - 48px));
+  min-height: 280px;
   min-width: 360px;
+  overflow: hidden;
   pointer-events: auto;
   position: fixed !important;
+  resize: both;
   top: 12px;
   user-select: text;
+  width: min(540px, calc(100vw - 48px));
   z-index: 10050;
 }
 
 .sitmun-mia-popup-overlay.sitmun-mia-popup-visible {
-  display: block;
+  display: flex;
 }
 
 .sitmun-mia-popup-toolbar {
@@ -281,8 +288,14 @@ body {
 }
 
 .sitmun-mia-popup-overlay .tc-ctl-popup-content {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   padding: 10px;
+  max-height: unset !important;
+  max-width: unset !important;
 }
 
 .sitmun-mia-popup-close {
@@ -295,18 +308,33 @@ body {
 
 .tc-ctl-popup-content .sitmun-mia-tabs-bar {
   display: flex;
+  flex: 0 0 auto;
   gap: 4px;
   margin-bottom: 8px;
   overflow-x: auto;
 }
 
+.tc-ctl-popup-content .sitmun-mia-tab-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
 .tc-ctl-popup-content .sitmun-mia-main-tabs-bar {
   border-bottom: 1px solid #ccc;
   display: flex;
+  flex: 0 0 auto;
   gap: 4px;
   margin-bottom: 10px;
   overflow-x: auto;
   padding-bottom: 4px;
+}
+
+.tc-ctl-popup-content .sitmun-mia-main-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .tc-ctl-popup-content .sitmun-mia-tab {
@@ -340,14 +368,17 @@ body {
 }
 
 .tc-ctl-popup-content .sitmun-mia-body {
-  max-height: 420px;
-  max-width: 720px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   overflow: auto;
+  width: 100%;
   -webkit-overflow-scrolling: touch;
 }
 
 .tc-ctl-popup-content .sitmun-mia-body .sitmun-mia-body {
-  max-height: 380px;
+  min-height: 0;
 }
 
 .tc-ctl-popup-content .sitmun-mia-scroll-section + .sitmun-mia-scroll-section {

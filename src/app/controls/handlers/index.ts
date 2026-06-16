@@ -36,6 +36,7 @@ import { WFSEditControlHandler } from './wfs-edit-control.handler';
 import { WFSQueryControlHandler } from './wfs-query-control.handler';
 import { WorkLayerManagerControlHandler } from './work-layer-manager-control.handler';
 import { HelloWorldControlHandler } from '../hello-world/hello-world-control.handler';
+import { LocatorControlHandler } from '../locator/locator-control.handler';
 
 // Native SITNA Controls
 export { CoordinatesControlHandler } from './coordinates-control.handler';
@@ -71,6 +72,7 @@ export { WFSQueryControlHandler } from './wfs-query-control.handler';
 
 // Custom Controls
 export { HelloWorldControlHandler } from '../hello-world/hello-world-control.handler';
+export { LocatorControlHandler } from '../locator/locator-control.handler';
 
 // Standard SITNA Controls with Virtual Capabilities
 export { LayerCatalogControlHandler } from './layer-catalog-control.handler';
@@ -126,5 +128,6 @@ export const ALL_CONTROL_HANDLERS = [
   WFSQueryControlHandler,
 
   // Custom Controls
-  HelloWorldControlHandler
+  HelloWorldControlHandler,
+  LocatorControlHandler
 ] as const;

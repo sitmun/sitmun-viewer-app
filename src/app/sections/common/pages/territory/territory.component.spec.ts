@@ -1,9 +1,10 @@
 import { Location } from '@angular/common';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { CommonService } from '@api/services/common.service';
+import { CommonService, DashboardItem } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EMPTY, of } from 'rxjs';
 
@@ -13,18 +14,62 @@ describe('TerritoryComponent', () => {
   let component: TerritoryComponent;
   let fixture: ComponentFixture<TerritoryComponent>;
 
+  const territory = (description?: string): DashboardItem =>
+    ({
+      id: 4,
+      name: 'Menorca',
+      description,
+      type: 'T',
+      appPrivate: false,
+      isUnavailable: false,
+      updateDate: new Date(),
+      createdDate: new Date(),
+      pointOfContact: 'u',
+      headerParams: {}
+    }) as DashboardItem;
+
+  const apps = (): DashboardItem[] => [
+    {
+      id: 12,
+      name: 'IDE genèric Menorca',
+      title: 'IDE genèric Menorca',
+      type: 'I',
+      appPrivate: false,
+      isUnavailable: false,
+      updateDate: new Date(),
+      createdDate: new Date(),
+      pointOfContact: 'u',
+      headerParams: {}
+    },
+    {
+      id: 30,
+      name: 'IDE genèric Menorca — Multi territory',
+      title: 'IDE genèric Menorca — Multi territory',
+      type: 'I',
+      appPrivate: false,
+      isUnavailable: false,
+      updateDate: new Date(),
+      createdDate: new Date(),
+      pointOfContact: 'u',
+      headerParams: {}
+    }
+  ];
+
   beforeEach(() => {
     const mockCommonService = {
-      fetchDashboardItems: jest.fn().mockReturnValue(of({ content: [] })),
+      fetchDashboardItems: jest
+        .fn()
+        .mockReturnValue(of({ content: [territory('Island GIS hub')] })),
       fetchApplicationsByTerritory: jest
         .fn()
-        .mockReturnValue(of({ content: [] }))
+        .mockReturnValue(of({ content: apps() }))
     };
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       declarations: [TerritoryComponent],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: Router,
           useValue: {
@@ -35,8 +80,8 @@ describe('TerritoryComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            params: of({ territoryId: '1' }),
-            snapshot: { paramMap: { get: () => '1' } }
+            params: of({ territoryId: '4' }),
+            snapshot: { paramMap: { get: () => '4' } }
           }
         },
         {
@@ -57,10 +102,35 @@ describe('TerritoryComponent', () => {
     });
     fixture = TestBed.createComponent(TerritoryComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows information panel when territory has a description', () => {
+    component.territory = territory('Useful description');
+    expect(component.showTerritoryInformationPanel).toBe(true);
+  });
+
+  it('hides information panel when territory description is empty', () => {
+    component.territory = territory('');
+    expect(component.showTerritoryInformationPanel).toBe(false);
+    component.territory = territory(undefined);
+    expect(component.showTerritoryInformationPanel).toBe(false);
+  });
+
+  it('filters territory applications by keyword', () => {
+    component.allApplications = apps();
+    component.onKeywordsSearch('Multi');
+    expect(component.applications).toHaveLength(1);
+    expect(component.applications[0].id).toBe(30);
+    component.onKeywordsSearch('');
+    expect(component.applications).toHaveLength(2);
+  });
+
+  it('reports application count from the full territory list', () => {
+    component.allApplications = apps();
+    expect(component.applicationCount).toBe(2);
   });
 });
