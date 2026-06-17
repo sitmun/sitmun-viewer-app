@@ -6,6 +6,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
+import { LanguageService } from './language.service';
 
 /**
  * Represents a child task inside a More Info Advanced (MIA) task.
@@ -56,7 +57,10 @@ export class MoreInfoAdvancedService {
   private readonly miaTasksByCartography = new Map<string, MiaTask[]>();
   private hasMiaControlTask = false;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly languageService: LanguageService
+  ) {}
 
   /**
    * Initializes MIA tasks from the application configuration.
@@ -107,10 +111,13 @@ export class MoreInfoAdvancedService {
       miaTaskIds: miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite),
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
+    const lang = this.languageService.getCurrentLanguage()?.trim();
+    const options = lang ? { params: { lang } } : {};
 
     return this.http.post<MiaRenderResponse>(
       `${environment.apiUrl}/api/tasks/template/more-info-advanced/render`,
-      body
+      body,
+      options
     ).pipe(
       map((response) => response.tasks || []),
       catchError((error) => of([{
