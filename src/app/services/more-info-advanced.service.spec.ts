@@ -5,16 +5,25 @@ import {
 import { HttpHeaders } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
+import { LanguageService } from './language.service';
 import { MoreInfoAdvancedService } from './more-info-advanced.service';
 
 describe('MoreInfoAdvancedService', () => {
   let service: MoreInfoAdvancedService;
   let httpMock: HttpTestingController;
+  let languageService: { getCurrentLanguage: jest.Mock<string, []> };
 
   beforeEach(() => {
+    languageService = {
+      getCurrentLanguage: jest.fn().mockReturnValue('ca')
+    };
+
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [MoreInfoAdvancedService]
+      providers: [
+        MoreInfoAdvancedService,
+        { provide: LanguageService, useValue: languageService }
+      ]
     });
 
     service = TestBed.inject(MoreInfoAdvancedService);
@@ -249,6 +258,7 @@ describe('MoreInfoAdvancedService', () => {
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     expect(req.request.method).toBe('POST');
+    expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({ miaTaskIds: [16, 18], parameters: { id: 99 } });
 
     req.flush({ tasks: [{ taskId: 16, title: 'One', html: '<p>ok</p>' }] });
@@ -265,6 +275,7 @@ describe('MoreInfoAdvancedService', () => {
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     expect(req.request.method).toBe('POST');
+    expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({
       miaTaskIds: [32304],
       parameters: { dificultat: 'Mitjana' }
