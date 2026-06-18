@@ -392,8 +392,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   // ---------------------------------------------------------------------------
 
   /**
-   * Scans the given container for rendered template wrappers and injects one button per available
-   * document export action before each template content block.
+   * Scans rendered template wrappers and injects one dropdown with all available export actions.
    */
   private injectDownloadButtons(container: HTMLElement, fallbackExportActions: MiaExportAction[] = []): void {
     const exportWrappers = container.querySelectorAll<HTMLElement>('[data-mia-export-template]');
@@ -411,6 +410,19 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       const bar = document.createElement('div');
       bar.className = 'sitmun-mia-download-bar';
 
+      const menu = document.createElement('details');
+      menu.className = 'sitmun-mia-download-menu';
+      menu.addEventListener('click', (event) => event.stopPropagation());
+
+      const toggle = document.createElement('summary');
+      toggle.className = 'sitmun-mia-download-toggle sitmun-mia-download-btn sitmun-mia-download-btn--generic';
+      toggle.setAttribute('role', 'button');
+      toggle.setAttribute('aria-label', 'Mostrar opcions d\'exportacio');
+      toggle.innerHTML = '<span class="sitmun-mia-download-btn-icon" aria-hidden="true"></span><span class="sitmun-mia-download-btn-label">Exportar</span>';
+
+      const options = document.createElement('div');
+      options.className = 'sitmun-mia-download-options';
+
       actions.forEach((action) => {
         const descriptor = this.getExportButtonDescriptor(action.output, action.label);
         const btn = document.createElement('button');
@@ -422,11 +434,16 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
         btn.addEventListener('click', (event) => {
           event.stopPropagation();
+          menu.open = false;
           this.triggerMiaExport(wrapper, action, btn, descriptor);
         });
 
-        bar.appendChild(btn);
+        options.appendChild(btn);
       });
+
+      menu.appendChild(toggle);
+      menu.appendChild(options);
+      bar.appendChild(menu);
 
       wrapper.insertBefore(bar, wrapper.firstChild);
     });
@@ -503,6 +520,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     }
     return {
       ...defaultDescriptor,
+      label,
       ariaLabel: `${defaultDescriptor.ariaLabel} (${label})`
     };
   }

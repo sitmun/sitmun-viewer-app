@@ -1,4 +1,4 @@
-import { sanitizeMiaRenderedHtml } from './more-info-advanced-control.handler';
+import { MoreInfoAdvancedControlHandler, sanitizeMiaRenderedHtml } from './more-info-advanced-control.handler';
 
 describe('sanitizeMiaRenderedHtml', () => {
   it('keeps iframe tags for MIA rendered html', () => {
@@ -29,5 +29,50 @@ describe('sanitizeMiaRenderedHtml', () => {
 
     expect(sanitized).toContain('data-mia-export-template="true"');
     expect(sanitized).toContain('data-mia-template-task-id="201"');
+  });
+});
+
+describe('MoreInfoAdvancedControlHandler export dropdown', () => {
+  it('uses export task label as visible button text when provided', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+
+    expect((handler as any).getExportButtonDescriptor('pdf', 'PDF A3 horitzontal')).toEqual({
+      label: 'PDF A3 horitzontal',
+      ariaLabel: 'Exportar plantilla en PDF (PDF A3 horitzontal)',
+      icon: 'pdf',
+      loadingLabel: 'Generant PDF...'
+    });
+  });
+
+  it('renders one dropdown menu with all export actions', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const triggerSpy = jest.fn();
+    (handler as any).triggerMiaExport = triggerSpy;
+
+    const container = document.createElement('div');
+    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
+    const wrapper = container.querySelector('[data-mia-export-template]') as HTMLElement;
+
+    (handler as any).injectDownloadButtons(container, [
+      { taskId: 11, output: 'pdf', label: 'PDF A4 vertical' },
+      { taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' },
+      { taskId: 13, output: 'xml', label: 'XML' }
+    ]);
+
+    const menu = wrapper.querySelector('.sitmun-mia-download-menu');
+    const options = wrapper.querySelectorAll('.sitmun-mia-download-options .sitmun-mia-download-btn');
+
+    expect(menu).not.toBeNull();
+    expect(wrapper.querySelectorAll('.sitmun-mia-download-toggle')).toHaveLength(1);
+    expect(options).toHaveLength(3);
+    expect(wrapper.textContent).toContain('PDF A4 vertical');
+    expect(wrapper.textContent).toContain('PDF A3 horitzontal');
+    expect(wrapper.textContent).toContain('XML');
+
+    (options[1] as HTMLButtonElement).click();
+
+    expect(triggerSpy).toHaveBeenCalledTimes(1);
+    expect(triggerSpy.mock.calls[0][0]).toBe(wrapper);
+    expect(triggerSpy.mock.calls[0][1]).toEqual({ taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' });
   });
 });

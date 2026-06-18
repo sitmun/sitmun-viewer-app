@@ -418,10 +418,44 @@ body {
 
 .sitmun-mia-download-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 8px;
+  position: relative;
+}
+
+.sitmun-mia-download-menu {
+  position: relative;
+
+  &[open] .sitmun-mia-download-toggle {
+    background: #dce6f5;
+    border-color: #6e93c9;
+  }
+
+  > summary {
+    list-style: none;
+  }
+
+  > summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.sitmun-mia-download-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #b7c4d6;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(38, 63, 99, 0.18);
+  z-index: 2;
 }
 
 .sitmun-mia-download-btn {
@@ -447,6 +481,23 @@ body {
   &:disabled {
     cursor: wait;
     opacity: 0.65;
+  }
+}
+
+.sitmun-mia-download-toggle {
+  padding-right: 30px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-65%) rotate(45deg);
   }
 }
 
