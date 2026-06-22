@@ -75,4 +75,51 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
     expect(triggerSpy.mock.calls[0][0]).toBe(wrapper);
     expect(triggerSpy.mock.calls[0][1]).toEqual({ taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' });
   });
+
+  it('builds viewer context from namespaced runtime layer names', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).sitnaApi = {
+      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
+    };
+
+    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades', options: { layerNames: ['turisme:or007tur_estades'] } }, {})).toEqual({
+      bbox: [1, 2, 3, 4],
+      queriedLayer: 'or007tur_estades',
+      queriedService: 'turisme'
+    });
+  });
+
+  it('falls back to configured service name when config already stores the canonical name', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).sitnaApi = {
+      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
+    };
+    (handler as any).appConfig = {
+      layers: [
+        { id: 'layer/7', layers: ['or007tur_estades'], service: 'turisme' }
+      ]
+    };
+
+    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades' }, {})).toEqual({
+      bbox: [1, 2, 3, 4],
+      queriedLayer: 'or007tur_estades',
+      queriedService: 'turisme'
+    });
+  });
+
+  it('falls back to service url namespace when runtime service exposes geoserver url', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).sitnaApi = {
+      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
+    };
+
+    expect((handler as any).buildMiaViewerContext(
+      { name: 'or007tur_estades' },
+      { url: 'https://ide.cime.es/geoserver/turisme/ows' }
+    )).toEqual({
+      bbox: [1, 2, 3, 4],
+      queriedLayer: 'or007tur_estades',
+      queriedService: 'turisme'
+    });
+  });
 });

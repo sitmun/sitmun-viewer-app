@@ -252,14 +252,20 @@ describe('MoreInfoAdvancedService', () => {
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
       { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
-    ], { id: 99 }).subscribe((result) => {
+    ], { id: 99 }, { bbox: [1, 2, 3, 4], queriedLayer: 'layer/7', queriedService: 'turisme' }).subscribe((result) => {
       emitted = result;
     });
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     expect(req.request.method).toBe('POST');
     expect(req.request.params.get('lang')).toBe('ca');
-    expect(req.request.body).toEqual({ miaTaskIds: [16, 18], parameters: { id: 99 } });
+    expect(req.request.body).toEqual({
+      miaTaskIds: [16, 18],
+      parameters: { id: 99 },
+      bbox: [1, 2, 3, 4],
+      queriedLayer: 'layer/7',
+      queriedService: 'turisme'
+    });
 
     req.flush({ tasks: [{ taskId: 16, title: 'One', html: '<p>ok</p>' }] });
     expect(emitted).toEqual([{ taskId: 16, title: 'One', html: '<p>ok</p>' }]);

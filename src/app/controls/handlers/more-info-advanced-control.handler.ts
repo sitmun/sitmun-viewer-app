@@ -218,7 +218,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         if (miaTasks.length === 0) continue;
 
         const featureData = layer.features[0].getData ? layer.features[0].getData() : layer.features[0].data || {};
-        this.openMiaPopup(miaTasks, featureData);
+        this.openMiaPopup(miaTasks, featureData, this.buildMiaViewerContext(layer, service));
         return;
       }
     }
@@ -226,7 +226,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
   private openMiaPopup(
     miaTasks: MiaTask[],
-    featureData: Record<string, any>
+    featureData: Record<string, any>,
+    viewerContext: { bbox?: number[] | null; queriedLayer?: string | null; queriedService?: string | null } = {}
   ): void {
     const overlay = this.ensureMiaOverlay();
     if (!overlay) return;
@@ -235,11 +236,11 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     const contentDiv = overlay.querySelector('.tc-ctl-popup-content') as HTMLElement | null;
     if (!contentDiv) return;
     contentDiv.innerHTML = this.buildMiasHtml(popupId, miaTasks);
-      const exportActions = Array.from(new Map(
-        miaTasks
-          .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
-          .map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])
-      ).values());
+    const exportActions = Array.from(new Map(
+      miaTasks
+        .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
+        .map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])
+    ).values());
 
     const position = this.getInitialMiaOverlayPosition(overlay);
     this.placeMiaOverlayAt(position.left, position.top);
@@ -249,10 +250,127 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     this.wireTopLevelMiaTabs(popupId, contentDiv);
     this.wireBackendRenderedTabs(contentDiv);
 
-    this.miaService.renderMiaTasks(miaTasks, featureData).subscribe({
+    this.miaService.renderMiaTasks(miaTasks, featureData, viewerContext).subscribe({
       next: (renderedTasks) => this.fillRenderedMiaTasks(contentDiv, renderedTasks, exportActions),
       error: (error) => this.fillRenderedMiaError(contentDiv, error?.message || 'MIA rendering failed')
     });
+  }
+
+  private buildMiaViewerContext(layer: any, service: any): { bbox?: number[] | null; queriedLayer?: string | null; queriedService?: string | null } {
+    return {
+      bbox: this.getCurrentMapBbox(),
+      queriedLayer: this.getQueriedLayerRef(layer),
+      queriedService: this.getQueriedServiceRef(service, layer)
+    };
+  }
+
+  private getCurrentMapBbox(): number[] | null {
+    const abstractMapObject = this.sitnaApi.getGlobal('abstractMapObject') as any;
+    const map = abstractMapObject?.map;
+    if (!map || typeof map.getExtent !== 'function') return null;
+
+    try {
+      const extent = map.getExtent();
+      if (Array.isArray(extent) && extent.length >= 4) {
+        return [Number(extent[0]), Number(extent[1]), Number(extent[2]), Number(extent[3])];
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
+  private getQueriedLayerRef(layer: any): string | null {
+    const value = typeof layer?.name === 'string' && layer.name.trim().length > 0
+      ? layer.name.trim()
+      : typeof layer?.id === 'string' && layer.id.trim().length > 0
+        ? layer.id.trim()
+        : null;
+    return value;
+  }
+
+  private getQueriedServiceRef(service: any, layer: any): string | null {
+    const namespacedLayerService = this.getServiceNameFromLayerNames(layer);
+    const configuredService = this.getConfiguredServiceNameFromLayerName(layer?.name);
+    const serviceUrlName = this.getServiceNameFromUrl(service?.url);
+
+    return serviceUrlName ?? namespacedLayerService ?? configuredService;
+  }
+
+  private getServiceNameFromLayerNames(layer: any): string | null {
+    const queriedLayer = this.getQueriedLayerRef(layer);
+    const rawLayerNames = [
+      layer?.options?.layerNames,
+      layer?.layerNames,
+      layer?.names,
+      layer?.availableNames,
+      layer?.options?.params?.LAYERS,
+      layer?.params?.LAYERS,
+    ];
+    const layerNames = rawLayerNames.flatMap((value) => {
+      if (Array.isArray(value)) {
+        return value;
+      }
+      if (typeof value === 'string' && value.includes(',')) {
+        return value.split(',');
+      }
+      return value != null ? [value] : [];
+    });
+
+    for (const rawLayerName of layerNames) {
+      if (typeof rawLayerName !== 'string') {
+        continue;
+      }
+      const layerName = rawLayerName.trim();
+      const separatorIndex = layerName.indexOf(':');
+      if (separatorIndex <= 0) {
+        continue;
+      }
+      const serviceName = layerName.slice(0, separatorIndex).trim();
+      const nameWithoutService = layerName.slice(separatorIndex + 1).trim();
+      if (!serviceName || !nameWithoutService) {
+        continue;
+      }
+      if (queriedLayer == null || queriedLayer === nameWithoutService) {
+        return serviceName;
+      }
+    }
+
+    return null;
+  }
+
+  private getConfiguredServiceNameFromLayerName(layerName: unknown): string | null {
+    if (typeof layerName !== 'string' || !this.appConfig?.layers) {
+      return null;
+    }
+
+    for (const layer of this.appConfig.layers) {
+      if (
+        Array.isArray(layer.layers) &&
+        layer.layers.includes(layerName) &&
+        typeof layer.service === 'string' &&
+        layer.service.trim().length > 0
+      ) {
+        return layer.service;
+      }
+    }
+
+    return null;
+  }
+
+  private getServiceNameFromUrl(serviceUrl: unknown): string | null {
+    if (typeof serviceUrl !== 'string') {
+      return null;
+    }
+
+    const value = serviceUrl.trim();
+    if (!value) {
+      return null;
+    }
+
+    const match = /\/geoserver\/([^/?#]+)\/ows(?:$|[/?#])/i.exec(value);
+    return match?.[1]?.trim() || null;
   }
 
   private hideMiaOverlay(): void {

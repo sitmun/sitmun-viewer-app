@@ -53,6 +53,12 @@ interface MiaRenderResponse {
   tasks?: MiaRenderedTask[];
 }
 
+export interface MiaViewerContext {
+  bbox?: number[] | null;
+  queriedLayer?: string | null;
+  queriedService?: string | null;
+}
+
 /**
  * Service for handling "More Info Advanced" (MIA) functionality.
  * MIA tasks are composite tasks that group multiple child queries/templates
@@ -153,11 +159,27 @@ export class MoreInfoAdvancedService {
     return Array.from(new Map(actions.map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])).values());
   }
 
-  renderMiaTasks(miaTasks: MiaTask[], featureData: any): Observable<MiaRenderedTask[]> {    const neededFields = this.extractNeededFields(miaTasks);
-    const body = {
+  renderMiaTasks(
+    miaTasks: MiaTask[],
+    featureData: any,
+    viewerContext: MiaViewerContext = {}
+  ): Observable<MiaRenderedTask[]> {
+    const neededFields = this.extractNeededFields(miaTasks);
+    const body: Record<string, any> = {
       miaTaskIds: miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite),
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
+
+    if (Array.isArray(viewerContext.bbox) && viewerContext.bbox.length >= 4) {
+      body['bbox'] = viewerContext.bbox.slice(0, 4);
+    }
+    if (typeof viewerContext.queriedLayer === 'string' && viewerContext.queriedLayer.trim().length > 0) {
+      body['queriedLayer'] = viewerContext.queriedLayer.trim();
+    }
+    if (typeof viewerContext.queriedService === 'string' && viewerContext.queriedService.trim().length > 0) {
+      body['queriedService'] = viewerContext.queriedService.trim();
+    }
+
     const lang = this.languageService.getCurrentLanguage()?.trim();
     const options = lang ? { params: { lang } } : {};
 
