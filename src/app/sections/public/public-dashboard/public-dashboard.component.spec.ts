@@ -116,7 +116,8 @@ describe('PublicDashboardComponent', () => {
             filterApplicationsByType: (items: unknown[]) => items,
             getDashboardConfig: () => ({
               allowedTypes: ['I'],
-              filteringEnabled: true
+              filteringEnabled: true,
+              initialBatchSize: 12
             }),
             applicationHasTerritory: () => true
           }
@@ -133,13 +134,39 @@ describe('PublicDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('filters displayed items on keyword search without refetching', () => {
+  it('onKeywordsSearch with 2+ chars reloads dashboard applications with keywords', () => {
     const commonService = TestBed.inject(CommonService);
     const fetchSpy = commonService.fetchDashboardApplications as jest.Mock;
+    fetchSpy.mockClear();
+    fetchSpy.mockReturnValueOnce(
+      of({
+        content: [
+          {
+            id: 2,
+            name: 'Navarra',
+            title: 'Navarra',
+            type: 'I',
+            appPrivate: false,
+            isUnavailable: false,
+            updateDate: new Date(),
+            createdDate: new Date(),
+            pointOfContact: 'u',
+            headerParams: {}
+          }
+        ],
+        totalElements: 1,
+        page: { number: 0, size: 12, totalPages: 1, totalElements: 1 }
+      })
+    );
 
     component.onKeywordsSearch('Navarra');
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).toHaveBeenCalledWith({
+      page: 0,
+      size: 12,
+      keywords: 'Navarra'
+    });
     expect(component.items).toHaveLength(1);
     expect(component.items[0].name).toBe('Navarra');
   });
