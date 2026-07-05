@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 
 - **Tests**: Jest coverage for dashboard pagination, sequential page loading, searchbox submit-vs-type behaviour, loading cleanup, and dashboard-item `@Input` resync.
+- **Tests**: Jest coverage for `AuthenticationGuard` public/auth redirect policy and `publicAuthClearGuard` logout-before-public behaviour.
 
 ### Changed
 
@@ -14,6 +15,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Auth**: logged-in users can reach `/public/**` so session and HttpOnly cookies are cleared before anonymous config requests; `/auth/**` still redirects via `UrlTree` without briefly activating the route.
+- **Auth**: public routes remain reachable when the pre-access logout request fails after local session cleanup; users see a translated warning instead of a raw i18n key.
 - **Dashboard**: infinite scroll uses a consistent page size and `totalPages`/`totalElements` metadata, preventing duplicate/skipped cards, spurious extra fetches, and permanent pagination lockout after load-more errors.
 - **Dashboard**: sequential page loading tracks the last Spring page index, rebinds scroll sentinels after data arrives, and excludes non-configured application types when merging pages so hidden apps do not consume page slots.
 - **Dashboard**: grid keyword search (2+ characters on Enter) reloads `/dashboard/applications?keywords=` server-side so matches appear before infinite scroll reaches them; load-more preserves the active keyword.
