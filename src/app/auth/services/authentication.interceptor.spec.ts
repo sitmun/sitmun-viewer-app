@@ -4,180 +4,140 @@ import {
   HttpHandler,
   HttpRequest
 } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 
-import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
-import { throwError } from 'rxjs';
+import { URL_AUTH_LOGIN, URL_AUTH_LOGOUT, URL_AUTH_PROXY, URL_API_USER_ACCOUNT } from '@api/api-config';
+import { AUTH_CONFIG_DI } from '@auth/authentication.options';
+import { CustomAuthConfig } from '@config/app.config';
+import { TranslateModule } from '@ngx-translate/core';
+import { NEVER, of, throwError } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
-import { AuthenticationInterceptor , SUPPRESS_AUTH_REDIRECT_ON_401 } from './authentication.interceptor';
+import {
+  AuthenticationInterceptor
+} from './authentication.interceptor';
+import { suppressAuthRedirectContext } from './auth-http-context';
 import { AuthenticationService } from './authentication.service';
+import { IndexedDbService } from './indexed-db.service';
+import { NotificationService } from '../../notifications/services/NotificationService';
 
-describe('AuthenticationInterceptor', () => {
+describe('AuthenticationInterceptor (FS-03)', () => {
   let interceptor: AuthenticationInterceptor;
-  let authService: {
-    clearSessionAndRedirectToLogin: jest.Mock;
-    logout: jest.Mock;
-  };
+  let authService: AuthenticationService<unknown>;
+  let clearAuthenticationSpy: jest.SpyInstance;
+  let clearSessionAndRedirectToLoginSpy: jest.SpyInstance;
+  let handleUnauthorizedSessionSpy: jest.SpyInstance;
+
+  const apiUrl = (path: string) => `${environment.apiUrl}${path}`;
 
   beforeEach(() => {
-    authService = {
-      clearSessionAndRedirectToLogin: jest.fn(),
-      logout: jest.fn()
-    };
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        AuthenticationService,
         AuthenticationInterceptor,
-        { provide: AuthenticationService, useValue: authService }
+        NotificationService,
+        { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
+        {
+          provide: Router,
+          useValue: { navigateByUrl: jest.fn().mockResolvedValue(true) }
+        },
+        {
+          provide: IndexedDbService,
+          useValue: {
+            init: jest.fn().mockResolvedValue(undefined),
+            remove: jest.fn().mockResolvedValue(undefined)
+          }
+        }
       ]
     });
+
+    authService = TestBed.inject(AuthenticationService);
     interceptor = TestBed.inject(AuthenticationInterceptor);
+    clearAuthenticationSpy = jest
+      .spyOn(authService, 'clearAuthentication')
+      .mockReturnValue(of(undefined));
+    clearSessionAndRedirectToLoginSpy = jest.spyOn(
+      authService,
+      'clearSessionAndRedirectToLogin'
+    );
+    handleUnauthorizedSessionSpy = jest.spyOn(
+      authService,
+      'handleUnauthorizedSession'
+    );
   });
 
-  it('calls clearSessionAndRedirectToLogin on 401 when request URL includes logout path', (done) => {
-    const next: HttpHandler = {
-      handle: () =>
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 401,
-              url: `https://example.test${URL_AUTH_LOGOUT}`
-            })
-        )
-    };
-    const req = new HttpRequest('GET', URL_AUTH_LOGOUT);
-    interceptor.intercept(req, next).subscribe({
-      error: () => {
-        expect(authService.clearSessionAndRedirectToLogin).toHaveBeenCalled();
-        expect(authService.logout).not.toHaveBeenCalled();
-        done();
-      }
-    });
-  });
-
-  it('calls logout on 401 for requests that are not logout', (done) => {
-    const next: HttpHandler = {
-      handle: () =>
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 401,
-              url: '/api/other'
-            })
-        )
-    };
-    const req = new HttpRequest('GET', '/api/other');
-    interceptor.intercept(req, next).subscribe({
-      error: () => {
-        expect(authService.logout).toHaveBeenCalled();
-        expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
-        done();
-      }
-    });
-  });
-
-  it('does not invoke session helpers on non-401 errors', (done) => {
-    const next: HttpHandler = {
-      handle: () =>
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 500,
-              url: '/api/x'
-            })
-        )
-    };
-    const req = new HttpRequest('GET', '/api/x');
-    interceptor.intercept(req, next).subscribe({
-      error: () => {
-        expect(authService.logout).not.toHaveBeenCalled();
-        expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
-        done();
-      }
-    });
-  });
-
-  it('does not invoke session helpers on 401 from proxy refresh URL', (done) => {
-    const next: HttpHandler = {
-      handle: () =>
-        throwError(
-          () =>
-            new HttpErrorResponse({
-              status: 401,
-              url: `https://example.test${URL_AUTH_PROXY}`
-            })
-        )
-    };
-    const req = new HttpRequest('GET', URL_AUTH_PROXY);
-    interceptor.intercept(req, next).subscribe({
-      error: () => {
-        expect(authService.logout).not.toHaveBeenCalled();
-        expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
-        done();
-      }
-    });
-  });
-
-  describe('SUPPRESS_AUTH_REDIRECT_ON_401 context token', () => {
-    it('does not call clearSessionAndRedirectToLogin on logout 401 when context suppresses redirect', (done) => {
-      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
+  const intercept401 = (url: string, context = new HttpContext()): Promise<void> =>
+    new Promise((resolve) => {
+      const req = new HttpRequest('GET', url, { context });
       const next: HttpHandler = {
         handle: () =>
-          throwError(
-            () =>
-              new HttpErrorResponse({
-                status: 401,
-                url: `https://example.test${URL_AUTH_LOGOUT}`
-              })
-          )
+          throwError(() => new HttpErrorResponse({ status: 401, url }))
       };
-      const req = new HttpRequest('POST', URL_AUTH_LOGOUT, null, { context });
       interceptor.intercept(req, next).subscribe({
-        error: () => {
-          expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
-          expect(authService.logout).not.toHaveBeenCalled();
-          done();
-        }
+        error: () => resolve()
       });
     });
 
-    it('does not call logout on non-logout 401 when context suppresses redirect', (done) => {
-      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
-      const next: HttpHandler = {
-        handle: () =>
-          throwError(
-            () =>
-              new HttpErrorResponse({
-                status: 401,
-                url: '/api/config'
-              })
-          )
-      };
-      const req = new HttpRequest('GET', '/api/config', null, { context });
-      interceptor.intercept(req, next).subscribe({
-        error: () => {
-          expect(authService.logout).not.toHaveBeenCalled();
-          expect(authService.clearSessionAndRedirectToLogin).not.toHaveBeenCalled();
-          done();
-        }
-      });
-    });
+  /** BUG-027: failed login must not trigger global logout. */
+  it('does not call logout when login POST returns 401', async () => {
+    await intercept401(apiUrl(URL_AUTH_LOGIN));
 
-    it('still propagates the error when context suppresses redirect', (done) => {
-      const context = new HttpContext().set(SUPPRESS_AUTH_REDIRECT_ON_401, true);
-      const next: HttpHandler = {
-        handle: () =>
-          throwError(
-            () =>
-              new HttpErrorResponse({ status: 401, url: `https://example.test${URL_AUTH_LOGOUT}` })
-          )
-      };
-      const req = new HttpRequest('POST', URL_AUTH_LOGOUT, null, { context });
-      interceptor.intercept(req, next).subscribe({
-        error: (err: unknown) => {
-          expect(err).toBeInstanceOf(HttpErrorResponse);
-          done();
-        }
-      });
-    });
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
+    expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
+  });
+
+  it('calls handleUnauthorizedSession for a protected backend 401', async () => {
+    await intercept401(apiUrl(URL_API_USER_ACCOUNT));
+
+    expect(handleUnauthorizedSessionSpy).toHaveBeenCalledTimes(1);
+  });
+
+  /** BUG-051: concurrent 401s must not spawn parallel logout storms. */
+  it('calls logout at most once when multiple protected requests return 401', async () => {
+    clearAuthenticationSpy.mockReturnValue(NEVER);
+    const accountUrl = apiUrl(URL_API_USER_ACCOUNT);
+
+    await Promise.all([intercept401(accountUrl), intercept401(accountUrl)]);
+
+    expect(clearAuthenticationSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('still clears session locally when logout endpoint returns 401', async () => {
+    await intercept401(apiUrl(URL_AUTH_LOGOUT));
+
+    expect(clearSessionAndRedirectToLoginSpy).toHaveBeenCalledTimes(1);
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not logout when a non-backend URL containing "api" returns 401', async () => {
+    await intercept401('assets/js/api-sitna/config.json');
+
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
+    expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
+    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not logout when proxy refresh returns 401', async () => {
+    await intercept401(apiUrl(URL_AUTH_PROXY));
+
+    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
+    expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not logout when SUPPRESS_AUTH_REDIRECT_ON_401 is set on the request', async () => {
+    await intercept401(
+      apiUrl(URL_API_USER_ACCOUNT),
+      suppressAuthRedirectContext()
+    );
+
+    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
   });
 });

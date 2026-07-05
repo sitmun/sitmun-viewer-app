@@ -10,6 +10,7 @@ import { Injectable, Injector } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+import { isSitmunBackendApiUrl } from './backend-api-url';
 import { MessageBoxService } from '../../util/message-box-service';
 import { ErrorTrackingService } from '../services/error-tracking.service';
 
@@ -33,7 +34,7 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
 
     // Skip interceptor for asset requests (e.g., config files, translations)
     // to avoid circular dependency during APP_INITIALIZER
-    if (!req.url.startsWith('api/') || req.url.includes('/assets/')) {
+    if (!isSitmunBackendApiUrl(req.url) || req.url.includes('/assets/')) {
       return next.handle(req);
     } else {
       return next.handle(req).pipe(

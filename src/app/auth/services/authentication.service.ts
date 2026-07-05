@@ -52,6 +52,7 @@ export class AuthenticationService<T> {
   private indexedDbInitialized = false;
   private proxyForbiddenNotified = false;
   private consecutiveProxyErrors = 0;
+  private logoutInProgress = false;
 
   constructor(
     private readonly http: HttpClient,
@@ -93,7 +94,9 @@ export class AuthenticationService<T> {
 
   login(authenticationRequest: AuthenticationRequest) {
     return this.http
-      .post<void>(environment.apiUrl + URL_AUTH_LOGIN, authenticationRequest)
+      .post<void>(environment.apiUrl + URL_AUTH_LOGIN, authenticationRequest, {
+        context: suppressAuthRedirectContext()
+      })
       .pipe(
         switchMap(() =>
           this.http.get<UserDto>(environment.apiUrl + URL_API_USER_ACCOUNT)
@@ -133,18 +136,33 @@ export class AuthenticationService<T> {
       );
   }
 
+  /** Returns false when an unauthorized logout sequence is already in flight. */
+  handleUnauthorizedSession(): void {
+    if (this.logoutInProgress) {
+      return;
+    }
+    this.logoutInProgress = true;
+    this.clearAuthentication()
+      .pipe(
+        finalize(() => {
+          this.logoutInProgress = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          void this.router.navigateByUrl(this.config.routes.loginPath);
+        },
+        error: (err: unknown) => {
+          console.error('[Auth] Logout failed:', err);
+          this.translate.get('auth.logoutFailed').subscribe((msg) => {
+            this.notificationService.error(msg);
+          });
+        }
+      });
+  }
+
   logout(): void {
-    this.clearAuthentication().subscribe({
-      next: () => {
-        void this.router.navigateByUrl(this.config.routes.loginPath);
-      },
-      error: (err: unknown) => {
-        console.error('[Auth] Logout failed:', err);
-        this.translate.get('auth.logoutFailed').subscribe((msg) => {
-          this.notificationService.error(msg);
-        });
-      }
-    });
+    this.handleUnauthorizedSession();
   }
 
   getAuthMethods() {
@@ -259,10 +277,11 @@ export class AuthenticationService<T> {
   // Session utils ------------------------------------------------------------
 
   clearSessionAndRedirectToLogin(): void {
-    this.clearSession();
-    // Remove any floating MIA popups that live on document.body
-    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
-    void this.router.navigateByUrl(this.config.routes.loginPath);
+    void this.clearSession().then(() => {
+      // Remove any floating MIA popups that live on document.body
+      document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
+      void this.router.navigateByUrl(this.config.routes.loginPath);
+    });
   }
 
   private clearSession(): Promise<void> {
