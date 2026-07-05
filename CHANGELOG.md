@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- **Tests**: Jest coverage for dashboard pagination, sequential page loading, searchbox submit-vs-type behaviour, loading cleanup, and dashboard-item `@Input` resync.
+
+### Changed
+
+- **Dashboard search**: autocomplete suggestions refresh while typing; the card grid filters on Enter (or clear) only, so navigation and in-place browsing use separate triggers.
+
+### Fixed
+
+- **Dashboard**: infinite scroll uses a consistent page size and `totalPages`/`totalElements` metadata, preventing duplicate/skipped cards, spurious extra fetches, and permanent pagination lockout after load-more errors.
+- **Dashboard**: sequential page loading tracks the last Spring page index, rebinds scroll sentinels after data arrives, and excludes non-configured application types when merging pages so hidden apps do not consume page slots.
+- **Dashboard**: grid keyword search (2+ characters on Enter) reloads `/dashboard/applications?keywords=` server-side so matches appear before infinite scroll reaches them; load-more preserves the active keyword.
+- **Dashboard**: keyword search no longer unmounts the searchbox (uses `loadingMore` instead of `loading` during search refresh); empty search results keep the field visible.
+- **Dashboard**: search autocomplete clears its loading spinner when the query drops below two characters during an in-flight request.
+- **Dashboard**: item cards re-sync territory count and single-territory navigation when Angular reuses the component instance after language or list reload.
+
 ## [1.2.7] - 2026-06-05
 
 ### Added

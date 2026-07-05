@@ -29,6 +29,7 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   @Input() items: DashboardItem[] = [];
   @Input() hasMorePages = false;
   @Input() loadingMore = false;
+  @Input() loading = false;
   @Output() loadMore = new EventEmitter<void>();
 
   public privateItems: DashboardItem[] = [];
@@ -37,7 +38,9 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
 
   // Infinite scroll properties
   private observers: IntersectionObserver[] = [];
-  private readonly LOAD_MORE_THRESHOLD = 0.5;
+  private readonly LOAD_MORE_THRESHOLD = 0;
+  private readonly LOAD_MORE_ROOT_MARGIN = '120px';
+  private observerSetupTimer?: ReturnType<typeof setTimeout>;
   private currentColumns = 3; // Track current grid columns
   private resizeObserver?: ResizeObserver;
 
@@ -48,9 +51,24 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
       this.refreshDisplayedItems();
-      // Check for incomplete rows after items change
-      setTimeout(() => this.checkIncompleteRows(), 100);
     }
+
+    if (changes['items'] || changes['hasMorePages']) {
+      // Dashboard items mount after the first fetch (*ngIf="!loading") and tab
+      // bodies may render later than ngAfterViewInit — rebind sentinels when data arrives.
+      this.scheduleObserverSetup();
+    }
+  }
+
+  private scheduleObserverSetup(): void {
+    if (this.observerSetupTimer) {
+      clearTimeout(this.observerSetupTimer);
+    }
+    this.observerSetupTimer = setTimeout(() => {
+      this.observerSetupTimer = undefined;
+      this.checkIncompleteRows();
+      this.setupIntersectionObservers();
+    }, 100);
   }
 
   ngOnInit() {
@@ -123,13 +141,13 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.setupIntersectionObservers();
-      this.checkIncompleteRows();
-    }, 100);
+    this.scheduleObserverSetup();
   }
 
   ngOnDestroy(): void {
+    if (this.observerSetupTimer) {
+      clearTimeout(this.observerSetupTimer);
+    }
     this.cleanupObservers();
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -170,7 +188,7 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   private checkIncompleteRows(): void {
-    if (!this.hasMorePages || this.loadingMore) {
+    if (!this.hasMorePages || this.loadingMore || this.loading) {
       return;
     }
 
@@ -196,6 +214,7 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
     
     const options: IntersectionObserverInit = {
       root: null,
+      rootMargin: this.LOAD_MORE_ROOT_MARGIN,
       threshold: this.LOAD_MORE_THRESHOLD
     };
 
