@@ -204,6 +204,74 @@ describe('OverviewMapControlHandler', () => {
       });
     });
 
+    it('should use the lowest-order background when profile array order differs', () => {
+      const task: AppTasks = {
+        'ui-control': 'sitna.overviewMap',
+        parameters: {}
+      } as any;
+
+      const orderedService = {
+        id: 'service-ordered',
+        url: 'https://example.com/ordered',
+        type: 'WMS',
+        parameters: {}
+      };
+
+      const orderedLayer = {
+        id: 'ordered-layer',
+        title: 'Ordered Base Layer',
+        service: 'service-ordered',
+        layers: ['ordered-layer']
+      };
+
+      const orderedGroup = {
+        id: 'background-ordered',
+        layers: ['ordered-layer']
+      };
+
+      mockConfigLookup.findGroup.mockReturnValue(orderedGroup);
+      mockConfigLookup.findLayer.mockReturnValue(orderedLayer);
+      mockConfigLookup.findService.mockReturnValue(orderedService);
+
+      const context: AppCfg = {
+        ...mockAppCfg,
+        application: {
+          ...mockAppCfg.application,
+          'situation-map': undefined
+        },
+        backgrounds: [
+          {
+            id: 'background-late',
+            title: 'Late Background',
+            thumbnail: '',
+            order: 2
+          },
+          {
+            id: 'background-ordered',
+            title: 'Ordered Background',
+            thumbnail: '',
+            order: 0
+          }
+        ],
+        groups: [orderedGroup],
+        layers: [orderedLayer],
+        services: [orderedService]
+      };
+
+      const config = handler.buildConfiguration(task, context);
+
+      expect(config).toEqual({
+        div: 'tc-slot-ovmap',
+        layer: {
+          id: 'Ordered Base Layer',
+          title: 'Ordered Base Layer',
+          url: 'https://example.com/ordered',
+          type: 'WMS',
+          layerNames: ['ordered-layer']
+        }
+      });
+    });
+
     it('should successfully resolve layer from situation-map', () => {
       const task: AppTasks = {
         'ui-control': 'sitna.overviewMap',

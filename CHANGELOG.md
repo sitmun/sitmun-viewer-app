@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- **Map**: application background maps follow admin `order` in the basemap selector; SITNA receives sorted `baseLayers` and an explicit `defaultBaseLayer` for the first ordered background ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)).
+
 ### Added
 
 - **Tests**: Jest coverage for dashboard pagination, sequential page loading, searchbox submit-vs-type behaviour, loading cleanup, and dashboard-item `@Input` resync.

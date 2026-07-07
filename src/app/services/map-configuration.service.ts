@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppGroup } from '@api/model/app-cfg';
+import { AppBackground, AppCfg, AppGroup } from '@api/model/app-cfg';
 import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 
 import { AppConfigService } from './app-config.service';
 import { ConfigLookupService } from './config-lookup.service';
 import { ControlRegistryService } from './control-registry.service';
+import {
+  sortBackgroundsByOrder,
+  toDefaultBaseLayer
+} from '../utils/background-order.util';
 
 /**
  * Service for converting AppCfg to SITNA map-level configuration.
@@ -56,7 +60,9 @@ export class MapConfigurationService {
   }
 
   /**
-   * Convert AppCfg backgrounds to SITNA base layers
+   * Convert AppCfg backgrounds to SITNA base layers.
+   * Backgrounds are sorted by profile `order` before flattening into `baseLayers`.
+   * Pair with {@link toDefaultBaseLayer} for SITNA `defaultBaseLayer`.
    *
    * WARNING
    * Thumbnails coming from backgrounds, but backgrounds may contain more than one layer.
@@ -64,12 +70,13 @@ export class MapConfigurationService {
    */
   toBaseLayers(apiConfig: AppCfg): SitnaBaseLayer[] {
     const baseLayers: SitnaBaseLayer[] = [];
-    if (apiConfig.backgrounds.length) {
+    const orderedBackgrounds = sortBackgroundsByOrder(apiConfig.backgrounds);
+    if (orderedBackgrounds.length) {
       const backgrounds: string[] = [];
       const groups: AppGroup[] = [];
       const layers: string[] = [];
       let thumbnail = ''; // TODO-redo
-      for (const background of apiConfig.backgrounds) {
+      for (const background of orderedBackgrounds) {
         backgrounds.push(background.id);
         // if(typeof background.thumbnail!='undefined' && background.thumbnail) { // TODO-redo
         //   thumbnail = background.thumbnail;
@@ -98,7 +105,7 @@ export class MapConfigurationService {
           const service =
             this.configLookup.findService(layer.service) ||
             apiConfig.services.find((service) => service.id === layer.service);
-          for (const background of apiConfig.backgrounds) {
+          for (const background of orderedBackgrounds) {
             thumbnail = '';
             if (
               typeof background.thumbnail != 'undefined' &&
@@ -134,6 +141,16 @@ export class MapConfigurationService {
       }
     }
     return baseLayers;
+  }
+
+  /** SITNA default base layer id from ordered {@link toBaseLayers} output. */
+  toDefaultBaseLayer(baseLayers: SitnaBaseLayer[]): string | undefined {
+    return toDefaultBaseLayer(baseLayers);
+  }
+
+  /** Ordered application backgrounds for controls that pick the first basemap. */
+  orderedBackgrounds(backgrounds: AppBackground[]): AppBackground[] {
+    return sortBackgroundsByOrder(backgrounds);
   }
 
   /**

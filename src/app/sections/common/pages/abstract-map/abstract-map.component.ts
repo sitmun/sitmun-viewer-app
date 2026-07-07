@@ -306,6 +306,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       const initialExtent = this.mapConfig.toInitialExtent(appCfg);
       const defaultZoomLevel = this.mapConfig.toDefaultZoomLevel(appCfg);
 
+      const baseLayers = this.mapConfig.toBaseLayers(appCfg);
+      const defaultBaseLayer = this.mapConfig.toDefaultBaseLayer(baseLayers);
+
       this.currentGeneralCfg = {
         locale: this.locale,
         crs: this.mapConfig.toCrs(appCfg),
@@ -313,7 +316,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         defaultZoomLevel,
         attribution: attribution,
         layout: this.mapConfig.toLayout(appCfg),
-        baseLayers: this.mapConfig.toBaseLayers(appCfg),
+        baseLayers,
+        ...(defaultBaseLayer ? { defaultBaseLayer } : {}),
         controls: controls as any, // Handler system returns Partial<SitnaControls>
         views: this.mapConfig.toViews(appCfg)
       };

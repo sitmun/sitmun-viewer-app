@@ -384,6 +384,68 @@ describe('MapConfigurationService', () => {
       expect(result.length).toBe(3); // 3 layers total from 2 backgrounds
     });
 
+    it('should order base layers by background order independent of profile array order', () => {
+      const cfgWithOrder: AppCfg = {
+        ...mockAppCfg,
+        backgrounds: [
+          {
+            id: 'bg-2',
+            title: 'Background 2',
+            thumbnail: 'thumb2.jpg',
+            order: 2
+          },
+          {
+            id: 'bg-1',
+            title: 'Background 1',
+            thumbnail: 'thumb1.jpg',
+            order: 0
+          }
+        ],
+        groups: [
+          {
+            id: 'bg-1',
+            title: 'Background Group 1',
+            layers: ['layer-1', 'layer-2']
+          },
+          { id: 'bg-2', title: 'Background Group 2', layers: ['layer-3'] }
+        ]
+      };
+      configLookup.initialize(cfgWithOrder);
+
+      const result = service.toBaseLayers(cfgWithOrder);
+
+      expect(result.map((layer) => layer.title)).toEqual([
+        'Base Layer 1',
+        'Base Layer 2',
+        'Base Layer 3'
+      ]);
+    });
+
+    it('should expose defaultBaseLayer as the first ordered base layer id', () => {
+      const cfgWithOrder: AppCfg = {
+        ...mockAppCfg,
+        backgrounds: [
+          {
+            id: 'bg-2',
+            title: 'Background 2',
+            thumbnail: 'thumb2.jpg',
+            order: 2
+          },
+          {
+            id: 'bg-1',
+            title: 'Background 1',
+            thumbnail: 'thumb1.jpg',
+            order: 0
+          }
+        ]
+      };
+      configLookup.initialize(cfgWithOrder);
+
+      const baseLayers = service.toBaseLayers(cfgWithOrder);
+
+      expect(service.toDefaultBaseLayer(baseLayers)).toBe('Base Layer 1');
+    });
+
     it('should include layer properties correctly', () => {
       const result = service.toBaseLayers(mockAppCfg);
       const layer1 = result.find((l) => l.title === 'Base Layer 1');

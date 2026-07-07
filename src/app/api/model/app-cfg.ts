@@ -57,6 +57,8 @@ export interface AppBackground {
   id: string;
   title: string;
   thumbnail: string;
+  /** Application-background order from admin (`ApplicationBackground.order` / `ABC_ORDER`). */
+  order?: number;
 }
 export interface AppGroup {
   id?: string;
