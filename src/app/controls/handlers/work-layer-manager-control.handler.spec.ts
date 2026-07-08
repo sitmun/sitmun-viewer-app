@@ -14,8 +14,19 @@ describe('WorkLayerManagerControlHandler', () => {
   let mockAppConfig: jest.Mocked<AppConfigService>;
 
   beforeEach(() => {
+    const mockGetRenderedHtml = jest.fn().mockResolvedValue('<li></li>');
+    class WorkLayerManager {
+      getRenderedHtml = mockGetRenderedHtml;
+    }
+    WorkLayerManager.prototype.getRenderedHtml = mockGetRenderedHtml;
+
+    const mockTC = {
+      control: {
+        WorkLayerManager
+      }
+    };
     mockSitnaApi = {
-      getTC: jest.fn(),
+      getTC: jest.fn().mockReturnValue(mockTC as any),
       getSITNA: jest.fn().mockReturnValue({} as any),
       getTCProperty: jest.fn(),
       isReady: jest.fn().mockReturnValue(true)
@@ -105,13 +116,63 @@ describe('WorkLayerManagerControlHandler', () => {
   });
 
   describe('loadPatches()', () => {
-    it('should resolve immediately (no patches to load)', async () => {
+    it('patches WorkLayerManager to collapse catalog composite display paths', async () => {
       const context: AppCfg = {} as any;
-      const start = Date.now();
-      await handler.loadPatches(context);
-      const duration = Date.now() - start;
+      const TC = mockSitnaApi.getTC();
+      const wlmProto = TC.control.WorkLayerManager.prototype;
 
-      expect(duration).toBeLessThan(10); // Should be instant
+      await handler.loadPatches(context);
+
+      const control = {
+        map: {
+          getLayer: jest.fn().mockReturnValue({
+            options: { nodeId: 'node/illes' },
+            names: ['CONSTRU', 'TXCONSTRU']
+          })
+        }
+      };
+      const layerData = {
+        id: 'layer-1',
+        path: [
+          ['Adreces', 'Illes urbanes'],
+          ['Adreces', 'Illes urbanes']
+        ]
+      };
+
+      await wlmProto.getRenderedHtml.call(control, 'tc-ctl-wlm-elm', layerData);
+
+      expect(layerData.path).toEqual([['Adreces', 'Illes urbanes']]);
+    });
+
+    it('does not collapse paths for external WMS layers without nodeId', async () => {
+      const context: AppCfg = {} as any;
+      const TC = mockSitnaApi.getTC();
+      const wlmProto = TC.control.WorkLayerManager.prototype;
+
+      await handler.loadPatches(context);
+
+      const control = {
+        map: {
+          getLayer: jest.fn().mockReturnValue({
+            options: {},
+            names: ['A', 'B']
+          })
+        }
+      };
+      const layerData = {
+        id: 'layer-2',
+        path: [
+          ['Service', 'LayerA'],
+          ['Service', 'LayerB']
+        ]
+      };
+
+      await wlmProto.getRenderedHtml.call(control, 'tc-ctl-wlm-elm', layerData);
+
+      expect(layerData.path).toEqual([
+        ['Service', 'LayerA'],
+        ['Service', 'LayerB']
+      ]);
     });
   });
 
@@ -119,7 +180,7 @@ describe('WorkLayerManagerControlHandler', () => {
     it('should handle full lifecycle', async () => {
       const context: AppCfg = {} as any;
 
-      // Load patches (no-op for native control)
+      // Load patches (catalog composite display path normalization)
       await handler.loadPatches(context);
 
       // Build config
