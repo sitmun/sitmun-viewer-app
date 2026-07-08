@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - **Map**: catalog composite layers show one Loaded Layers breadcrumb (same UX as single-layer entries) instead of repeating the catalog name per internal WMS layer ([#161](https://github.com/sitmun/sitmun-viewer-app/issues/161)).
+- **Map**: layer info modal lists every WMS layer id for composite catalog layers and resolves multilingual service descriptions using the user's selected application language (closest match, otherwise first variant).
 - **Map**: application background maps follow admin `order` in the basemap selector; SITNA receives sorted `baseLayers` and an explicit `defaultBaseLayer` for the first ordered background ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)).
 - **Auth**: public-route session cleanup (including `/public/**` while logged in), coalesced 401 handling, failed-login feedback without global logout, and logout resilience when pre-access cleanup fails (translated warning instead of raw i18n key).
 - **Errors**: API error tracking and alerts now run for absolute backend URLs (`…/backend/api/…`).

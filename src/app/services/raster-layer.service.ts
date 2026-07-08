@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { AppCfg, AppLayer, AppService } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
-import { LanguageService } from './language.service';
 import { inferOgcLinkFormat, LayerInfoService } from './layer-info.service';
 import { isProfileLayerQueryable } from './profile-layer-queryable';
 import {
@@ -27,7 +26,6 @@ export class RasterLayerService {
   private readonly virtualWmsService = inject(VirtualWmsCapabilitiesService);
   private readonly configLookup = inject(ConfigLookupService);
   private readonly layerInfoService = inject(LayerInfoService);
-  private readonly languageService = inject(LanguageService);
 
   /**
    * Check if a layer is a Raster that plans to build a WMTS service.
@@ -740,13 +738,15 @@ export class RasterLayerService {
     // Initialize enrichedInfo object with app config data first (available synchronously)
     const enrichedInfo: any = {};
 
-    // Set name from real layer config
+    // Set name from real layer config (all WMS ids for composite layers)
     if (realLayerConfig.layerNames && realLayerConfig.layerNames.length > 0) {
-      const realLayerName = realLayerConfig.layerNames[0];
-
-      enrichedInfo.name = realLayerName.includes(':')
-        ? realLayerName.substring(realLayerName.indexOf(':') + 1)
-        : realLayerName;
+      enrichedInfo.name = realLayerConfig.layerNames
+        .map((layerName) =>
+          layerName.includes(':')
+            ? layerName.substring(layerName.indexOf(':') + 1)
+            : layerName
+        )
+        .join(', ');
     } else {
       enrichedInfo.name = nodeId;
     }
@@ -879,12 +879,19 @@ export class RasterLayerService {
       }
     }
 
-    // ParentAbstract: from app config
+    // Profile/app config is authoritative; WMS capabilities are only the backup.
     const tree = this.configLookup.findTreeContainingNode(nodeId);
-    if (tree && (tree as any).abstract) {
-      enrichedInfo.parentAbstract = (tree as any).abstract;
-    } else if (serviceConfig && (serviceConfig as any).abstract) {
-      enrichedInfo.parentAbstract = (serviceConfig as any).abstract;
+    const serviceDescriptionText = [
+      serviceConfig?.description,
+      serviceConfig?.abstract,
+      tree && (tree as { abstract?: unknown }).abstract
+    ]
+      .map((candidate) =>
+        this.layerInfoService.extractLanguageAwareText(candidate)
+      )
+      .find((text): text is string => !!text);
+    if (serviceDescriptionText) {
+      enrichedInfo.parentAbstract = serviceDescriptionText;
     }
 
     // Merge WMS capabilities data (as fallback, app config takes precedence)
@@ -893,9 +900,6 @@ export class RasterLayerService {
         realLayerConfig.layerNames && realLayerConfig.layerNames.length > 0
           ? realLayerConfig.layerNames[0]
           : null;
-
-      // Get current user language preference
-      const currentLang = this.languageService.getCurrentLanguage();
 
       if (realLayerName) {
         const wmsLayer = this.layerInfoService.findLayerInCapabilities(
@@ -910,8 +914,7 @@ export class RasterLayerService {
 
             // Extract preferred language for display
             const abstractText = this.layerInfoService.extractLanguageAwareText(
-              wmsLayer.Abstract,
-              currentLang
+              wmsLayer.Abstract
             );
             if (abstractText) {
               enrichedInfo.abstract = abstractText;
@@ -948,8 +951,7 @@ export class RasterLayerService {
           // Extract preferred language for display
           const serviceAbstractText =
             this.layerInfoService.extractLanguageAwareText(
-              wmsCapabilities.Service.Abstract,
-              currentLang
+              wmsCapabilities.Service.Abstract
             );
           if (serviceAbstractText) {
             enrichedInfo.parentAbstract = serviceAbstractText;

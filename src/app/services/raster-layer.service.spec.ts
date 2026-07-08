@@ -15,6 +15,7 @@ describe('RasterLayerService', () => {
   let service: RasterLayerService;
   let virtualWms: VirtualWmsCapabilitiesService;
   let configLookup: ConfigLookupService;
+  let currentLanguage: string;
 
   const minimalAppCfg = (): AppCfg => ({
     application: {
@@ -62,6 +63,7 @@ describe('RasterLayerService', () => {
     )[key] ?? key;
 
   beforeEach(() => {
+    currentLanguage = 'en';
     TestBed.configureTestingModule({
       providers: [
         RasterLayerService,
@@ -74,7 +76,7 @@ describe('RasterLayerService', () => {
         },
         {
           provide: LanguageService,
-          useValue: { getCurrentLanguage: () => 'en' }
+          useValue: { getCurrentLanguage: () => currentLanguage }
         },
         {
           provide: AppConfigService,
@@ -680,6 +682,9 @@ describe('RasterLayerService', () => {
     const enrichAppCfg = (overrides?: {
       layerMeta?: string;
       layerData?: string;
+      serviceDescription?: unknown;
+      serviceAbstract?: unknown;
+      treeAbstract?: unknown;
     }): AppCfg => ({
       ...minimalAppCfg(),
       layers: [
@@ -696,12 +701,26 @@ describe('RasterLayerService', () => {
             : {})
         }
       ],
+      services: [
+        {
+          ...minimalAppCfg().services[0],
+          ...(overrides?.serviceDescription != null
+            ? { description: overrides.serviceDescription }
+            : {}),
+          ...(overrides?.serviceAbstract != null
+            ? { abstract: overrides.serviceAbstract }
+            : {})
+        }
+      ],
       trees: [
         {
           id: 'tree/1',
           title: 'T',
           image: null,
           rootNode: 'node/1',
+          ...(overrides?.treeAbstract != null
+            ? { abstract: overrides.treeAbstract }
+            : {}),
           nodes: {
             'node/2': {
               title: 'Leaf',
@@ -825,6 +844,93 @@ describe('RasterLayerService', () => {
       );
       expect(info.metadata?.[0]?.url).toBe('https://upstream.example/metadata');
       expect(info.dataUrl?.[0]?.url).toBe('https://upstream.example/data.zip');
+    });
+
+    it('uses profile service description for service description display', () => {
+      currentLanguage = 'ca';
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceDescription: {
+            'ca-ES': 'Descripció catalana',
+            'es-ES': 'Descripción castellana'
+          },
+          serviceAbstract: 'Profile abstract fallback'
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.parentAbstract).toBe('Descripció catalana');
+    });
+
+    it('uses profile service abstract when service description is absent', () => {
+      currentLanguage = 'ca';
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceAbstract: {
+            'ca-ES': 'Abstracte català',
+            'es-ES': 'Abstracto castellano'
+          }
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.parentAbstract).toBe('Abstracte català');
+    });
+
+    it('uses WMS service abstract only when profile service text is absent', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Abstract = {
+        'ca-ES': 'Servei publicat en català',
+        'es-ES': 'Servicio publicado en castellano'
+      };
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentAbstract).toBe('Servei publicat en català');
+    });
+
+    it('lists every WMS layer id for composite catalog layers', () => {
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads', 'ns:buildings']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.name).toBe('roads, buildings');
     });
   });
 });
