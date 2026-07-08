@@ -8,15 +8,15 @@ import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { URL_API_USER_ACCOUNT } from '@api/api-config';
-import { environment } from 'src/environments/environment';
 import { throwError } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 import {
   ErrorHandlerInterceptor,
   setIgnoreErrors
 } from './error-handler.interceptor';
-import { ErrorTrackingService } from '../services/error-tracking.service';
 import { MessageBoxService } from '../../util/message-box-service';
+import { ErrorTrackingService } from '../services/error-tracking.service';
 
 describe('ErrorHandlerInterceptor (FS-03)', () => {
   let interceptor: ErrorHandlerInterceptor;

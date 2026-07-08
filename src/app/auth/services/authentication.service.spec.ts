@@ -12,7 +12,7 @@ import {
 import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { CustomAuthConfig, NavigationPath } from '@config/app.config';
 import { TranslateModule } from '@ngx-translate/core';
-import { NEVER, of } from 'rxjs';
+import { NEVER } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import { SUPPRESS_AUTH_REDIRECT_ON_401 } from './auth-http-context';

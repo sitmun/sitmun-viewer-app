@@ -3,8 +3,7 @@ import {
   HttpErrorResponse,
   HttpHandler,
   HttpRequest
-} from '@angular/common/http';
-import { provideHttpClient } from '@angular/common/http';
+, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
@@ -16,10 +15,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { NEVER, of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
+import { suppressAuthRedirectContext } from './auth-http-context';
 import {
   AuthenticationInterceptor
 } from './authentication.interceptor';
-import { suppressAuthRedirectContext } from './auth-http-context';
 import { AuthenticationService } from './authentication.service';
 import { IndexedDbService } from './indexed-db.service';
 import { NotificationService } from '../../notifications/services/NotificationService';
