@@ -4,15 +4,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-### Fixed
-
-- **Map**: application background maps follow admin `order` in the basemap selector; SITNA receives sorted `baseLayers` and an explicit `defaultBaseLayer` for the first ordered background ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)).
-
 ### Added
 
-- **Tests**: Jest coverage for dashboard pagination, sequential page loading, searchbox submit-vs-type behaviour, loading cleanup, and dashboard-item `@Input` resync.
-- **Tests**: Jest coverage for `AuthenticationGuard` public/auth redirect policy and `publicAuthClearGuard` logout-before-public behaviour.
-- **Tests**: Jest coverage for auth interceptors, session cleanup ordering, and login modal failed-login feedback.
+- **Tests**: Jest coverage for dashboard pagination, searchbox behaviour, loading cleanup, dashboard-item resync, auth guards/interceptors, session cleanup ordering, and login modal failed-login feedback.
 
 ### Changed
 
@@ -20,17 +14,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
-- **Auth**: logged-in users can reach `/public/**` so session and HttpOnly cookies are cleared before anonymous config requests; `/auth/**` still redirects via `UrlTree` without briefly activating the route.
-- **Auth**: public routes remain reachable when the pre-access logout request fails after local session cleanup; users see a translated warning instead of a raw i18n key.
-- **Auth**: failed login no longer triggers a global logout; concurrent 401s coalesce to a single session reset; session cleanup completes before redirect.
-- **Auth**: login modal shows translated error feedback on incorrect credentials.
+- **Map**: application background maps follow admin `order` in the basemap selector; SITNA receives sorted `baseLayers` and an explicit `defaultBaseLayer` for the first ordered background ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)).
+- **Auth**: public-route session cleanup (including `/public/**` while logged in), coalesced 401 handling, failed-login feedback without global logout, and logout resilience when pre-access cleanup fails (translated warning instead of raw i18n key).
 - **Errors**: API error tracking and alerts now run for absolute backend URLs (`…/backend/api/…`).
-- **Dashboard**: infinite scroll uses a consistent page size and `totalPages`/`totalElements` metadata, preventing duplicate/skipped cards, spurious extra fetches, and permanent pagination lockout after load-more errors.
-- **Dashboard**: sequential page loading tracks the last Spring page index, rebinds scroll sentinels after data arrives, and excludes non-configured application types when merging pages so hidden apps do not consume page slots.
-- **Dashboard**: grid keyword search (2+ characters on Enter) reloads `/dashboard/applications?keywords=` server-side so matches appear before infinite scroll reaches them; load-more preserves the active keyword.
-- **Dashboard**: keyword search no longer unmounts the searchbox (uses `loadingMore` instead of `loading` during search refresh); empty search results keep the field visible.
-- **Dashboard**: search autocomplete clears its loading spinner when the query drops below two characters during an in-flight request.
-- **Dashboard**: item cards re-sync territory count and single-territory navigation when Angular reuses the component instance after language or list reload.
+- **Dashboard**: infinite scroll uses consistent page metadata and sequential Spring page loading, excluding non-configured application types so load-more does not duplicate, skip, or permanently lock out cards.
+- **Dashboard**: server-side keyword search on Enter preserves the searchbox during refresh, clears stale autocomplete spinners, and keeps the active query through load-more; item cards re-sync when Angular reuses instances after language or list reload.
 
 ## [1.2.7] - 2026-06-05
 
