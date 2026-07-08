@@ -118,6 +118,8 @@ export interface AppService {
   id: string;
   url: string;
   type: string;
+  /** Profile service title; may be language-keyed after i18n expansion. */
+  title?: unknown;
   /** Profile service description; may be language-keyed after i18n expansion. */
   description?: unknown;
   /** Profile service abstract; used when description is absent. */

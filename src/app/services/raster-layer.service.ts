@@ -881,6 +881,15 @@ export class RasterLayerService {
 
     // Profile/app config is authoritative; WMS capabilities are only the backup.
     const tree = this.configLookup.findTreeContainingNode(nodeId);
+    const serviceTitleText = [serviceConfig?.title]
+      .map((candidate) =>
+        this.layerInfoService.extractLanguageAwareText(candidate)
+      )
+      .find((text): text is string => !!text);
+    if (serviceTitleText) {
+      enrichedInfo.parentTitle = serviceTitleText;
+    }
+
     const serviceDescriptionText = [
       serviceConfig?.description,
       serviceConfig?.abstract,
@@ -943,6 +952,15 @@ export class RasterLayerService {
 
       // Get service-level information from capabilities
       if (wmsCapabilities.Service) {
+        if (!enrichedInfo.parentTitle && wmsCapabilities.Service.Title) {
+          const titleText = this.layerInfoService.extractLanguageAwareText(
+            wmsCapabilities.Service.Title
+          );
+          if (titleText) {
+            enrichedInfo.parentTitle = titleText;
+          }
+        }
+
         // Preserve full language structure and resolve preferred language for display
         if (!enrichedInfo.parentAbstract && wmsCapabilities.Service.Abstract) {
           // Store full language structure (preserve all variants)

@@ -682,6 +682,7 @@ describe('RasterLayerService', () => {
     const enrichAppCfg = (overrides?: {
       layerMeta?: string;
       layerData?: string;
+      serviceTitle?: unknown;
       serviceDescription?: unknown;
       serviceAbstract?: unknown;
       treeAbstract?: unknown;
@@ -704,6 +705,9 @@ describe('RasterLayerService', () => {
       services: [
         {
           ...minimalAppCfg().services[0],
+          ...(overrides?.serviceTitle != null
+            ? { title: overrides.serviceTitle }
+            : {}),
           ...(overrides?.serviceDescription != null
             ? { description: overrides.serviceDescription }
             : {}),
@@ -915,6 +919,75 @@ describe('RasterLayerService', () => {
       );
 
       expect(info.parentAbstract).toBe('Servei publicat en català');
+    });
+
+    it('uses profile service title for service title display', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Title = {
+        'ca-ES': 'Títol WMS',
+        'es-ES': 'Título WMS'
+      };
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceTitle: {
+            'ca-ES': 'Títol català',
+            'es-ES': 'Título castellano'
+          }
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('Títol català');
+    });
+
+    it('uses WMS service title when profile service title is absent', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Title = {
+        'ca-ES': 'Títol WMS',
+        'es-ES': 'Título WMS'
+      };
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('Títol WMS');
+    });
+
+    it('uses plain-string WMS service title when profile service title is absent', () => {
+      const caps = upstreamCaps();
+      caps.Service.Title = 'WMS service title';
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('WMS service title');
     });
 
     it('lists every WMS layer id for composite catalog layers', () => {

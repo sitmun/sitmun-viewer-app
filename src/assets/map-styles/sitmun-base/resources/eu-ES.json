@@ -8,6 +8,7 @@
   "abstract": "Geruzaren deskribapena",
   "groupAbstract": "Geruza taldearen deskribapena",
   "parentAbstract": "Zerbitzuaren deskribapena",
+  "parentTitle": "Zerbitzuaren izenburua",
   "layerId": "Geruzaren ID:",
   "groupLayerId": "Geruza taldearen ID:",
   "url": "Zerbitzuaren URL",
