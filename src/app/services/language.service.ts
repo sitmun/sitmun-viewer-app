@@ -108,13 +108,13 @@ export class LanguageService {
   }
 
   /**
-   * Get languages with names translated in the specified language, sorted alphabetically
+   * Get languages with names translated in the specified language, respecting backend order.
    * @param lang The language shortname to get translated names
-   * @returns Observable of sorted LanguageDTO array
+   * @returns Observable of ordered LanguageDTO array
    */
   getLanguagesTranslatedSorted(lang: string): Observable<LanguageDTO[]> {
     return this.getLanguagesTranslated(lang).pipe(
-      map((languages) => languages.sort((a, b) => a.name.localeCompare(b.name)))
+      map((languages) => sortLanguagesByOrder(languages))
     );
   }
 
@@ -158,6 +158,26 @@ export class LanguageService {
 }
 
 export interface LanguageDTO {
+  id?: number;
   name: string;
+  order?: number;
   shortname: string;
+}
+
+function compareLanguagesByOrder(left: LanguageDTO, right: LanguageDTO): number {
+  const leftOrder = typeof left.order === 'number' ? left.order : Number.MAX_SAFE_INTEGER;
+  const rightOrder = typeof right.order === 'number' ? right.order : Number.MAX_SAFE_INTEGER;
+  if (leftOrder !== rightOrder) {
+    return leftOrder - rightOrder;
+  }
+
+  if (left.id != null && right.id != null && left.id !== right.id) {
+    return left.id - right.id;
+  }
+
+  return left.name.localeCompare(right.name);
+}
+
+function sortLanguagesByOrder(languages: readonly LanguageDTO[]): LanguageDTO[] {
+  return [...languages].sort(compareLanguagesByOrder);
 }
