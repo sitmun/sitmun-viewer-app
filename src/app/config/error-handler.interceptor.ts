@@ -7,15 +7,28 @@ import {
 } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 
+import { TranslateService } from '@ngx-translate/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { isSitmunBackendApiUrl } from './backend-api-url';
 import { MessageBoxService } from '../../util/message-box-service';
+import { NotificationService } from '../notifications/services/NotificationService';
 import { ErrorTrackingService } from '../services/error-tracking.service';
 
 // No se controlan los errores en las peticiones que lleven esta cabecera (con cualquier valor)
 const HTTP_HEADER_API_CAN_FAIL = 'Api-Can-Fail';
+
+type ErrorPresentation = 'none' | 'authorization-warning' | 'generic';
+
+export const errorPresentationForStatus = (
+  status: number | undefined
+): ErrorPresentation =>
+  status === 401
+    ? 'none'
+    : status === 403
+      ? 'authorization-warning'
+      : 'generic';
 
 export function setIgnoreErrors(headers: HttpHeaders) {
   return headers.append(HTTP_HEADER_API_CAN_FAIL, 'true');
@@ -61,10 +74,19 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
               details: error.error || error
             });
 
-            // Only show message box if errors are not ignored
+            const presentation = errorPresentationForStatus(httpStatus);
+
+            // Only present errors when they are not explicitly ignored.
             if (!shouldIgnoreErrors) {
-              // Errores de validación
-              if (
+              if (presentation === 'authorization-warning') {
+                const notificationService =
+                  this.injector.get(NotificationService);
+                const translateService = this.injector.get(TranslateService);
+                notificationService.warning(
+                  translateService.instant('auth.accessDenied')
+                );
+              } else if (
+                presentation === 'generic' &&
                 error.error &&
                 error.error.message === 'VALIDATION' &&
                 error.error.errors
@@ -89,7 +111,7 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
                   'An error has ocurred',
                   'Please check the following errors: ' + validationText
                 );
-              } else {
+              } else if (presentation === 'generic') {
                 messageBoxService.alert(
                   'An error has ocurred',
                   'The indicated action could not be carried out. Please try again later or contact an administrator.'

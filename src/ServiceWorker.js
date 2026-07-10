@@ -1,3 +1,5 @@
+importScripts('service-worker-auth-policy.js');
+
 const MIDDLEWARE_URL_KEY = 'MIDDLEWARE_URL';
 const DB_NAME = 'sitmun-sw-db';
 const TOKENS_STORE_NAME = 'tokens';
@@ -7,9 +9,17 @@ const ID = 'id';
 
 /** Enables verbose URL logging. Kept off in production to avoid leaking proxy endpoint paths. */
 const DEBUG = self.location.hostname === 'localhost';
+const proxyAuthPolicy = self.SitmunProxyAuthPolicy;
 
 let middlewareUrl;
 let middlewareUrlLoadPromise = null; // single-flight guard — see loadMiddlewareUrlFromDB()
+const proxyAuthFetch = proxyAuthPolicy.createAuthFetchOrchestrator({
+  readInitialToken: () => getTokenWithRetry('proxy_token'),
+  readToken: () => getToken('proxy_token'),
+  notify: (clientId, message) => notifyRequestingClient(clientId, message.type),
+  sleep: () => new Promise((resolve) => setTimeout(resolve, 100)),
+  onRetryError: (error) => console.warn('[SW] Proxy retry failed', error)
+});
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -41,7 +51,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // Fast path: known middleware URL and request does not match — zero SW overhead
-  if (middlewareUrl && !url.href.startsWith(middlewareUrl)) {
+  if (
+    middlewareUrl &&
+    !proxyAuthPolicy.isMiddlewareRequest(url.href, middlewareUrl)
+  ) {
     return;
   }
 
@@ -52,48 +65,48 @@ self.addEventListener('fetch', (event) => {
     if (!middlewareUrl) await loadMiddlewareUrlFromDB().catch(() => {});
 
     // Not a proxy request (or URL still unknown after failed DB restore)
-    if (!middlewareUrl || !url.href.startsWith(middlewareUrl)) return fetch(request);
+    if (
+      !middlewareUrl ||
+      !proxyAuthPolicy.isMiddlewareRequest(url.href, middlewareUrl)
+    ) {
+      return fetch(request);
+    }
 
     try {
-      const token = await getTokenWithRetry('proxy_token');
-
-      const headers = new Headers(request.headers);
-
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-        if (DEBUG) console.debug(`[SW] Requested ${url} with Authorization header`);
-      } else {
-        console.warn(`[SW] Token not found!`);
-      }
-
-      const modifiedRequest = new Request(request, { headers });
-      const response = await fetch(modifiedRequest);
-
-      // If we get an auth error, notify the main thread to refresh the token
-      if (response.status === 401 || response.status === 403) {
-        console.warn(`[SW] Auth error (${response.status}) for ${url}. Notifying app...`);
-        notifyAppOfAuthError();
-      }
-
-      return response;
+      return await proxyAuthFetch.handle({
+        clientId: event.clientId,
+        method: request.method,
+        execute: (token) => {
+          const headers = new Headers(request.headers);
+          if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+            if (DEBUG) {
+              console.debug(`[SW] Requested ${url} with Authorization header`);
+            }
+          } else {
+            console.warn('[SW] Token not found!');
+          }
+          return fetch(new Request(request, { headers }));
+        }
+      });
     } catch (error) {
       console.error('[SW] Error handling middleware request', error);
-      return fetch(request);
+      return new Response(null, {
+        status: 502,
+        statusText: 'Proxy request failed'
+      });
     }
   })());
 });
 
-function notifyAppOfAuthError() {
-  self.clients.matchAll()
-    .then((clients) => {
-      clients.forEach((client) => {
-        client.postMessage({
-          type: 'AUTH_ERROR',
-          timestamp: Date.now()
-        });
-      });
-    })
-    .catch((err) => console.warn('[SW] Failed to notify app of auth error:', err));
+async function notifyRequestingClient(clientId, type) {
+  if (!clientId) return;
+  try {
+    const client = await self.clients.get(clientId);
+    client?.postMessage({ type, timestamp: Date.now() });
+  } catch (error) {
+    console.warn('[SW] Failed to notify requesting client', error);
+  }
 }
 
 /**

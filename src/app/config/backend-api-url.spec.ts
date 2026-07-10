@@ -9,8 +9,8 @@ describe('isSitmunBackendApiUrl', () => {
     ).toBe(true);
   });
 
-  it('matches same-origin relative backend API URLs', () => {
-    expect(isSitmunBackendApiUrl('/api/account')).toBe(true);
+  it('does not trust a relative API URL outside the configured backend base', () => {
+    expect(isSitmunBackendApiUrl('/api/account')).toBe(false);
   });
 
   it('does not match asset paths that contain "api" in a folder name', () => {
@@ -29,5 +29,20 @@ describe('isSitmunBackendApiUrl', () => {
     expect(isSitmunBackendApiUrl('https://example.com/api/public/data')).toBe(
       false
     );
+  });
+
+  it('does not match a lookalike host prefixed with the backend URL', () => {
+    const backend = new URL(environment.apiUrl, globalThis.location.origin);
+    expect(
+      isSitmunBackendApiUrl(
+        `${backend.protocol}//${backend.host}.attacker.example${backend.pathname}/api/account`
+      )
+    ).toBe(false);
+  });
+
+  it('does not match a sibling path sharing the backend prefix', () => {
+    expect(
+      isSitmunBackendApiUrl(`${environment.apiUrl}-malicious/api/account`)
+    ).toBe(false);
   });
 });

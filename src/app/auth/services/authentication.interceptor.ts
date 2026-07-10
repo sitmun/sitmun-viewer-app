@@ -43,7 +43,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
           } else if (req.url.includes(URL_AUTH_LOGIN)) {
             // Failed login — handled by login page / modal; do not logout.
           } else {
-            this.authenticationService.handleUnauthorizedSession();
+            this.authenticationService.validateSessionAfterUnauthorized();
           }
         }
 

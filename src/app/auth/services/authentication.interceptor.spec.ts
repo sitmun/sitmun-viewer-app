@@ -12,7 +12,7 @@ import { URL_AUTH_LOGIN, URL_AUTH_LOGOUT, URL_AUTH_PROXY, URL_API_USER_ACCOUNT }
 import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { CustomAuthConfig } from '@config/app.config';
 import { TranslateModule } from '@ngx-translate/core';
-import { NEVER, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import { suppressAuthRedirectContext } from './auth-http-context';
@@ -28,7 +28,7 @@ describe('AuthenticationInterceptor (FS-03)', () => {
   let authService: AuthenticationService<unknown>;
   let clearAuthenticationSpy: jest.SpyInstance;
   let clearSessionAndRedirectToLoginSpy: jest.SpyInstance;
-  let handleUnauthorizedSessionSpy: jest.SpyInstance;
+  let validateSessionSpy: jest.SpyInstance;
 
   const apiUrl = (path: string) => `${environment.apiUrl}${path}`;
 
@@ -65,9 +65,9 @@ describe('AuthenticationInterceptor (FS-03)', () => {
       authService,
       'clearSessionAndRedirectToLogin'
     );
-    handleUnauthorizedSessionSpy = jest.spyOn(
+    validateSessionSpy = jest.spyOn(
       authService,
-      'handleUnauthorizedSession'
+      'validateSessionAfterUnauthorized'
     );
   });
 
@@ -91,20 +91,21 @@ describe('AuthenticationInterceptor (FS-03)', () => {
     expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
   });
 
-  it('calls handleUnauthorizedSession for a protected backend 401', async () => {
+  it('validates the session for a protected backend 401', async () => {
     await intercept401(apiUrl(URL_API_USER_ACCOUNT));
 
-    expect(handleUnauthorizedSessionSpy).toHaveBeenCalledTimes(1);
+    expect(validateSessionSpy).toHaveBeenCalledTimes(1);
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
   });
 
   /** BUG-051: concurrent 401s must not spawn parallel logout storms. */
-  it('calls logout at most once when multiple protected requests return 401', async () => {
-    clearAuthenticationSpy.mockReturnValue(NEVER);
+  it('delegates concurrent protected 401s to coalesced session validation', async () => {
     const accountUrl = apiUrl(URL_API_USER_ACCOUNT);
 
     await Promise.all([intercept401(accountUrl), intercept401(accountUrl)]);
 
-    expect(clearAuthenticationSpy).toHaveBeenCalledTimes(1);
+    expect(validateSessionSpy).toHaveBeenCalledTimes(2);
+    expect(clearAuthenticationSpy).not.toHaveBeenCalled();
   });
 
   it('still clears session locally when logout endpoint returns 401', async () => {
@@ -119,13 +120,26 @@ describe('AuthenticationInterceptor (FS-03)', () => {
 
     expect(clearAuthenticationSpy).not.toHaveBeenCalled();
     expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
-    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+    expect(validateSessionSpy).not.toHaveBeenCalled();
   });
+
+  it.each(['GetFeatureInfo', 'GetMap'])(
+    'does not mutate the main session when a proxy %s request returns 401',
+    async (requestName) => {
+      await intercept401(
+        `https://maps.example/middleware/proxy/1/2/WMS/3?SERVICE=WMS&REQUEST=${requestName}`
+      );
+
+      expect(validateSessionSpy).not.toHaveBeenCalled();
+      expect(clearAuthenticationSpy).not.toHaveBeenCalled();
+      expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
+    }
+  );
 
   it('does not logout when proxy refresh returns 401', async () => {
     await intercept401(apiUrl(URL_AUTH_PROXY));
 
-    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+    expect(validateSessionSpy).not.toHaveBeenCalled();
     expect(clearAuthenticationSpy).not.toHaveBeenCalled();
     expect(clearSessionAndRedirectToLoginSpy).not.toHaveBeenCalled();
   });
@@ -136,7 +150,7 @@ describe('AuthenticationInterceptor (FS-03)', () => {
       suppressAuthRedirectContext()
     );
 
-    expect(handleUnauthorizedSessionSpy).not.toHaveBeenCalled();
+    expect(validateSessionSpy).not.toHaveBeenCalled();
     expect(clearAuthenticationSpy).not.toHaveBeenCalled();
   });
 });

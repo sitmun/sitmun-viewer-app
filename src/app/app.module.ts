@@ -45,7 +45,7 @@ import { AppComponent } from './app.component';
 import { CredentialsInterceptor } from './config/credentials.interceptor';
 import { ErrorHandlerInterceptor } from './config/error-handler.interceptor';
 import { ALL_CONTROL_HANDLERS } from './controls/handlers';
-import { MessageBoxDialogComponent } from '../util/message-box-service';
+import { MessageBoxDialogComponent, MessageBoxService } from '../util/message-box-service';
 import { AuthorizedLayoutComponent } from './layout/authorized-layout/authorized-layout.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { NavigationBarComponent } from './layout/navigation-bar/navigation-bar.component';
@@ -140,7 +140,8 @@ registerLocaleData(localeEs);
     provideAppInitializer(() =>
       initializeSitnaLoader(inject(SitnaLoaderService))()
     ),
-    provideHttpClient(withInterceptorsFromDi())
+    provideHttpClient(withInterceptorsFromDi()),
+    MessageBoxService
   ]
 })
 export class AppModule {}

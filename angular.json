@@ -26,6 +26,7 @@
             "assets": [
               "src/favicon.ico",
               "src/ServiceWorker.js",
+              "src/service-worker-auth-policy.js",
               {
                 "glob": "**/*",
                 "input": "node_modules/api-sitna",
