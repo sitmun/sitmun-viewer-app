@@ -15,11 +15,16 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - **Map**: catalog composite layers show one Loaded Layers breadcrumb (same UX as single-layer entries) instead of repeating the catalog name per internal WMS layer ([#161](https://github.com/sitmun/sitmun-viewer-app/issues/161)).
+- **Map**: control teardown now removes SITNA prototype patches cleanly and allows patched controls to be registered again without stale advice or restoration errors.
 - **Map**: layer info modal lists every WMS layer id for composite catalog layers and resolves multilingual service descriptions using the user's selected application language (closest match, otherwise first variant).
 - **Map**: layer info modal shows service title from profile `services[].title`, with multilingual WMS `Service.Title` as backup when profile text is absent.
+- **Map**: layer info reads cached WMS capabilities without creating a temporary SITNA raster or issuing an extra capabilities request.
+- **Service worker**: HTTP viewers preserve configured HTTP middleware URLs for WMS capabilities and map requests while the worker adds proxy authorization.
 - **Map**: application background maps follow admin `order` in the basemap selector; SITNA receives sorted `baseLayers` and an explicit `defaultBaseLayer` for the first ordered background ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)).
 - **Auth**: public-route session cleanup (including `/public/**` while logged in), coalesced 401 handling, failed-login feedback without global logout, and logout resilience when pre-access cleanup fails (translated warning instead of raw i18n key).
-- **Errors**: API error tracking and alerts now run for absolute backend URLs (`…/backend/api/…`).
+- **Auth**: passive API `401` responses now validate the main session before clearing client state; only explicit logout clears the shared cookie, avoiding unnecessary cross-tab logout.
+- **Service worker**: proxy `401` refreshes the short-lived proxy token and retries one idempotent request, while proxy `403` warns without invalidating the viewer session.
+- **Errors**: API error tracking now runs for absolute backend URLs (`…/backend/api/…`); backend `401` responses avoid generic modals and `403` responses show one translated access warning.
 - **Dashboard**: infinite scroll uses consistent page metadata and sequential Spring page loading, excluding non-configured application types so load-more does not duplicate, skip, or permanently lock out cards.
 - **Dashboard**: server-side keyword search on Enter preserves the searchbox during refresh, clears stale autocomplete spinners, and keeps the active query through load-more; item cards re-sync when Angular reuses instances after language or list reload.
 

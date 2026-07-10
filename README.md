@@ -413,7 +413,7 @@ POST /api/authenticate
 
 // Get current user account
 GET /api/account
-Authorization: Bearer <jwt-token>
+Cookie: access_token=<jwt-token>
 
 // User verification
 POST /api/user-verification/verify-password
@@ -523,35 +523,13 @@ Controls are registered in `src/app/controls/handlers` and configured via backen
 
 ### Authentication and Authorization
 
-- **JWT Tokens**: Secure token-based authentication
-- **Route Guards**: Protected routes based on authentication status
-- **HTTP Interceptors**: Automatic token handling and error management
-- **Session Management**: Secure session handling with token refresh
-
-### Security Features
-
-```typescript
-// Route protection
-{
-  path: 'dashboard',
-  component: DashboardComponent,
-  canActivate: [AuthenticationGuard]
-}
-
-// HTTP token interceptor
-@Injectable()
-export class AuthenticationInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.authService.getToken();
-    if (token) {
-      req = req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
-      });
-    }
-    return next.handle(req);
-  }
-}
-```
+- Backend API requests use the authentication cookie with credentials.
+- `AuthenticationGuard` protects authenticated routes; backend authorization remains authoritative.
+- A protected backend `401` starts one coalesced account probe. Only a confirming probe `401` clears tab-local state and redirects; `403`, network, and server failures preserve the session.
+- Backend `401` responses do not open the generic error modal; backend `403` responses show a translated access warning while preserving the session.
+- Explicit logout is the only viewer flow that calls `/api/authenticate/logout`.
+- The short-lived proxy token is stored in IndexedDB for the service worker. Middleware `401` refreshes it once and retries one `GET`/`HEAD`; middleware `403` only warns.
+- The worker never transmits the proxy token through `postMessage`.
 
 ## Project Structure
 
