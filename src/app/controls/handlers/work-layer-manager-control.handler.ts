@@ -40,6 +40,11 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
     this.patchesApplied = true;
   }
 
+  override cleanup(): void {
+    super.cleanup();
+    this.patchesApplied = false;
+  }
+
   private async patchCatalogCompositeDisplayPath(): Promise<void> {
     await this.withTCAsync(async (TC) => {
       const wlmProto = TC?.control?.WorkLayerManager?.prototype;
@@ -82,7 +87,7 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 }

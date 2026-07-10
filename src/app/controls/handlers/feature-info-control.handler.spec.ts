@@ -304,6 +304,62 @@ describe('FeatureInfoControlHandler', () => {
       ).rejects.toThrow('HTTP 500');
     });
 
+    it('restores all meld-wrapped prototypes and guard markers on cleanup', async () => {
+      TC.Map.prototype.addControl = jest.fn();
+      TC.control.FeatureInfo.prototype.register = jest.fn();
+      TC.control.FeatureInfo.prototype.responseCallback = jest.fn();
+      TC.control.FeatureInfo.prototype.displayResultsCallback = jest.fn();
+
+      const originalAddControl = TC.Map.prototype.addControl;
+      const originalRegister = TC.control.FeatureInfo.prototype.register;
+      const originalResponseCallback =
+        TC.control.FeatureInfo.prototype.responseCallback;
+      const originalDisplayResultsCallback =
+        TC.control.FeatureInfo.prototype.displayResultsCallback;
+      const originalDescribeLayer = TC.layer.Raster.prototype.describeLayer;
+      const originalFetch = TC.tool.Proxification.prototype.fetch;
+
+      await handler.loadPatches({} as AppCfg);
+
+      expect(TC.Map.prototype.addControl).not.toBe(originalAddControl);
+      expect(TC.control.FeatureInfo.prototype.register).not.toBe(
+        originalRegister
+      );
+      expect(TC.control.FeatureInfo.prototype.responseCallback).not.toBe(
+        originalResponseCallback
+      );
+      expect(TC.control.FeatureInfo.prototype.displayResultsCallback).not.toBe(
+        originalDisplayResultsCallback
+      );
+      expect(TC.layer.Raster.prototype.describeLayer).not.toBe(
+        originalDescribeLayer
+      );
+      expect(TC.tool.Proxification.prototype.fetch).not.toBe(originalFetch);
+
+      handler.cleanup();
+
+      expect(TC.Map.prototype.addControl).toBe(originalAddControl);
+      expect(TC.control.FeatureInfo.prototype.register).toBe(originalRegister);
+      expect(TC.control.FeatureInfo.prototype.responseCallback).toBe(
+        originalResponseCallback
+      );
+      expect(TC.control.FeatureInfo.prototype.displayResultsCallback).toBe(
+        originalDisplayResultsCallback
+      );
+      expect(TC.layer.Raster.prototype.describeLayer).toBe(
+        originalDescribeLayer
+      );
+      expect(TC.tool.Proxification.prototype.fetch).toBe(originalFetch);
+      expect(TC.Map.prototype.__sitmunFiAddControl).toBeUndefined();
+      expect(TC.control.FeatureInfo.prototype.__sitmunFiRegister).toBeUndefined();
+      expect(TC.control.FeatureInfo.prototype.__sitmunMoreInfo).toBeUndefined();
+      expect(
+        TC.control.FeatureInfo.prototype.__sitmunMoreInfoDisplayResults
+      ).toBeUndefined();
+      expect(TC.layer.Raster.prototype.__sitmunDescribeLayerSafe).toBeUndefined();
+      expect(TC.tool.Proxification.prototype.__sitmunGfiIsolation).toBeUndefined();
+    });
+
     it('should be idempotent when loadPatches is called twice', async () => {
       // Arrange
       TC.layer.Raster.prototype.describeLayer.mockRejectedValue(

@@ -86,7 +86,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMiaResponseCallback = true;
         this.patchManager.add(() => {
-          meld.remove(responseCallbackAdvice);
+          responseCallbackAdvice.remove();
           delete fiProto.__sitmunMiaResponseCallback;
         });
       }

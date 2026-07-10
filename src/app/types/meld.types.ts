@@ -4,6 +4,7 @@
  */
 
 export interface MeldAdvice {
+  /** Sole teardown API returned by meld.before / meld.around. */
   remove: () => void;
 }
 
@@ -29,7 +30,6 @@ export interface Meld {
     method: string,
     advice: (joinPoint: MeldJoinPoint) => unknown
   ) => MeldAdvice;
-  remove: (advice: MeldAdvice) => void;
 }
 
 /**

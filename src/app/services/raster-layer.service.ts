@@ -634,53 +634,18 @@ export class RasterLayerService {
   }
 
   /**
-   * Get WMS capabilities from a Raster instance or cache.
-   * Helper to get WMS capabilities from a Raster instance or cache.
+   * Get already-loaded WMS capabilities from the Raster cache.
    *
    * @param realLayerConfig - The real layer configuration
    * @param rasterInstancesCache - Optional cache for Raster instances
-   * @param TCLayer - SITNA layer namespace (for creating Raster instances)
-   * @returns WMS capabilities or null if not available
+   * @returns Cached WMS capabilities or null if not available
    */
   getRasterCapabilities(
     realLayerConfig: RealLayerConfig,
-    rasterInstancesCache?: Map<string, any>,
-    TCLayer?: any
+    rasterInstancesCache?: Map<string, any>
   ): WMSCapabilities | null {
-    try {
-      const serviceKey = `${realLayerConfig.url}|${realLayerConfig.type}`;
-      // Check if we have a cached Raster instance with capabilities
-      const cachedRaster = rasterInstancesCache?.get?.(serviceKey);
-      if (cachedRaster?.capabilities) {
-        return cachedRaster.capabilities;
-      }
-
-      // Try to get capabilities from the real service (only if already loaded)
-      if (TCLayer?.Raster) {
-        try {
-          const tempRaster = new TCLayer.Raster({
-            url: realLayerConfig.url,
-            type: realLayerConfig.type
-          });
-          if (tempRaster.capabilities) {
-            return tempRaster.capabilities;
-          }
-          // If capabilities are not already loaded, we skip them (they would require async loading)
-        } catch (rasterError) {
-          console.error(
-            '[RasterLayerService] Error creating temporary Raster:',
-            rasterError
-          );
-        }
-      }
-    } catch (error) {
-      console.error(
-        '[RasterLayerService] Could not load WMS capabilities:',
-        error
-      );
-    }
-
-    return null;
+    const serviceKey = `${realLayerConfig.url}|${realLayerConfig.type}`;
+    return rasterInstancesCache?.get(serviceKey)?.capabilities ?? null;
   }
 
   /**
@@ -692,22 +657,19 @@ export class RasterLayerService {
    * @param realLayerConfig - The real layer configuration
    * @param wmsCapabilities - Optional WMS capabilities (if already loaded)
    * @param rasterInstancesCache - Optional cache for Raster instances
-   * @param TCLayer - SITNA layer namespace (for creating Raster instances)
    * @returns Enriched info object with title, abstract, metadata, contact info, etc.
    */
   enrichRasterLayerInfo(
     nodeId: string,
     realLayerConfig: RealLayerConfig,
     wmsCapabilities?: WMSCapabilities | null,
-    rasterInstancesCache?: Map<string, any>,
-    TCLayer?: any
+    rasterInstancesCache?: Map<string, any>
   ): any {
     // Get WMS capabilities if not provided
     if (!wmsCapabilities) {
       wmsCapabilities = this.getRasterCapabilities(
         realLayerConfig,
-        rasterInstancesCache,
-        TCLayer
+        rasterInstancesCache
       );
     }
 

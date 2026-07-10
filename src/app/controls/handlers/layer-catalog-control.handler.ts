@@ -115,6 +115,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     this.patchesApplied = true;
   }
 
+  override cleanup(): void {
+    super.cleanup();
+    this.patchesApplied = false;
+  }
+
   /**
    * Build configuration for standard layerCatalog.
    * Generates virtual WMS capabilities for each root tree node.
@@ -485,7 +490,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 
@@ -620,7 +625,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 
@@ -671,7 +676,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 
@@ -714,7 +719,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 
@@ -963,9 +968,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const handler = this;
       const RasterProto = this.getRasterPrototype(TC);
 
-      // Capture TC in closure for use in the advice function
-      const TCLayer = TC.layer;
-
       if (!RasterProto) {
         return;
       }
@@ -1026,8 +1028,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const rasterInstancesCache = (handler as any).rasterInstancesCache;
           const wmsCapabilities = handler.rasterService.getRasterCapabilities(
             realLayerConfig,
-            rasterInstancesCache,
-            TCLayer
+            rasterInstancesCache
           );
 
           // Enrich layer info using service
@@ -1035,8 +1036,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             nodeId,
             realLayerConfig,
             wmsCapabilities,
-            rasterInstancesCache,
-            TCLayer
+            rasterInstancesCache
           );
 
           // Merge original result with enriched data (enriched overrides original)
@@ -1052,7 +1052,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 
@@ -1139,7 +1139,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         }
       );
 
-      this.patchManager.add(() => meld.remove(advice));
+      this.patchManager.add(() => advice.remove());
     });
   }
 }

@@ -1095,6 +1095,133 @@ describe('LayerCatalogControlHandler', () => {
     });
   });
 
+  describe('loadPatches() cleanup', () => {
+    beforeEach(() => {
+      handler.cleanup();
+    });
+
+    it('restores all meld-wrapped LayerCatalog and Raster targets on cleanup', async () => {
+      const layerCatalogMethods = {
+        addLayerToMap: jest.fn(),
+        addLayer: jest.fn(),
+        getLayerNodes: jest.fn(),
+        getLayerRootNode: jest.fn(),
+        renderData: jest.fn(),
+        loadTemplates: jest.fn(),
+        createSearchAutocomplete: jest.fn()
+      };
+      const rasterMethods = {
+        getPath: jest.fn(),
+        getInfo: jest.fn()
+      };
+
+      class LayerCatalog {}
+      Object.assign(LayerCatalog.prototype, layerCatalogMethods);
+
+      class Raster {}
+      Object.assign(Raster.prototype, rasterMethods);
+
+      const patchableTC = {
+        Util: {
+          regex: { PROTOCOL: /^https?:/i },
+          reqGetMapOnCapabilities: jest.fn(),
+          extend: Object.assign
+        },
+        Consts: { classes: { LOADING: 'tc-loading' } },
+        control: { LayerCatalog },
+        layer: { Raster }
+      };
+
+      mockSitnaApi.getTC.mockReturnValue(patchableTC as any);
+
+      const ctlProto = patchableTC.control.LayerCatalog.prototype as typeof layerCatalogMethods;
+      const rasterProto = patchableTC.layer.Raster.prototype as typeof rasterMethods;
+      const originalAddLayerToMap = ctlProto.addLayerToMap;
+      const originalGetLayerNodes = ctlProto.getLayerNodes;
+      const originalGetLayerRootNode = ctlProto.getLayerRootNode;
+      const originalRenderData = ctlProto.renderData;
+      const originalGetPath = rasterProto.getPath;
+      const originalGetInfo = rasterProto.getInfo;
+
+      await handler.loadPatches(_mockAppCfg);
+
+      expect(ctlProto.addLayerToMap).not.toBe(originalAddLayerToMap);
+      expect(ctlProto.getLayerNodes).not.toBe(originalGetLayerNodes);
+      expect(ctlProto.getLayerRootNode).not.toBe(originalGetLayerRootNode);
+      expect(ctlProto.renderData).not.toBe(originalRenderData);
+      expect(rasterProto.getPath).not.toBe(originalGetPath);
+      expect(rasterProto.getInfo).not.toBe(originalGetInfo);
+
+      handler.cleanup();
+
+      expect(ctlProto.addLayerToMap).toBe(originalAddLayerToMap);
+      expect(ctlProto.getLayerNodes).toBe(originalGetLayerNodes);
+      expect(ctlProto.getLayerRootNode).toBe(originalGetLayerRootNode);
+      expect(ctlProto.renderData).toBe(originalRenderData);
+      expect(rasterProto.getPath).toBe(originalGetPath);
+      expect(rasterProto.getInfo).toBe(originalGetInfo);
+    });
+
+    it('reapplies meld-wrapped LayerCatalog and Raster targets after cleanup', async () => {
+      const layerCatalogMethods = {
+        addLayerToMap: jest.fn(),
+        addLayer: jest.fn(),
+        getLayerNodes: jest.fn(),
+        getLayerRootNode: jest.fn(),
+        renderData: jest.fn(),
+        loadTemplates: jest.fn(),
+        createSearchAutocomplete: jest.fn()
+      };
+      const rasterMethods = {
+        getPath: jest.fn(),
+        getInfo: jest.fn()
+      };
+
+      class LayerCatalog {}
+      Object.assign(LayerCatalog.prototype, layerCatalogMethods);
+
+      class Raster {}
+      Object.assign(Raster.prototype, rasterMethods);
+
+      const patchableTC = {
+        Util: {
+          regex: { PROTOCOL: /^https?:/i },
+          reqGetMapOnCapabilities: jest.fn(),
+          extend: Object.assign
+        },
+        Consts: { classes: { LOADING: 'tc-loading' } },
+        control: { LayerCatalog },
+        layer: { Raster }
+      };
+
+      mockSitnaApi.getTC.mockReturnValue(patchableTC as any);
+
+      const ctlProto = patchableTC.control.LayerCatalog.prototype as typeof layerCatalogMethods;
+      const rasterProto = patchableTC.layer.Raster.prototype as typeof rasterMethods;
+      const originalAddLayerToMap = ctlProto.addLayerToMap;
+      const originalGetLayerNodes = ctlProto.getLayerNodes;
+      const originalGetLayerRootNode = ctlProto.getLayerRootNode;
+      const originalRenderData = ctlProto.renderData;
+      const originalGetPath = rasterProto.getPath;
+      const originalGetInfo = rasterProto.getInfo;
+
+      await handler.loadPatches(_mockAppCfg);
+      handler.cleanup();
+
+      expect(ctlProto.addLayerToMap).toBe(originalAddLayerToMap);
+      expect(rasterProto.getInfo).toBe(originalGetInfo);
+
+      await handler.loadPatches(_mockAppCfg);
+
+      expect(ctlProto.addLayerToMap).not.toBe(originalAddLayerToMap);
+      expect(ctlProto.getLayerNodes).not.toBe(originalGetLayerNodes);
+      expect(ctlProto.getLayerRootNode).not.toBe(originalGetLayerRootNode);
+      expect(ctlProto.renderData).not.toBe(originalRenderData);
+      expect(rasterProto.getPath).not.toBe(originalGetPath);
+      expect(rasterProto.getInfo).not.toBe(originalGetInfo);
+    });
+  });
+
   describe('Integration', () => {
     it('should handle full workflow', async () => {
       const context: AppCfg = {

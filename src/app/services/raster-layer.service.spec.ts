@@ -678,6 +678,34 @@ describe('RasterLayerService', () => {
     });
   });
 
+  describe('getRasterCapabilities', () => {
+    const realLayerConfig = {
+      url: 'http://localhost:9000/middleware/proxy/12/4/WMS/16',
+      type: 'WMS',
+      layerNames: ['ns:roads']
+    };
+
+    it('returns cached capabilities', () => {
+      const capabilities = { Service: {} } as WMSCapabilities;
+      const rasterInstancesCache = new Map([
+        [`${realLayerConfig.url}|${realLayerConfig.type}`, { capabilities }]
+      ]);
+
+      const result = service.getRasterCapabilities(
+        realLayerConfig,
+        rasterInstancesCache
+      );
+
+      expect(result).toBe(capabilities);
+    });
+
+    it('returns null without fetching when capabilities are not cached', () => {
+      const result = service.getRasterCapabilities(realLayerConfig, new Map());
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe('enrichRasterLayerInfo', () => {
     const enrichAppCfg = (overrides?: {
       layerMeta?: string;

@@ -93,7 +93,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         mapProto.__sitmunFiAddControl = true;
         this.patchManager.add(() => {
-          meld.remove(addControlAdvice);
+          addControlAdvice.remove();
           delete mapProto.__sitmunFiAddControl;
         });
       }
@@ -150,7 +150,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunFiRegister = true;
         this.patchManager.add(() => {
-          meld.remove(registerAdvice);
+          registerAdvice.remove();
           delete fiProto.__sitmunFiRegister;
           while (this.mapEventCleanups.length > 0) {
             const cleanup = this.mapEventCleanups.pop();
@@ -186,7 +186,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMoreInfo = true;
         this.patchManager.add(() => {
-          meld.remove(responseCallbackAdvice);
+          responseCallbackAdvice.remove();
           delete fiProto.__sitmunMoreInfo;
         });
       }
@@ -208,7 +208,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMoreInfoDisplayResults = true;
         this.patchManager.add(() => {
-          meld.remove(displayResultsAdvice);
+          displayResultsAdvice.remove();
           delete fiProto.__sitmunMoreInfoDisplayResults;
         });
       }
@@ -234,7 +234,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         RasterProto.__sitmunDescribeLayerSafe = true;
         this.patchManager.add(() => {
-          meld.remove(describeAdvice);
+          describeAdvice.remove();
           delete RasterProto.__sitmunDescribeLayerSafe;
         });
       }
@@ -290,7 +290,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         ProxProto.__sitmunGfiIsolation = true;
         this.patchManager.add(() => {
-          meld.remove(fetchAdvice);
+          fetchAdvice.remove();
           delete ProxProto.__sitmunGfiIsolation;
         });
       }
