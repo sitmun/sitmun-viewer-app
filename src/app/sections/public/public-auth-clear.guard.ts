@@ -8,9 +8,13 @@ import { Observable, catchError, map, of } from 'rxjs';
 import { NotificationService } from '../../notifications/services/NotificationService';
 
 /**
- * Clears the backend HttpOnly `access_token` and local viewer state before any
+ * Clears the backend HttpOnly `viewer_access_token` and local viewer state before any
  * `/public/**` route activates. This prevents stale cookies from a previous
  * authenticated session from being sent to public config/profile requests.
+ *
+ * The logout request to {@code POST /api/authenticate/logout} is sent without the
+ * {@code X-SITMUN-Client} header so only the viewer cookie is cleared; admin sessions
+ * on other tabs are not affected.
  *
  * If the logout request fails, local session cleanup still runs inside
  * {@link AuthenticationService.clearAuthentication}; navigation proceeds with a warning.
