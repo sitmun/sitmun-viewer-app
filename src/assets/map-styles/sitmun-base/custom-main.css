@@ -556,6 +556,19 @@ input[type='range']:focus {
   background-position: 0 2px !important;
 }
 
+.sitmun-lcat-radio {
+  margin: 0 0.35em 0 0;
+  vertical-align: middle;
+}
+
+.sitmun-lcat-radio-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
 /* Leaf items - must override any node rules, including last-child */
 .tc-ctl-lcat li.tc-ctl-lcat-leaf,
 .tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf,

@@ -4,16 +4,33 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Security
+
+- **Auth**: `publicAuthClearGuard` sends `POST /api/authenticate/logout` without `X-SITMUN-Client` so the backend clears only `viewer_access_token`; admin sessions in other tabs are not affected.
+
 ### Added
 
+- **Map**: auto-loads profile layers marked `loadByDefault` from the active catalog into working layers on map open.
+- **Map**: cartography-tree radio folders render native radio inputs in the layer catalog; folder activation selects the first ordered child, and re-selecting the active child clears the group (SITMUN 2 parity).
+- **Map**: `CatalogLayerSelectionService` tracks per-map node claims and deduplicated resource reference counts; working layers loaded from the catalog carry explicit `options.nodeId`.
 - **Tests**: Jest coverage for dashboard pagination, searchbox behaviour, loading cleanup, dashboard-item resync, auth guards/interceptors, session cleanup ordering, and login modal failed-login feedback.
 
 ### Changed
 
+- **Map**: default-layer collection traverses the active catalog in profile tree order, deduplicates by cartography resource, and keeps one claim per radio group; per-map WeakMap idempotency replaces the singleton default-load guard.
 - **Dashboard search**: autocomplete suggestions refresh while typing; the card grid filters on Enter (or clear) only, so navigation and in-place browsing use separate triggers.
 
 ### Fixed
 
+- **Map**: radio folder title clicks are a no-op when the first child is already selected; the handler short-circuits before calling `addLayerToMap`, preventing `prepareSelection` from toggling the selection off; only re-clicking the selected native radio input clears the group.
+- **Map**: `getLayerNodes` patch uses `nodeId` as the sole catalog DOM identity; untagged layers with only `layerNames` delegate to the original SITNA implementation without attempting layerNames-based DOM selection.
+- **Map**: `withRadioGroupLock` now compares the stored queued promise (not the inner `current` promise) to determine whether the lock is the last in chain; completed locks are reliably removed from `radioGroupLocks`.
+- **Map**: catalog `addLayerToMap` returns the live working layer from `map.addLayer`; the already-loaded fast path returns the representative existing layer; non-radio re-clicks preserve SITNA toggle behavior.
+- **Map**: self-generated `LAYERERROR` events no longer mutate catalog claims; external radio registration clears pending replacement state; per-map teardown removes radio DOM listeners and search observers.
+- **Map**: map load awaits default working layers before resolving; stale `loadId` and destroy-before-loaded guard against late default-layer application; catalog switch applies defaults once to the new map.
+- **Map**: radio sibling replacement removes prior physical layers when resource ref counts reach zero, even when the target resource is already loaded.
+- **Map**: catalog-generated layer add/remove events no longer double-commit claims; untagged Working Layers removals do not clear catalog selection by `layerNames` alone.
+- **Map**: catalog switch tears down per-map selection state and event bridges; search results keep radio checked state in sync with the tree.
 - **Map**: catalog composite layers show one Loaded Layers breadcrumb (same UX as single-layer entries) instead of repeating the catalog name per internal WMS layer ([#161](https://github.com/sitmun/sitmun-viewer-app/issues/161)).
 - **Map**: control teardown now removes SITNA prototype patches cleanly and allows patched controls to be registered again without stale advice or restoration errors.
 - **Map**: layer info modal lists every WMS layer id for composite catalog layers and resolves multilingual service descriptions using the user's selected application language (closest match, otherwise first variant).

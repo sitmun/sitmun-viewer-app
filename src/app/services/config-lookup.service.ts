@@ -174,4 +174,42 @@ export class ConfigLookupService {
     }
     return undefined;
   }
+
+  findParentNodeId(nodeId: string): string | undefined {
+    for (const tree of this.treesCache.values()) {
+      if (!tree.nodes[nodeId]) {
+        continue;
+      }
+      for (const [parentId, parent] of Object.entries(tree.nodes) as [
+        string,
+        AppNodeInfo
+      ][]) {
+        if (parent.children?.includes(nodeId)) {
+          return parentId;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  getDirectChildIds(nodeId: string): string[] {
+    return [...(this.findNode(nodeId)?.children ?? [])];
+  }
+
+  isRadioFolder(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    return !!node?.isRadio && !node.resource && !node.action;
+  }
+
+  getRadioGroupParent(nodeId: string): string | undefined {
+    const parentId = this.findParentNodeId(nodeId);
+    return parentId && this.isRadioFolder(parentId) ? parentId : undefined;
+  }
+
+  getFirstRadioChildId(folderNodeId: string): string | undefined {
+    if (!this.isRadioFolder(folderNodeId)) {
+      return undefined;
+    }
+    return this.getDirectChildIds(folderNodeId)[0];
+  }
 }

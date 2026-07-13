@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 
 import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordance';
+import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
 import { CatalogSwitchingService } from '../../services/catalog-switching.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { RasterLayerService } from '../../services/raster-layer.service';
@@ -44,6 +45,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
   private readonly virtualWmsService = inject(VirtualWmsCapabilitiesService);
   private readonly configLookup = inject(ConfigLookupService);
+  private readonly catalogSelection = inject(CatalogLayerSelectionService);
   private readonly catalogSwitching = inject(CatalogSwitchingService);
   private readonly rasterService = inject(RasterLayerService);
   private readonly capabilitiesInterceptor = inject(SitnaCapabilitiesInterceptor);
@@ -54,6 +56,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
   // Track if patches have been applied to avoid reapplying on map reload
   private patchesApplied = false;
+  private defaultLoadApplied = new WeakMap<object, Set<number>>();
+  private mapEventBridges = new WeakMap<object, () => void>();
+  private mapEventBridgeDetaches = new Set<() => void>();
+  private radioControlCleanups = new WeakMap<object, () => void>();
+  private radioControlCleanupFns = new Set<() => void>();
+  private radioControlCleanupsByMap = new WeakMap<object, Set<() => void>>();
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
@@ -102,6 +110,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     // Apply patches in order (matching sandbox sequence)
     await this.patchLayerCatalogAddLayerToMap();
+    await this.patchLayerCatalogRenderBranch();
     await this.patchLayerCatalogAddLayer();
     await this.patchLayerCatalogGetLayerNodes();
     await this.patchLayerCatalogGetLayerRootNode();
@@ -116,8 +125,33 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   }
 
   override cleanup(): void {
+    this.teardownMapState();
     super.cleanup();
     this.patchesApplied = false;
+  }
+
+  teardownMapState(map?: object): void {
+    if (map) {
+      const detach = this.mapEventBridges.get(map);
+      detach?.();
+      this.teardownRadioControlsForMap(map);
+      this.catalogSelection.clearMap(map);
+      return;
+    }
+
+    for (const detach of [...this.mapEventBridgeDetaches]) {
+      detach();
+    }
+    for (const cleanup of [...this.radioControlCleanupFns]) {
+      cleanup();
+    }
+    this.catalogSelection.clearAll();
+    this.defaultLoadApplied = new WeakMap();
+    this.mapEventBridges = new WeakMap();
+    this.mapEventBridgeDetaches.clear();
+    this.radioControlCleanups = new WeakMap();
+    this.radioControlCleanupFns.clear();
+    this.radioControlCleanupsByMap = new WeakMap();
   }
 
   /**
@@ -343,7 +377,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return;
       }
 
-      // Use meld.around to wrap addLayerToMap
       const advice = meld.around(
         ctlProto,
         'addLayerToMap',
@@ -359,12 +392,45 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           if (!appCfgAdd) {
             return joinPoint.proceed();
           }
+
+          handler.attachMapEventBridge(self.map, TC);
+
+          const catalogNode = handler.configLookup.findNode(layerName);
           const realLayerConfig = handler.virtualWmsService.findRealLayerConfig(
             layerName,
             appCfgAdd
           );
+          if (catalogNode && !realLayerConfig) {
+            console.warn(
+              '[LayerCatalogControlHandler] Skipping unresolved catalog node',
+              layerName
+            );
+            return Promise.resolve(undefined);
+          }
 
-          // Create layer options with real configuration
+          const resource = catalogNode?.resource;
+          const radioParent = handler.configLookup.getRadioGroupParent(layerName);
+          const prepared = handler.catalogSelection.prepareSelection(
+            self.map,
+            layerName,
+            resource,
+            handler.configLookup
+          );
+
+          if (prepared.action === 'deselect') {
+            return handler.removeLayerClaims(self.map, [layerName], self);
+          }
+
+          if (prepared.action === 'skip') {
+            return Promise.resolve(
+              handler.findRepresentativeWorkLayer(
+                self.map,
+                resource,
+                layerName
+              )
+            );
+          }
+
           const layerOptions = Util.extend({}, layerObj.options) as {
             id?: string;
             hideTree?: boolean;
@@ -373,23 +439,18 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             type?: string;
             layerNames?: string | string[];
             nodeId?: string;
-            /** {@link AppService#id}; set when resolving from catalog for proxy-aware scale merge. */
             serviceId?: string;
             [key: string]: unknown;
           };
 
-          // Profile-driven transparency (0..100, 0 = opaque) → SITNA opacity (0..1, 1 = opaque).
-          // Skip when null/0; SITNA layers default to opacity 1.
           const transparency = realLayerConfig?.transparency;
 
           if (realLayerConfig) {
             layerOptions.id = self.getUID();
             layerOptions.hideTree = true;
             layerOptions.title = layerObj.title;
-            // realLayerConfig is typed as RealLayerConfig, so url and type are guaranteed to be strings
             layerOptions.url = realLayerConfig.url;
             layerOptions.type = realLayerConfig.type;
-            // layerNames should be an array, SITNA will join them internally
             layerOptions.layerNames = Array.isArray(realLayerConfig.layerNames)
               ? realLayerConfig.layerNames
               : [realLayerConfig.layerNames];
@@ -416,82 +477,628 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
           const Raster = TC.layer.Raster;
 
-          const proceedWithLayer = async (): Promise<any> => {
-            const newLayer = new Raster(layerOptions);
-            await newLayer.getCapabilitiesPromise();
+          const runAdd = async (): Promise<any> => {
+            try {
+              if (!prepared.needsPhysicalAdd) {
+                const removed = handler.catalogSelection.commitSelection(
+                  self.map,
+                  layerName,
+                  resource,
+                  true
+                );
+                await handler.catalogSelection.runWithSelfCommit(
+                  self.map,
+                  async () => {
+                    await handler.removePhysicalResources(
+                      self.map,
+                      removed.removeResources,
+                      self,
+                      layerName
+                    );
+                  }
+                );
+                handler.syncRadioCheckedState(self);
+                return handler.findRepresentativeWorkLayer(
+                  self.map,
+                  resource,
+                  layerName
+                );
+              }
 
-            if (!appCfgAdd) {
-              return joinPoint.proceed();
-            }
-            const nodeTitle = handler.getNodeTitle(layerName, appCfgAdd);
+              const newLayer = new Raster(layerOptions);
+              await newLayer.getCapabilitiesPromise();
 
-            if (nodeTitle && newLayer.Capability?.Layer) {
-              handler.updateLayerTitleInCapabilities(
-                newLayer.Capability.Layer,
-                effectiveLayerNames,
-                nodeTitle
+              if (!appCfgAdd) {
+                return joinPoint.proceed();
+              }
+              const nodeTitle = handler.getNodeTitle(layerName, appCfgAdd);
+
+              if (nodeTitle && newLayer.Capability?.Layer) {
+                handler.updateLayerTitleInCapabilities(
+                  newLayer.Capability.Layer,
+                  effectiveLayerNames,
+                  nodeTitle
+                );
+              }
+
+              if (newLayer.isCompatible(self.map.crs)) {
+                const profileOpacity =
+                  typeof transparency === 'number' && transparency > 0
+                    ? (100 - transparency) / 100
+                    : undefined;
+
+                if (profileOpacity != null) {
+                  const prev = layerOptions['renderOptions'] as
+                    | Record<string, unknown>
+                    | undefined;
+                  layerOptions['renderOptions'] = {
+                    ...(typeof prev === 'object' && prev !== null ? prev : {}),
+                    opacity: profileOpacity
+                  };
+                }
+
+                layerOptions['zIndex'] = realLayerConfig?.order ?? 0;
+
+                const addedLayer = await handler.catalogSelection.runWithSelfCommit(
+                  self.map,
+                  () => self.map.addLayer(layerOptions)
+                );
+
+                if (
+                  addedLayer != null &&
+                  profileOpacity != null &&
+                  typeof addedLayer.setOpacity === 'function'
+                ) {
+                  await addedLayer.setOpacity(profileOpacity);
+                  const ro = addedLayer.renderOptions as
+                    | Record<string, unknown>
+                    | undefined;
+                  addedLayer.renderOptions = {
+                    ...(typeof ro === 'object' && ro !== null ? ro : {}),
+                    opacity: profileOpacity
+                  };
+                }
+
+                const removed = handler.catalogSelection.commitSelection(
+                  self.map,
+                  layerName,
+                  resource,
+                  true
+                );
+                await handler.catalogSelection.runWithSelfCommit(
+                  self.map,
+                  async () => {
+                    await handler.removePhysicalResources(
+                      self.map,
+                      removed.removeResources,
+                      self,
+                      layerName
+                    );
+                  }
+                );
+                handler.syncRadioCheckedState(self);
+                return addedLayer ?? newLayer;
+              }
+
+              handler.catalogSelection.commitSelection(
+                self.map,
+                layerName,
+                resource,
+                false
               );
-            }
-
-            if (newLayer.isCompatible(self.map.crs)) {
-              // SITNA's map.addLayer creates and returns a *new* layer instance, distinct from
-              // `newLayer` above (which was used only for capability/title preflight). Apply the
-              // profile transparency on the live map layer so WorkLayerManager sees it.
-              const profileOpacity =
-                typeof transparency === 'number' && transparency > 0
-                  ? (100 - transparency) / 100
-                  : undefined;
-
-              // WorkLayerManager slider reads renderOptions.opacity (0..1), not only getOpacity().
-              if (profileOpacity != null) {
-                const prev = layerOptions['renderOptions'] as
-                  | Record<string, unknown>
-                  | undefined;
-                layerOptions['renderOptions'] = {
-                  ...(typeof prev === 'object' && prev !== null ? prev : {}),
-                  opacity: profileOpacity
-                };
-              }
-
-              // Profile-driven layer order → SITNA `zIndex` (default 0). Applied uniformly to
-              // catalog-resolved real layers and externally loaded ones so the SITNA stealth
-              // fallback (1) never leaks in. Subsequent WorkLayerManager drag-reorder bypasses
-              // this value (operates on OpenLayers indices, not zIndex) and is not persisted.
-              layerOptions['zIndex'] = realLayerConfig?.order ?? 0;
-
-              const addedLayer = await self.map.addLayer(layerOptions);
-
-              if (
-                addedLayer != null &&
-                profileOpacity != null &&
-                typeof addedLayer.setOpacity === 'function'
-              ) {
-                await addedLayer.setOpacity(profileOpacity);
-                const ro = addedLayer.renderOptions as
-                  | Record<string, unknown>
-                  | undefined;
-                addedLayer.renderOptions = {
-                  ...(typeof ro === 'object' && ro !== null ? ro : {}),
-                  opacity: profileOpacity
-                };
-              }
-              return newLayer;
-            } else {
-              const showProjectionChangeDialog =
-                self.showProjectionChangeDialog;
+              handler.syncRadioCheckedState(self);
+              const showProjectionChangeDialog = self.showProjectionChangeDialog;
               if (typeof showProjectionChangeDialog === 'function') {
                 showProjectionChangeDialog.call(self, newLayer);
               }
               return newLayer;
+            } catch (error) {
+              handler.catalogSelection.clearPendingReplacement(
+                self.map,
+                layerName
+              );
+              throw error;
             }
           };
 
-          return proceedWithLayer();
+          if (radioParent) {
+            return handler.catalogSelection.withRadioGroupLock(
+              self.map,
+              radioParent,
+              runAdd
+            );
+          }
+          return runAdd();
         }
       );
 
       this.patchManager.add(() => advice.remove());
     });
+  }
+
+  private async patchLayerCatalogRenderBranch(): Promise<void> {
+    await this.withTCAsync(async (TC) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const handler = this;
+      const ctlProto = TC.control.LayerCatalog.prototype;
+
+      if (!ctlProto || typeof ctlProto.renderBranch !== 'function') {
+        return;
+      }
+
+      const advice = meld.around(
+        ctlProto,
+        'renderBranch',
+        function (this: any, joinPoint: MeldJoinPoint): unknown {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          const self = this;
+          const callback = joinPoint.args[1] as (() => void) | undefined;
+          if (typeof callback === 'function') {
+            joinPoint.args[1] = function (this: unknown) {
+              callback.call(this);
+              handler.decorateRadioControls(self);
+            };
+          }
+          const result = joinPoint.proceed();
+          if (typeof callback !== 'function') {
+            handler.decorateRadioControls(self);
+          }
+          return result;
+        }
+      );
+
+      this.patchManager.add(() => advice.remove());
+    });
+  }
+
+  private attachMapEventBridge(map: any, TC: any): void {
+    if (!map || this.mapEventBridges.has(map)) {
+      return;
+    }
+
+    const events = TC?.Consts?.event ?? {};
+    const layerAdd = events.LAYERADD ?? 'layeradd';
+    const layerRemove = events.LAYERREMOVE ?? 'layerremove';
+    const layerError = events.LAYERERROR ?? 'layererror';
+
+    const onAdd = (layer: any) => {
+      if (this.catalogSelection.isSelfCommit(map)) {
+        return;
+      }
+      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (!nodeId) {
+        return;
+      }
+      const catalogNode = this.configLookup.findNode(nodeId);
+      const resource = catalogNode?.resource;
+      const radioParent = this.configLookup.getRadioGroupParent(nodeId);
+
+      const register = (): void => {
+        const removed = this.catalogSelection.registerExternalClaim(
+          map,
+          nodeId,
+          resource,
+          this.configLookup
+        );
+        void this.catalogSelection.runWithSelfCommit(map, async () => {
+          await this.removePhysicalResources(
+            map,
+            removed.removeResources,
+            undefined,
+            nodeId
+          );
+        });
+        const catalog = this.findLayerCatalogControl(map, TC);
+        if (catalog) {
+          this.syncRadioCheckedState(catalog);
+        }
+      };
+
+      if (radioParent) {
+        void this.catalogSelection.withRadioGroupLock(
+          map,
+          radioParent,
+          async () => {
+            register();
+          }
+        );
+      } else {
+        register();
+      }
+    };
+
+    const onRemove = (layer: any) => {
+      if (this.catalogSelection.isSelfCommit(map)) {
+        return;
+      }
+      const removedLayer = layer?.layer ?? layer;
+      const nodeId = this.catalogSelection.resolveNodeId(removedLayer ?? {});
+      if (!nodeId) {
+        return;
+      }
+      const resource = this.configLookup.findNode(nodeId)?.resource;
+      if (resource) {
+        this.catalogSelection.clearClaimsForResource(map, resource);
+      } else {
+        this.catalogSelection.deselectNode(map, nodeId);
+      }
+      const catalog = this.findLayerCatalogControl(map, TC);
+      if (catalog) {
+        this.syncRadioCheckedState(catalog);
+      }
+    };
+
+    const onError = (layer: any) => {
+      if (this.catalogSelection.isSelfCommit(map)) {
+        return;
+      }
+      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (!nodeId) {
+        return;
+      }
+      this.catalogSelection.commitSelection(
+        map,
+        nodeId,
+        this.configLookup.findNode(nodeId)?.resource,
+        false
+      );
+      const catalog = this.findLayerCatalogControl(map, TC);
+      if (catalog) {
+        this.syncRadioCheckedState(catalog);
+      }
+    };
+
+    if (typeof map.on === 'function') {
+      map.on(layerAdd, onAdd);
+      map.on(layerRemove, onRemove);
+      map.on(layerError, onError);
+    }
+
+    const detach = () => {
+      if (typeof map.off === 'function') {
+        map.off(layerAdd, onAdd);
+        map.off(layerRemove, onRemove);
+        map.off(layerError, onError);
+      } else if (typeof map.un === 'function') {
+        map.un(layerAdd, onAdd);
+        map.un(layerRemove, onRemove);
+        map.un(layerError, onError);
+      }
+      this.catalogSelection.clearMap(map);
+      this.mapEventBridges.delete(map);
+      this.mapEventBridgeDetaches.delete(detach);
+    };
+
+    this.mapEventBridges.set(map, detach);
+    this.mapEventBridgeDetaches.add(detach);
+  }
+
+  private findLayerCatalogControl(map: any, TC: any): any | undefined {
+    if (typeof map?.getControlsByClass !== 'function') {
+      return undefined;
+    }
+    const controls = map.getControlsByClass(TC.control.LayerCatalog);
+    return Array.isArray(controls) ? controls[0] : undefined;
+  }
+
+  private radioSearchObservers = new WeakMap<object, MutationObserver>();
+  private catalogTreeObservers = new WeakMap<object, MutationObserver>();
+  private radioGroupSequence = 0;
+
+  private decorateRadioControls(catalogControl: any): void {
+    const div = catalogControl?.div;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+
+    const previousCleanup = this.radioControlCleanups.get(catalogControl);
+    previousCleanup?.();
+
+    const inputHandler = (event: Event) => {
+      const target = event.target as HTMLInputElement | null;
+      if (!target?.matches('input[type="radio"].sitmun-lcat-radio')) {
+        return;
+      }
+      event.stopPropagation();
+      const nodeId = target.dataset['layerName'];
+      if (!nodeId) {
+        return;
+      }
+      const wasChecked = this.catalogSelection.isNodeSelected(map, nodeId);
+      void this.handleRadioInputSelection(catalogControl, nodeId, wasChecked);
+    };
+
+    const folderHandler = (event: Event) => {
+      const target = event.target as Element | null;
+      const folder = target?.closest(
+        'li.tc-ctl-lcat-node[data-sitmun-radio-folder="true"]'
+      ) as HTMLElement | null;
+      if (!folder || !folder.contains(target)) {
+        return;
+      }
+      const title = folder.querySelector('.tc-ctl-lcat-node-title, span');
+      if (!title?.contains(target as Node) && target !== title) {
+        return;
+      }
+      const folderId = folder.dataset['layerName'];
+      if (!folderId) {
+        return;
+      }
+      const firstChild = this.configLookup.getFirstRadioChildId(folderId);
+      if (!firstChild) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      // No-op when first child is already selected: prevent re-entering prepareSelection
+      // which would toggle the selection off as a deselect action.
+      if (this.catalogSelection.isNodeSelected(map, firstChild)) {
+        return;
+      }
+      void this.handleRadioInputSelection(catalogControl, firstChild, false);
+    };
+
+    div.addEventListener('click', inputHandler, true);
+    div.addEventListener('click', folderHandler, true);
+
+    this.injectRadioInputs(catalogControl, div);
+    this.syncRadioCheckedState(catalogControl);
+
+    this.catalogTreeObservers.get(catalogControl)?.disconnect();
+    const treeObserver = new MutationObserver(() => {
+      this.injectRadioInputs(catalogControl, div);
+      this.syncRadioCheckedState(catalogControl);
+    });
+    treeObserver.observe(div, { childList: true, subtree: true });
+    this.catalogTreeObservers.set(catalogControl, treeObserver);
+
+    const searchList = div.querySelector('.tc-ctl-lcat-search ul');
+    const previousObserver = this.radioSearchObservers.get(catalogControl);
+    previousObserver?.disconnect();
+    if (searchList) {
+      const observer = new MutationObserver(() => {
+        this.injectRadioInputs(catalogControl, searchList);
+      });
+      observer.observe(searchList, { childList: true, subtree: true });
+      this.radioSearchObservers.set(catalogControl, observer);
+    }
+
+    const cleanup = () => {
+      div.removeEventListener('click', inputHandler, true);
+      div.removeEventListener('click', folderHandler, true);
+      div
+        .querySelectorAll('input.sitmun-lcat-radio')
+        .forEach((input: Element) => input.remove());
+      this.radioSearchObservers.get(catalogControl)?.disconnect();
+      this.radioSearchObservers.delete(catalogControl);
+      this.catalogTreeObservers.get(catalogControl)?.disconnect();
+      this.catalogTreeObservers.delete(catalogControl);
+      this.radioControlCleanups.delete(catalogControl);
+      this.radioControlCleanupFns.delete(cleanup);
+      this.radioControlCleanupsByMap.get(map)?.delete(cleanup);
+    };
+    this.radioControlCleanups.set(catalogControl, cleanup);
+    this.radioControlCleanupFns.add(cleanup);
+    const mapCleanups =
+      this.radioControlCleanupsByMap.get(map) ?? new Set<() => void>();
+    mapCleanups.add(cleanup);
+    this.radioControlCleanupsByMap.set(map, mapCleanups);
+  }
+
+  private injectRadioInputs(catalogControl: any, root: ParentNode): void {
+    const map = catalogControl?.map;
+    if (!map) {
+      return;
+    }
+
+    const folderIds = new Set<string>();
+    root.querySelectorAll('li[data-layer-name]').forEach((li: Element) => {
+      const nodeId = (li as HTMLElement).dataset['layerName'];
+      if (!nodeId) {
+        return;
+      }
+      if (this.configLookup.isRadioFolder(nodeId)) {
+        folderIds.add(nodeId);
+      }
+      const radioParent = this.configLookup.getRadioGroupParent(nodeId);
+      if (radioParent) {
+        folderIds.add(radioParent);
+      }
+    });
+
+    for (const folderId of folderIds) {
+      const folderLi = root.querySelector(
+        `li[data-layer-name="${folderId}"]`
+      ) as HTMLElement | null;
+      if (folderLi) {
+        folderLi.dataset['sitmunRadioFolder'] = 'true';
+      }
+      const groupName =
+        folderLi?.dataset['sitmunRadioGroup'] ??
+        `sitmun-radio-${folderId}-${++this.radioGroupSequence}`;
+      if (folderLi) {
+        folderLi.dataset['sitmunRadioGroup'] = groupName;
+      }
+      for (const childId of this.configLookup.getDirectChildIds(folderId)) {
+        const childLi = root.querySelector(
+          `li[data-layer-name="${childId}"]`
+        ) as HTMLElement | null;
+        if (!childLi || childLi.querySelector('input.sitmun-lcat-radio')) {
+          continue;
+        }
+        const childNode = this.configLookup.findNode(childId);
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.className = 'sitmun-lcat-radio';
+        input.name = groupName;
+        input.dataset['layerName'] = childId;
+        input.setAttribute('aria-checked', 'false');
+        input.setAttribute('aria-label', childNode?.title ?? childId);
+        const label = document.createElement('label');
+        label.className = 'sitmun-lcat-radio-label';
+        label.appendChild(input);
+        const titleSpan =
+          childLi.querySelector('.tc-ctl-lcat-node-title, span') ??
+          childLi.firstElementChild;
+        if (titleSpan) {
+          titleSpan.insertBefore(label, titleSpan.firstChild);
+        } else {
+          childLi.insertBefore(label, childLi.firstChild);
+        }
+      }
+    }
+
+    this.syncRadioCheckedState(catalogControl);
+  }
+
+  private async handleRadioInputSelection(
+    catalogControl: any,
+    nodeId: string,
+    wasChecked: boolean
+  ): Promise<void> {
+    const node = this.configLookup.findNode(nodeId);
+    if (!node || typeof catalogControl.addLayerToMap !== 'function') {
+      return;
+    }
+    if (wasChecked && this.configLookup.getRadioGroupParent(nodeId)) {
+      await this.removeLayerClaims(catalogControl.map, [nodeId], catalogControl);
+      this.syncRadioCheckedState(catalogControl);
+      return;
+    }
+    const context =
+      this.sitnaApi.getGlobal('currentAppCfg') ?? this.currentAppCfg;
+    const configuredLayer = context
+      ? this.findConfiguredCatalogLayer(catalogControl, context, nodeId)
+      : undefined;
+    await catalogControl.addLayerToMap(
+      configuredLayer ?? { title: node.title, options: {} },
+      nodeId
+    );
+    this.syncRadioCheckedState(catalogControl);
+  }
+
+  private syncRadioCheckedState(catalogControl: any): void {
+    const div = catalogControl?.div;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+    const catalogNodes = div.querySelectorAll('li[data-layer-name]');
+    catalogNodes.forEach((node: Element) => {
+      node.classList.remove('tc-checked');
+    });
+    catalogNodes.forEach((node: Element) => {
+      const nodeId = (node as HTMLElement).dataset['layerName'];
+      if (!nodeId || !this.catalogSelection.isNodeSelected(map, nodeId)) {
+        return;
+      }
+      let current: Element | null = node;
+      while (current?.matches('li[data-layer-name]')) {
+        current.classList.add('tc-checked');
+        current = current.parentElement?.closest('li[data-layer-name]') ?? null;
+      }
+    });
+    div.querySelectorAll('input.sitmun-lcat-radio').forEach((input: Element) => {
+      const element = input as HTMLInputElement;
+      const nodeId = element.dataset['layerName'];
+      const checked = !!nodeId && this.catalogSelection.isNodeSelected(map, nodeId);
+      element.checked = checked;
+      element.setAttribute('aria-checked', String(checked));
+      const li = element.closest('li.tc-ctl-lcat-node');
+      if (li) {
+        li.classList.toggle('tc-checked', checked);
+      }
+    });
+  }
+
+  private findRepresentativeWorkLayer(
+    map: any,
+    resource: string | undefined,
+    nodeId: string
+  ): any | undefined {
+    const layers = Array.isArray(map?.workLayers)
+      ? map.workLayers
+      : Array.isArray(map?.layers)
+      ? map.layers
+      : [];
+    for (const layer of layers) {
+      const layerNodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (!layerNodeId) {
+        continue;
+      }
+      const layerResource = this.configLookup.findNode(layerNodeId)?.resource;
+      if (resource && layerResource === resource) {
+        return layer;
+      }
+      if (layerNodeId === nodeId) {
+        return layer;
+      }
+    }
+    return undefined;
+  }
+
+  private teardownRadioControlsForMap(map: object): void {
+    const cleanups = this.radioControlCleanupsByMap.get(map);
+    if (!cleanups) {
+      return;
+    }
+    for (const cleanup of [...cleanups]) {
+      cleanup();
+    }
+    this.radioControlCleanupsByMap.delete(map);
+  }
+
+  private async removeLayerClaims(
+    map: any,
+    nodeIds: string[],
+    catalogControl: any | undefined
+  ): Promise<void> {
+    const removeResources = new Set<string>();
+    for (const nodeId of nodeIds) {
+      const removed = this.catalogSelection.deselectNode(map, nodeId);
+      for (const resource of removed.removeResources) {
+        removeResources.add(resource);
+      }
+    }
+    await this.removePhysicalResources(
+      map,
+      [...removeResources],
+      catalogControl
+    );
+  }
+
+  private async removePhysicalResources(
+    map: any,
+    resources: string[],
+    catalogControl: any | undefined,
+    keepNodeId?: string
+  ): Promise<void> {
+    if (!map || resources.length === 0) {
+      return;
+    }
+    const layers = Array.isArray(map.workLayers)
+      ? map.workLayers
+      : Array.isArray(map.layers)
+      ? map.layers
+      : [];
+    for (const layer of layers) {
+      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (!nodeId || nodeId === keepNodeId) {
+        continue;
+      }
+      const resource = this.configLookup.findNode(nodeId)?.resource;
+      if (resource && resources.includes(resource)) {
+        if (typeof map.removeLayer === 'function') {
+          await this.catalogSelection.runWithSelfCommit(map, () =>
+            map.removeLayer(layer)
+          );
+        }
+      }
+    }
+    if (catalogControl) {
+      this.syncRadioCheckedState(catalogControl);
+    }
   }
 
   /**
@@ -605,9 +1212,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           }
 
           const nodeId = layerObj.options?.nodeId ?? layerObj.nodeId;
-          const selector = nodeId
-            ? `li[data-layer-name="${nodeId}"]`
-            : `li[data-layer-name="${layerObj.options?.layerNames}"]`;
+          if (!nodeId) {
+            return joinPoint.proceed() as Element[];
+          }
+          const selector = `li[data-layer-name="${nodeId}"]`;
 
           for (let i = 0; i < rootNodes.length; i++) {
             const rootNode = rootNodes[i];
@@ -1140,6 +1748,189 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       );
 
       this.patchManager.add(() => advice.remove());
+    });
+  }
+
+  collectDefaultLayerNodes(
+    context: AppCfg
+  ): Array<{ nodeId: string; title: string; order: number }> {
+    const rootNodeIds = this.getRootNodeIds(context);
+    const collected: Array<{ nodeId: string; title: string; order: number }> =
+      [];
+    const seenResources = new Set<string>();
+    const seenRadioGroups = new Set<string>();
+
+    for (const rootNodeId of rootNodeIds) {
+      this.collectDefaultLayerNodesFromNode(
+        context,
+        rootNodeId,
+        collected,
+        seenResources,
+        seenRadioGroups
+      );
+    }
+
+    return collected;
+  }
+
+  private collectDefaultLayerNodesFromNode(
+    context: AppCfg,
+    nodeId: string,
+    collected: Array<{ nodeId: string; title: string; order: number }>,
+    seenResources: Set<string>,
+    seenRadioGroups: Set<string>
+  ): void {
+    const tree = context.trees?.find(
+      (candidate) => candidate.nodes && candidate.nodes[nodeId]
+    );
+    if (!tree?.nodes) {
+      return;
+    }
+
+    const node = tree.nodes[nodeId] as AppNodeInfo | undefined;
+    if (!node) {
+      return;
+    }
+
+    if (node.loadByDefault === true && node.resource && !node.action) {
+      const radioParent = this.configLookup.getRadioGroupParent(nodeId);
+      const skipRadio =
+        !!radioParent && seenRadioGroups.has(radioParent);
+      const skipResource = seenResources.has(node.resource);
+      if (!skipRadio && !skipResource) {
+        if (radioParent) {
+          seenRadioGroups.add(radioParent);
+        }
+        seenResources.add(node.resource);
+        collected.push({
+          nodeId,
+          title: node.title,
+          order: node.order
+        });
+      }
+    }
+
+    for (const childId of node.children ?? []) {
+      this.collectDefaultLayerNodesFromNode(
+        context,
+        childId,
+        collected,
+        seenResources,
+        seenRadioGroups
+      );
+    }
+  }
+
+  private subtreeContainsNode(
+    rootNodeId: string,
+    targetNodeId: string,
+    visited = new Set<string>()
+  ): boolean {
+    if (rootNodeId === targetNodeId) {
+      return true;
+    }
+    if (visited.has(rootNodeId)) {
+      return false;
+    }
+    visited.add(rootNodeId);
+    return this.configLookup
+      .getDirectChildIds(rootNodeId)
+      .some((childId) =>
+        this.subtreeContainsNode(childId, targetNodeId, visited)
+      );
+  }
+
+  private findConfiguredCatalogLayer(
+    catalogControl: any,
+    context: AppCfg,
+    nodeId: string
+  ): any | undefined {
+    const branchNodeId = this.getRootNodeIds(context)
+      .flatMap((rootNodeId) =>
+        this.configLookup.getDirectChildIds(rootNodeId)
+      )
+      .find((candidateId) => this.subtreeContainsNode(candidateId, nodeId));
+    return catalogControl.options?.layers?.find(
+      (candidate: any) =>
+        typeof candidate?.url === 'string' &&
+        !!branchNodeId &&
+        candidate.url.endsWith(`/${branchNodeId}`)
+    );
+  }
+
+  async applyDefaultWorkingLayers(
+    map: { getControlsByClass?: (type: unknown) => unknown[] },
+    context: AppCfg | null | undefined,
+    loadId: number
+  ): Promise<void> {
+    if (!context || !this.needsBootstrap(context.tasks, { isEnabledByDefault: () => false })) {
+      return;
+    }
+
+    const applied = this.defaultLoadApplied.get(map) ?? new Set<number>();
+    if (applied.has(loadId)) {
+      return;
+    }
+
+    const defaultNodes = this.collectDefaultLayerNodes(context);
+    if (defaultNodes.length === 0) {
+      applied.add(loadId);
+      this.defaultLoadApplied.set(map, applied);
+      return;
+    }
+
+    await this.withTCAsync(async (TC) => {
+      const catalogs =
+        typeof map.getControlsByClass === 'function'
+          ? (map.getControlsByClass(TC.control.LayerCatalog) as Array<{
+              addLayerToMap?: (
+                layer: { title: string; options: Record<string, unknown> },
+                nodeId: string
+              ) => Promise<unknown>;
+              map?: object;
+            }>)
+          : [];
+      const catalog = catalogs[0];
+      if (!catalog?.addLayerToMap) {
+        return;
+      }
+
+      this.attachMapEventBridge(catalog.map ?? map, TC);
+
+      for (const { nodeId, title } of defaultNodes) {
+        const realLayerConfig = this.virtualWmsService.findRealLayerConfig(
+          nodeId,
+          context
+        );
+        if (!realLayerConfig) {
+          console.warn(
+            '[LayerCatalogControlHandler] Skipping default layer without profile config',
+            nodeId
+          );
+          continue;
+        }
+
+        try {
+          const configuredLayer = this.findConfiguredCatalogLayer(
+            catalog,
+            context,
+            nodeId
+          );
+          await catalog.addLayerToMap(
+            configuredLayer ?? { title, options: {} },
+            nodeId
+          );
+        } catch (error) {
+          console.error(
+            '[LayerCatalogControlHandler] Failed to apply default layer',
+            nodeId,
+            error
+          );
+        }
+      }
+
+      applied.add(loadId);
+      this.defaultLoadApplied.set(map, applied);
     });
   }
 }

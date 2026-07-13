@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { LayerCatalogControlHandler } from './layer-catalog-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
+import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { LanguageService } from '../../services/language.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
@@ -50,14 +51,20 @@ describe('LayerCatalogControlHandler', () => {
     } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
     mockVirtualCapabilities = {
       generateVirtualUrl: jest.fn(),
-      canGenerateCapabilities: jest.fn()
+      canGenerateCapabilities: jest.fn(),
+      findRealLayerConfig: jest.fn()
     } as Partial<
       jest.Mocked<VirtualWmsCapabilitiesService>
     > as jest.Mocked<VirtualWmsCapabilitiesService>;
     mockConfigLookup = {
       initialize: jest.fn(),
       findTreeContainingNode: jest.fn(),
-      findNode: jest.fn()
+      findNode: jest.fn(),
+      findParentNodeId: jest.fn(),
+      getDirectChildIds: jest.fn().mockReturnValue([]),
+      isRadioFolder: jest.fn().mockReturnValue(false),
+      getRadioGroupParent: jest.fn(),
+      getFirstRadioChildId: jest.fn()
     } as Partial<
       jest.Mocked<ConfigLookupService>
     > as jest.Mocked<ConfigLookupService>;
@@ -87,6 +94,7 @@ describe('LayerCatalogControlHandler', () => {
           useValue: mockVirtualCapabilities
         },
         { provide: ConfigLookupService, useValue: mockConfigLookup },
+        CatalogLayerSelectionService,
         { provide: LanguageService, useValue: mockLanguageService },
         { provide: SitnaCapabilitiesInterceptor, useValue: mockInterceptor },
         {
@@ -1093,6 +1101,32 @@ describe('LayerCatalogControlHandler', () => {
       const leafLi = div.querySelector('li[data-layer-name="node/1"]');
       expect(result).not.toContain(leafLi);
     });
+
+    it('does not match nodes by layerNames when nodeId is absent', async () => {
+      const { TC } = buildMockTCForGetLayerNodes();
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+
+      // Replace original stub with one that tracks invocation and returns a sentinel.
+      let originalCalled = false;
+      TC.control.LayerCatalog.prototype.getLayerNodes = function () {
+        originalCalled = true;
+        return [];
+      };
+
+      await handler['patchLayerCatalogGetLayerNodes']();
+
+      const div = buildDiv('node/1');
+      const result: Element[] = TC.control.LayerCatalog.prototype.getLayerNodes.call(
+        { div },
+        { options: { layerNames: ['node/1'] } }
+      );
+
+      // The layerNames fallback was removed: the original must be called (proceed) and
+      // the leaf must not appear in the result (no DOM traversal by layerNames).
+      expect(originalCalled).toBe(true);
+      const leafLi = div.querySelector('li[data-layer-name="node/1"]');
+      expect(result).not.toContain(leafLi);
+    });
   });
 
   describe('loadPatches() cleanup', () => {
@@ -1270,6 +1304,1344 @@ describe('LayerCatalogControlHandler', () => {
       expect(config?.layers?.length).toBe(1);
       expect(config?.layers?.[0]?.url).toBe('virtual://sitmun/child1');
       expect(config?.enableSearch).toBe(true);
+    });
+  });
+
+  describe('loadByDefault working layers', () => {
+    const layerCatalogTask: AppTasks = {
+      id: 'task/1',
+      name: 'Catalog',
+      'ui-control': 'sitna.layerCatalog',
+      parameters: {}
+    };
+
+    const activeCatalogContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 'Test App',
+        type: 'test',
+        theme: 'default',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 100, 100]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [layerCatalogTask],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog A',
+          image: null,
+          rootNode: 'node/tree/1',
+          nodes: {
+            'node/tree/1': {
+              title: 'Root A',
+              isRadio: false,
+              children: ['node/1', 'node/2'],
+              order: 0
+            },
+            'node/1': {
+              title: 'Default layer',
+              resource: 'layer/1',
+              loadByDefault: true,
+              isRadio: false,
+              children: [],
+              order: 2
+            },
+            'node/2': {
+              title: 'Manual layer',
+              resource: 'layer/2',
+              loadByDefault: false,
+              isRadio: false,
+              children: [],
+              order: 1
+            }
+          }
+        },
+        {
+          id: 'tree/2',
+          title: 'Catalog B',
+          image: null,
+          rootNode: 'node/tree/2',
+          nodes: {
+            'node/tree/2': {
+              title: 'Root B',
+              isRadio: false,
+              children: ['node/9'],
+              order: 0
+            },
+            'node/9': {
+              title: 'Other catalog default',
+              resource: 'layer/9',
+              loadByDefault: true,
+              isRadio: false,
+              children: [],
+              order: 1
+            }
+          }
+        }
+      ]
+    };
+
+    beforeEach(() => {
+      mockSitnaApi.setGlobal('layerCatalogsForModal', {
+        currentTreeId: 'tree/1',
+        catalogs: [
+          { id: 'tree/1', catalog: 'Catalog A' },
+          { id: 'tree/2', catalog: 'Catalog B' }
+        ],
+        rootNodeIds: ['node/tree/1', 'node/tree/2']
+      });
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(activeCatalogContext);
+      (handler as any).configLookup = realLookup;
+      mockVirtualCapabilities.canGenerateCapabilities.mockReturnValue(true);
+    });
+
+    it('collects loadByDefault leaves only from the active catalog', () => {
+      const collected = handler.collectDefaultLayerNodes(activeCatalogContext);
+
+      expect(collected).toHaveLength(1);
+      expect(collected[0]).toEqual({
+        nodeId: 'node/1',
+        title: 'Default layer',
+        order: 2
+      });
+    });
+
+    it('excludes task leaves even when loadByDefault is true', () => {
+      const context: AppCfg = {
+        ...activeCatalogContext,
+        trees: [
+          {
+            ...activeCatalogContext.trees[0],
+            nodes: {
+              'node/tree/1': {
+                title: 'Root A',
+                isRadio: false,
+                children: ['node/task'],
+                order: 0
+              },
+              'node/task': {
+                title: 'Task leaf',
+                resource: 'layer/1',
+                action: 'task/5',
+                loadByDefault: true,
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      };
+
+      expect(handler.collectDefaultLayerNodes(context)).toEqual([]);
+    });
+
+    it('applies defaults through the catalog control when configured', async () => {
+      const addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const configuredLayer = {
+        title: 'Catalog branch',
+        url: 'virtual://sitmun-layer-catalog/node/1'
+      };
+      mockVirtualCapabilities.findRealLayerConfig.mockReturnValue({
+        url: 'https://example.test/wms',
+        type: 'WMS',
+        layerNames: ['layer'],
+        order: 1
+      });
+
+      const map = {
+        getControlsByClass: () => [
+          {
+            addLayerToMap,
+            map: {},
+            options: { layers: [configuredLayer] }
+          }
+        ]
+      };
+
+      await handler.applyDefaultWorkingLayers(map, activeCatalogContext, 7);
+      await handler.applyDefaultWorkingLayers(map, activeCatalogContext, 7);
+
+      expect(addLayerToMap).toHaveBeenCalledTimes(1);
+      expect(addLayerToMap).toHaveBeenCalledWith(
+        configuredLayer,
+        'node/1'
+      );
+    });
+
+    it('applies defaults independently per map object', async () => {
+      const addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      mockVirtualCapabilities.findRealLayerConfig.mockReturnValue({
+        url: 'https://example.test/wms',
+        type: 'WMS',
+        layerNames: ['layer'],
+        order: 1
+      });
+      const mapA = { getControlsByClass: () => [{ addLayerToMap, map: {} }] };
+      const mapB = { getControlsByClass: () => [{ addLayerToMap, map: {} }] };
+
+      await handler.applyDefaultWorkingLayers(mapA, activeCatalogContext, 1);
+      await handler.applyDefaultWorkingLayers(mapB, activeCatalogContext, 1);
+
+      expect(addLayerToMap).toHaveBeenCalledTimes(2);
+    });
+
+    it('retries when the catalog control is absent on first call', async () => {
+      const addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      mockVirtualCapabilities.findRealLayerConfig.mockReturnValue({
+        url: 'https://example.test/wms',
+        type: 'WMS',
+        layerNames: ['layer'],
+        order: 1
+      });
+      const map = {
+        getControlsByClass: jest
+          .fn()
+          .mockReturnValueOnce([])
+          .mockReturnValue([{ addLayerToMap, map: {} }])
+      };
+
+      await handler.applyDefaultWorkingLayers(map, activeCatalogContext, 3);
+      await handler.applyDefaultWorkingLayers(map, activeCatalogContext, 3);
+
+      expect(addLayerToMap).toHaveBeenCalledTimes(1);
+    });
+
+    it('deduplicates defaults by resource in DFS order', () => {
+      const context: AppCfg = {
+        ...activeCatalogContext,
+        trees: [
+          {
+            ...activeCatalogContext.trees[0],
+            nodes: {
+              'node/tree/1': {
+                title: 'Root A',
+                isRadio: false,
+                children: ['node/branch', 'node/late'],
+                order: 0
+              },
+              'node/branch': {
+                title: 'Branch',
+                isRadio: false,
+                children: ['node/first'],
+                order: 1
+              },
+              'node/first': {
+                title: 'First default',
+                resource: 'layer/shared',
+                loadByDefault: true,
+                isRadio: false,
+                children: [],
+                order: 5
+              },
+              'node/late': {
+                title: 'Late branch',
+                isRadio: false,
+                children: ['node/dup'],
+                order: 10
+              },
+              'node/dup': {
+                title: 'Duplicate resource',
+                resource: 'layer/shared',
+                loadByDefault: true,
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      };
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(context);
+      (handler as any).configLookup = realLookup;
+
+      expect(handler.collectDefaultLayerNodes(context)).toEqual([
+        {
+          nodeId: 'node/first',
+          title: 'First default',
+          order: 5
+        }
+      ]);
+    });
+
+    it('keeps the first claim in a radio group', () => {
+      const context: AppCfg = {
+        ...activeCatalogContext,
+        trees: [
+          {
+            ...activeCatalogContext.trees[0],
+            nodes: {
+              'node/tree/1': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Radio',
+                isRadio: true,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                loadByDefault: true,
+                isRadio: false,
+                children: [],
+                order: 2
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                loadByDefault: true,
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      };
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(context);
+      (handler as any).configLookup = realLookup;
+
+      expect(handler.collectDefaultLayerNodes(context)).toEqual([
+        { nodeId: 'node/a', title: 'A', order: 2 }
+      ]);
+    });
+
+    it('is a no-op when the layer catalog task is absent', async () => {
+      const addLayerToMap = jest.fn();
+      await handler.applyDefaultWorkingLayers(
+        { getControlsByClass: () => [{ addLayerToMap }] },
+        { ...activeCatalogContext, tasks: [] },
+        1
+      );
+      expect(addLayerToMap).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('radio controls and selection orchestration', () => {
+    const minimalContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/radio'],
+              order: 0
+            },
+            'node/radio': {
+              title: 'Radio',
+              isRadio: true,
+              children: ['node/a', 'node/b'],
+              order: 1
+            },
+            'node/a': {
+              title: 'A',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/b': {
+              title: 'B',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 2
+            }
+          }
+        }
+      ]
+    } as any;
+
+    beforeEach(() => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+    });
+
+    it('decorates radio folder children with native inputs after renderBranch', async () => {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        this.div.innerHTML = `
+          <ul>
+            <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+              <span class="tc-ctl-lcat-node-title">Radio</span>
+              <ul>
+                <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+                <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+              </ul>
+            </li>
+          </ul>`;
+        callback?.();
+      };
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const TC = { control: { LayerCatalog } };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+
+      await handler['patchLayerCatalogRenderBranch']();
+
+      const div = document.createElement('div');
+      const catalog = new LayerCatalog();
+      catalog.div = div;
+      catalog.map = {};
+      catalog.div.innerHTML = LayerCatalog.prototype.renderBranch.call(catalog, {});
+      await LayerCatalog.prototype.renderBranch.call(catalog, {}, () => undefined);
+
+      const radios = div.querySelectorAll('input[type="radio"].sitmun-lcat-radio');
+      expect(radios).toHaveLength(2);
+      expect((radios[0] as HTMLInputElement).name).toBe(
+        (radios[1] as HTMLInputElement).name
+      );
+      expect((radios[0] as HTMLInputElement).name).toContain(
+        'sitmun-radio-node/radio-'
+      );
+    });
+
+    it('passes nodeId to map.addLayer for catalog-managed layers', async () => {
+      const addedLayer: any = { options: {}, setOpacity: jest.fn() };
+      const newLayerInstance: any = {
+        getCapabilitiesPromise: jest.fn().mockResolvedValue(undefined),
+        isCompatible: jest.fn().mockReturnValue(true),
+        Capability: { Layer: { Name: 'n1' } }
+      };
+      const Raster = jest.fn().mockImplementation(() => newLayerInstance);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = function () {};
+      const TC = {
+        Util: {
+          extend: (target: any, ...sources: any[]) =>
+            Object.assign(target ?? {}, ...sources)
+        },
+        layer: { Raster },
+        control: { LayerCatalog },
+        Consts: { event: { LAYERADD: 'layeradd', LAYERREMOVE: 'layerremove' } }
+      };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      mockVirtualCapabilities.findRealLayerConfig.mockReturnValue({
+        url: 'https://wms.example/',
+        type: 'WMS',
+        layerNames: ['n1'],
+        order: 0
+      });
+
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const addLayer = jest.fn().mockResolvedValue({
+        ...addedLayer,
+        options: { nodeId: 'node/a' }
+      });
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer,
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: []
+      };
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map,
+          getUID: () => 'uid-1',
+          showProjectionChangeDialog: () => undefined
+        },
+        { title: 'A', options: {} },
+        'node/a'
+      );
+
+      expect(addLayer.mock.calls[0][0]).toMatchObject({ nodeId: 'node/a' });
+    });
+
+    it('keeps the previous radio claim until replacement succeeds', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const newLayerInstance: any = {
+        getCapabilitiesPromise: jest.fn().mockResolvedValue(undefined),
+        isCompatible: jest.fn().mockReturnValue(true),
+        Capability: { Layer: { Name: 'n1' } }
+      };
+      const Raster = jest.fn().mockImplementation(() => newLayerInstance);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = function () {};
+      const TC = {
+        Util: {
+          extend: (target: any, ...sources: any[]) =>
+            Object.assign(target ?? {}, ...sources)
+        },
+        layer: { Raster },
+        control: { LayerCatalog },
+        Consts: { event: { LAYERADD: 'layeradd', LAYERREMOVE: 'layerremove' } }
+      };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      mockVirtualCapabilities.findRealLayerConfig.mockImplementation(
+        (nodeId: string) => ({
+          url: `https://wms.example/${nodeId}`,
+          type: 'WMS',
+          layerNames: ['n1'],
+          order: 0
+        })
+      );
+
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue({ options: { nodeId: 'node/a' } }),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+
+      newLayerInstance.isCompatible = jest.fn().mockReturnValue(false);
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'B', options: {} },
+        'node/b'
+      );
+
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+      expect(selection.isNodeSelected(map, 'node/b')).toBe(false);
+    });
+  });
+
+  describe('TNO remediation: selection and event bridge', () => {
+    const minimalContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/radio', 'node/b-preload'],
+              order: 0
+            },
+            'node/radio': {
+              title: 'Radio',
+              isRadio: true,
+              children: ['node/a', 'node/b'],
+              order: 1
+            },
+            'node/a': {
+              title: 'Layer A',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/b': {
+              title: 'Layer B',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 2
+            },
+            'node/b-preload': {
+              title: 'Preload B',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 3
+            },
+            'node/shared-a': {
+              title: 'Shared A',
+              resource: 'layer/shared',
+              isRadio: false,
+              children: [],
+              order: 4
+            },
+            'node/shared-b': {
+              title: 'Shared B',
+              resource: 'layer/shared',
+              isRadio: false,
+              children: [],
+              order: 5
+            },
+            'node/plain-leaf': {
+              title: 'Plain leaf',
+              resource: 'layer/plain',
+              isRadio: false,
+              children: [],
+              order: 6
+            }
+          }
+        }
+      ]
+    } as any;
+
+    function buildPatchedHandler() {
+      const newLayerInstance: any = {
+        getCapabilitiesPromise: jest.fn().mockResolvedValue(undefined),
+        isCompatible: jest.fn().mockReturnValue(true),
+        Capability: { Layer: { Name: 'n1' } }
+      };
+      const Raster = jest.fn().mockImplementation(() => newLayerInstance);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        callback?.();
+      };
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const TC = {
+        Util: {
+          extend: (target: any, ...sources: any[]) =>
+            Object.assign(target ?? {}, ...sources)
+        },
+        layer: { Raster },
+        control: { LayerCatalog },
+        Consts: {
+          event: {
+            LAYERADD: 'layeradd',
+            LAYERREMOVE: 'layerremove',
+            LAYERERROR: 'layererror'
+          }
+        }
+      };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      return { TC, newLayerInstance, LayerCatalog };
+    }
+
+    beforeEach(() => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+      mockVirtualCapabilities.findRealLayerConfig.mockImplementation(
+        (nodeId: string) => ({
+          url: `https://wms.example/${nodeId}`,
+          type: 'WMS',
+          layerNames: ['n1'],
+          order: 0
+        })
+      );
+    });
+
+    async function patchWithTc(TC: any): Promise<void> {
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      handler.cleanup();
+      await handler['patchLayerCatalogAddLayerToMap']();
+    }
+
+    it('fast path removes replaced sibling physical resources', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const _layerA = { options: { nodeId: 'node/a' } };
+      const workLayers: Array<{ options: { nodeId: string } }> = [];
+      const removeLayer = jest.fn().mockResolvedValue(undefined);
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async (opts: { nodeId?: string }) => {
+          const layer = { options: { nodeId: opts.nodeId ?? 'unknown' } };
+          workLayers.push(layer);
+          return layer;
+        }),
+        removeLayer,
+        on: jest.fn(),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Preload B', options: {} },
+        'node/b-preload'
+      );
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+
+      removeLayer.mockClear();
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'B', options: {} },
+        'node/b'
+      );
+
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
+      expect(selection.isNodeSelected(map, 'node/b')).toBe(true);
+      expect(removeLayer).toHaveBeenCalledWith(
+        expect.objectContaining({ options: { nodeId: 'node/a' } })
+      );
+    });
+
+    it('suppresses map event bridge during catalog addLayer/removeLayer', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layeradd: [],
+        layerremove: []
+      };
+      const addedLayer = { options: { nodeId: 'node/a' } };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          listeners['layeradd'].forEach((fn) => fn(addedLayer));
+          return addedLayer;
+        }),
+        removeLayer: jest.fn().mockImplementation(async (layer: any) => {
+          listeners['layerremove'].forEach((fn) => fn(layer));
+        }),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+      expect(map.addLayer).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores LAYERREMOVE without explicit nodeId', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layerremove: []
+      };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue({ options: { nodeId: 'node/a' } }),
+        removeLayer: jest.fn(),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+
+      listeners['layerremove'][0]?.({
+        options: { layerNames: 'layer/a' }
+      });
+
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+    });
+
+    it('external LAYERADD with nodeId enforces radio exclusivity under lock', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layeradd: []
+      };
+      const layerA = { options: { nodeId: 'node/a' } };
+      const layerB = { options: { nodeId: 'node/b' } };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(layerA),
+        removeLayer: jest.fn(),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: [layerA]
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+
+      await Promise.all([
+        Promise.resolve().then(async () => {
+          listeners['layeradd'][0]?.(layerB);
+          await Promise.resolve();
+        }),
+        Promise.resolve().then(async () => {
+          await Promise.resolve();
+          listeners['layeradd'][0]?.(layerB);
+          await Promise.resolve();
+        })
+      ]);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
+      expect(selection.isNodeSelected(map, 'node/b')).toBe(true);
+    });
+
+    it('teardownMapState detaches bridge and clears per-map selection', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue({ options: { nodeId: 'node/a' } }),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      expect(map.on).toHaveBeenCalled();
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+
+      handler.teardownMapState(map);
+
+      expect(map.off).toHaveBeenCalled();
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
+    });
+
+    it('wrapped LAYERREMOVE with nodeId clears all claims for the shared resource', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layerremove: []
+      };
+      const sharedLayer = { options: { nodeId: 'node/shared-a' } };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(sharedLayer),
+        removeLayer: jest.fn(),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: [sharedLayer]
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Shared A', options: {} },
+        'node/shared-a'
+      );
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Shared B', options: {} },
+        'node/shared-b'
+      );
+      expect(selection.isNodeSelected(map, 'node/shared-a')).toBe(true);
+      expect(selection.isNodeSelected(map, 'node/shared-b')).toBe(true);
+
+      listeners['layerremove'][0]?.({ layer: sharedLayer });
+
+      expect(selection.isNodeSelected(map, 'node/shared-a')).toBe(false);
+      expect(selection.isNodeSelected(map, 'node/shared-b')).toBe(false);
+    });
+
+    it('physical add returns the live layer from map.addLayer', async () => {
+      const liveLayer = { id: 'live-1', options: { nodeId: 'node/a' } };
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(liveLayer),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+
+      expect(result).toBe(liveLayer);
+      expect(result.options.nodeId).toBe('node/a');
+    });
+
+    it('fast path returns the existing representative work layer', async () => {
+      const existingLayer = { options: { nodeId: 'node/shared-a' } };
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(existingLayer),
+        removeLayer: jest.fn(),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: [existingLayer]
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Shared A', options: {} },
+        'node/shared-a'
+      );
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Shared B', options: {} },
+        'node/shared-b'
+      );
+
+      expect(result).toBe(existingLayer);
+    });
+
+    it('non-radio re-click returns the existing layer without adding a duplicate', async () => {
+      const originalAdd = jest.fn();
+      const { TC } = buildPatchedHandler();
+      TC.control.LayerCatalog.prototype.addLayerToMap = originalAdd;
+      await patchWithTc(TC);
+      const existingLayer = { options: { nodeId: 'node/plain-leaf' } };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(existingLayer),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: [] as Array<{ options: { nodeId: string } }>
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+      map.workLayers.push(existingLayer);
+      originalAdd.mockClear();
+
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+
+      expect(originalAdd).not.toHaveBeenCalled();
+      expect(map.addLayer).toHaveBeenCalledTimes(1);
+      expect(result).toBe(existingLayer);
+    });
+
+    it('self-generated LAYERERROR does not mutate catalog claims', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layererror: []
+      };
+      const failingLayer = { options: { nodeId: 'node/a' } };
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          listeners['layererror'].forEach((fn) => fn(failingLayer));
+          return failingLayer;
+        }),
+        removeLayer: jest.fn(),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+    });
+
+    it('attaches one event bridge per map across repeated adds', async () => {
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue({ options: { nodeId: 'node/a' } }),
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'B', options: {} },
+        'node/b'
+      );
+
+      expect(map.on).toHaveBeenCalledTimes(3);
+    });
+
+    it('teardownMapState cleans per-map radio DOM listeners', async () => {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        callback?.();
+      };
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const TC = { control: { LayerCatalog } };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      await handler['patchLayerCatalogRenderBranch']();
+
+      const map = { id: 'map-radio' };
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span>Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      const catalog = new LayerCatalog();
+      catalog.div = div;
+      catalog.map = map;
+
+      await LayerCatalog.prototype.renderBranch.call(catalog, {});
+      expect(div.querySelectorAll('input.sitmun-lcat-radio')).toHaveLength(1);
+
+      handler.teardownMapState(map);
+
+      expect(div.querySelectorAll('input.sitmun-lcat-radio')).toHaveLength(0);
+    });
+  });
+
+  describe('TNO remediation: radio DOM and search', () => {
+    const minimalContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/radio'],
+              order: 0
+            },
+            'node/radio': {
+              title: 'Radio folder',
+              isRadio: true,
+              children: ['node/a', 'node/b'],
+              order: 1
+            },
+            'node/a': {
+              title: 'Alpha layer',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/b': {
+              title: 'Beta layer',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 2
+            }
+          }
+        }
+      ]
+    } as any;
+
+    beforeEach(() => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+    });
+
+    it('decorates search results with the same radio inputs as the tree', async () => {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        callback?.();
+      };
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const TC = { control: { LayerCatalog } };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+
+      await handler['patchLayerCatalogRenderBranch']();
+
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>Alpha layer</span></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="tc-ctl-lcat-search">
+          <ul>
+            <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>Beta layer</span></li>
+          </ul>
+        </div>`;
+      const catalog = new LayerCatalog();
+      catalog.div = div;
+      catalog.map = {};
+
+      await LayerCatalog.prototype.renderBranch.call(catalog, {});
+
+      const searchRadio = div.querySelector(
+        '.tc-ctl-lcat-search input.sitmun-lcat-radio'
+      ) as HTMLInputElement | null;
+      expect(searchRadio).not.toBeNull();
+      expect(searchRadio?.dataset['layerName']).toBe('node/b');
+      expect(searchRadio?.getAttribute('aria-label')).toBe('Beta layer');
+    });
+
+    it('radio decoration is idempotent across rerenders', async () => {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        callback?.();
+      };
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const TC = { control: { LayerCatalog } };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+
+      await handler['patchLayerCatalogRenderBranch']();
+
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span>Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>Alpha layer</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      const catalog = new LayerCatalog();
+      catalog.div = div;
+      catalog.map = {};
+
+      await LayerCatalog.prototype.renderBranch.call(catalog, {});
+      await LayerCatalog.prototype.renderBranch.call(catalog, {});
+
+      expect(div.querySelectorAll('input.sitmun-lcat-radio')).toHaveLength(1);
+    });
+
+    it('keeps selection when clicking radio folder title with selected child', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const catalog = new LayerCatalog();
+      const map = {};
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a">
+                <span>A</span>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const folderTitle = catalog.div.querySelector(
+        'li[data-layer-name="node/radio"] .tc-ctl-lcat-node-title'
+      ) as HTMLElement;
+      folderTitle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+      await Promise.resolve();
+
+      // Folder handler must short-circuit when first child is already selected:
+      // addLayerToMap must never be called, so prepareSelection cannot toggle it off.
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+    });
+
+    it('deselects when clicking an already-selected radio', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      LayerCatalog.prototype.getUID = () => 'uid-1';
+      const catalog = new LayerCatalog();
+      const map = {};
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a">
+                <span>A</span>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const radio = catalog.div.querySelector(
+        'input.sitmun-lcat-radio'
+      ) as HTMLInputElement;
+      radio.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+      await Promise.resolve();
+
+      expect(removeLayerClaims).toHaveBeenCalledWith(map, ['node/a'], catalog);
+      removeLayerClaims.mockRestore();
     });
   });
 });

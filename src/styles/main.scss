@@ -15,6 +15,28 @@ body {
   background-color: white;
 
 }
+
+.tc-ctl-lcat .sitmun-lcat-radio-label {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 0.25rem;
+  position: relative;
+  top: -2px;
+  vertical-align: middle;
+}
+
+.tc-ctl-lcat .sitmun-lcat-radio {
+  inline-size: 0.85rem;
+  block-size: 0.85rem;
+  margin: 0;
+  accent-color: #b00000;
+  cursor: pointer;
+}
+
+.tc-ctl-lcat span.tc-selectable:has(> .sitmun-lcat-radio-label)::after {
+  display: none !important;
+  content: none !important;
+}
  
 /* CDK Overlay Container - ensures Material menus and overlays appear above all content */
 

@@ -153,7 +153,10 @@ export interface AppTree {
 
 export interface AppNodeInfo {
   title: string;
-  resource: string;
+  resource?: string;
+  action?: string;
+  loadData?: boolean;
+  loadByDefault?: boolean;
   isRadio: boolean;
   children: string[];
   order: number;

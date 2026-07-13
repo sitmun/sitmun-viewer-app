@@ -493,6 +493,19 @@ export class ControlRegistryService {
   }
 
   /**
+   * Clean up handler runtime state while preserving root-scoped registrations.
+   */
+  cleanupAll(): void {
+    this.handlers.forEach((handler, key) => {
+      try {
+        handler.cleanup?.();
+      } catch (error) {
+        console.warn(`[ControlRegistry] cleanup failed for '${key}':`, error);
+      }
+    });
+  }
+
+  /**
    * Get statistics about registered handlers.
    *
    * @returns Object with handler statistics

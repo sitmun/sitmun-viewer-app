@@ -263,4 +263,76 @@ describe('ConfigLookupService', () => {
       expect(service.isReady()).toBe(true);
     });
   });
+
+  describe('tree node helpers', () => {
+    const treeContext: AppCfg = {
+      ...mockAppCfg,
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Tree',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/folder', 'node/leaf'],
+              order: 0
+            },
+            'node/folder': {
+              title: 'Folder',
+              isRadio: true,
+              children: ['node/child-a', 'node/child-b'],
+              order: 1
+            },
+            'node/child-a': {
+              title: 'Child A',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/child-b': {
+              title: 'Child B',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 2
+            },
+            'node/leaf': {
+              title: 'Leaf',
+              resource: 'layer/leaf',
+              isRadio: false,
+              children: [],
+              order: 2
+            }
+          }
+        }
+      ]
+    };
+
+    beforeEach(() => {
+      service.initialize(treeContext);
+    });
+
+    it('resolves parent and direct children', () => {
+      expect(service.findParentNodeId('node/child-a')).toBe('node/folder');
+      expect(service.getDirectChildIds('node/folder')).toEqual([
+        'node/child-a',
+        'node/child-b'
+      ]);
+    });
+
+    it('detects radio folders and group membership', () => {
+      expect(service.isRadioFolder('node/folder')).toBe(true);
+      expect(service.isRadioFolder('node/child-a')).toBe(false);
+      expect(service.getRadioGroupParent('node/child-b')).toBe('node/folder');
+      expect(service.getRadioGroupParent('node/leaf')).toBeUndefined();
+    });
+
+    it('returns the first ordered radio child', () => {
+      expect(service.getFirstRadioChildId('node/folder')).toBe('node/child-a');
+    });
+  });
 });
