@@ -252,7 +252,7 @@ describe('MoreInfoAdvancedService', () => {
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
       { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
-    ], { id: 99 }, { bbox: [1, 2, 3, 4], queriedLayer: 'layer/7', queriedService: 'turisme' }).subscribe((result) => {
+    ], { id: 99 }, { featureBbox: [5, 6, 7, 8] }).subscribe((result) => {
       emitted = result;
     });
 
@@ -262,13 +262,63 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.body).toEqual({
       miaTaskIds: [16, 18],
       parameters: { id: 99 },
-      bbox: [1, 2, 3, 4],
-      queriedLayer: 'layer/7',
-      queriedService: 'turisme'
+      featureBbox: [5, 6, 7, 8]
     });
 
     req.flush({ tasks: [{ taskId: 16, title: 'One', html: '<p>ok</p>' }] });
     expect(emitted).toEqual([{ taskId: 16, title: 'One', html: '<p>ok</p>' }]);
+  });
+
+  it('returns synthetic error task when render request fails', () => {
+    let emitted: any;
+
+    service.renderMiaTasks([
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], { id: 99 }).subscribe((result) => {
+      emitted = result;
+    });
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
+    req.error(new ProgressEvent('error'), { status: 500, statusText: 'Boom' });
+
+    expect(emitted).toEqual([{ taskId: 0, title: '', html: '', error: 'Http failure response for http://localhost:9000/backend/api/tasks/template/more-info-advanced/render?lang=ca: 500 Boom' }]);
+  });
+
+  it('sends only referenced fields when child parameter mappings are known', () => {
+    service.renderMiaTasks([
+      {
+        id: 'task/16',
+        name: 'One',
+        cartographyId: '12',
+        visualizationMode: 'tabs',
+        includedTasks: [
+          {
+            id: 'task/20',
+            name: 'Child',
+            order: 1,
+            childType: 'query',
+            parameters: { childParam: 'featureId' },
+            childTaskParameters: { child: { label: 'featureName' } }
+          }
+        ]
+      }
+    ], {
+      featureId: 10,
+      featureName: 'Road',
+      ignored: 'value',
+      html: '<div class="sitmun-more-info-x">ignored</div>'
+    }).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
+    expect(req.request.body).toEqual({
+      miaTaskIds: [16],
+      parameters: {
+        featureId: 10,
+        featureName: 'Road'
+      }
+    });
+
+    req.flush({ tasks: [] });
   });
 
   it('keeps short feature attributes when MIA child mappings are not available in viewer config', () => {
@@ -344,5 +394,45 @@ describe('MoreInfoAdvancedService', () => {
 
     expect(emitted.filename).toBeNull();
     expect(emitted.blob).toBeInstanceOf(Blob);
+  });
+
+  it('parses template and document export child types and defaults visualization mode to tabs', () => {
+    service.initialize({
+      tasks: [
+        {
+          id: 'task/1',
+          typeId: 1,
+          'ui-control': 'sitna.moreInfoAdvanced',
+          parameters: {}
+        },
+        {
+          id: 'task/16',
+          typeId: 16,
+          name: 'MIA parent',
+          cartographyId: '12',
+          parameters: {
+            includedTasks: [
+              { id: 'task/2', name: 'Template child', order: 2, childType: 'template' },
+              { id: 'task/3', name: 'Export child', order: 1, childType: 'documentExport' },
+              { id: 'task/4', name: 'Query child', order: 3, childType: 'unknown' }
+            ]
+          }
+        }
+      ]
+    } as any);
+
+    expect(service.getTasksForCartography('12')).toEqual([
+      {
+        id: 'task/16',
+        name: 'MIA parent',
+        cartographyId: '12',
+        visualizationMode: 'tabs',
+        includedTasks: [
+          { id: 'task/3', name: 'Export child', order: 1, childType: 'documentExport', parameters: null, childTaskParameters: null },
+          { id: 'task/2', name: 'Template child', order: 2, childType: 'template', parameters: null, childTaskParameters: null },
+          { id: 'task/4', name: 'Query child', order: 3, childType: 'query', parameters: null, childTaskParameters: null }
+        ]
+      }
+    ]);
   });
 });

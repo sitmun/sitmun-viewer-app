@@ -4,7 +4,7 @@ import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import DOMPurify from 'dompurify';
 
 
-import { MoreInfoAdvancedService, MiaExportAction, MiaRenderedTask, MiaTask, TemplateExportResult } from '../../services/more-info-advanced.service';
+import { MoreInfoAdvancedService, MiaExportAction, MiaRenderedTask, MiaTask, MiaViewerContext, TemplateExportResult } from '../../services/more-info-advanced.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
@@ -218,7 +218,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         if (miaTasks.length === 0) continue;
 
         const featureData = layer.features[0].getData ? layer.features[0].getData() : layer.features[0].data || {};
-        this.openMiaPopup(miaTasks, featureData, this.buildMiaViewerContext(layer, service));
+        this.openMiaPopup(miaTasks, featureData, this.buildMiaViewerContext(layer));
         return;
       }
     }
@@ -227,7 +227,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private openMiaPopup(
     miaTasks: MiaTask[],
     featureData: Record<string, any>,
-    viewerContext: { bbox?: number[] | null; queriedLayer?: string | null; queriedService?: string | null } = {}
+    viewerContext: MiaViewerContext = {}
   ): void {
     const overlay = this.ensureMiaOverlay();
     if (!overlay) return;
@@ -256,121 +256,115 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     });
   }
 
-  private buildMiaViewerContext(layer: any, service: any): { bbox?: number[] | null; queriedLayer?: string | null; queriedService?: string | null } {
+  private buildMiaViewerContext(layer: any): MiaViewerContext {
     return {
-      bbox: this.getCurrentMapBbox(),
-      queriedLayer: this.getQueriedLayerRef(layer),
-      queriedService: this.getQueriedServiceRef(service, layer)
+      featureBbox: this.getFeatureCollectionBbox(layer?.features)
     };
   }
 
-  private getCurrentMapBbox(): number[] | null {
-    const abstractMapObject = this.sitnaApi.getGlobal('abstractMapObject') as any;
-    const map = abstractMapObject?.map;
-    if (!map || typeof map.getExtent !== 'function') return null;
-
-    try {
-      const extent = map.getExtent();
-      if (Array.isArray(extent) && extent.length >= 4) {
-        return [Number(extent[0]), Number(extent[1]), Number(extent[2]), Number(extent[3])];
-      }
-    } catch {
+  private getFeatureCollectionBbox(features: unknown): number[] | null {
+    if (!Array.isArray(features) || features.length === 0) {
       return null;
     }
 
-    return null;
-  }
-
-  private getQueriedLayerRef(layer: any): string | null {
-    const value = typeof layer?.name === 'string' && layer.name.trim().length > 0
-      ? layer.name.trim()
-      : typeof layer?.id === 'string' && layer.id.trim().length > 0
-        ? layer.id.trim()
-        : null;
-    return value;
-  }
-
-  private getQueriedServiceRef(service: any, layer: any): string | null {
-    const namespacedLayerService = this.getServiceNameFromLayerNames(layer);
-    const configuredService = this.getConfiguredServiceNameFromLayerName(layer?.name);
-    const serviceUrlName = this.getServiceNameFromUrl(service?.url);
-
-    return serviceUrlName ?? namespacedLayerService ?? configuredService;
-  }
-
-  private getServiceNameFromLayerNames(layer: any): string | null {
-    const queriedLayer = this.getQueriedLayerRef(layer);
-    const rawLayerNames = [
-      layer?.options?.layerNames,
-      layer?.layerNames,
-      layer?.names,
-      layer?.availableNames,
-      layer?.options?.params?.LAYERS,
-      layer?.params?.LAYERS,
-    ];
-    const layerNames = rawLayerNames.flatMap((value) => {
-      if (Array.isArray(value)) {
-        return value;
-      }
-      if (typeof value === 'string' && value.includes(',')) {
-        return value.split(',');
-      }
-      return value != null ? [value] : [];
-    });
-
-    for (const rawLayerName of layerNames) {
-      if (typeof rawLayerName !== 'string') {
+    let combinedBbox: number[] | null = null;
+    for (const feature of features) {
+      const featureBbox = this.getFeatureBbox(feature);
+      if (featureBbox == null) {
         continue;
       }
-      const layerName = rawLayerName.trim();
-      const separatorIndex = layerName.indexOf(':');
-      if (separatorIndex <= 0) {
-        continue;
-      }
-      const serviceName = layerName.slice(0, separatorIndex).trim();
-      const nameWithoutService = layerName.slice(separatorIndex + 1).trim();
-      if (!serviceName || !nameWithoutService) {
-        continue;
-      }
-      if (queriedLayer == null || queriedLayer === nameWithoutService) {
-        return serviceName;
-      }
+      combinedBbox = combinedBbox == null
+        ? featureBbox
+        : [
+            Math.min(combinedBbox[0], featureBbox[0]),
+            Math.min(combinedBbox[1], featureBbox[1]),
+            Math.max(combinedBbox[2], featureBbox[2]),
+            Math.max(combinedBbox[3], featureBbox[3])
+          ];
     }
 
-    return null;
+    return combinedBbox;
   }
 
-  private getConfiguredServiceNameFromLayerName(layerName: unknown): string | null {
-    if (typeof layerName !== 'string' || !this.appConfig?.layers) {
-      return null;
+  private getFeatureBbox(feature: any): number[] | null {
+    const runtimeExtent = this.getRuntimeFeatureExtent(feature);
+    if (runtimeExtent != null) {
+      return runtimeExtent;
     }
 
-    for (const layer of this.appConfig.layers) {
-      if (
-        Array.isArray(layer.layers) &&
-        layer.layers.includes(layerName) &&
-        typeof layer.service === 'string' &&
-        layer.service.trim().length > 0
-      ) {
-        return layer.service;
-      }
-    }
-
-    return null;
+    return this.getGeoJsonGeometryBbox(
+      feature?.geometry
+      ?? feature?.feature?.geometry
+      ?? feature?.wrap?.feature?.geometry
+      ?? feature?.getData?.()?.geometry
+      ?? feature?.data?.geometry
+    );
   }
 
-  private getServiceNameFromUrl(serviceUrl: unknown): string | null {
-    if (typeof serviceUrl !== 'string') {
+  private getRuntimeFeatureExtent(feature: any): number[] | null {
+    const extent = feature?.getGeometry?.()?.getExtent?.()
+      ?? feature?.geometry?.getExtent?.()
+      ?? feature?.wrap?.feature?.getGeometry?.()?.getExtent?.();
+
+    return this.normalizeExtent(extent);
+  }
+
+  private getGeoJsonGeometryBbox(geometry: any): number[] | null {
+    if (!geometry || typeof geometry !== 'object') {
       return null;
     }
 
-    const value = serviceUrl.trim();
-    if (!value) {
+    if (geometry.type === 'GeometryCollection' && Array.isArray(geometry.geometries)) {
+      return this.getFeatureCollectionBbox(geometry.geometries.map((item: unknown) => ({ geometry: item })));
+    }
+
+    const bboxState = {
+      minX: Number.POSITIVE_INFINITY,
+      minY: Number.POSITIVE_INFINITY,
+      maxX: Number.NEGATIVE_INFINITY,
+      maxY: Number.NEGATIVE_INFINITY
+    };
+    this.collectCoordinateBounds(geometry.coordinates, bboxState);
+
+    if (!Number.isFinite(bboxState.minX) || !Number.isFinite(bboxState.minY)
+      || !Number.isFinite(bboxState.maxX) || !Number.isFinite(bboxState.maxY)) {
       return null;
     }
 
-    const match = /\/geoserver\/([^/?#]+)\/ows(?:$|[/?#])/i.exec(value);
-    return match?.[1]?.trim() || null;
+    return [bboxState.minX, bboxState.minY, bboxState.maxX, bboxState.maxY];
+  }
+
+  private collectCoordinateBounds(
+    coordinates: unknown,
+    bboxState: { minX: number; minY: number; maxX: number; maxY: number }
+  ): void {
+    if (!Array.isArray(coordinates) || coordinates.length === 0) {
+      return;
+    }
+
+    if (typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number') {
+      const x = Number(coordinates[0]);
+      const y = Number(coordinates[1]);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return;
+      }
+      bboxState.minX = Math.min(bboxState.minX, x);
+      bboxState.minY = Math.min(bboxState.minY, y);
+      bboxState.maxX = Math.max(bboxState.maxX, x);
+      bboxState.maxY = Math.max(bboxState.maxY, y);
+      return;
+    }
+
+    coordinates.forEach((item) => this.collectCoordinateBounds(item, bboxState));
+  }
+
+  private normalizeExtent(extent: unknown): number[] | null {
+    if (!Array.isArray(extent) || extent.length < 4) {
+      return null;
+    }
+
+    const values = extent.slice(0, 4).map((value) => Number(value));
+    return values.every((value) => Number.isFinite(value)) ? values : null;
   }
 
   private hideMiaOverlay(): void {

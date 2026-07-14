@@ -54,9 +54,7 @@ interface MiaRenderResponse {
 }
 
 export interface MiaViewerContext {
-  bbox?: number[] | null;
-  queriedLayer?: string | null;
-  queriedService?: string | null;
+  featureBbox?: number[] | null;
 }
 
 /**
@@ -169,15 +167,8 @@ export class MoreInfoAdvancedService {
       miaTaskIds: miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite),
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
-
-    if (Array.isArray(viewerContext.bbox) && viewerContext.bbox.length >= 4) {
-      body['bbox'] = viewerContext.bbox.slice(0, 4);
-    }
-    if (typeof viewerContext.queriedLayer === 'string' && viewerContext.queriedLayer.trim().length > 0) {
-      body['queriedLayer'] = viewerContext.queriedLayer.trim();
-    }
-    if (typeof viewerContext.queriedService === 'string' && viewerContext.queriedService.trim().length > 0) {
-      body['queriedService'] = viewerContext.queriedService.trim();
+    if (Array.isArray(viewerContext.featureBbox) && viewerContext.featureBbox.length >= 4) {
+      body['featureBbox'] = viewerContext.featureBbox.slice(0, 4);
     }
 
     const lang = this.languageService.getCurrentLanguage()?.trim();

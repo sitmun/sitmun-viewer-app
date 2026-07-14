@@ -76,50 +76,60 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
     expect(triggerSpy.mock.calls[0][1]).toEqual({ taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' });
   });
 
-  it('builds viewer context from namespaced runtime layer names', () => {
+  it('builds empty viewer context when clicked layer has no geometries', () => {
     const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
-    (handler as any).sitnaApi = {
-      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
-    };
 
-    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades', options: { layerNames: ['turisme:or007tur_estades'] } }, {})).toEqual({
-      bbox: [1, 2, 3, 4],
-      queriedLayer: 'or007tur_estades',
-      queriedService: 'turisme'
+    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades' })).toEqual({
+      featureBbox: null
     });
   });
 
-  it('falls back to configured service name when config already stores the canonical name', () => {
+  it('builds featureBbox from clicked feature geometries', () => {
     const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
-    (handler as any).sitnaApi = {
-      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
-    };
-    (handler as any).appConfig = {
-      layers: [
-        { id: 'layer/7', layers: ['or007tur_estades'], service: 'turisme' }
+
+    expect((handler as any).buildMiaViewerContext({
+      name: 'or007tur_estades',
+      features: [
+        {
+          geometry: {
+            type: 'Point',
+            coordinates: [10, 20]
+          }
+        },
+        {
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[12, 18], [16, 18], [16, 24], [12, 24], [12, 18]]]
+          }
+        }
       ]
-    };
-
-    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades' }, {})).toEqual({
-      bbox: [1, 2, 3, 4],
-      queriedLayer: 'or007tur_estades',
-      queriedService: 'turisme'
+    })).toEqual({
+      featureBbox: [10, 18, 16, 24]
     });
   });
 
-  it('falls back to service url namespace when runtime service exposes geoserver url', () => {
+  it('does not inject duplicate download menus', () => {
     const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
-    (handler as any).sitnaApi = {
-      getGlobal: jest.fn().mockReturnValue({ map: { getExtent: jest.fn().mockReturnValue([1, 2, 3, 4]) } })
-    };
+    const container = document.createElement('div');
+    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
 
-    expect((handler as any).buildMiaViewerContext(
-      { name: 'or007tur_estades' },
-      { url: 'https://ide.cime.es/geoserver/turisme/ows' }
-    )).toEqual({
-      bbox: [1, 2, 3, 4],
-      queriedLayer: 'or007tur_estades',
-      queriedService: 'turisme'
-    });
+    (handler as any).injectDownloadButtons(container, [
+      { taskId: 11, output: 'pdf', label: 'PDF' }
+    ]);
+    (handler as any).injectDownloadButtons(container, [
+      { taskId: 11, output: 'pdf', label: 'PDF' }
+    ]);
+
+    expect(container.querySelectorAll('.sitmun-mia-download-menu')).toHaveLength(1);
+  });
+
+  it('does nothing when there are no export actions', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const container = document.createElement('div');
+    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
+
+    (handler as any).injectDownloadButtons(container, []);
+
+    expect(container.querySelector('.sitmun-mia-download-menu')).toBeNull();
   });
 });
