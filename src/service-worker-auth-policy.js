@@ -76,6 +76,7 @@
         const request = new URL(requestUrl, baseOrigin);
         const middleware = new URL(middlewareUrl, baseOrigin);
         const middlewarePath = middleware.pathname.replace(/\/+$/, '');
+        if (!middlewarePath) return false;
         return (
           request.origin === middleware.origin &&
           (request.pathname === middlewarePath ||

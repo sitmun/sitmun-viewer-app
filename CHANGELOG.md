@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Security
 
+- **Service worker**: reject empty/root middleware URL path in `isMiddlewareRequest` so the proxy token is not attached to all same-origin requests.
 - **Auth**: `publicAuthClearGuard` sends `POST /api/authenticate/logout` without `X-SITMUN-Client` so the backend clears only `viewer_access_token`; admin sessions in other tabs are not affected.
 
 ### Added
