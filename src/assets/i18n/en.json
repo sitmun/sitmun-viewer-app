@@ -1,7 +1,7 @@
 {
   "application.availableTerritories": "Available territories",
   "application.back": "Back",
-  "application.contact": "Contact",
+  "application.contact": "Point of contact email",
   "application.creationDate": "Creation",
   "application.description": "Description",
   "application.descriptionMissing": "No description",
@@ -10,6 +10,7 @@
   "application.lastUpdateDate": "Last update",
   "application.name": "Application name",
   "application.notFound": "Application not found.",
+  "application.responsibleInstitution": "Responsible institution",
   "application.territoriesAssociated": "Associated territories",
   "application.valueMissing": "Not provided",
   "auth.accessDenied": "You are not authorized to perform this action.",

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Application details**: shows `responsibleInstitutionName` and `pointOfContact` independently when the client API provides them; blocked or ineligible PoC emails are omitted by the backend only ([sitmun-admin-app#316](https://github.com/sitmun/sitmun-admin-app/issues/316)).
 - **E2E**: same-origin `/backend` and `/middleware` serve profile for root Playwright viewer/proxy tests.
 
 ### Fixed
@@ -26,6 +27,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
+- **i18n**: `application.contact` now means point of contact email; added `application.responsibleInstitution` in all five locales.
 - **Map**: default-layer collection traverses the active catalog in profile tree order, deduplicates by cartography resource, and keeps one claim per radio group; per-map WeakMap idempotency replaces the singleton default-load guard.
 - **Dashboard search**: autocomplete suggestions refresh while typing; the card grid filters on Enter (or clear) only, so navigation and in-place browsing use separate triggers.
 

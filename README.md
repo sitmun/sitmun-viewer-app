@@ -442,6 +442,11 @@ GET /api/account/public/{id}
 GET /api/config/client/profile/{appId}/{territoryId}
 ```
 
+Application list/detail payloads from `/api/config/client/application` expose:
+
+- `responsibleInstitutionName` — optional institution label; independent of the point-of-contact user
+- `pointOfContact` — best-effort institutional email; omitted for built-in (`public`/`admin`), blocked, or email-less creators (the internal relation remains `creator`/`creatorId`)
+
 ### SITNA Integration
 
 The application uses the **SITNA (Sistema de Información Territorial de Navarra) library** for advanced mapping capabilities:

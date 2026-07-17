@@ -1,7 +1,7 @@
 {
   "application.availableTerritories": "Territoris disponibles",
   "application.back": "Enrere",
-  "application.contact": "Contacte",
+  "application.contact": "Correu del punt de contacte",
   "application.creationDate": "Data de creació",
   "application.description": "Descripció",
   "application.descriptionMissing": "Cap descripció",
@@ -10,6 +10,7 @@
   "application.lastUpdateDate": "Últimes actualitzacions",
   "application.name": "Nom de l'aplicació",
   "application.notFound": "No s'ha trobat l'aplicació.",
+  "application.responsibleInstitution": "Institució responsable",
   "application.territoriesAssociated": "Territoris associats",
   "application.valueMissing": "No especificada",
   "auth.accessDenied": "No teniu autorització per dur a terme aquesta acció.",

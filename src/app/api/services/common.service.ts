@@ -36,6 +36,7 @@ export interface DashboardItem {
   updateDate: Date;
   createdDate: Date;
   pointOfContact?: string;
+  responsibleInstitutionName?: string;
   // Dashboard enrichment fields
   territoryCount?: number;
   singleTerritoryId?: number;
