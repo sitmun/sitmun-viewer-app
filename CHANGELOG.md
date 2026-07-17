@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- **E2E**: same-origin `/backend` and `/middleware` serve profile for root Playwright viewer/proxy tests.
+
+### Fixed
+
+- **Auth**: login form prevents native submit so SPA password login does not reload the page before the authenticate request completes.
+
 ### Security
 
 - **Service worker**: reject empty/root middleware URL path in `isMiddlewareRequest` so the proxy token is not attached to all same-origin requests.

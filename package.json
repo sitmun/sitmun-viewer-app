@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:e2e": "ng serve --configuration=e2e",
     "build": "export NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=8192\" && ng build",
     "build:win": "set NODE_OPTIONS=--openssl-legacy-provider --max-old-space-size=8192 && ng build",
     "watch": "ng build --watch --configuration development",

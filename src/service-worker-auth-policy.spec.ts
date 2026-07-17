@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from '@jest/globals';
+import './service-worker-auth-policy.js';
 
 interface SitmunProxyAuthPolicy {
   isMiddlewareRequest(requestUrl: string, middlewareUrl: string | null | undefined): boolean;
@@ -8,9 +9,6 @@ type PolicyHost = typeof globalThis & {
   SitmunProxyAuthPolicy?: SitmunProxyAuthPolicy;
   location: { origin: string };
 };
-
-// IIFE asset: attaches SitmunProxyAuthPolicy on self/globalThis (same as the SW).
-require('./service-worker-auth-policy.js');
 
 const host = globalThis as PolicyHost;
 const policy =
