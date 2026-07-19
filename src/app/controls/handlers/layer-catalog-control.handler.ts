@@ -669,46 +669,54 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       if (!nodeId) {
         return;
       }
-      const catalogNode = this.configLookup.findNode(nodeId);
-      const resource = catalogNode?.resource;
-      const radioParent = this.configLookup.getRadioGroupParent(nodeId);
+      void this.catalogSelection.runExclusive(map, async () => {
+        const catalogNode = this.configLookup.findNode(nodeId);
+        const resource = catalogNode?.resource;
+        const radioParent = this.configLookup.getRadioGroupParent(nodeId);
 
-      const register = (): void => {
-        const removed = this.catalogSelection.registerExternalClaim(
-          map,
-          nodeId,
-          resource,
-          this.configLookup
-        );
-        void this.catalogSelection.runWithSelfCommit(map, async () => {
-          await this.removePhysicalResources(
+        const register = (): void => {
+          const removed = this.catalogSelection.registerExternalClaim(
             map,
-            removed.removeResources,
-            undefined,
-            nodeId
+            nodeId,
+            resource,
+            this.configLookup
           );
-        });
-        const catalog = this.findLayerCatalogControl(map, TC);
-        if (catalog) {
-          this.syncRadioCheckedState(catalog);
-        }
-      };
-
-      if (radioParent) {
-        void this.catalogSelection.withRadioGroupLock(
-          map,
-          radioParent,
-          async () => {
-            register();
+          void this.catalogSelection.runWithSelfCommit(map, async () => {
+            await this.removePhysicalResources(
+              map,
+              removed.removeResources,
+              undefined,
+              nodeId
+            );
+          });
+          const catalog = this.findLayerCatalogControl(map, TC);
+          if (catalog) {
+            this.syncRadioCheckedState(catalog);
           }
-        );
-      } else {
-        register();
-      }
+        };
+
+        if (radioParent) {
+          await this.catalogSelection.withRadioGroupLock(
+            map,
+            radioParent,
+            async () => {
+              register();
+            }
+          );
+        } else {
+          register();
+        }
+      });
     };
 
     const onRemove = (layer: any) => {
       if (this.catalogSelection.isSelfCommit(map)) {
+        // Claims already updated by the handler; still refresh checkbox projection
+        // after SITNA mutates workLayers.
+        const catalog = this.findLayerCatalogControl(map, TC);
+        if (catalog) {
+          this.syncLoadDataCheckboxState(catalog);
+        }
         return;
       }
       const removedLayer = layer?.layer ?? layer;
@@ -716,16 +724,18 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       if (!nodeId) {
         return;
       }
-      const resource = this.configLookup.findNode(nodeId)?.resource;
-      if (resource) {
-        this.catalogSelection.clearClaimsForResource(map, resource);
-      } else {
-        this.catalogSelection.deselectNode(map, nodeId);
-      }
-      const catalog = this.findLayerCatalogControl(map, TC);
-      if (catalog) {
-        this.syncRadioCheckedState(catalog);
-      }
+      void this.catalogSelection.runExclusive(map, () => {
+        const resource = this.configLookup.findNode(nodeId)?.resource;
+        if (resource) {
+          this.catalogSelection.clearClaimsForResource(map, resource);
+        } else {
+          this.catalogSelection.deselectNode(map, nodeId);
+        }
+        const catalog = this.findLayerCatalogControl(map, TC);
+        if (catalog) {
+          this.syncRadioCheckedState(catalog);
+        }
+      });
     };
 
     const onError = (layer: any) => {
@@ -796,61 +806,133 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     previousCleanup?.();
 
     const inputHandler = (event: Event) => {
-      const target = event.target as HTMLInputElement | null;
-      if (!target?.matches('input[type="radio"].sitmun-lcat-radio')) {
+      const target = event.target as HTMLElement | null;
+      if (!target) {
         return;
       }
-      event.stopPropagation();
-      const nodeId = target.dataset['layerName'];
-      if (!nodeId) {
+      // Folder title → expand/collapse (type icon is covered by widened collapse btn).
+      const isFolderTitle =
+        target.classList.contains('tc-ctl-lcat-node-title') ||
+        (target.tagName === 'SPAN' &&
+          !target.classList.contains('sitmun-lcat-gfi'));
+      if (isFolderTitle) {
+        const li = target.parentElement;
+        if (
+          li instanceof HTMLElement &&
+          li.classList.contains('tc-ctl-lcat-node') &&
+          !li.classList.contains('tc-ctl-lcat-leaf')
+        ) {
+          const collapseBtn = li.querySelector(
+            ':scope > button.tc-ctl-lcat-collapse-btn'
+          ) as HTMLButtonElement | null;
+          if (collapseBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            collapseBtn.click();
+            return;
+          }
+        }
+      }
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches('input[type="radio"].sitmun-lcat-radio')
+      ) {
+        event.stopPropagation();
+        const nodeId = target.dataset['layerName'];
+        if (!nodeId) {
+          return;
+        }
+        const wasChecked = this.catalogSelection.isNodeSelected(map, nodeId);
+        void this.handleRadioInputSelection(catalogControl, nodeId, wasChecked);
         return;
       }
-      const wasChecked = this.catalogSelection.isNodeSelected(map, nodeId);
-      void this.handleRadioInputSelection(catalogControl, nodeId, wasChecked);
-    };
-
-    const folderHandler = (event: Event) => {
-      const target = event.target as Element | null;
-      const folder = target?.closest(
-        'li.tc-ctl-lcat-node[data-sitmun-radio-folder="true"]'
-      ) as HTMLElement | null;
-      if (!folder || !folder.contains(target)) {
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches('input.sitmun-lcat-load')
+      ) {
+        // Do not preventDefault: canceling a native checkbox click reverts
+        // `checked` to the pre-click value after this handler yields (async
+        // unload), which leaves the box looking checked while Capas is empty.
+        // Decision comes from the store/map, same pattern as radios.
+        event.stopPropagation();
+        target.removeAttribute('checked');
+        const folderId = target.dataset['layerName'];
+        if (!folderId || !this.configLookup.isLoadDataFolder(folderId)) {
+          return;
+        }
+        const leaves = this.folderLeafIdsForControl(catalogControl, folderId);
+        const loaded = this.loadedLeafIdsFromMap(map, leaves);
+        const state = this.catalogSelection.folderLoadState(loaded, leaves);
+        const willUnload = this.catalogSelection.shouldUnloadFolder(state);
+        // Project intended visual immediately (native click already toggled once).
+        this.applyFolderCheckboxVisual(target, willUnload ? 'none' : 'all');
+        void this.handleLoadDataFolderCheckboxClick(catalogControl, folderId);
         return;
       }
-      const title = folder.querySelector('.tc-ctl-lcat-node-title, span');
-      if (!title?.contains(target as Node) && target !== title) {
-        return;
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches('input.sitmun-lcat-leaf-load')
+      ) {
+        event.stopPropagation();
+        // Native click may leave a `checked` content attribute; strip it so
+        // SITNA search→tree does not treat the leaf as an info-toggle.
+        target.removeAttribute('checked');
+        const nodeId = target.dataset['layerName'];
+        if (!nodeId) {
+          return;
+        }
+        const wasSelected = this.catalogSelection.isNodeSelected(map, nodeId);
+        void this.handleLeafLoadCheckboxClick(
+          catalogControl,
+          nodeId,
+          wasSelected
+        );
       }
-      const folderId = folder.dataset['layerName'];
-      if (!folderId) {
-        return;
-      }
-      const firstChild = this.configLookup.getFirstRadioChildId(folderId);
-      if (!firstChild) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      // No-op when first child is already selected: prevent re-entering prepareSelection
-      // which would toggle the selection off as a deselect action.
-      if (this.catalogSelection.isNodeSelected(map, firstChild)) {
-        return;
-      }
-      void this.handleRadioInputSelection(catalogControl, firstChild, false);
     };
 
     div.addEventListener('click', inputHandler, true);
-    div.addEventListener('click', folderHandler, true);
 
     this.injectRadioInputs(catalogControl, div);
+    this.injectLoadDataCheckboxes(catalogControl, div);
+    this.injectLeafLoadCheckboxes(catalogControl, div);
+    this.injectGfiIndicators(catalogControl, div);
+    this.stampMetadataControls(div);
+    this.applyCatalogRowLayout(div);
+    this.applyZebraStriping(div);
     this.syncRadioCheckedState(catalogControl);
+    this.syncLoadDataCheckboxState(catalogControl);
+    this.syncLeafLoadCheckboxState(catalogControl);
 
     this.catalogTreeObservers.get(catalogControl)?.disconnect();
-    const treeObserver = new MutationObserver(() => {
-      this.injectRadioInputs(catalogControl, div);
-      this.syncRadioCheckedState(catalogControl);
+    const treeObserver = new MutationObserver((mutations) => {
+      const structureChanged = mutations.some(
+        (m) => m.type === 'childList' && m.addedNodes.length > 0
+      );
+      const classChanged = mutations.some(
+        (m) => m.type === 'attributes' && m.attributeName === 'class'
+      );
+      if (structureChanged) {
+        this.injectRadioInputs(catalogControl, div);
+        this.injectLoadDataCheckboxes(catalogControl, div);
+        this.injectLeafLoadCheckboxes(catalogControl, div);
+        this.injectGfiIndicators(catalogControl, div);
+        this.stampMetadataControls(div);
+        this.applyCatalogRowLayout(div);
+        this.syncRadioCheckedState(catalogControl);
+        this.syncLoadDataCheckboxState(catalogControl);
+        this.syncLeafLoadCheckboxState(catalogControl);
+      }
+      // Expand/collapse is class-only; re-stripe without re-injecting controls.
+      if (structureChanged || classChanged) {
+        this.applyZebraStriping(div);
+      }
     });
-    treeObserver.observe(div, { childList: true, subtree: true });
+    treeObserver.observe(div, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
     this.catalogTreeObservers.set(catalogControl, treeObserver);
 
     const searchList = div.querySelector('.tc-ctl-lcat-search ul');
@@ -859,6 +941,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     if (searchList) {
       const observer = new MutationObserver(() => {
         this.injectRadioInputs(catalogControl, searchList);
+        this.injectLoadDataCheckboxes(catalogControl, searchList);
+        this.injectLeafLoadCheckboxes(catalogControl, searchList);
+        this.injectGfiIndicators(catalogControl, searchList);
+        this.stampMetadataControls(searchList);
+        this.applyCatalogRowLayout(searchList);
+        this.syncLoadDataCheckboxState(catalogControl);
+        this.syncLeafLoadCheckboxState(catalogControl);
       });
       observer.observe(searchList, { childList: true, subtree: true });
       this.radioSearchObservers.set(catalogControl, observer);
@@ -866,10 +955,42 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     const cleanup = () => {
       div.removeEventListener('click', inputHandler, true);
-      div.removeEventListener('click', folderHandler, true);
       div
-        .querySelectorAll('input.sitmun-lcat-radio')
-        .forEach((input: Element) => input.remove());
+        .querySelectorAll(
+          'label.sitmun-lcat-radio-label, label.sitmun-lcat-load-label, label.sitmun-lcat-leaf-load-label'
+        )
+        .forEach((label: Element) => label.remove());
+      div
+        .querySelectorAll(
+          '.sitmun-lcat-gfi, .sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot'
+        )
+        .forEach((el: Element) => el.remove());
+      div
+        .querySelectorAll('[data-sitmun-load-folder]')
+        .forEach((node: Element) =>
+          (node as HTMLElement).removeAttribute('data-sitmun-load-folder')
+        );
+      div
+        .querySelectorAll('[data-sitmun-lcat-control]')
+        .forEach((node: Element) =>
+          (node as HTMLElement).removeAttribute('data-sitmun-lcat-control')
+        );
+      div
+        .querySelectorAll('[data-sitmun-lcat-meta]')
+        .forEach((node: Element) =>
+          (node as HTMLElement).removeAttribute('data-sitmun-lcat-meta')
+        );
+      div.querySelectorAll('[data-sitmun-lcat-level]').forEach((node: Element) => {
+        const li = node as HTMLElement;
+        li.removeAttribute('data-sitmun-lcat-level');
+        li.style.removeProperty('--sitmun-lcat-level');
+      });
+      div.querySelectorAll('[data-sitmun-lcat-zebra]').forEach((node: Element) => {
+        const li = node as HTMLElement;
+        li.removeAttribute('data-sitmun-lcat-zebra');
+        li.style.removeProperty('--sitmun-lcat-zebra-left');
+        li.style.removeProperty('--sitmun-lcat-zebra-width');
+      });
       this.radioSearchObservers.get(catalogControl)?.disconnect();
       this.radioSearchObservers.delete(catalogControl);
       this.catalogTreeObservers.get(catalogControl)?.disconnect();
@@ -908,9 +1029,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     });
 
     for (const folderId of folderIds) {
-      const folderLi = root.querySelector(
-        `li[data-layer-name="${folderId}"]`
-      ) as HTMLElement | null;
+      const folderLi = this.resolveFolderListItem(root, folderId);
       if (folderLi) {
         folderLi.dataset['sitmunRadioFolder'] = 'true';
       }
@@ -921,13 +1040,25 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         folderLi.dataset['sitmunRadioGroup'] = groupName;
       }
       for (const childId of this.configLookup.getDirectChildIds(folderId)) {
-        const childLi = root.querySelector(
-          `li[data-layer-name="${childId}"]`
-        ) as HTMLElement | null;
-        if (!childLi || childLi.querySelector('input.sitmun-lcat-radio')) {
+        const childNode = this.configLookup.findNode(childId);
+        // Radios only on selectable leaves; folders use sitmun-lcat-load when loadData.
+        if (
+          !childNode?.resource ||
+          this.configLookup.isLoadDataFolder(childId)
+        ) {
           continue;
         }
-        const childNode = this.configLookup.findNode(childId);
+        const childLi =
+          (root.querySelector(
+            `li[data-layer-name="${childId}"]`
+          ) as HTMLElement | null) ??
+          this.resolveFolderListItem(root, childId);
+        if (
+          !childLi ||
+          this.hasDirectCatalogControlLabel(childLi, 'sitmun-lcat-radio-label')
+        ) {
+          continue;
+        }
         const input = document.createElement('input');
         input.type = 'radio';
         input.className = 'sitmun-lcat-radio';
@@ -938,18 +1069,219 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         const label = document.createElement('label');
         label.className = 'sitmun-lcat-radio-label';
         label.appendChild(input);
-        const titleSpan =
-          childLi.querySelector('.tc-ctl-lcat-node-title, span') ??
-          childLi.firstElementChild;
-        if (titleSpan) {
-          titleSpan.insertBefore(label, titleSpan.firstChild);
-        } else {
-          childLi.insertBefore(label, childLi.firstChild);
-        }
+        this.insertCatalogControlLabel(childLi, label);
       }
     }
 
     this.syncRadioCheckedState(catalogControl);
+  }
+
+  /** Direct-child only — nested folders also carry load/radio labels. */
+  private hasDirectCatalogControlLabel(
+    li: HTMLElement,
+    labelClass: string
+  ): boolean {
+    return Array.from(li.children).some(
+      (child) =>
+        child instanceof HTMLLabelElement && child.classList.contains(labelClass)
+    );
+  }
+
+  private findRowTitleElement(li: HTMLElement): Element | null {
+    return (
+      Array.from(li.children).find(
+        (child) =>
+          child instanceof HTMLElement &&
+          (child.classList.contains('tc-ctl-lcat-node-title') ||
+            child.tagName === 'SPAN')
+      ) ?? null
+    );
+  }
+
+  /**
+   * Place a load/radio label as a direct child of the row `li`, before the
+   * title span (icon gutter stays on the li; control+title flow in content).
+   */
+  private insertCatalogControlLabel(
+    li: HTMLElement,
+    label: HTMLLabelElement
+  ): void {
+    li.dataset['sitmunLcatControl'] = 'true';
+    const titleSpan = this.findRowTitleElement(li);
+    if (titleSpan) {
+      li.insertBefore(label, titleSpan);
+    } else {
+      li.insertBefore(label, li.firstChild);
+    }
+  }
+
+  /**
+   * SITNA-style informative GFI `i` after the select control (or before title).
+   */
+  private injectGfiIndicators(_catalogControl: any, root: ParentNode): void {
+    root.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
+      const li = node as HTMLElement;
+      const nodeId = li.dataset['layerName'];
+      if (!nodeId) {
+        return;
+      }
+      const existing = Array.from(li.children).find(
+        (child) =>
+          child instanceof HTMLElement &&
+          child.classList.contains('sitmun-lcat-gfi')
+      );
+      if (!this.configLookup.isQueryableLeaf(nodeId)) {
+        existing?.remove();
+        return;
+      }
+      if (existing) {
+        return;
+      }
+      // <i>, not <span>: SITNA LayerCatalog uses querySelector('span') for the title.
+      const gfi = document.createElement('i');
+      gfi.className = 'sitmun-lcat-gfi';
+      gfi.textContent = 'i';
+      gfi.setAttribute('aria-hidden', 'true');
+      gfi.title = 'Queryable';
+      this.insertGfiIndicator(li, gfi);
+    });
+  }
+
+  private insertGfiIndicator(li: HTMLElement, gfi: HTMLElement): void {
+    const selectSlot = this.findSelectSlotElement(li);
+    if (selectSlot) {
+      selectSlot.after(gfi);
+      return;
+    }
+    const titleSpan = this.findRowTitleElement(li);
+    if (titleSpan) {
+      li.insertBefore(gfi, titleSpan);
+    } else {
+      li.insertBefore(gfi, li.firstChild);
+    }
+  }
+
+  private findSelectSlotElement(li: HTMLElement): Element | null {
+    return (
+      Array.from(li.children).find(
+        (child) =>
+          child instanceof HTMLLabelElement &&
+          (child.classList.contains('sitmun-lcat-radio-label') ||
+            child.classList.contains('sitmun-lcat-load-label') ||
+            child.classList.contains('sitmun-lcat-leaf-load-label'))
+      ) ?? null
+    );
+  }
+
+  /** Mark SITNA info toggles as the clickable metadata affordance (not GFI). */
+  private stampMetadataControls(root: ParentNode): void {
+    root
+      .querySelectorAll('.tc-ctl-lcat-btn-info, .tc-ctl-lcat-search-btn-info')
+      .forEach((el: Element) => {
+        const element = el as HTMLElement;
+        element.setAttribute('data-sitmun-lcat-meta', 'true');
+        if (!element.getAttribute('aria-label')) {
+          element.setAttribute('aria-label', 'Layer information');
+        }
+      });
+  }
+
+  /**
+   * Level inset (0/1/2…). Absent select/GFI icons do not reserve empty slots.
+   * Nest depth = ancestor folder count (search hits stay level 0).
+   */
+  private applyCatalogRowLayout(root: ParentNode): void {
+    const rows = root.querySelectorAll(
+      'li.tc-ctl-lcat-node, li.tc-ctl-lcat-leaf'
+    );
+    rows.forEach((node: Element) => {
+      const li = node as HTMLElement;
+      const level = this.catalogRowLevel(li);
+      li.setAttribute('data-sitmun-lcat-level', String(level));
+      li.style.setProperty('--sitmun-lcat-level', String(level));
+      this.clearAbsentControlSlots(li);
+    });
+  }
+
+  private catalogRowLevel(li: HTMLElement): number {
+    let level = 0;
+    let ancestor = li.parentElement?.closest(
+      'li.tc-ctl-lcat-node'
+    ) as HTMLElement | null;
+    while (ancestor) {
+      level += 1;
+      ancestor = ancestor.parentElement?.closest(
+        'li.tc-ctl-lcat-node'
+      ) as HTMLElement | null;
+    }
+    return level;
+  }
+
+  /** Drop leftover empty select/GFI spacers — only real controls keep width. */
+  private clearAbsentControlSlots(li: HTMLElement): void {
+    Array.from(li.children).forEach((child) => {
+      if (!(child instanceof HTMLElement)) {
+        return;
+      }
+      if (
+        child.classList.contains('sitmun-lcat-select-slot') ||
+        child.classList.contains('sitmun-lcat-gfi-slot')
+      ) {
+        child.remove();
+      }
+    });
+  }
+
+  /**
+   * Flat admin-like zebra on visible Capas disponibles rows (document order).
+   * Descendants of `tc-collapsed` folders are omitted and lose the stamp.
+   */
+  private applyZebraStriping(root: ParentNode): void {
+    const tree =
+      root instanceof Element && root.classList.contains('tc-ctl-lcat-tree')
+        ? root
+        : ((root as ParentNode).querySelector?.(
+            '.tc-ctl-lcat-tree'
+          ) as Element | null);
+    if (!tree) {
+      return;
+    }
+    const treeEl = tree as HTMLElement;
+    const treeRect = treeEl.getBoundingClientRect();
+    const treeWidth = `${treeEl.clientWidth}px`;
+    let index = 0;
+    tree
+      .querySelectorAll('li.tc-ctl-lcat-node, li.tc-ctl-lcat-leaf')
+      .forEach((node: Element) => {
+        const li = node as HTMLElement;
+        if (this.isCatalogRowHiddenByCollapse(li)) {
+          li.removeAttribute('data-sitmun-lcat-zebra');
+          li.style.removeProperty('--sitmun-lcat-zebra-left');
+          li.style.removeProperty('--sitmun-lcat-zebra-width');
+          return;
+        }
+        li.setAttribute('data-sitmun-lcat-zebra', String(index % 2));
+        // Full-bleed band across the tree, not only the indented <li> box.
+        const left = treeRect.left - li.getBoundingClientRect().left;
+        li.style.setProperty('--sitmun-lcat-zebra-left', `${left}px`);
+        li.style.setProperty('--sitmun-lcat-zebra-width', treeWidth);
+        index += 1;
+      });
+  }
+
+  private isCatalogRowHiddenByCollapse(li: HTMLElement): boolean {
+    let ancestor = li.parentElement?.closest(
+      'li.tc-ctl-lcat-node'
+    ) as HTMLElement | null;
+    while (ancestor) {
+      if (ancestor.classList.contains('tc-collapsed')) {
+        return true;
+      }
+      ancestor = ancestor.parentElement?.closest(
+        'li.tc-ctl-lcat-node'
+      ) as HTMLElement | null;
+    }
+    return false;
   }
 
   private async handleRadioInputSelection(
@@ -976,6 +1308,434 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       nodeId
     );
     this.syncRadioCheckedState(catalogControl);
+  }
+
+  private resolveFolderListItem(
+    root: ParentNode,
+    folderId: string
+  ): HTMLElement | null {
+    let folderLi = root.querySelector(
+      `li[data-layer-name="${folderId}"]`
+    ) as HTMLElement | null;
+    if (folderLi) {
+      return folderLi;
+    }
+    // Nested folder LIs often omit data-layer-name; walk config+DOM from a
+    // named descendant so grandparents (e.g. loadData roots) still resolve.
+    const named = root.querySelectorAll('li[data-layer-name]');
+    for (const node of Array.from(named)) {
+      const leafId = (node as HTMLElement).dataset['layerName'];
+      if (!leafId || leafId === folderId) {
+        continue;
+      }
+      if (!this.isConfigDescendantOf(leafId, folderId)) {
+        continue;
+      }
+      let currentId: string | undefined = leafId;
+      let currentLi: HTMLElement | null = node as HTMLElement;
+      while (currentId && currentLi) {
+        const parentId = this.configLookup.findParentNodeId(currentId);
+        const fromParent: Element | null = currentLi.parentElement;
+        if (!parentId || !fromParent) {
+          break;
+        }
+        const parentEl: HTMLElement | null = fromParent.closest(
+          'li.tc-ctl-lcat-node'
+        );
+        if (!parentEl) {
+          break;
+        }
+        if (parentId === folderId) {
+          if (!parentEl.dataset['layerName']) {
+            parentEl.dataset['layerName'] = folderId;
+          }
+          return parentEl;
+        }
+        currentId = parentId;
+        currentLi = parentEl;
+      }
+    }
+    return null;
+  }
+
+  /** True when `nodeId` is under `ancestorId` in the profile tree. */
+  private isConfigDescendantOf(nodeId: string, ancestorId: string): boolean {
+    let parentId = this.configLookup.findParentNodeId(nodeId);
+    while (parentId) {
+      if (parentId === ancestorId) {
+        return true;
+      }
+      parentId = this.configLookup.findParentNodeId(parentId);
+    }
+    return false;
+  }
+
+  private injectLoadDataCheckboxes(
+    catalogControl: any,
+    root: ParentNode
+  ): void {
+    const map = catalogControl?.map;
+    if (!map) {
+      return;
+    }
+
+    const folderIds = new Set<string>();
+    root.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
+      const nodeId = (node as HTMLElement).dataset['layerName'];
+      if (!nodeId) {
+        return;
+      }
+      if (this.configLookup.isLoadDataFolder(nodeId)) {
+        folderIds.add(nodeId);
+      }
+      // Walk all ancestors: nested folders often omit data-layer-name, so a
+      // loadData root would be missed if we only checked the immediate parent.
+      let parentId = this.configLookup.findParentNodeId(nodeId);
+      while (parentId) {
+        if (this.configLookup.isLoadDataFolder(parentId)) {
+          folderIds.add(parentId);
+        }
+        parentId = this.configLookup.findParentNodeId(parentId);
+      }
+    });
+
+    for (const folderId of folderIds) {
+      const folderLi = this.resolveFolderListItem(root, folderId);
+      if (!folderLi) {
+        continue;
+      }
+      // Stamp config node id so cleanup/sync stay aligned when SITNA omits Name.
+      folderLi.dataset['layerName'] = folderId;
+      folderLi.setAttribute('data-sitmun-load-folder', 'true');
+      if (
+        this.hasDirectCatalogControlLabel(folderLi, 'sitmun-lcat-load-label')
+      ) {
+        continue;
+      }
+      const folderNode = this.configLookup.findNode(folderId);
+      const isRadioFolder = this.configLookup.isRadioFolder(folderId);
+      const input = document.createElement('input');
+      input.type = isRadioFolder ? 'radio' : 'checkbox';
+      input.className = 'sitmun-lcat-load';
+      input.dataset['layerName'] = folderId;
+      if (isRadioFolder) {
+        // Own name group so this control does not share exclusivity with children.
+        input.name = `sitmun-lcat-load-${folderId}-${++this.radioGroupSequence}`;
+      }
+      input.setAttribute(
+        'aria-label',
+        folderNode?.title
+          ? `Load ${folderNode.title}`
+          : `Load folder ${folderId}`
+      );
+      const label = document.createElement('label');
+      label.className = 'sitmun-lcat-load-label';
+      label.appendChild(input);
+      this.insertCatalogControlLabel(folderLi, label);
+    }
+
+    root.querySelectorAll('input.sitmun-lcat-load').forEach((input: Element) => {
+      const folderId = (input as HTMLInputElement).dataset['layerName'];
+      if (folderId && this.configLookup.isLoadDataFolder(folderId)) {
+        return;
+      }
+      const li = input.closest('li');
+      const label = input.closest('label.sitmun-lcat-load-label');
+      if (label) {
+        label.remove();
+      } else {
+        input.remove();
+      }
+      li?.removeAttribute('data-sitmun-load-folder');
+      if (
+        li &&
+        !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-load-label') &&
+        !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-radio-label') &&
+        !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-leaf-load-label')
+      ) {
+        li.removeAttribute('data-sitmun-lcat-control');
+      }
+    });
+  }
+
+  /** True when node is a cartography leaf outside a radio group. */
+  private isNonRadioCartographyLeaf(nodeId: string): boolean {
+    const node = this.configLookup.findNode(nodeId);
+    if (!node?.resource || this.configLookup.isLoadDataFolder(nodeId)) {
+      return false;
+    }
+    if (this.configLookup.getRadioGroupParent(nodeId)) {
+      return false;
+    }
+    const children = this.configLookup.getDirectChildIds(nodeId);
+    return children.length === 0;
+  }
+
+  /**
+   * Checkbox on non-radio cartography leaves: check loads, uncheck unloads.
+   * Radio leaves keep `sitmun-lcat-radio` only.
+   */
+  private injectLeafLoadCheckboxes(
+    catalogControl: any,
+    root: ParentNode
+  ): void {
+    const map = catalogControl?.map;
+    if (!map) {
+      return;
+    }
+
+    root.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
+      const li = node as HTMLElement;
+      const nodeId = li.dataset['layerName'];
+      if (!nodeId || !this.isNonRadioCartographyLeaf(nodeId)) {
+        return;
+      }
+      if (
+        this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-leaf-load-label')
+      ) {
+        return;
+      }
+      const leafNode = this.configLookup.findNode(nodeId);
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.className = 'sitmun-lcat-leaf-load';
+      input.dataset['layerName'] = nodeId;
+      input.setAttribute('aria-checked', 'false');
+      input.setAttribute(
+        'aria-label',
+        leafNode?.title ? `Load ${leafNode.title}` : `Load layer ${nodeId}`
+      );
+      const label = document.createElement('label');
+      label.className = 'sitmun-lcat-leaf-load-label';
+      label.appendChild(input);
+      this.insertCatalogControlLabel(li, label);
+    });
+
+    root
+      .querySelectorAll('input.sitmun-lcat-leaf-load')
+      .forEach((input: Element) => {
+        const nodeId = (input as HTMLInputElement).dataset['layerName'];
+        if (nodeId && this.isNonRadioCartographyLeaf(nodeId)) {
+          return;
+        }
+        const li = input.closest('li');
+        const label = input.closest('label.sitmun-lcat-leaf-load-label');
+        if (label) {
+          label.remove();
+        } else {
+          input.remove();
+        }
+        if (
+          li &&
+          !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-load-label') &&
+          !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-radio-label') &&
+          !this.hasDirectCatalogControlLabel(li, 'sitmun-lcat-leaf-load-label')
+        ) {
+          li.removeAttribute('data-sitmun-lcat-control');
+        }
+      });
+  }
+
+  private syncLeafLoadCheckboxState(catalogControl: any): void {
+    const div = catalogControl?.div;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+    div
+      .querySelectorAll('input.sitmun-lcat-leaf-load')
+      .forEach((input: Element) => {
+        const element = input as HTMLInputElement;
+        const nodeId = element.dataset['layerName'];
+        const checked =
+          !!nodeId && this.catalogSelection.isNodeSelected(map, nodeId);
+        // Property + aria only. Never set the HTML `checked` attribute:
+        // SITNA closes search with `.tc-ctl-lcat-tree li [checked]` and would
+        // open an empty info modal if our load inputs carried that attribute.
+        element.checked = checked;
+        element.removeAttribute('checked');
+        element.setAttribute('aria-checked', String(checked));
+      });
+  }
+
+  private async handleLeafLoadCheckboxClick(
+    catalogControl: any,
+    nodeId: string,
+    wasSelected: boolean
+  ): Promise<void> {
+    const node = this.configLookup.findNode(nodeId);
+    if (!node || typeof catalogControl.addLayerToMap !== 'function') {
+      return;
+    }
+    if (wasSelected) {
+      await this.removeLayerClaims(catalogControl.map, [nodeId], catalogControl);
+      this.syncRadioCheckedState(catalogControl);
+      this.syncLeafLoadCheckboxState(catalogControl);
+      return;
+    }
+    const context =
+      this.sitnaApi.getGlobal('currentAppCfg') ?? this.currentAppCfg;
+    const configuredLayer = context
+      ? this.findConfiguredCatalogLayer(catalogControl, context, nodeId)
+      : undefined;
+    await catalogControl.addLayerToMap(
+      configuredLayer ?? { title: node.title, options: {} },
+      nodeId
+    );
+    this.syncRadioCheckedState(catalogControl);
+    this.syncLeafLoadCheckboxState(catalogControl);
+  }
+
+  private listWorkLayers(map: any): any[] {
+    if (Array.isArray(map?.workLayers)) {
+      return map.workLayers;
+    }
+    if (Array.isArray(map?.layers)) {
+      return map.layers;
+    }
+    return [];
+  }
+
+  private loadedLeafIdsFromMap(map: any, leafIds: readonly string[]): string[] {
+    const wanted = new Set(leafIds);
+    const loaded: string[] = [];
+    for (const layer of this.listWorkLayers(map)) {
+      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (nodeId && wanted.has(nodeId) && !loaded.includes(nodeId)) {
+        loaded.push(nodeId);
+      }
+    }
+    return loaded;
+  }
+
+  private reconcileFolderLeaves(map: any, leafIds: string[]): string[] {
+    const loaded = this.loadedLeafIdsFromMap(map, leafIds);
+    this.catalogSelection.reconcileClaimsToLoaded(
+      map,
+      loaded,
+      leafIds,
+      this.configLookup
+    );
+    return loaded;
+  }
+
+  private folderLeafIds(folderId: string): string[] {
+    if (this.configLookup.isRadioFolder(folderId)) {
+      // All direct children: folder load control tracks any selected sibling.
+      return this.configLookup.getDirectChildIds(folderId);
+    }
+    return this.configLookup.collectDescendantLeafIds(folderId);
+  }
+
+  /** Prefer leaves that exist under the folder in the catalog DOM (profile may list more). */
+  private folderLeafIdsForControl(catalogControl: any, folderId: string): string[] {
+    const fromConfig = this.folderLeafIds(folderId);
+    const root = catalogControl?.div;
+    if (!root || fromConfig.length === 0) {
+      return fromConfig;
+    }
+    const folderLi = this.resolveFolderListItem(root, folderId);
+    if (!folderLi) {
+      return fromConfig;
+    }
+    const inDom = fromConfig.filter((leafId) =>
+      !!folderLi.querySelector(`li[data-layer-name="${leafId}"]`)
+    );
+    return inDom.length > 0 ? inDom : fromConfig;
+  }
+
+  private clearStalePending(map: object): void {
+    this.catalogSelection.clearStalePending(map);
+  }
+
+  private async handleLoadDataFolderCheckboxClick(
+    catalogControl: any,
+    folderId: string
+  ): Promise<void> {
+    const map = catalogControl?.map;
+    if (!map) {
+      return;
+    }
+    await this.catalogSelection.runExclusive(map, async () => {
+      this.clearStalePending(map);
+      const leaves = this.folderLeafIdsForControl(catalogControl, folderId);
+      if (leaves.length === 0) {
+        this.syncLoadDataCheckboxState(catalogControl);
+        return;
+      }
+      if (this.catalogSelection.isAnyPending(map, leaves)) {
+        this.syncLoadDataCheckboxState(catalogControl);
+        return;
+      }
+      const loaded = this.reconcileFolderLeaves(map, leaves);
+      const state = this.catalogSelection.folderLoadState(loaded, leaves);
+      this.catalogSelection.beginPending(map, leaves);
+      try {
+        if (this.catalogSelection.shouldUnloadFolder(state)) {
+          await this.removeLayerClaims(map, leaves, catalogControl);
+        } else if (this.configLookup.isRadioFolder(folderId)) {
+          const firstChild = this.configLookup.getFirstRadioChildId(folderId);
+          if (firstChild) {
+            await this.handleRadioInputSelection(catalogControl, firstChild, false);
+          }
+        } else {
+          for (const leafId of leaves) {
+            if (loaded.includes(leafId)) {
+              continue;
+            }
+            await this.handleRadioInputSelection(catalogControl, leafId, false);
+          }
+        }
+      } finally {
+        this.catalogSelection.endPending(map, leaves);
+        this.syncRadioCheckedState(catalogControl);
+        this.syncLoadDataCheckboxState(catalogControl);
+        // SITNA may update workLayers after removeLayer resolves; resync once more.
+        queueMicrotask(() => this.syncLoadDataCheckboxState(catalogControl));
+      }
+    });
+  }
+
+  private applyFolderCheckboxVisual(
+    element: HTMLInputElement,
+    state: 'none' | 'partial' | 'all'
+  ): void {
+    const isRadio = element.type === 'radio';
+    element.indeterminate = !isRadio && state === 'partial';
+    element.checked = state === 'all';
+    // Do not set HTML `checked` — SITNA search→tree uses `li [checked]` to
+    // decide whether to open the info pane (empty modal if only our loads match).
+    element.removeAttribute('checked');
+    element.setAttribute(
+      'aria-checked',
+      !isRadio && state === 'partial' ? 'mixed' : String(state === 'all')
+    );
+    element.setAttribute('data-sitmun-folder-state', state);
+  }
+
+  private syncLoadDataCheckboxState(catalogControl: any): void {
+    const div = catalogControl?.div;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+    this.clearStalePending(map);
+    div.querySelectorAll('input.sitmun-lcat-load').forEach((input: Element) => {
+      const element = input as HTMLInputElement;
+      const folderId = element.dataset['layerName'];
+      if (!folderId) {
+        return;
+      }
+      const leaves = this.folderLeafIdsForControl(catalogControl, folderId);
+      const loaded = this.loadedLeafIdsFromMap(map, leaves);
+      let state = this.catalogSelection.folderLoadState(loaded, leaves);
+      // Radio folder load control: any selected child ⇒ checked (never partial).
+      if (element.type === 'radio' && state === 'partial') {
+        state = 'all';
+      }
+      this.applyFolderCheckboxVisual(element, state);
+      element.disabled = this.catalogSelection.isAnyPending(map, leaves);
+    });
   }
 
   private syncRadioCheckedState(catalogControl: any): void {
@@ -1010,6 +1770,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         li.classList.toggle('tc-checked', checked);
       }
     });
+    this.syncLoadDataCheckboxState(catalogControl);
+    this.syncLeafLoadCheckboxState(catalogControl);
   }
 
   private findRepresentativeWorkLayer(
@@ -1061,11 +1823,36 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         removeResources.add(resource);
       }
     }
+    await this.removePhysicalLayersByNodeIds(map, nodeIds, catalogControl);
     await this.removePhysicalResources(
       map,
       [...removeResources],
       catalogControl
     );
+  }
+
+  private async removePhysicalLayersByNodeIds(
+    map: any,
+    nodeIds: readonly string[],
+    catalogControl: any | undefined
+  ): Promise<void> {
+    if (!map || nodeIds.length === 0 || typeof map.removeLayer !== 'function') {
+      return;
+    }
+    const wanted = new Set(nodeIds);
+    const layers = [...this.listWorkLayers(map)];
+    for (const layer of layers) {
+      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
+      if (!nodeId || !wanted.has(nodeId)) {
+        continue;
+      }
+      await this.catalogSelection.runWithSelfCommit(map, () =>
+        map.removeLayer(layer)
+      );
+    }
+    if (catalogControl) {
+      this.syncRadioCheckedState(catalogControl);
+    }
   }
 
   private async removePhysicalResources(
@@ -1077,11 +1864,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     if (!map || resources.length === 0) {
       return;
     }
-    const layers = Array.isArray(map.workLayers)
-      ? map.workLayers
-      : Array.isArray(map.layers)
-      ? map.layers
-      : [];
+    const layers = [
+      ...(Array.isArray(map.workLayers)
+        ? map.workLayers
+        : Array.isArray(map.layers)
+        ? map.layers
+        : [])
+    ];
     for (const layer of layers) {
       const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
       if (!nodeId || nodeId === keepNodeId) {

@@ -6,11 +6,27 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map**: non-radio cartography leaves show a `sitmun-lcat-leaf-load` checkbox that loads/unloads the working layer; radio leaves keep radios; folders no longer use italic as a loaded-state cue ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: catalog load checkboxes sync via the `checked` property only (no HTML `checked` attribute) so leaving search after adding a layer does not open SITNA’s empty info modal ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: Capas disponibles tree stamps `data-sitmun-lcat-zebra` on visible rows (skips collapsed descendants) and paints zebra as a single-row band (not nested branch fills) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: catalog leaves show a SITNA-style informative GFI `i` (`.sitmun-lcat-gfi`) after the select control when the tree node has `queryableActive` (admin enables this only when the layer allows GetFeatureInfo); SITNA info buttons are stamped `data-sitmun-lcat-meta` and restyled as a page-fold document (not letter-i) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: catalog folder/leaf type icons use a top-of-row `background-position` (`2px` / `4px` from asset metrics) so open folders no longer float the folder glyph at the midpoint of the expanded branch ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: `loadData` folders show a visible `sitmun-lcat-load` control (checkbox, or radio when the folder is radio); title only expands/collapses. Click toggles the folder from map `workLayers` + claims (any loaded → unload all leaves; none → load all / first radio child). Partial non-radio selection uses `indeterminate` ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)). Composite single WorkLayerManager entry remains [#166](https://github.com/sitmun/sitmun-viewer-app/issues/166).
+- **Map**: `CatalogLayerSelectionService` per-map `runExclusive` gate, pending node set, and `reconcileClaimsToLoaded` keep catalog claims aligned with work layers under async add/remove.
 - **Application details**: shows `responsibleInstitutionName` and `pointOfContact` independently when the client API provides them; blocked or ineligible PoC emails are omitted by the backend only ([sitmun-admin-app#316](https://github.com/sitmun/sitmun-admin-app/issues/316)).
 - **E2E**: same-origin `/backend` and `/middleware` serve profile for root Playwright viewer/proxy tests.
+- **E2E**: root `viewer-catalog` Playwright project covers layer-catalog radio inputs, visible `loadData` folder load controls, and GFI `i` placement on a seeded queryable leaf ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)). Capas trash-then-clear after partial WLM remove is covered by viewer Jest (Playwright leaf load under WMS stubs remains a gap).
 
 ### Fixed
 
+- **Map**: catalog rows use level-stamped inset (`rootAlign + level×icon`, level 0/1/2… — nest step is the parent type-icon width) and fixed-width select/GFI controls only when present (no empty spacers); nested branches cancel the parent pad so level padding is not stacked ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: catalog tree density aligns with SITMUN 2 (`icon`/`control` 16/14, `hit` 18, `gap` 3, `indent` 19, `row-min` 20, 11px type) so type icons, select, optional GFI `i`, title, and trailing meta share one optical line; folder expand/collapse hits the type icon and title (not only the chevron strip) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: catalog GFI marker is an `<i class="sitmun-lcat-gfi">` so it does not steal SITNA’s `querySelector('span')` title lookup; meta page-fold uses host `background-image` and transparent toggle chrome instead of host `::before` / `font-size: 0` that blocked `sitna-toggle` clicks ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: folder load checkbox no longer re-adds missing leaves when some folder layers were removed from Capas (4→2→6); click clears remaining folder layers. `removePhysicalResources` copies `workLayers` before mutation so multi-remove does not skip entries.
+- **Map**: folder load checkbox recovers from stuck `indeterminate` (empty Capas or all leaves loaded): remove work layers by `nodeId`, clear stale pending, and derive leaf set from DOM∩config.
+- **Map**: folder unload clears the load control immediately (optimistic) and resyncs after self-commit `LAYERREMOVE` / microtask so it does not stay checked when Capas is empty.
+- **Map**: radio+`loadData` folders use a radio-shaped load control (unique name group); catalog CSS aligns load/radio spacing and accent, styles disabled/partial states, and keeps `loadData` folder titles roman under `tc-checked`. The folder load radio stays checked when any child radio is selected (not only the first). Nested `loadData` ancestors (including roots whose LI omits `data-layer-name`) get a load control; extra title padding that widened the icon–control gap was removed.
+- **Map**: catalog load/radio controls are `li > label` siblings before the title (icon gutter via shared `--sitmun-lcat-icon` / `--sitmun-lcat-gap` padding); radios are not injected on non-leaf / nested `loadData` folder rows. SITNA collapse chevron kept (title click does not expand).
 - **Auth**: login form prevents native submit so SPA password login does not reload the page before the authenticate request completes.
 
 ### Security
@@ -21,12 +37,13 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 
 - **Map**: auto-loads profile layers marked `loadByDefault` from the active catalog into working layers on map open.
-- **Map**: cartography-tree radio folders render native radio inputs in the layer catalog; folder activation selects the first ordered child, and re-selecting the active child clears the group (SITMUN 2 parity).
+- **Map**: cartography-tree radio folders render native radio inputs in the layer catalog; with `loadData`, folder title selects the first ordered child, and re-selecting the active child clears the group.
 - **Map**: `CatalogLayerSelectionService` tracks per-map node claims and deduplicated resource reference counts; working layers loaded from the catalog carry explicit `options.nodeId`.
 - **Tests**: Jest coverage for dashboard pagination, searchbox behaviour, loading cleanup, dashboard-item resync, auth guards/interceptors, session cleanup ordering, and login modal failed-login feedback.
 
 ### Changed
 
+- **Map**: radio folder title activation now requires profile `loadData=true` (migration: existing radio folders need the flag for previous title UX); child radio selection is unchanged ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **i18n**: `application.contact` now means point of contact email; added `application.responsibleInstitution` in all five locales.
 - **Map**: default-layer collection traverses the active catalog in profile tree order, deduplicates by cartography resource, and keeps one claim per radio group; per-map WeakMap idempotency replaces the singleton default-load guard.
 - **Dashboard search**: autocomplete suggestions refresh while typing; the card grid filters on Enter (or clear) only, so navigation and in-place browsing use separate triggers.

@@ -259,4 +259,85 @@ describe('CatalogLayerSelectionService', () => {
     >;
     expect(pending.size).toBe(0);
   });
+
+  describe('folder load state and exclusive gate', () => {
+    it('folderLoadState returns none partial all', () => {
+      const all = ['node/a', 'node/b', 'node/cousin'];
+      expect(service.folderLoadState([], all)).toBe('none');
+      expect(service.folderLoadState(['node/a'], all)).toBe('partial');
+      expect(service.folderLoadState(all, all)).toBe('all');
+    });
+
+    it('shouldUnloadFolder is true for partial and all', () => {
+      expect(service.shouldUnloadFolder('none')).toBe(false);
+      expect(service.shouldUnloadFolder('partial')).toBe(true);
+      expect(service.shouldUnloadFolder('all')).toBe(true);
+    });
+
+    it('runExclusive runs two async ops in order', async () => {
+      const order: string[] = [];
+      await Promise.all([
+        service.runExclusive(mapA, async () => {
+          order.push('a-start');
+          await Promise.resolve();
+          order.push('a-end');
+        }),
+        service.runExclusive(mapA, async () => {
+          order.push('b-start');
+          order.push('b-end');
+        })
+      ]);
+      expect(order).toEqual(['a-start', 'a-end', 'b-start', 'b-end']);
+    });
+
+    it('runExclusive nested reentrant call completes', async () => {
+      const order: string[] = [];
+      await service.runExclusive(mapA, async () => {
+        order.push('outer-start');
+        await service.runExclusive(mapA, async () => {
+          order.push('inner');
+        });
+        order.push('outer-end');
+      });
+      expect(order).toEqual(['outer-start', 'inner', 'outer-end']);
+    });
+
+    it('endPending clears when beginPending then throw inside exclusive', async () => {
+      await expect(
+        service.runExclusive(mapA, async () => {
+          service.beginPending(mapA, ['node/a', 'node/b']);
+          expect(service.isPending(mapA, 'node/a')).toBe(true);
+          expect(service.isAnyPending(mapA, ['node/a', 'node/b'])).toBe(true);
+          try {
+            throw new Error('boom');
+          } finally {
+            service.endPending(mapA, ['node/a', 'node/b']);
+          }
+        })
+      ).rejects.toThrow('boom');
+      expect(service.isPending(mapA, 'node/a')).toBe(false);
+      expect(service.isAnyPending(mapA, ['node/a', 'node/b'])).toBe(false);
+    });
+
+    it('clearStalePending clears pending when exclusiveDepth is zero', () => {
+      service.beginPending(mapA, ['node/a']);
+      expect(service.isPending(mapA, 'node/a')).toBe(true);
+      service.clearStalePending(mapA);
+      expect(service.isPending(mapA, 'node/a')).toBe(false);
+    });
+
+    it('reconcileClaimsToLoaded selects loaded and deselects missing', () => {
+      service.commitSelection(mapA, 'node/a', 'layer/a', true);
+      service.commitSelection(mapA, 'node/b', 'layer/b', true);
+      service.reconcileClaimsToLoaded(
+        mapA,
+        ['node/a', 'node/cousin'],
+        ['node/a', 'node/b', 'node/cousin'],
+        configLookup
+      );
+      expect(service.isNodeSelected(mapA, 'node/a')).toBe(true);
+      expect(service.isNodeSelected(mapA, 'node/b')).toBe(false);
+      expect(service.isNodeSelected(mapA, 'node/cousin')).toBe(true);
+    });
+  });
 });

@@ -196,6 +196,59 @@ export class ConfigLookupService {
     return [...(this.findNode(nodeId)?.children ?? [])];
   }
 
+  hasLoadData(nodeId: string): boolean {
+    return this.findNode(nodeId)?.loadData === true;
+  }
+
+  /** Folder with loadData (radio or multi); viewer shows a load checkbox on the folder row. */
+  isLoadDataFolder(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    return !!node && node.loadData === true && !node.resource && !node.action;
+  }
+
+  isCheckboxLoadFolder(nodeId: string): boolean {
+    return this.isLoadDataFolder(nodeId) && !this.isRadioFolder(nodeId);
+  }
+
+  /**
+   * Leaf eligible for the catalog GFI `i` marker: cartography resource and
+   * tree {@code queryableActive}. Layer {@code queryableFeatureEnabled} gates
+   * the admin toggle (and GetCapabilities queryable); the marker follows the
+   * node flag so admin and viewer stay aligned.
+   */
+  isQueryableLeaf(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    if (!node?.resource || node.action || !this.isTruthyFlag(node.queryableActive)) {
+      return false;
+    }
+    return !!this.findLayer(node.resource);
+  }
+
+  private isTruthyFlag(value: unknown): boolean {
+    return value === true || value === 1 || value === 'true';
+  }
+
+  collectDescendantLeafIds(folderNodeId: string): string[] {
+    const result: string[] = [];
+    const visit = (id: string): void => {
+      const node = this.findNode(id);
+      if (!node) {
+        return;
+      }
+      if (node.resource && !node.action) {
+        result.push(id);
+        return;
+      }
+      for (const childId of this.getDirectChildIds(id)) {
+        visit(childId);
+      }
+    };
+    for (const childId of this.getDirectChildIds(folderNodeId)) {
+      visit(childId);
+    }
+    return result;
+  }
+
   isRadioFolder(nodeId: string): boolean {
     const node = this.findNode(nodeId);
     return !!node?.isRadio && !node.resource && !node.action;

@@ -157,6 +157,12 @@ export interface AppNodeInfo {
   action?: string;
   loadData?: boolean;
   loadByDefault?: boolean;
+  /**
+   * When true on a cartography leaf, viewer shows the SITNA-style GFI `i`
+   * marker. Missing/false: no marker. Admin gates enabling this on layer
+   * {@code queryableFeatureEnabled}.
+   */
+  queryableActive?: boolean;
   isRadio: boolean;
   children: string[];
   order: number;

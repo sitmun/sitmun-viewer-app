@@ -521,20 +521,91 @@ input[type='range']:focus {
  * Layer catalog control styling.
  */
 
+/*
+ * Catalog row contract: level inset (0/1/2… × type-icon width) + present
+ * controls only (select / leaf GFI) then title and trailing meta. Missing
+ * icons do not reserve empty slots. Nest step = type-icon width of the parent
+ * row. Nested <ul> is pulled back by the parent pad so level padding is not
+ * stacked.
+ *
+ * Density targets SITMUN 2 (~20px rows, 11px type, 16px icon, 18px controls).
+ * Assets: folder_*.png 64×64; mapLayer.png 20×20. Top offset only.
+ */
+.tc-ctl-lcat {
+  /* Control columns (select / GFI); nest indent = type-icon width. */
+  --sitmun-lcat-slot: 18px;
+  --sitmun-lcat-icon: 16px;
+  --sitmun-lcat-indent: var(--sitmun-lcat-icon);
+  --sitmun-lcat-control: 14px;
+  --sitmun-lcat-hit: var(--sitmun-lcat-slot);
+  --sitmun-lcat-row-min: 20px;
+  --sitmun-lcat-folder-icon-y: 2px;
+  --sitmun-lcat-leaf-icon-y: 2px;
+  /*
+   * Align root type-icons with the drawn stack in mapLayersStackN.png (300px,
+   * content ~x=87) when shown at 38px / bg-pos -6px → visual left ≈ +5px.
+   */
+  --sitmun-lcat-root-align: 5px;
+  --sitmun-lcat-zebra: rgba(0, 0, 0, 0.04);
+  line-height: 1.2;
+}
+
+/* Dense tree type only — do not shrink the section h2 (Capas disponibles). */
+.tc-ctl-lcat .tc-ctl-lcat-tree,
+.tc-ctl-lcat .tc-ctl-lcat-search {
+  font-size: 11px;
+}
+
+/*
+ * Full padding shorthand (!important): SITNA responsive layout
+ * (`layout/responsive/style.css`, @media pointer:coarse OR max-height:40em)
+ * sets fat padding; only padding-left overrides were not enough.
+ */
+.tc-ctl-lcat li.tc-ctl-lcat-node,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf {
+  /* Nest step = parent type-icon width; resolve level on the row. */
+  --sitmun-lcat-icon-x: calc(
+    var(--sitmun-lcat-root-align) + var(--sitmun-lcat-level, 0) * var(--sitmun-lcat-indent)
+  );
+  --sitmun-lcat-pad-left: calc(
+    var(--sitmun-lcat-root-align) + (var(--sitmun-lcat-level, 0) + 1) * var(--sitmun-lcat-indent)
+  );
+  margin: 0 !important;
+  padding: 0 0 2px var(--sitmun-lcat-pad-left) !important;
+  min-height: var(--sitmun-lcat-row-min) !important;
+  line-height: var(--sitmun-lcat-row-min) !important;
+  box-sizing: border-box !important;
+}
+
+/* Collapse hit target = type-icon; title toggles via JS. */
+.tc-ctl-lcat li.tc-ctl-lcat-node > button.tc-ctl-lcat-collapse-btn {
+  position: absolute !important;
+  left: var(--sitmun-lcat-icon-x) !important;
+  top: 0 !important;
+  width: var(--sitmun-lcat-icon) !important;
+  height: var(--sitmun-lcat-row-min) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  z-index: 2 !important;
+  cursor: pointer !important;
+}
+
 /* Expanded folders/nodes */
 .tc-ctl-lcat li.tc-ctl-lcat-node {
   background-image: url(./img/folder_open.png) !important;
   background-repeat: no-repeat !important;
-  background-size: 18px 18px !important;
-  background-position: 0 2px !important;
+  background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
 }
 
 /* Collapsed folders/nodes */
 .tc-ctl-lcat li.tc-ctl-lcat-node.tc-collapsed {
   background-image: url(./img/folder_closed.png) !important;
   background-repeat: no-repeat !important;
-  background-size: 18px 18px !important;
-  background-position: 0 2px !important;
+  background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
+  padding-bottom: 2px !important;
 }
 
 /* Last node in branch (only for actual nodes, not leaves) */
@@ -543,8 +614,8 @@ input[type='range']:focus {
   li.tc-ctl-lcat-node:last-child:not(.tc-ctl-lcat-leaf) {
   background-image: url(./img/folder_open.png) !important;
   background-repeat: no-repeat !important;
-  background-size: 18px 18px !important;
-  background-position: 0 2px !important;
+  background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
 }
 
 .tc-ctl-lcat
@@ -552,21 +623,102 @@ input[type='range']:focus {
   li.tc-ctl-lcat-node:last-child.tc-collapsed:not(.tc-ctl-lcat-leaf) {
   background-image: url(./img/folder_closed.png) !important;
   background-repeat: no-repeat !important;
-  background-size: 18px 18px !important;
-  background-position: 0 2px !important;
+  background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
 }
 
-.sitmun-lcat-radio {
-  margin: 0 0.35em 0 0;
+.sitmun-lcat-radio,
+.sitmun-lcat-load,
+.sitmun-lcat-leaf-load {
+  width: var(--sitmun-lcat-control);
+  height: var(--sitmun-lcat-control);
+  margin: 0;
+  vertical-align: middle;
+  accent-color: #c45c26;
+  cursor: pointer;
+}
+
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-radio-label,
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-load-label,
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-leaf-load-label,
+.tc-ctl-lcat li > i.sitmun-lcat-gfi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--sitmun-lcat-slot);
+  height: var(--sitmun-lcat-slot);
+  min-width: var(--sitmun-lcat-slot);
+  min-height: var(--sitmun-lcat-slot);
+  margin: 0;
+  padding: 0;
   vertical-align: middle;
 }
 
-.sitmun-lcat-radio-label {
-  display: inline-flex;
-  align-items: center;
-  margin: 0;
-  padding: 0;
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-radio-label,
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-load-label,
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-leaf-load-label {
   cursor: pointer;
+}
+
+/* SITNA 2-style GFI marker: informative only, after select / before title.
+ * Use <i>, not <span>: SITNA LayerCatalog resolves the title via querySelector('span'). */
+.tc-ctl-lcat li > i.sitmun-lcat-gfi {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-style: normal;
+  font-size: calc(var(--sitmun-lcat-control) * 0.95);
+  line-height: 1;
+  color: #222;
+  pointer-events: none;
+  user-select: none;
+  background-image: none !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node > :not(ul),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > :not(ul) {
+  vertical-align: middle;
+}
+
+/* Kill SITNA/responsive title margins that push labels off the icon midline.
+ * SITNA sets span background to --main-bg-color (opaque) to mask connectors —
+ * clear it so zebra shows through the title. */
+.tc-ctl-lcat li.tc-ctl-lcat-node > span,
+.tc-ctl-lcat li.tc-ctl-lcat-node > .tc-ctl-lcat-node-title,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > span,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > .tc-ctl-lcat-node-title {
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  line-height: calc(var(--sitmun-lcat-row-min) - 2px) !important;
+  vertical-align: middle !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:not(.tc-ctl-lcat-leaf) > span,
+.tc-ctl-lcat li.tc-ctl-lcat-node:not(.tc-ctl-lcat-leaf) > .tc-ctl-lcat-node-title {
+  cursor: pointer !important;
+}
+
+.sitmun-lcat-load:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  accent-color: #c45c26;
+}
+
+.sitmun-lcat-load:indeterminate,
+.sitmun-lcat-load[data-sitmun-folder-state='partial'] {
+  accent-color: #c45c26;
+}
+
+/* Folders never use italic as a loaded-state cue (SITNA .tc-checked > span). */
+.tc-ctl-lcat li.tc-ctl-lcat-node:not(.tc-ctl-lcat-leaf).tc-checked > span,
+.tc-ctl-lcat
+  li.tc-ctl-lcat-node:not(.tc-ctl-lcat-leaf).tc-checked
+  > .tc-ctl-lcat-node-title {
+  font-style: normal !important;
 }
 
 /* Leaf items - must override any node rules, including last-child */
@@ -575,19 +727,36 @@ input[type='range']:focus {
 .tc-ctl-lcat ul.tc-ctl-lcat-branch li.tc-ctl-lcat-leaf:last-child {
   background-image: url(./img/mapLayer.png) !important;
   background-repeat: no-repeat !important;
-  background-size: 18px 18px !important;
-  background-position: 0 4px !important;
+  background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-leaf-icon-y) !important;
+  padding: 0 0 2px var(--sitmun-lcat-pad-left) !important;
 }
 
-/* Hide vertical connector lines in branches */
+/* Nest indent is per-li level; root branch stays flush with the tree. */
 .tc-ctl-lcat ul.tc-ctl-lcat-branch {
   background-image: none !important;
-  margin-left: 4px !important;
+  margin-left: 0 !important;
 }
 
-/* First branch: no top margin, padding, or top border */
+.tc-ctl-lcat .tc-ctl-lcat-tree > ul.tc-ctl-lcat-branch {
+  margin-left: 0 !important;
+}
+
+/*
+ * Nested branch lives in the parent's padded content box. Pull it back to the
+ * parent LI's left edge so only the child's level×icon pad creates the inset
+ * (admin-like: one leading-icon step per level, not stacked paddings).
+ * --sitmun-lcat-pad-left inherits from the parent LI.
+ */
+.tc-ctl-lcat li.tc-ctl-lcat-node > ul.tc-ctl-lcat-branch,
+.tc-ctl-lcat li.tc-ctl-lcat-node > ul {
+  margin-left: calc(-1 * var(--sitmun-lcat-pad-left)) !important;
+}
+
+/* First branch: no top margin/padding/border. */
 .tc-ctl-lcat .tc-ctl-lcat-tree > .tc-ctl-lcat-branch:first-child {
   margin-top: 0 !important;
+  margin-left: 0 !important;
   padding-top: 0 !important;
   border-top: none !important;
 }
@@ -621,14 +790,31 @@ input[type='range']:focus {
   flex-shrink: 0 !important;
 }
 
-/* Ensure internal components inherit background from container */
-.tc-ctl-lcat li.tc-ctl-lcat-node,
-.tc-ctl-lcat li.tc-ctl-lcat-leaf,
-.tc-ctl-lcat li.tc-ctl-lcat-node span,
-.tc-ctl-lcat li.tc-ctl-lcat-leaf span,
+/* Branches/tree stay clear; zebra paints only the row band (::before), not the
+ * whole expanded <li> (which would nest-shade children). */
 .tc-ctl-lcat ul.tc-ctl-lcat-branch,
 .tc-ctl-lcat .tc-ctl-lcat-tree {
-  background-color: inherit !important;
+  background-color: transparent !important;
+}
+
+.tc-ctl-lcat .tc-ctl-lcat-tree li.tc-ctl-lcat-node,
+.tc-ctl-lcat .tc-ctl-lcat-tree li.tc-ctl-lcat-leaf {
+  position: relative;
+  background-color: transparent !important;
+}
+
+/* Flat row zebra: one band tall as the row chrome, full tree width
+ * (--sitmun-lcat-zebra-left/width from applyZebraStriping). */
+.tc-ctl-lcat .tc-ctl-lcat-tree li[data-sitmun-lcat-zebra='1']::before {
+  content: '';
+  position: absolute;
+  left: var(--sitmun-lcat-zebra-left, 0);
+  width: var(--sitmun-lcat-zebra-width, 100%);
+  top: 0;
+  height: calc(var(--sitmun-lcat-row-min) + 2px);
+  background-color: var(--sitmun-lcat-zebra);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Make all folder nodes bold, but not leaves */
@@ -641,17 +827,44 @@ input[type='range']:focus {
   font-weight: normal !important;
 }
 
-/* Add separation lines between items */
+/* Hierarchy via indent + icons only — no per-row separator lines. */
 .tc-ctl-lcat li.tc-ctl-lcat-node,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf {
-  border-top: 1px solid #ddd !important;
+  border-top: none !important;
 }
 
-/* Vertically center info button in list items */
-.tc-ctl-lcat li.tc-ctl-lcat-node .tc-ctl-lcat-btn-info,
-.tc-ctl-lcat li.tc-ctl-lcat-leaf .tc-ctl-lcat-btn-info {
-  margin-top: 3px !important;
-  margin-bottom: 3px !important;
+/*
+ * Metadata action (SITNA btn-info / sitna-toggle): page-fold via host background.
+ * Do not paint host ::before/::after or zero host font-size — the clickable
+ * checkbox lives in shadow DOM and inherits font-size; a host ::before also
+ * intercepts pointer events before the shadow checkbox.
+ */
+.tc-ctl-lcat .tc-ctl-lcat-btn-info[data-sitmun-lcat-meta],
+.tc-ctl-lcat .tc-ctl-lcat-search-btn-info[data-sitmun-lcat-meta] {
+  --sitna-unchecked-icon-text: '';
+  --sitna-checked-icon-text: '';
+  --sitna-checkbox-border-color: transparent;
+  --sitna-checkbox-background-color: transparent;
+  --sitna-checkbox-icon-color: transparent;
+  --sitna-checked-checkbox-icon-color: transparent;
+  /* Scale shadow checkbox toward the hit box without covering it. */
+  font-size: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: var(--sitmun-lcat-hit) !important;
+  height: var(--sitmun-lcat-hit) !important;
+  min-width: var(--sitmun-lcat-hit) !important;
+  min-height: var(--sitmun-lcat-hit) !important;
+  vertical-align: middle !important;
+  margin: 0 0 0 var(--sitmun-lcat-gap) !important;
+  cursor: pointer !important;
+  background-color: transparent !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='15' viewBox='0 0 13 15'%3E%3Cpath fill='%23fff' stroke='%23444' stroke-width='1.2' d='M1.1 1.1h7.2L11.9 4.7v9.2H1.1z'/%3E%3Cpath fill='%23666' d='M8.3 1.1v3.6h3.6z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 13px 15px !important;
 }
 
 /* Add padding-bottom to last child of last branch */
@@ -815,6 +1028,7 @@ input[type='range']:focus {
   padding: 10px;
   padding-left: 26px;
   border-bottom: 1px solid #ccc;
+  /* Keep 1.1em; tree density is scoped under .tc-ctl-lcat-tree so LCAT h2 matches WLM. */
   font-size: 1.1em;
   margin: 0px;
   height: 19px;

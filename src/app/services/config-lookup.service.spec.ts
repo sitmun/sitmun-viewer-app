@@ -334,5 +334,64 @@ describe('ConfigLookupService', () => {
     it('returns the first ordered radio child', () => {
       expect(service.getFirstRadioChildId('node/folder')).toBe('node/child-a');
     });
+
+    it('detects loadData helpers for checkbox and radio folders', () => {
+      const loadContext: AppCfg = {
+        ...treeContext,
+        trees: [
+          {
+            ...treeContext.trees[0],
+            nodes: {
+              ...treeContext.trees[0].nodes,
+              'node/folder': {
+                title: 'Radio folder',
+                isRadio: true,
+                loadData: true,
+                children: ['node/child-a', 'node/child-b'],
+                order: 1
+              },
+              'node/checkbox-load': {
+                title: 'Checkbox load',
+                isRadio: false,
+                loadData: true,
+                children: ['node/nested', 'node/child-a'],
+                order: 3
+              },
+              'node/nested': {
+                title: 'Nested',
+                isRadio: false,
+                loadData: false,
+                children: ['node/child-b'],
+                order: 1
+              },
+              'node/browse': {
+                title: 'Browse',
+                isRadio: false,
+                loadData: false,
+                children: ['node/leaf'],
+                order: 4
+              }
+            }
+          }
+        ]
+      };
+      loadContext.trees[0].nodes['node/root'].children = [
+        'node/folder',
+        'node/checkbox-load',
+        'node/browse',
+        'node/leaf'
+      ];
+      service.initialize(loadContext);
+
+      expect(service.hasLoadData('node/folder')).toBe(true);
+      expect(service.hasLoadData('node/browse')).toBe(false);
+      expect(service.isCheckboxLoadFolder('node/checkbox-load')).toBe(true);
+      expect(service.isCheckboxLoadFolder('node/folder')).toBe(false);
+      expect(service.isCheckboxLoadFolder('node/leaf')).toBe(false);
+      expect(service.collectDescendantLeafIds('node/checkbox-load')).toEqual([
+        'node/child-b',
+        'node/child-a'
+      ]);
+    });
   });
 });

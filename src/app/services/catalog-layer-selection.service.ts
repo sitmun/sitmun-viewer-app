@@ -4,6 +4,8 @@ import { ConfigLookupService } from './config-lookup.service';
 
 export type SelectionAction = 'add' | 'deselect' | 'skip';
 
+export type FolderLoadState = 'none' | 'partial' | 'all';
+
 export interface SelectionPrepareResult {
   action: SelectionAction;
   nodeId: string;
@@ -23,6 +25,9 @@ interface MapSelectionState {
   radioGroupLocks: Map<string, Promise<void>>;
   pendingReplacements: Map<string, PendingReplacement>;
   selfCommitDepth: number;
+  exclusiveTail: Promise<void>;
+  exclusiveDepth: number;
+  pendingNodes: Set<string>;
 }
 
 @Injectable({
@@ -181,12 +186,8 @@ export class CatalogLayerSelectionService {
     const prepared = this.prepareSelection(map, nodeId, resource, configLookup);
     const state = this.state(map);
 
-    if (prepared.action === 'deselect') {
-      const removed = this.deselectNode(map, nodeId);
-      return { releaseNodeIds: [nodeId], removeResources: removed.removeResources };
-    }
-
-    if (prepared.action === 'skip') {
+    // External LAYERADD registers a claim; never toggle-off an existing claim.
+    if (prepared.action === 'deselect' || prepared.action === 'skip') {
       return { releaseNodeIds: [], removeResources: [] };
     }
 
@@ -233,6 +234,111 @@ export class CatalogLayerSelectionService {
       }
     }
     return cleared;
+  }
+
+  folderLoadState(
+    loadedLeafIds: readonly string[],
+    allLeafIds: readonly string[]
+  ): FolderLoadState {
+    if (allLeafIds.length === 0 || loadedLeafIds.length === 0) {
+      return 'none';
+    }
+    const loaded = new Set(loadedLeafIds);
+    const loadedCount = allLeafIds.filter((id) => loaded.has(id)).length;
+    if (loadedCount === 0) {
+      return 'none';
+    }
+    if (loadedCount === allLeafIds.length) {
+      return 'all';
+    }
+    return 'partial';
+  }
+
+  shouldUnloadFolder(state: FolderLoadState): boolean {
+    return state !== 'none';
+  }
+
+  async runExclusive<T>(
+    map: object,
+    op: () => T | Promise<T>
+  ): Promise<T> {
+    const state = this.state(map);
+    if (state.exclusiveDepth > 0) {
+      state.exclusiveDepth++;
+      try {
+        return await op();
+      } finally {
+        state.exclusiveDepth--;
+      }
+    }
+
+    let resolveNext!: () => void;
+    const next = new Promise<void>((resolve) => {
+      resolveNext = resolve;
+    });
+    const previous = state.exclusiveTail;
+    state.exclusiveTail = next;
+
+    await previous;
+    state.exclusiveDepth++;
+    try {
+      return await op();
+    } finally {
+      state.exclusiveDepth--;
+      resolveNext();
+    }
+  }
+
+  beginPending(map: object, nodeIds: readonly string[]): void {
+    const pending = this.state(map).pendingNodes;
+    for (const nodeId of nodeIds) {
+      pending.add(nodeId);
+    }
+  }
+
+  endPending(map: object, nodeIds: readonly string[]): void {
+    const pending = this.state(map).pendingNodes;
+    for (const nodeId of nodeIds) {
+      pending.delete(nodeId);
+    }
+  }
+
+  isPending(map: object, nodeId: string): boolean {
+    return this.state(map).pendingNodes.has(nodeId);
+  }
+
+  isAnyPending(map: object, nodeIds: readonly string[]): boolean {
+    const pending = this.state(map).pendingNodes;
+    return nodeIds.some((nodeId) => pending.has(nodeId));
+  }
+
+  /** Drop pending flags left behind if no exclusive section is active. */
+  clearStalePending(map: object): void {
+    const state = this.state(map);
+    if (state.exclusiveDepth > 0) {
+      return;
+    }
+    state.pendingNodes.clear();
+  }
+
+  reconcileClaimsToLoaded(
+    map: object,
+    loadedNodeIds: readonly string[],
+    candidateNodeIds: readonly string[],
+    configLookup: ConfigLookupService
+  ): void {
+    const loaded = new Set(loadedNodeIds);
+    const candidates = new Set(candidateNodeIds);
+    for (const nodeId of candidates) {
+      if (loaded.has(nodeId)) {
+        if (!this.isNodeSelected(map, nodeId)) {
+          const resource = configLookup.findNode(nodeId)?.resource;
+          this.commitSelection(map, nodeId, resource, true);
+        }
+      } else if (this.isNodeSelected(map, nodeId)) {
+        this.deselectNode(map, nodeId);
+      }
+    }
   }
 
   isSelfCommit(map: object): boolean {
@@ -285,7 +391,10 @@ export class CatalogLayerSelectionService {
         resourceRefCount: new Map(),
         radioGroupLocks: new Map(),
         pendingReplacements: new Map(),
-        selfCommitDepth: 0
+        selfCommitDepth: 0,
+        exclusiveTail: Promise.resolve(),
+        exclusiveDepth: 0,
+        pendingNodes: new Set()
       };
       this.mapStates.set(map, state);
     }

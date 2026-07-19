@@ -64,7 +64,11 @@ describe('LayerCatalogControlHandler', () => {
       getDirectChildIds: jest.fn().mockReturnValue([]),
       isRadioFolder: jest.fn().mockReturnValue(false),
       getRadioGroupParent: jest.fn(),
-      getFirstRadioChildId: jest.fn()
+      getFirstRadioChildId: jest.fn(),
+      hasLoadData: jest.fn().mockReturnValue(false),
+      isLoadDataFolder: jest.fn().mockReturnValue(false),
+      isCheckboxLoadFolder: jest.fn().mockReturnValue(false),
+      collectDescendantLeafIds: jest.fn().mockReturnValue([])
     } as Partial<
       jest.Mocked<ConfigLookupService>
     > as jest.Mocked<ConfigLookupService>;
@@ -1660,6 +1664,7 @@ describe('LayerCatalogControlHandler', () => {
             'node/radio': {
               title: 'Radio',
               isRadio: true,
+              loadData: true,
               children: ['node/a', 'node/b'],
               order: 1
             },
@@ -1877,6 +1882,7 @@ describe('LayerCatalogControlHandler', () => {
             'node/radio': {
               title: 'Radio',
               isRadio: true,
+              loadData: true,
               children: ['node/a', 'node/b'],
               order: 1
             },
@@ -2154,8 +2160,7 @@ describe('LayerCatalogControlHandler', () => {
           await Promise.resolve();
         })
       ]);
-      await Promise.resolve();
-      await Promise.resolve();
+      await selection.runExclusive(map, async () => undefined);
 
       expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
       expect(selection.isNodeSelected(map, 'node/b')).toBe(true);
@@ -2230,6 +2235,7 @@ describe('LayerCatalogControlHandler', () => {
       expect(selection.isNodeSelected(map, 'node/shared-b')).toBe(true);
 
       listeners['layerremove'][0]?.({ layer: sharedLayer });
+      await selection.runExclusive(map, async () => undefined);
 
       expect(selection.isNodeSelected(map, 'node/shared-a')).toBe(false);
       expect(selection.isNodeSelected(map, 'node/shared-b')).toBe(false);
@@ -2465,6 +2471,7 @@ describe('LayerCatalogControlHandler', () => {
             'node/radio': {
               title: 'Radio folder',
               isRadio: true,
+              loadData: true,
               children: ['node/a', 'node/b'],
               order: 1
             },
@@ -2607,6 +2614,1037 @@ describe('LayerCatalogControlHandler', () => {
       expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
     });
 
+    it('browse-only folder has no load checkbox and title does not load leaves', async () => {
+      const browseContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/folder'],
+                order: 0
+              },
+              'node/folder': {
+                title: 'Folder',
+                isRadio: false,
+                loadData: false,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(browseContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+            <button type="button" class="tc-ctl-lcat-collapse-btn"></button>
+            <span class="tc-ctl-lcat-node-title">Folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      const folderLi = catalog.div.querySelector(
+        'li[data-layer-name="node/folder"]'
+      ) as HTMLElement;
+      const collapseBtn = folderLi.querySelector(
+        'button.tc-ctl-lcat-collapse-btn'
+      ) as HTMLButtonElement;
+      const branch = folderLi.querySelector(':scope > ul') as HTMLElement;
+      collapseBtn.addEventListener('click', () => {
+        folderLi.classList.toggle('tc-collapsed');
+        branch.classList.toggle('tc-collapsed');
+      });
+      (handler as any).decorateRadioControls(catalog);
+
+      expect(catalog.div.querySelector('input.sitmun-lcat-load')).toBeNull();
+      const folderTitle = catalog.div.querySelector(
+        'li[data-layer-name="node/folder"] .tc-ctl-lcat-node-title'
+      ) as HTMLElement;
+      folderTitle.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true })
+      );
+      await Promise.resolve();
+
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      expect(folderLi.classList.contains('tc-collapsed')).toBe(true);
+    });
+
+    it('injects load control on loadData ancestor when only leaf LIs have data-layer-name', async () => {
+      const nestedContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Gestio',
+                isRadio: false,
+                loadData: true,
+                children: ['node/folder'],
+                order: 0
+              },
+              'node/folder': {
+                title: 'Adreces',
+                isRadio: false,
+                loadData: true,
+                children: ['node/a'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(nestedContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      // Nested folders omit data-layer-name (SITNA); only the leaf is named.
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node">
+            <span class="tc-ctl-lcat-node-title">Gestio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node">
+                <span class="tc-ctl-lcat-node-title">Adreces</span>
+                <ul>
+                  <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+      expect(realLookup.findParentNodeId('node/a')).toBe('node/folder');
+      expect(realLookup.findParentNodeId('node/folder')).toBe('node/root');
+
+      (handler as any).decorateRadioControls(catalog);
+
+      const rootLoad = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/root"]'
+      ) as HTMLInputElement | null;
+      const folderLoad = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement | null;
+      expect(rootLoad).toBeTruthy();
+      expect(rootLoad?.type).toBe('checkbox');
+      expect(folderLoad).toBeTruthy();
+      expect(folderLoad?.type).toBe('checkbox');
+      expect(
+        catalog.div
+          .querySelector('li[data-layer-name="node/root"]')
+          ?.getAttribute('data-sitmun-load-folder')
+      ).toBe('true');
+    });
+
+    it('places load and radio labels as direct children of the li before the title', async () => {
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a">
+                <span class="tc-ctl-lcat-node-title">A</span>
+              </li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b">
+                <span class="tc-ctl-lcat-node-title">B</span>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const folderLi = catalog.div.querySelector(
+        'li[data-layer-name="node/radio"]'
+      ) as HTMLElement;
+      const leafLi = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      const loadLabel = folderLi.querySelector(
+        ':scope > label.sitmun-lcat-load-label'
+      );
+      const radioLabel = leafLi.querySelector(
+        ':scope > label.sitmun-lcat-radio-label'
+      );
+      const folderTitle = folderLi.querySelector(
+        ':scope > .tc-ctl-lcat-node-title'
+      );
+      const leafTitle = leafLi.querySelector(':scope > .tc-ctl-lcat-node-title');
+
+      expect(loadLabel).toBeTruthy();
+      expect(radioLabel).toBeTruthy();
+      expect(folderTitle?.contains(loadLabel as Node)).toBe(false);
+      expect(leafTitle?.contains(radioLabel as Node)).toBe(false);
+      // Absent GFI does not reserve a slot — select sits immediately before title.
+      expect(loadLabel?.nextElementSibling).toBe(folderTitle);
+      expect(radioLabel?.nextElementSibling).toBe(leafTitle);
+      expect(folderLi.querySelector('.sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot')).toBeNull();
+      expect(leafLi.querySelector('.sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot')).toBeNull();
+      expect(folderLi.getAttribute('data-sitmun-lcat-control')).toBe('true');
+      expect(leafLi.getAttribute('data-sitmun-lcat-control')).toBe('true');
+    });
+
+    it('injects sitmun-lcat-gfi after select for queryableActive leaves only', async () => {
+      const gfiContext = {
+        ...minimalContext,
+        layers: [
+          {
+            id: 'layer/a',
+            title: 'A',
+            layers: ['a'],
+            service: 'service/1',
+            queryableFeatureEnabled: true
+          },
+          {
+            id: 'layer/b',
+            title: 'B',
+            layers: ['b'],
+            service: 'service/1',
+            // Layer GFI off must not hide the marker when the node flag is on.
+            queryableFeatureEnabled: false
+          }
+        ],
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Radio',
+                isRadio: true,
+                loadData: true,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                queryableActive: true,
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                queryableActive: false,
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(gfiContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/a">
+                <span class="tc-ctl-lcat-node-title">A</span>
+                <sitna-toggle class="tc-ctl-lcat-btn-info"></sitna-toggle>
+              </li>
+              <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/b">
+                <span class="tc-ctl-lcat-node-title">B</span>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const leafA = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      const leafB = catalog.div.querySelector(
+        'li[data-layer-name="node/b"]'
+      ) as HTMLElement;
+      const gfiA = Array.from(leafA.children).find((c) =>
+        (c as HTMLElement).classList?.contains('sitmun-lcat-gfi')
+      ) as HTMLElement | undefined;
+      const radioA = Array.from(leafA.children).find((c) =>
+        (c as HTMLElement).classList?.contains('sitmun-lcat-radio-label')
+      );
+      const titleA = leafA.querySelector(':scope > .tc-ctl-lcat-node-title');
+
+      expect(gfiA).toBeTruthy();
+      expect(gfiA?.tagName).toBe('I');
+      expect(gfiA?.textContent).toBe('i');
+      expect(gfiA?.previousElementSibling).toBe(radioA);
+      expect(gfiA?.nextElementSibling).toBe(titleA);
+      expect(titleA?.contains(gfiA as Node)).toBe(false);
+      // SITNA resolves the leaf title via querySelector('span') — GFI must not win.
+      expect(leafA.querySelector('span')).toBe(titleA);
+      expect(leafB.querySelector('.sitmun-lcat-gfi')).toBeNull();
+      expect(
+        leafA
+          .querySelector('.tc-ctl-lcat-btn-info')
+          ?.getAttribute('data-sitmun-lcat-meta')
+      ).toBe('true');
+    });
+
+    it('omits sitmun-lcat-gfi when queryableActive is false', async () => {
+      const gfiContext = {
+        ...minimalContext,
+        layers: [
+          {
+            id: 'layer/a',
+            title: 'A',
+            layers: ['a'],
+            service: 'service/1',
+            queryableFeatureEnabled: true
+          }
+        ],
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/a'],
+                order: 0
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                queryableActive: false,
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(gfiContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/a">
+            <span>A</span>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      expect(catalog.div.querySelector('.sitmun-lcat-gfi')).toBeNull();
+    });
+
+    it('does not inject sitmun-lcat-radio on a nested loadData folder under a radio folder', async () => {
+      const nestedContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Radio',
+                isRadio: true,
+                loadData: true,
+                children: ['node/nested', 'node/a'],
+                order: 1
+              },
+              'node/nested': {
+                title: 'Nested',
+                isRadio: false,
+                loadData: true,
+                children: ['node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 2
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(nestedContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/nested">
+                <span class="tc-ctl-lcat-node-title">Nested</span>
+                <ul>
+                  <li class="tc-ctl-lcat-node" data-layer-name="node/b">
+                    <span>B</span>
+                  </li>
+                </ul>
+              </li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a">
+                <span>A</span>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const nestedLi = catalog.div.querySelector(
+        'li[data-layer-name="node/nested"]'
+      ) as HTMLElement;
+      expect(
+        nestedLi.querySelector('input.sitmun-lcat-load[data-layer-name="node/nested"]')
+      ).toBeTruthy();
+      expect(nestedLi.querySelector('input.sitmun-lcat-radio')).toBeNull();
+      expect(
+        catalog.div.querySelector(
+          'input.sitmun-lcat-radio[data-layer-name="node/a"]'
+        )
+      ).toBeTruthy();
+    });
+
+    it('loadData folder checkbox loads all descendant leaves', async () => {
+      const loadContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/folder'],
+                order: 0
+              },
+              'node/folder': {
+                title: 'Folder',
+                isRadio: false,
+                loadData: true,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(loadContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+            <span class="tc-ctl-lcat-node-title">Folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox).toBeTruthy();
+      expect(loadCheckbox.type).toBe('checkbox');
+      expect(
+        catalog.div
+          .querySelector('li[data-layer-name="node/folder"]')
+          ?.getAttribute('data-sitmun-load-folder')
+      ).toBe('true');
+
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await TestBed.inject(CatalogLayerSelectionService).runExclusive(
+        catalog.map,
+        async () => undefined
+      );
+
+      expect(catalog.addLayerToMap).toHaveBeenCalledTimes(2);
+      expect(catalog.addLayerToMap).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'A' }),
+        'node/a'
+      );
+      expect(catalog.addLayerToMap).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'B' }),
+        'node/b'
+      );
+    });
+
+    it('loadData folder checkbox clears all leaves when all are selected', async () => {
+      const loadContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/folder'],
+                order: 0
+              },
+              'node/folder': {
+                title: 'Folder',
+                isRadio: false,
+                loadData: true,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(loadContext);
+      (handler as any).configLookup = realLookup;
+
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [
+          { options: { nodeId: 'node/a' } },
+          { options: { nodeId: 'node/b' } }
+        ]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+            <span class="tc-ctl-lcat-node-title">Folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      selection.commitSelection(map, 'node/b', 'layer/b', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox.checked).toBe(true);
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(removeLayerClaims).toHaveBeenCalledWith(
+        map,
+        ['node/a', 'node/b'],
+        catalog
+      );
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      removeLayerClaims.mockRestore();
+    });
+
+    it('loadData folder checkbox unloads even when checkbox visual is stale', async () => {
+      const loadContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/folder'],
+                order: 0
+              },
+              'node/folder': {
+                title: 'Folder',
+                isRadio: false,
+                loadData: true,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(loadContext);
+      (handler as any).configLookup = realLookup;
+
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [
+          { options: { nodeId: 'node/a' } },
+          { options: { nodeId: 'node/b' } }
+        ]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+            <span class="tc-ctl-lcat-node-title">Folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      selection.commitSelection(map, 'node/b', 'layer/b', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      loadCheckbox.checked = false;
+      loadCheckbox.setAttribute('aria-checked', 'false');
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(removeLayerClaims).toHaveBeenCalledWith(
+        map,
+        ['node/a', 'node/b'],
+        catalog
+      );
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      removeLayerClaims.mockRestore();
+    });
+
+    it('radio folder title does not select a child without loadData', async () => {
+      const radioBrowseContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Radio',
+                isRadio: true,
+                loadData: false,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(radioBrowseContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const folderTitle = catalog.div.querySelector(
+        'li[data-layer-name="node/radio"] .tc-ctl-lcat-node-title'
+      ) as HTMLElement;
+      folderTitle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+    });
+
+    it('radio browse still selects via child radio without loadData', async () => {
+      const radioBrowseContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Radio',
+                isRadio: true,
+                loadData: false,
+                children: ['node/a', 'node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(radioBrowseContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const radio = catalog.div.querySelector(
+        'input.sitmun-lcat-radio[data-layer-name="node/a"]'
+      ) as HTMLInputElement;
+      radio.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+
+      expect(catalog.addLayerToMap).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'A' }),
+        'node/a'
+      );
+    });
+
+    it('radio loadData folder load control is type=radio and selects first ordered child', async () => {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadControl = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/radio"]'
+      ) as HTMLInputElement;
+      expect(loadControl).toBeTruthy();
+      expect(loadControl.type).toBe('radio');
+      expect(loadControl.className).toContain('sitmun-lcat-load');
+      const childRadio = catalog.div.querySelector(
+        'input.sitmun-lcat-radio[data-layer-name="node/a"]'
+      ) as HTMLInputElement;
+      expect(loadControl.name).toBeTruthy();
+      expect(loadControl.name).not.toBe(childRadio.name);
+
+      loadControl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+
+      expect(catalog.addLayerToMap).toHaveBeenCalledTimes(1);
+      expect(catalog.addLayerToMap).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Alpha layer' }),
+        'node/a'
+      );
+    });
+
+    it('radio loadData folder load control clears first child when selected', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [{ options: { nodeId: 'node/a' } }]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadControl = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/radio"]'
+      ) as HTMLInputElement;
+      expect(loadControl.type).toBe('radio');
+      loadControl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(removeLayerClaims).toHaveBeenCalledWith(
+        map,
+        expect.arrayContaining(['node/a', 'node/b']),
+        catalog
+      );
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      removeLayerClaims.mockRestore();
+    });
+
+    it('radio loadData folder control is checked when a non-first child is selected', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [{ options: { nodeId: 'node/b' } }]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/b', 'layer/b', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadControl = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/radio"]'
+      ) as HTMLInputElement;
+      const secondRadio = catalog.div.querySelector(
+        'input.sitmun-lcat-radio[data-layer-name="node/b"]'
+      ) as HTMLInputElement;
+
+      expect(loadControl.type).toBe('radio');
+      expect(secondRadio.checked).toBe(true);
+      expect(loadControl.checked).toBe(true);
+      expect(loadControl.getAttribute('data-sitmun-folder-state')).toBe('all');
+    });
+
+    it('radio loadData folder unload clears a non-first selected child', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [{ options: { nodeId: 'node/b' } }]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/b', 'layer/b', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadControl = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/radio"]'
+      ) as HTMLInputElement;
+      expect(loadControl.checked).toBe(true);
+
+      loadControl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(removeLayerClaims).toHaveBeenCalledWith(
+        map,
+        expect.arrayContaining(['node/b']),
+        catalog
+      );
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      removeLayerClaims.mockRestore();
+    });
+
     it('deselects when clicking an already-selected radio', async () => {
       const selection = TestBed.inject(CatalogLayerSelectionService);
       const removeLayerClaims = jest
@@ -2642,6 +3680,913 @@ describe('LayerCatalogControlHandler', () => {
 
       expect(removeLayerClaims).toHaveBeenCalledWith(map, ['node/a'], catalog);
       removeLayerClaims.mockRestore();
+    });
+  });
+
+  describe('loadData folder store reconcile', () => {
+    const fourLeafContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/folder'],
+              order: 0
+            },
+            'node/folder': {
+              title: 'Folder',
+              isRadio: false,
+              loadData: true,
+              children: ['node/a', 'node/b', 'node/c', 'node/d'],
+              order: 1
+            },
+            'node/a': {
+              title: 'A',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/b': {
+              title: 'B',
+              resource: 'layer/b',
+              isRadio: false,
+              children: [],
+              order: 2
+            },
+            'node/c': {
+              title: 'C',
+              resource: 'layer/c',
+              isRadio: false,
+              children: [],
+              order: 3
+            },
+            'node/d': {
+              title: 'D',
+              resource: 'layer/d',
+              isRadio: false,
+              children: [],
+              order: 4
+            }
+          }
+        }
+      ]
+    } as AppCfg;
+
+    function folderCatalogHtml(): string {
+      return `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+            <span class="tc-ctl-lcat-node-title">Folder</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/c"><span>C</span></li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/d"><span>D</span></li>
+            </ul>
+          </li>
+        </ul>`;
+    }
+
+    beforeEach(() => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(fourLeafContext);
+      (handler as any).configLookup = realLookup;
+      mockSitnaApi.setGlobal('currentAppCfg', fourLeafContext);
+    });
+
+    it('folder checkbox clears remaining leaves after external remove of subset', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const workLayers: Array<{ options: { nodeId: string } }> = [
+        { options: { nodeId: 'node/a' } },
+        { options: { nodeId: 'node/b' } },
+        { options: { nodeId: 'node/c' } },
+        { options: { nodeId: 'node/d' } }
+      ];
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layerremove: []
+      };
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+        listeners['layerremove'].forEach((fn) => fn({ layer }));
+      });
+      const map = {
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        removeLayer,
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+
+      for (const id of ['node/a', 'node/b', 'node/c', 'node/d']) {
+        selection.commitSelection(map, id, `layer/${id.slice(-1)}`, true);
+      }
+      (handler as any).attachMapEventBridge(map, {
+        Consts: { event: { LAYERADD: 'layeradd', LAYERREMOVE: 'layerremove' } }
+      });
+      (handler as any).decorateRadioControls(catalog);
+
+      const layerA = workLayers[0];
+      const layerB = workLayers[1];
+      await removeLayer(layerA);
+      await removeLayer(layerB);
+      removeLayer.mockClear();
+      (catalog.addLayerToMap as jest.Mock).mockClear();
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      expect(removeLayer).toHaveBeenCalled();
+      expect(workLayers.map((l) => l.options.nodeId)).toEqual([]);
+    });
+
+    it('folder checkbox does not addLayerToMap when any leaf still on map', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const workLayers: Array<{ options: { nodeId: string } }> = [
+        { options: { nodeId: 'node/c' } },
+        { options: { nodeId: 'node/d' } }
+      ];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        on: jest.fn(),
+        off: jest.fn(),
+        removeLayer,
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      (handler as any).decorateRadioControls(catalog);
+
+      expect(selection.isNodeSelected(map, 'node/c')).toBe(false);
+      expect(selection.isNodeSelected(map, 'node/d')).toBe(false);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      expect(workLayers).toHaveLength(0);
+    });
+
+    it('partial folder sets indeterminate on load checkbox', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const map = {
+        workLayers: [
+          { options: { nodeId: 'node/a' } },
+          { options: { nodeId: 'node/b' } }
+        ]
+      };
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      selection.commitSelection(map, 'node/b', 'layer/b', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox.indeterminate).toBe(true);
+      expect(loadCheckbox.checked).toBe(false);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('partial');
+    });
+
+    it('empty workLayers forces none even after stale indeterminate', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const map = {
+        workLayers: [
+          { options: { nodeId: 'node/a' } },
+          { options: { nodeId: 'node/b' } }
+        ]
+      };
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox.indeterminate).toBe(true);
+
+      map.workLayers.length = 0;
+      (handler as any).syncLoadDataCheckboxState(catalog);
+
+      expect(loadCheckbox.indeterminate).toBe(false);
+      expect(loadCheckbox.checked).toBe(false);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('none');
+      expect(selection.isAnyPending(map, ['node/a'])).toBe(false);
+    });
+
+    it('all workLayers matching DOM leaves marks checkbox checked not partial', async () => {
+      const map = {
+        workLayers: [
+          { options: { nodeId: 'node/a' } },
+          { options: { nodeId: 'node/b' } },
+          { options: { nodeId: 'node/c' } },
+          { options: { nodeId: 'node/d' } }
+        ]
+      };
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox.indeterminate).toBe(false);
+      expect(loadCheckbox.checked).toBe(true);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('all');
+    });
+
+    it('unload removes ghost workLayers by nodeId even without resource refcount', async () => {
+      const workLayers: Array<{ options: { nodeId: string } }> = [
+        { options: { nodeId: 'node/a' } },
+        { options: { nodeId: 'node/b' } }
+      ];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        removeLayer,
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(workLayers).toHaveLength(0);
+      expect(loadCheckbox.indeterminate).toBe(false);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('none');
+    });
+
+    it('clearStalePending recovers clicks when exclusiveDepth is zero', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const map = { workLayers: [] as Array<{ options: { nodeId: string } }> };
+      selection.beginPending(map, ['node/a', 'node/b', 'node/c', 'node/d']);
+      expect(selection.isAnyPending(map, ['node/a'])).toBe(true);
+      selection.clearStalePending(map);
+      expect(selection.isAnyPending(map, ['node/a'])).toBe(false);
+    });
+
+    it('unload click clears checkbox visual immediately and after settle', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const workLayers: Array<{ options: { nodeId: string } }> = [
+        { options: { nodeId: 'node/a' } },
+        { options: { nodeId: 'node/b' } },
+        { options: { nodeId: 'node/c' } },
+        { options: { nodeId: 'node/d' } }
+      ];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        on: jest.fn(),
+        off: jest.fn(),
+        removeLayer,
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = folderCatalogHtml();
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadCheckbox = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/folder"]'
+      ) as HTMLInputElement;
+      expect(loadCheckbox.checked).toBe(true);
+
+      loadCheckbox.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      // Optimistic clear runs synchronously in the click handler.
+      expect(loadCheckbox.checked).toBe(false);
+      expect(loadCheckbox.indeterminate).toBe(false);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('none');
+
+      await selection.runExclusive(map, async () => undefined);
+      await Promise.resolve();
+
+      expect(workLayers).toHaveLength(0);
+      expect(loadCheckbox.checked).toBe(false);
+      expect(loadCheckbox.indeterminate).toBe(false);
+      expect(loadCheckbox.getAttribute('data-sitmun-folder-state')).toBe('none');
+    });
+
+    it('bridge onRemove during runWithSelfCommit does not call runExclusive', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layerremove: []
+      };
+      const map = {
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: []
+      };
+      const runExclusive = jest.spyOn(selection, 'runExclusive');
+      (handler as any).attachMapEventBridge(map, {
+        Consts: { event: { LAYERADD: 'layeradd', LAYERREMOVE: 'layerremove' } }
+      });
+
+      await selection.runWithSelfCommit(map, async () => {
+        listeners['layerremove'][0]?.({
+          layer: { options: { nodeId: 'node/a' } }
+        });
+      });
+
+      expect(runExclusive).not.toHaveBeenCalled();
+      runExclusive.mockRestore();
+    });
+  });
+
+  describe('applyZebraStriping', () => {
+    function zebraFixture(collapsedRoot: boolean): HTMLElement {
+      const div = document.createElement('div');
+      div.className = 'tc-ctl-lcat';
+      div.innerHTML = `
+        <div class="tc-ctl-lcat-tree">
+          <ul class="tc-ctl-lcat-branch">
+            <li class="tc-ctl-lcat-node${collapsedRoot ? ' tc-collapsed' : ''}" data-layer-name="node/root">
+              <span class="tc-ctl-lcat-node-title">Root</span>
+              <ul class="tc-ctl-lcat-branch">
+                <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+                  <span class="tc-ctl-lcat-node-title">Folder</span>
+                  <ul class="tc-ctl-lcat-branch">
+                    <li class="tc-ctl-lcat-leaf" data-layer-name="node/a">
+                      <span class="tc-ctl-lcat-node-title">A</span>
+                    </li>
+                    <li class="tc-ctl-lcat-leaf" data-layer-name="node/b">
+                      <span class="tc-ctl-lcat-node-title">B</span>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li class="tc-ctl-lcat-node tc-collapsed" data-layer-name="node/other">
+              <span class="tc-ctl-lcat-node-title">Other</span>
+            </li>
+          </ul>
+        </div>
+      `;
+      return div;
+    }
+
+    it('assigns alternating zebra indices to visible rows in document order', () => {
+      const div = zebraFixture(false);
+      (handler as any).applyZebraStriping(div);
+
+      expect(div.querySelector('[data-layer-name="node/root"]')?.getAttribute('data-sitmun-lcat-zebra')).toBe(
+        '0'
+      );
+      expect(
+        div.querySelector('[data-layer-name="node/folder"]')?.getAttribute('data-sitmun-lcat-zebra')
+      ).toBe('1');
+      expect(div.querySelector('[data-layer-name="node/a"]')?.getAttribute('data-sitmun-lcat-zebra')).toBe(
+        '0'
+      );
+      expect(div.querySelector('[data-layer-name="node/b"]')?.getAttribute('data-sitmun-lcat-zebra')).toBe(
+        '1'
+      );
+      expect(
+        div.querySelector('[data-layer-name="node/other"]')?.getAttribute('data-sitmun-lcat-zebra')
+      ).toBe('0');
+    });
+
+    it('skips descendants of collapsed folders and reindexes after expand', () => {
+      const div = zebraFixture(true);
+      (handler as any).applyZebraStriping(div);
+
+      expect(div.querySelector('[data-layer-name="node/root"]')?.getAttribute('data-sitmun-lcat-zebra')).toBe(
+        '0'
+      );
+      expect(
+        div.querySelector('[data-layer-name="node/folder"]')?.hasAttribute('data-sitmun-lcat-zebra')
+      ).toBe(false);
+      expect(div.querySelector('[data-layer-name="node/a"]')?.hasAttribute('data-sitmun-lcat-zebra')).toBe(
+        false
+      );
+      expect(
+        div.querySelector('[data-layer-name="node/other"]')?.getAttribute('data-sitmun-lcat-zebra')
+      ).toBe('1');
+
+      div.querySelector('[data-layer-name="node/root"]')?.classList.remove('tc-collapsed');
+      (handler as any).applyZebraStriping(div);
+
+      expect(
+        div.querySelector('[data-layer-name="node/folder"]')?.getAttribute('data-sitmun-lcat-zebra')
+      ).toBe('1');
+      expect(
+        div.querySelector('[data-layer-name="node/other"]')?.getAttribute('data-sitmun-lcat-zebra')
+      ).toBe('0');
+    });
+  });
+
+  describe('applyCatalogRowLayout', () => {
+    const layoutBaseContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [
+        { id: 'layer/a', title: 'A', layers: ['a'], service: 'service/1' },
+        { id: 'layer/b', title: 'B', layers: ['b'], service: 'service/1' }
+      ],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/folder'],
+              order: 0
+            },
+            'node/folder': {
+              title: 'Folder',
+              isRadio: false,
+              loadData: false,
+              children: ['node/a'],
+              order: 1
+            },
+            'node/a': {
+              title: 'A',
+              resource: 'layer/a',
+              isRadio: false,
+              children: [],
+              order: 1
+            }
+          }
+        }
+      ]
+    } as any;
+
+    function levelOf(el: Element | null): string | null {
+      return el?.getAttribute('data-sitmun-lcat-level') ?? null;
+    }
+
+    function cssLevel(el: Element | null): string {
+      return (el as HTMLElement | null)?.style.getPropertyValue('--sitmun-lcat-level').trim() ?? '';
+    }
+
+    it('stamps nest level from ancestor folders on tree rows', () => {
+      const div = document.createElement('div');
+      div.className = 'tc-ctl-lcat';
+      div.innerHTML = `
+        <div class="tc-ctl-lcat-tree">
+          <ul class="tc-ctl-lcat-branch">
+            <li class="tc-ctl-lcat-node" data-layer-name="node/root">
+              <span class="tc-ctl-lcat-node-title">Root</span>
+              <ul class="tc-ctl-lcat-branch">
+                <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+                  <span class="tc-ctl-lcat-node-title">Folder</span>
+                  <ul class="tc-ctl-lcat-branch">
+                    <li class="tc-ctl-lcat-leaf" data-layer-name="node/a">
+                      <span class="tc-ctl-lcat-node-title">A</span>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>`;
+      (handler as any).applyCatalogRowLayout(div);
+
+      const root = div.querySelector('[data-layer-name="node/root"]');
+      const folder = div.querySelector('[data-layer-name="node/folder"]');
+      const leaf = div.querySelector('[data-layer-name="node/a"]');
+      expect(levelOf(root)).toBe('0');
+      expect(levelOf(folder)).toBe('1');
+      expect(levelOf(leaf)).toBe('2');
+      expect(cssLevel(root)).toBe('0');
+      expect(cssLevel(folder)).toBe('1');
+      expect(cssLevel(leaf)).toBe('2');
+    });
+
+    it('stamps search-list rows at level 0', () => {
+      const div = document.createElement('div');
+      div.className = 'tc-ctl-lcat';
+      div.innerHTML = `
+        <div class="tc-ctl-lcat-search">
+          <ul>
+            <li class="tc-ctl-lcat-leaf" data-layer-name="node/hit">
+              <span class="tc-ctl-lcat-node-title">Hit</span>
+            </li>
+          </ul>
+        </div>`;
+      const searchList = div.querySelector('.tc-ctl-lcat-search ul') as HTMLElement;
+      (handler as any).applyCatalogRowLayout(searchList);
+
+      const hit = div.querySelector('[data-layer-name="node/hit"]');
+      expect(levelOf(hit)).toBe('0');
+      expect(cssLevel(hit)).toBe('0');
+    });
+
+    it('does not reserve space when select or GFI icons are absent', () => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(layoutBaseContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <div class="tc-ctl-lcat-tree">
+          <ul class="tc-ctl-lcat-branch">
+            <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+              <span class="tc-ctl-lcat-node-title">Folder</span>
+              <ul class="tc-ctl-lcat-branch">
+                <li class="tc-ctl-lcat-leaf" data-layer-name="node/a">
+                  <span class="tc-ctl-lcat-node-title">A</span>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const folder = catalog.div.querySelector(
+        'li[data-layer-name="node/folder"]'
+      ) as HTMLElement;
+      const leaf = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      expect(folder.querySelector(':scope > input.sitmun-lcat-load')).toBeNull();
+      expect(folder.querySelector('.sitmun-lcat-select-slot, .sitmun-lcat-gfi-slot')).toBeNull();
+      const folderTitle = folder.querySelector(':scope > .tc-ctl-lcat-node-title');
+      expect(folderTitle?.previousElementSibling?.tagName).not.toBe('I');
+
+      expect(leaf.querySelector(':scope > i.sitmun-lcat-gfi')).toBeNull();
+      expect(leaf.querySelector('.sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot')).toBeNull();
+      // Non-radio leaf still gets a real load checkbox (not an empty spacer).
+      expect(
+        leaf.querySelector(':scope > label.sitmun-lcat-leaf-load-label')
+      ).toBeTruthy();
+    });
+
+    it('keeps visible GFI only when queryable; no empty GFI slot otherwise', () => {
+      const gfiContext = {
+        ...layoutBaseContext,
+        trees: [
+          {
+            ...layoutBaseContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/a', 'node/b'],
+                order: 0
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                queryableActive: true,
+                children: [],
+                order: 1
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                queryableActive: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(gfiContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = {};
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <div class="tc-ctl-lcat-tree">
+          <ul class="tc-ctl-lcat-branch">
+            <li class="tc-ctl-lcat-leaf" data-layer-name="node/a">
+              <span class="tc-ctl-lcat-node-title">A</span>
+            </li>
+            <li class="tc-ctl-lcat-leaf" data-layer-name="node/b">
+              <span class="tc-ctl-lcat-node-title">B</span>
+            </li>
+          </ul>
+        </div>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const leafA = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      const leafB = catalog.div.querySelector(
+        'li[data-layer-name="node/b"]'
+      ) as HTMLElement;
+      const gfiA = leafA.querySelector(':scope > i.sitmun-lcat-gfi');
+      expect(gfiA?.textContent).toBe('i');
+      expect(leafB.querySelector(':scope > i.sitmun-lcat-gfi')).toBeNull();
+      expect(leafB.querySelector('.sitmun-lcat-gfi-slot')).toBeNull();
+
+      const titleA = leafA.querySelector(
+        ':scope > .tc-ctl-lcat-node-title'
+      ) as HTMLElement;
+      const titleB = leafB.querySelector(
+        ':scope > .tc-ctl-lcat-node-title'
+      ) as HTMLElement;
+      expect(gfiA?.nextElementSibling).toBe(titleA);
+      const selectB = leafB.querySelector(
+        ':scope > label.sitmun-lcat-leaf-load-label'
+      );
+      expect(selectB?.nextElementSibling).toBe(titleB);
+    });
+  });
+
+  describe('leaf load checkboxes', () => {
+    const leafLoadContext: AppCfg = {
+      application: {
+        id: 1,
+        title: 't',
+        type: 'x',
+        theme: 'd',
+        srs: 'EPSG:25831',
+        initialExtent: [0, 0, 1, 1]
+      },
+      backgrounds: [],
+      groups: [],
+      layers: [
+        { id: 'layer/plain', title: 'Plain', layers: ['p'], service: 'service/1' },
+        { id: 'layer/radio', title: 'Radio', layers: ['r'], service: 'service/1' }
+      ],
+      services: [],
+      tasks: [],
+      trees: [
+        {
+          id: 'tree/1',
+          title: 'Catalog',
+          image: null,
+          rootNode: 'node/root',
+          nodes: {
+            'node/root': {
+              title: 'Root',
+              isRadio: false,
+              children: ['node/folder', 'node/radio'],
+              order: 0
+            },
+            'node/folder': {
+              title: 'Folder',
+              isRadio: false,
+              loadData: false,
+              children: ['node/plain'],
+              order: 1
+            },
+            'node/plain': {
+              title: 'Plain leaf',
+              resource: 'layer/plain',
+              isRadio: false,
+              children: [],
+              order: 1
+            },
+            'node/radio': {
+              title: 'Radio folder',
+              isRadio: true,
+              loadData: true,
+              children: ['node/radio-leaf'],
+              order: 2
+            },
+            'node/radio-leaf': {
+              title: 'Radio leaf',
+              resource: 'layer/radio',
+              isRadio: false,
+              children: [],
+              order: 1
+            }
+          }
+        }
+      ]
+    } as any;
+
+    beforeEach(() => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(leafLoadContext);
+      (handler as any).configLookup = realLookup;
+    });
+
+    function decorateLeafCatalog(map: object = {}): any {
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = jest.fn().mockResolvedValue(undefined);
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/root">
+            <span class="tc-ctl-lcat-node-title">Root</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/folder">
+                <span class="tc-ctl-lcat-node-title">Folder</span>
+                <ul>
+                  <li class="tc-ctl-lcat-leaf" data-layer-name="node/plain">
+                    <span class="tc-ctl-lcat-node-title">Plain leaf</span>
+                  </li>
+                </ul>
+              </li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+                <span class="tc-ctl-lcat-node-title">Radio folder</span>
+                <ul>
+                  <li class="tc-ctl-lcat-leaf" data-layer-name="node/radio-leaf">
+                    <span class="tc-ctl-lcat-node-title">Radio leaf</span>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+      return catalog;
+    }
+
+    it('injects leaf-load checkbox on non-radio cartography leaves only', () => {
+      const catalog = decorateLeafCatalog();
+      const plain = catalog.div.querySelector(
+        'input.sitmun-lcat-leaf-load[data-layer-name="node/plain"]'
+      ) as HTMLInputElement | null;
+      const radioLeafLoad = catalog.div.querySelector(
+        'input.sitmun-lcat-leaf-load[data-layer-name="node/radio-leaf"]'
+      );
+      const radioLeafRadio = catalog.div.querySelector(
+        'input.sitmun-lcat-radio[data-layer-name="node/radio-leaf"]'
+      );
+      expect(plain).toBeTruthy();
+      expect(plain?.type).toBe('checkbox');
+      expect(radioLeafLoad).toBeNull();
+      expect(radioLeafRadio).toBeTruthy();
+    });
+
+    it('syncs leaf-load checked state from selection', () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const map = { workLayers: [] as unknown[] };
+      const catalog = decorateLeafCatalog(map);
+      const input = catalog.div.querySelector(
+        'input.sitmun-lcat-leaf-load[data-layer-name="node/plain"]'
+      ) as HTMLInputElement;
+      expect(input.checked).toBe(false);
+
+      selection.commitSelection(map, 'node/plain', 'layer/plain', true);
+      (handler as any).syncLeafLoadCheckboxState(catalog);
+      expect(input.checked).toBe(true);
+      // SITNA search-close uses `.tc-ctl-lcat-tree li [checked]` — must not match.
+      expect(input.hasAttribute('checked')).toBe(false);
+      expect(
+        catalog.div.querySelector('.tc-ctl-lcat-tree li [checked], li [checked]')
+      ).toBeNull();
+
+      selection.deselectNode(map, 'node/plain');
+      (handler as any).syncLeafLoadCheckboxState(catalog);
+      expect(input.checked).toBe(false);
+    });
+
+    it('leaf-load click loads when unchecked and unloads when checked', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const map = { workLayers: [] as unknown[] };
+      const catalog = decorateLeafCatalog(map);
+      const removeLayerClaims = jest
+        .spyOn(handler as any, 'removeLayerClaims')
+        .mockResolvedValue(undefined);
+      const input = catalog.div.querySelector(
+        'input.sitmun-lcat-leaf-load[data-layer-name="node/plain"]'
+      ) as HTMLInputElement;
+
+      input.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(catalog.addLayerToMap).toHaveBeenCalled();
+      expect(removeLayerClaims).not.toHaveBeenCalled();
+
+      (catalog.addLayerToMap as jest.Mock).mockClear();
+      selection.commitSelection(map, 'node/plain', 'layer/plain', true);
+      (handler as any).syncLeafLoadCheckboxState(catalog);
+      expect(input.checked).toBe(true);
+
+      input.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(removeLayerClaims).toHaveBeenCalledWith(map, ['node/plain'], catalog);
+      expect(catalog.addLayerToMap).not.toHaveBeenCalled();
+      removeLayerClaims.mockRestore();
+    });
+
+    it('folder italic suppression CSS targets all non-leaf folders', async () => {
+      const { readFileSync } = await import('node:fs');
+      const { join } = await import('node:path');
+      const css = readFileSync(
+        join(
+          process.cwd(),
+          'src/assets/map-styles/sitmun-base/custom-main.css'
+        ),
+        'utf8'
+      );
+      expect(css).toMatch(
+        /li\.tc-ctl-lcat-node:not\(\.tc-ctl-lcat-leaf\)\.tc-checked/
+      );
     });
   });
 });
