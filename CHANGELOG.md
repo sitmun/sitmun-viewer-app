@@ -23,9 +23,11 @@ All notable changes to this project will be documented in this file. The format 
 - **Application details**: shows `responsibleInstitutionName` and `pointOfContact` independently when the client API provides them; blocked or ineligible PoC emails are omitted by the backend only ([sitmun-admin-app#316](https://github.com/sitmun/sitmun-admin-app/issues/316)).
 - **E2E**: same-origin `/backend` and `/middleware` serve profile for root Playwright viewer/proxy tests.
 - **E2E**: root `viewer-catalog` Playwright project covers layer-catalog radio inputs, visible `loadData` folder load controls, and trailing meta (Material `article`) order on a seeded queryable leaf ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)). Capas trash-then-clear after partial WLM remove is covered by viewer Jest (Playwright leaf load under WMS stubs remains a gap).
+- **Tests**: `api-sitna-meters-per-unit-upstream.spec.ts` characterizes the api-sitna WKT `"meter"` vs OpenLayers `METERS_PER_UNIT.m` miss that yields legend `SCALE=NaN` (for upstream reporting; remove viewer workaround when this assertion flips) ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 
 ### Fixed
 
+- **Map**: WMS legend GetLegendGraphic keeps a finite OGC `SCALE` on WKT-registered metre CRS (e.g. EPSG:3763) by coercing SITNA `getMetersPerUnit` when OpenLayers `METERS_PER_UNIT` misses `"meter"` ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 - **Language chrome**: toolbar language control uses the same ink as the hamburger (inherit + orange hover; white on login); collapsed-bar control stays white beside expand.
 - **Languages**: navigation bar subscribes to `LanguageService.languagesToUse$` and re-fetches enabled/order when the language menu opens so admin enable/order changes appear without a full reload.
 - **Map**: multi-tree Capas disponibles **Cambiar tema** is a 24×24px control clustered immediately left of the search/tree switch (`right: 54px`, 6px gap); inline SVG with forced `stroke:#111`; tooltip ignores unresolved `currentTopic` locale keys.
