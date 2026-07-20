@@ -20,6 +20,8 @@
   "accessConstraints": "Sarbide murriztapenak",
   "metadata": "Metadatuak",
   "descarregadades": "Datuak deskargatu",
+  "changeTopic": "Gaia aldatu",
+  "currentTopic": "Uneko gaia: {title}",
   "print": "Inprimatu",
   "printMap": "Mapa inprimatu",
   "printPdf": "PDF gisa deskargatu",

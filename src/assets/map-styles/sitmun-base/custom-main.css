@@ -1190,12 +1190,14 @@ sitna-hello-world {
   background-image: url(./img/mapLayersStackN.png);
 }
 
-.tc-panel-content .tc-ctl-lcat-btn-change-topic {
-  height: 2em;
+.tc-panel-content .tc-ctl-lcat > h2 {
+  position: relative;
+  gap: 0.15em;
 }
 
-.tc-panel-content .tc-ctl-lcat-btn-search {
-  height: 2em;
+/* Keep search/tree switch height at sitna-toggle checkbox size (1.5em), not 2em host stretch */
+.tc-panel-content .tc-ctl-lcat > h2 > sitna-toggle.tc-ctl-lcat-btn-search {
+  height: auto;
 }
 
 .tc-panel-content .tc-ctl-wlm.tc-collapsed > h2,

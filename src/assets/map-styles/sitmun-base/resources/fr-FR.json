@@ -20,6 +20,7 @@
   "metadata": "Métadonnées",
   "descarregadades": "Télécharger les données",
   "changeTopic": "Changer de thème",
+  "currentTopic": "Thème actuel : {title}",
   "projSubtitle": "Choisissez une option pour modifier l'organisation des couches dans l'arborescence :",
   "cancel": "Annuler",
   "ok": "Ok",

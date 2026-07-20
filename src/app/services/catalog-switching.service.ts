@@ -7,7 +7,6 @@ import { SitnaApiService } from './sitna-api.service';
 
 /**
  * Service for managing layer catalog switching functionality.
- * TODO: Add unit tests (catalog-switching.service.spec.ts)
  *
  * Catalog state shape matches LayerCatalogsForModalState from types/sitna-globals.types.
  */
@@ -30,48 +29,43 @@ export class CatalogSwitchingService {
    * Uses tree ID as the catalog identifier (not index or root node ID).
    *
    * Logic:
+   * - Trees are sorted by association order ASC (missing order → 0)
    * - If 1 tree: use that tree's ID as currentTreeId
-   * - If multiple trees: check global state for existing currentTreeId, validate it exists, fallback to first tree if not
+   * - If multiple trees: keep existing currentTreeId when still valid, else lowest-order tree
    */
   setupGlobalState(
     rootNodeIds: string[],
     configLookup: ConfigLookupService
   ): void {
-    // Get actual trees from rootNodeIds
     const trees = rootNodeIds
       .map((nodeId) => configLookup.findTreeContainingNode(nodeId))
-      .filter((tree): tree is AppTree => tree !== undefined);
+      .filter((tree): tree is AppTree => tree !== undefined)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     if (trees.length === 0) {
       console.warn('[CatalogSwitching] No trees found for catalog setup');
       return;
     }
 
-    // Build catalogs array from trees - use tree ID as identifier
     const catalogs = trees.map((tree) => ({
       id: tree.id,
       catalog: tree.title
     }));
 
-    // Determine current tree ID based on tree count
     let currentTreeId: string;
 
     if (trees.length === 1) {
-      // Single tree: always use its ID
       currentTreeId = trees[0].id;
     } else {
-      // Multiple trees: check for existing selection in global state
       const existingModal = this.sitnaApi.getGlobal('layerCatalogsForModal');
       const existingTreeId = existingModal?.currentTreeId;
 
-      // Validate existing tree ID exists in available trees (string compare for API number/string)
       if (
         existingTreeId &&
         trees.some((tree) => String(tree.id) === String(existingTreeId))
       ) {
         currentTreeId = existingTreeId;
       } else {
-        // Fallback to the first tree
         currentTreeId = trees[0].id;
       }
     }
@@ -106,40 +100,69 @@ export class CatalogSwitchingService {
     return selectedTree ? selectedTree.rootNode : null;
   }
 
-  /**
-   * Get tooltip text for the changeTopic button showing current topic.
-   */
-  getCurrentTopicTooltip(): string {
+  getCurrentTopicTitle(): string {
     const layerCatalogsForModal = this.sitnaApi.getGlobal(
       'layerCatalogsForModal'
     );
     if (
-      !layerCatalogsForModal ||
-      !layerCatalogsForModal.catalogs ||
+      !layerCatalogsForModal?.catalogs ||
       layerCatalogsForModal.catalogs.length === 0
     ) {
-      return 'Change topic organization';
+      return '';
     }
 
     const currentTreeId = layerCatalogsForModal.currentTreeId;
     const currentCatalogInfo = layerCatalogsForModal.catalogs.find(
-      (c: any) => c.id === currentTreeId
+      (c: { id: string }) => String(c.id) === String(currentTreeId)
     );
-    const currentTopicName = currentCatalogInfo?.catalog || 'Unknown topic';
-
-    return `Current topic: ${currentTopicName}`;
+    return currentCatalogInfo?.catalog ?? '';
   }
 
   /**
-   * Update the changeTopic button tooltip with current topic name.
+   * Localized tooltip for the change-topic button (falls back without control).
    */
-  updateChangeTopicButtonTooltip(): void {
-    const changeCatalogButton = document.querySelector(
+  getCurrentTopicTooltip(control?: { getLocaleString?: (key: string) => string }): string {
+    const title = this.getCurrentTopicTitle();
+    if (!title) {
+      return this.resolveLocaleString(control, 'changeTopic', 'Change topic');
+    }
+
+    const template = this.resolveLocaleString(
+      control,
+      'currentTopic',
+      'Current topic: {title}'
+    );
+    return template.replace(/\{title\}/g, title);
+  }
+
+  /** Prefer SITNA locale; ignore unresolved keys echoed back as the key itself. */
+  private resolveLocaleString(
+    control: { getLocaleString?: (key: string) => string } | undefined,
+    key: string,
+    fallback: string
+  ): string {
+    const value = control?.getLocaleString?.(key);
+    if (!value || value === key) {
+      return fallback;
+    }
+    return value;
+  }
+
+  /**
+   * Update the changeTopic button tooltip with the current topic name.
+   */
+  updateChangeTopicButtonTooltip(control?: {
+    div?: ParentNode;
+    getLocaleString?: (key: string) => string;
+  }): void {
+    const root = control?.div ?? document;
+    const changeCatalogButton = root.querySelector(
       '#change-catalog-sitmun'
-    ) as HTMLElement;
+    ) as HTMLElement | null;
     if (changeCatalogButton) {
-      const tooltip = this.getCurrentTopicTooltip();
+      const tooltip = this.getCurrentTopicTooltip(control);
       changeCatalogButton.setAttribute('title', tooltip);
+      changeCatalogButton.setAttribute('aria-label', tooltip);
     }
   }
 
@@ -159,15 +182,12 @@ export class CatalogSwitchingService {
       return;
     }
 
-    if (selectedTreeId === layerCatalogsForModal.currentTreeId) {
+    if (String(selectedTreeId) === String(layerCatalogsForModal.currentTreeId)) {
       return;
     }
 
-    // Update current tree ID BEFORE calling updateCatalog
-    // This ensures the value is set when buildConfiguration is called again
     layerCatalogsForModal.currentTreeId = selectedTreeId;
 
-    // Update button tooltip immediately
     this.updateChangeTopicButtonTooltip();
 
     const abstractMapObject = this.sitnaApi.getGlobal('abstractMapObject');
@@ -185,6 +205,7 @@ export class CatalogSwitchingService {
 
   /**
    * Inject catalog switching button into control header.
+   * Current tree name is exposed via button title / aria-label (no header badge).
    * This is called from the renderData patch.
    */
   injectCatalogSwitchingButton(control: any, handler: any): void {
@@ -192,7 +213,6 @@ export class CatalogSwitchingService {
       'layerCatalogsForModal'
     );
 
-    // Only inject if multiple catalogs exist
     if (
       !layerCatalogsForModal ||
       !layerCatalogsForModal.catalogs ||
@@ -205,7 +225,6 @@ export class CatalogSwitchingService {
       return;
     }
 
-    // Find h2 element
     const h2Element = control.div.querySelector('h2');
     if (!h2Element) {
       console.warn(
@@ -214,26 +233,74 @@ export class CatalogSwitchingService {
       return;
     }
 
-    // Check if button already exists (avoid duplicates)
-    if (control.div.querySelector('#change-catalog-sitmun')) {
-      console.warn(
-        '[CatalogSwitching] catalog switching button already exists, cannot inject catalog switching button'
-      );
+    this.removeTopicBadge(h2Element);
+
+    const existingButton = control.div.querySelector(
+      '#change-catalog-sitmun'
+    ) as HTMLElement | null;
+    if (existingButton) {
+      this.normalizeChangeTopicButton(existingButton);
+      this.updateChangeTopicButtonTooltip(control);
       return;
     }
 
-    // Create catalog switching button
     const changeCatalogButton = document.createElement('button');
+    changeCatalogButton.type = 'button';
     changeCatalogButton.id = 'change-catalog-sitmun';
-    changeCatalogButton.className = 'tc-button tc-ctl-lcat-btn-change-topic';
+    this.normalizeChangeTopicButton(changeCatalogButton);
 
-    // Set tooltip with current topic name
-    const currentTopicTooltip = this.getCurrentTopicTooltip();
+    const currentTopicTooltip = this.getCurrentTopicTooltip(control);
     changeCatalogButton.setAttribute('title', currentTopicTooltip);
-    changeCatalogButton.textContent =
-      control.getLocaleString('changeTopic') || 'Change topic';
+    changeCatalogButton.setAttribute('aria-label', currentTopicTooltip);
 
-    // Find first non-empty text node in h2 and insert button after it
+    this.insertAfterTitleText(h2Element, changeCatalogButton);
+
+    let projectsPanel = document.querySelector(
+      '#catalog-projects'
+    ) as HTMLElement;
+    if (!projectsPanel) {
+      projectsPanel = document.createElement('div');
+      projectsPanel.id = 'catalog-projects';
+      projectsPanel.className = 'tc-ctl-lcat-proj tc-hidden';
+      document.body.appendChild(projectsPanel);
+    }
+
+    this.attachCatalogSwitchingHandlers(
+      control,
+      changeCatalogButton,
+      projectsPanel,
+      handler.sitnaApi
+    );
+
+    this.updateChangeTopicButtonTooltip(control);
+  }
+
+  /** Icon-only toolbar control; never reuse search/tc-button chrome or visible label text. */
+  private normalizeChangeTopicButton(button: HTMLElement): void {
+    button.classList.add('tc-ctl-lcat-btn-change-topic');
+    button.classList.remove('tc-button', 'tc-ctl-lcat-btn-search');
+    // Inline SVG with explicit stroke (not currentColor) so stale `color:transparent` CSS cannot hide it.
+    button.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ' +
+      'aria-hidden="true" focusable="false">' +
+      '<polyline points="16 3 21 3 21 8"/>' +
+      '<line x1="4" y1="20" x2="21" y2="3"/>' +
+      '<polyline points="21 16 21 21 16 21"/>' +
+      '<line x1="15" y1="15" x2="3" y2="3"/>' +
+      '</svg>';
+  }
+
+  private removeTopicBadge(h2Element: HTMLElement): void {
+    h2Element
+      .querySelectorAll('[data-sitmun-lcat-topic], .tc-ctl-lcat-topic')
+      .forEach((badge) => badge.remove());
+  }
+
+  private insertAfterTitleText(
+    h2Element: HTMLElement,
+    element: HTMLElement
+  ): void {
     let insertAfterNode: Node | null = null;
     for (let i = 0; i < h2Element.childNodes.length; i++) {
       const node = h2Element.childNodes[i];
@@ -244,45 +311,14 @@ export class CatalogSwitchingService {
     }
 
     if (insertAfterNode) {
-      // Insert after the text node
       if (insertAfterNode.nextSibling) {
-        h2Element.insertBefore(
-          changeCatalogButton,
-          insertAfterNode.nextSibling
-        );
+        h2Element.insertBefore(element, insertAfterNode.nextSibling);
       } else {
-        h2Element.appendChild(changeCatalogButton);
+        h2Element.appendChild(element);
       }
     } else {
-      // Fallback: insert at beginning if no text node found
-      h2Element.insertBefore(changeCatalogButton, h2Element.firstChild);
+      h2Element.insertBefore(element, h2Element.firstChild);
     }
-
-    // Create projects panel if it doesn't exist
-    let projectsPanel = document.querySelector(
-      '#catalog-projects'
-    ) as HTMLElement;
-    if (!projectsPanel) {
-      projectsPanel = document.createElement('div');
-      projectsPanel.id = 'catalog-projects';
-      projectsPanel.className = 'tc-ctl-lcat-proj tc-hidden';
-
-      // Append to body for proper fixed positioning (modal overlay)
-      // Fixed positioning works better when element is direct child of body
-      document.body.appendChild(projectsPanel);
-    }
-
-    // Always attach handlers so the (possibly new) button gets its click listener after map reload.
-    // Panel delegation is attached only once to avoid stacking (see attachCatalogSwitchingHandlers).
-    this.attachCatalogSwitchingHandlers(
-      control,
-      changeCatalogButton,
-      projectsPanel,
-      handler.sitnaApi
-    );
-
-    // Update tooltip after button is created (in case catalog was already selected)
-    this.updateChangeTopicButtonTooltip();
   }
 
   /**
@@ -310,15 +346,12 @@ export class CatalogSwitchingService {
       return;
     }
 
-    // Button click: always attach (button is recreated on map reload)
     changeCatalogButton.addEventListener('click', function (e: Event) {
       e.preventDefault();
       e.stopPropagation();
 
-      // Toggle projects panel
       projectsPanel.classList.toggle(TC.Consts.classes.HIDDEN);
 
-      // Render projects template if panel is being shown and not yet rendered
       if (
         !projectsPanel.classList.contains(TC.Consts.classes.HIDDEN) &&
         !projectsPanel.querySelector('.tc-ctl-lcat-proj-content')
@@ -327,7 +360,6 @@ export class CatalogSwitchingService {
       }
     });
 
-    // Panel delegation: attach only once (panel persists across map reloads; avoid stacking)
     if ((projectsPanel as any).__delegationAttached) {
       return;
     }
@@ -336,13 +368,10 @@ export class CatalogSwitchingService {
     projectsPanel.addEventListener('click', function (e: Event) {
       const target = e.target as HTMLElement;
 
-      // Check if click is on catalog item first (before checking buttons)
-      // This ensures catalog selection works even if clicking on label or other child elements
       const catalogElement = target.closest(
         '.tc-ctl-lcat-proj-catalog'
       ) as HTMLElement;
       if (catalogElement) {
-        // Don't process if clicking on buttons inside the catalog item
         if (target.closest('button')) {
           return;
         }
@@ -350,7 +379,6 @@ export class CatalogSwitchingService {
         e.preventDefault();
         e.stopPropagation();
 
-        // Remove selection from previously selected item
         const selected = projectsPanel.querySelector(
           '.tc-ctl-lcat-proj-selected'
         );
@@ -358,10 +386,8 @@ export class CatalogSwitchingService {
           selected.classList.remove('tc-ctl-lcat-proj-selected');
         }
 
-        // Add selection to clicked item
         catalogElement.classList.add('tc-ctl-lcat-proj-selected');
 
-        // Store pending selection (source of truth for Accept)
         const catalogIdInput = catalogElement.querySelector(
           '.tc-ctl-lcat-proj-catalog-id'
         ) as HTMLInputElement;
@@ -369,7 +395,6 @@ export class CatalogSwitchingService {
         return;
       }
 
-      // Close button
       if (
         target.classList.contains('tc-modal-close') ||
         target.closest('.tc-modal-close')
@@ -381,7 +406,6 @@ export class CatalogSwitchingService {
         return;
       }
 
-      // Accept button
       if (
         target.classList.contains('tc-ctl-lcat-proj-accept') ||
         target.closest('.tc-ctl-lcat-proj-accept')
@@ -390,8 +414,6 @@ export class CatalogSwitchingService {
         e.stopPropagation();
         const treeId = service.pendingSelectedTreeId;
         if (treeId != null) {
-          // switchCatalog reads layerCatalogsForModal fresh from global state
-          // and skips if the selected tree is already current
           service.switchCatalog(treeId);
         }
         service.pendingSelectedTreeId = null;
@@ -399,7 +421,6 @@ export class CatalogSwitchingService {
         return;
       }
 
-      // Cancel button
       if (
         target.classList.contains('tc-ctl-lcat-proj-cancel') ||
         target.closest('.tc-ctl-lcat-proj-cancel')
@@ -424,7 +445,6 @@ export class CatalogSwitchingService {
       return;
     }
 
-    // Load and render the projects template
     const templateKey = control.CLASS + '-proj';
     control
       .getRenderedHtml(templateKey, {
@@ -438,7 +458,6 @@ export class CatalogSwitchingService {
         projectsPanel.innerHTML = '';
         projectsPanel.appendChild(content.cloneNode(true));
 
-        // Mark current catalog as selected (by tree ID)
         const currentTreeId = layerCatalogsForModal.currentTreeId;
         const catalogItems = projectsPanel.querySelectorAll(
           '.tc-ctl-lcat-proj-catalog'
@@ -447,7 +466,10 @@ export class CatalogSwitchingService {
           const catalogIdInput = item.querySelector(
             '.tc-ctl-lcat-proj-catalog-id'
           ) as HTMLInputElement;
-          if (catalogIdInput && catalogIdInput.value === currentTreeId) {
+          if (
+            catalogIdInput &&
+            String(catalogIdInput.value) === String(currentTreeId)
+          ) {
             item.classList.add('tc-ctl-lcat-proj-selected');
           }
         });

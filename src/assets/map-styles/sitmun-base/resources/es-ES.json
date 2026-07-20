@@ -21,6 +21,7 @@
   "metadata": "Metadatos",
   "descarregadades": "Descarga de datos",
   "changeTopic": "Cambiar tema",
+  "currentTopic": "Tema actual: {title}",
   "projSubtitle": "Elige una opción para cambiar la forma en que están organizadas las capas del árbol de capas disponibles:",
   "cancel": "Cancelar",
   "ok": "Aceptar",

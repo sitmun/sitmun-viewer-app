@@ -21,6 +21,7 @@
   "metadata": "Metadata",
   "descarregadades": "Download data",
   "changeTopic": "Change topic",
+  "currentTopic": "Current topic: {title}",
   "projSubtitle": "Choose an option to change how the layers in the tree layers are organized:",
   "cancel": "Cancel",
   "ok": "Ok",

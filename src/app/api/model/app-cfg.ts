@@ -148,6 +148,8 @@ export interface AppTree {
   title: string;
   image: string | null;
   rootNode: string;
+  /** Association order within the application (lower = higher priority / default). */
+  order?: number;
   nodes: any;
 }
 

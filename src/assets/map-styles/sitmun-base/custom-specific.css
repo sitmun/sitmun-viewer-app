@@ -104,23 +104,84 @@
   overflow: hidden !important;
 }
 
-/* Change topic button styling */
-.tc-ctl-lcat-btn-change-topic,
-#change-catalog-sitmun {
-  text-decoration: none !important;
-  margin-left: 10px;
-  display: inline-block;
-  vertical-align: baseline;
-  line-height: 1.1em;
-  font-size: 0.9em;
-  font-weight: normal;
-  cursor: pointer;
-  transition: opacity 200ms ease;
+/*
+ * Change-topic: absolute, immediately LEFT of SITNA search/tree switch
+ * (sitna-toggle at right:0, ~48×24). Same vertical center; 6px gap.
+ * Do not combine h2 padding-right with a large button margin-right — that
+ * double-reserves space and leaves the control floating mid-header.
+ */
+.tc-panel-content .tc-ctl-lcat > h2,
+.tc-ctl-lcat > h2 {
+  /* button 24 + gap 6 + switch 48 */
+  padding-right: 78px !important;
+  overflow: visible !important;
 }
 
-.tc-ctl-lcat-btn-change-topic:hover,
-#change-catalog-sitmun:hover {
-  opacity: 0.7;
+.tc-ctl-lcat > h2 > sitna-toggle.tc-ctl-lcat-btn-search {
+  bottom: auto;
+  top: 50%;
+  right: 0;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.tc-ctl-lcat h2 > .tc-ctl-lcat-btn-change-topic,
+.tc-ctl-lcat h2 > #change-catalog-sitmun {
+  position: absolute !important;
+  /* switch width 48px + 6px gap */
+  right: 54px !important;
+  top: 50% !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+  z-index: 2;
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #333 !important;
+  border-radius: var(--sitmun-lcat-btn-radius, 2.4px);
+  background-color: #fff !important;
+  background-image: none !important;
+  color: #111 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  text-indent: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  cursor: pointer;
+  text-decoration: none !important;
+  overflow: visible;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.tc-ctl-lcat h2 > .tc-ctl-lcat-btn-change-topic > svg,
+.tc-ctl-lcat h2 > #change-catalog-sitmun > svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  display: block !important;
+  flex: none;
+  pointer-events: none;
+  overflow: visible;
+  /* Beat stale bundles that used stroke="currentColor" with color:transparent */
+  color: #111 !important;
+  stroke: #111 !important;
+  fill: none !important;
+}
+
+.tc-ctl-lcat h2 > .tc-ctl-lcat-btn-change-topic:hover,
+.tc-ctl-lcat h2 > #change-catalog-sitmun:hover {
+  background-color: #f3f3f3 !important;
+  opacity: 1 !important;
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-content ul {

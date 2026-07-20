@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map**: multi-tree apps default to the lowest `trees[].order`; Capas disponibles shows an icon-only **Cambiar tema** toolbar control (not `sitna-toggle`); current tree name is on the button tooltip via localized `currentTopic`.
 - **Map**: non-radio cartography leaves show a `sitmun-lcat-leaf-load` checkbox that loads/unloads the working layer; radio leaves keep radios; folders no longer use italic as a loaded-state cue ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **Map**: catalog load checkboxes sync via the `checked` property only (no HTML `checked` attribute) so leaving search after adding a layer does not open SITNA’s empty info modal ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **Map**: Capas disponibles tree stamps `data-sitmun-lcat-zebra` on visible rows (skips collapsed descendants) and paints zebra as a single-row band (not nested branch fills) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
@@ -23,6 +24,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: multi-tree Capas disponibles **Cambiar tema** is a 24×24px control clustered immediately left of the search/tree switch (`right: 54px`, 6px gap); inline SVG with forced `stroke:#111`; tooltip ignores unresolved `currentTopic` locale keys.
+- **Map**: multi-tree Capas disponibles header: **Cambiar tema** is a neutral icon-only square left of SITNA’s search/tree-view switch (was zero-sized because `font-size:0` collapsed `em` layout); topic badge removed in favor of the button tooltip.
 - **Map**: catalog `LAYERERROR` (including during self-commit add) unwraps the event `layer`, removes Capas rows for that `nodeId`, and clears claims so a failed load is not left in WorkLayerManager ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **Map**: restricted WMS tiles that fail after Capas add (`TILELOADERROR` 401/403 and other non-404 errors) remove the Capas row and clear catalog claims (SITNA only toasts; it does not fire `LAYERERROR`) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **Map**: Capas drops zombie rows when `map.removeLayer` races SITNA’s async WorkLayerManager `updateLayerTree` insert (abort late elm HTML; scrub orphan LIs via MutationObserver) ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).

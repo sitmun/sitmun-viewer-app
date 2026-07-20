@@ -702,6 +702,7 @@
   "url": "URL del servei",
   "downloadWarning": "NOTA: Aquesta eina descarrega només els elements visibles en el mapa de les capes carregades. Més informació aquí.",
   "changeTopic": "Canviar tema",
+  "currentTopic": "Tema actuau: {title}",
   "changeTopicOrganization": "Canviar organització de les capes",
   "cookiesText1": "Aquest web utilitza cookies, podeu consultar aquí la ",
   "cookiesText2": "Política de Cookies. ",
