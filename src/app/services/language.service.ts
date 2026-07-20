@@ -1,13 +1,32 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { URL_API_I18N_LANGUAGE } from '@api/api-config';
+import {
+  URL_API_CONFIGURATION_PARAMETERS,
+  URL_API_I18N_LANGUAGE,
+  URL_API_I18N_MESSAGES_LIST
+} from '@api/api-config';
 import { I18nService } from '@api/services/i18n.service';
 import { CustomDetails } from '@api/services/user.service';
 import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateService } from '@ngx-translate/core';
-import { catchError, map, Observable, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  tap
+} from 'rxjs';
 import { AppConfigService } from 'src/app/services/app-config.service';
+import { environment } from 'src/environments/environment';
+
+import {
+  filterEnabledLanguages,
+  resolveUiLanguage,
+  sortByLanguageOrder
+} from './ui-language.resolver';
 
 @Injectable({
   providedIn: 'root'
@@ -22,43 +41,127 @@ export class LanguageService {
   ) {}
   readonly STORED_LANGUAGE: string = 'language';
 
+  private backendDefault: string | null = null;
+  private availableLanguages: LanguageDTO[] = [];
+  private bootstrapped = false;
+  private readonly languagesToUseSubject = new BehaviorSubject<LanguageDTO[]>([]);
+
+  /** Enabled languages for the chrome selector. */
+  readonly languagesToUse$ = this.languagesToUseSubject.asObservable();
+
   /**
-   * Get the current language from localStorage or default from configuration
+   * Get the current language: localStorage → language.default → static. Never browser.
    */
   getCurrentLanguage(): string {
-    const storedLang = localStorage.getItem(this.STORED_LANGUAGE);
-    return storedLang ?? this.appConfigService.getDefaultLanguage();
+    const available = this.availableShortnames();
+    return resolveUiLanguage({
+      stored: localStorage.getItem(this.STORED_LANGUAGE),
+      backendDefault: this.backendDefault,
+      availableShortnames: available,
+      staticFallback: this.appConfigService.getDefaultLanguage() || 'en'
+    });
+  }
+
+  getAvailableLanguages(): LanguageDTO[] {
+    return this.availableLanguages;
   }
 
   /**
-   * Initialize TranslateService with the current language
-   * Should be called during app initialization (e.g., in AppComponent)
+   * Updates the in-memory switcher list and notifies subscribers.
+   */
+  applyLanguagesToUse(languages: LanguageDTO[]): LanguageDTO[] {
+    const enabled = filterEnabledLanguages(sortByLanguageOrder(languages ?? []));
+    this.availableLanguages = enabled;
+    this.languagesToUseSubject.next(enabled);
+    return enabled;
+  }
+
+  /**
+   * Reloads enabled languages from the API (same contract as admin refresh).
+   */
+  refreshLanguagesToUse(): Observable<LanguageDTO[]> {
+    return this.getLanguagesForSwitcher();
+  }
+
+  /**
+   * Load STM_CONF language.default and languages list, then apply translate.
+   * Intended for APP_INITIALIZER before first paint.
+   */
+  async bootstrapUiLanguage(): Promise<void> {
+    if (this.bootstrapped) {
+      return;
+    }
+    this.backendDefault = await firstValueFrom(this.loadBackendDefaultLanguage());
+    await firstValueFrom(this.getLanguagesForSwitcher());
+    const lang = this.getCurrentLanguage();
+    this.translateService.setDefaultLang(lang);
+    await firstValueFrom(this.translateService.use(lang));
+    this.bootstrapped = true;
+  }
+
+  /**
+   * Initialize TranslateService with the current language (safe if already bootstrapped).
    */
   initializeTranslateService(): void {
-    const defaultLang = this.appConfigService.getDefaultLanguage();
+    if (this.bootstrapped) {
+      return;
+    }
     const lang = this.getCurrentLanguage();
-    this.translateService.setDefaultLang(defaultLang);
+    this.translateService.setDefaultLang(lang);
     this.translateService.use(lang);
   }
 
+  loadBackendDefaultLanguage(): Observable<string | null> {
+    return this.http.get<any>(environment.apiUrl + URL_API_CONFIGURATION_PARAMETERS).pipe(
+      map((response) => {
+        const params = Array.isArray(response)
+          ? response
+          : response?._embedded?.['configuration-parameters'] || [];
+        const found = params.find(
+          (p: { name?: string; value?: string }) => p?.name === 'language.default'
+        );
+        return found?.value ?? null;
+      }),
+      catchError(() => of(null)),
+      tap((value) => {
+        this.backendDefault = value;
+      })
+    );
+  }
+
   /**
-   * Set the current language and update all related services
-   * @param lang Language shortname (e.g., 'es', 'en')
-   * @param syncBackend Whether to sync with backend (default: true if logged in)
+   * Languages for the UI switcher: enabled endonyms from GET /api/languages (no ?lang=).
    */
+  getLanguagesForSwitcher(): Observable<LanguageDTO[]> {
+    return this.http
+      .get<any>(environment.apiUrl + URL_API_I18N_MESSAGES_LIST)
+      .pipe(
+        map((response) => {
+          let languages: LanguageDTO[] = [];
+          if (Array.isArray(response)) {
+            languages = response;
+          } else if (response?._embedded?.languages) {
+            languages = response._embedded.languages;
+          }
+          if (!languages || languages.length === 0) {
+            return this.appConfigService.getDefaultLanguages();
+          }
+          return languages;
+        }),
+        catchError(() => of(this.appConfigService.getDefaultLanguages())),
+        map((languages) => this.applyLanguagesToUse(languages))
+      );
+  }
+
   setLanguage(lang: string, syncBackend = true): Observable<void> {
-    // Update localStorage
     localStorage.setItem(this.STORED_LANGUAGE, lang);
-    // Update TranslateService
     this.translateService.use(lang);
 
-    // Sync with backend if user is logged in
     if (syncBackend && this.authenticationService.isLoggedIn()) {
       const languageDTO: LanguageDTO = { name: lang, shortname: lang };
       return this.i18nService.updateUserLanguage(languageDTO).pipe(
         map(() => undefined),
         catchError(() => {
-          // Log error but don't fail - language is still set locally
           console.warn('Failed to sync language with backend');
           return of(undefined);
         })
@@ -68,12 +171,6 @@ export class LanguageService {
     return of(undefined);
   }
 
-  /**
-   * Get the display name for a language by its shortname
-   * @param languages Array of available languages
-   * @param shortname Language shortname to find
-   * @returns Display name of the language or 'Language' as fallback
-   */
   getLanguageName(languages: LanguageDTO[], shortname: string): string {
     if (!languages || !shortname) {
       return 'Language';
@@ -83,14 +180,11 @@ export class LanguageService {
   }
 
   /**
-   * Return a list of available languages with names translated in the specified language.
-   * @param lang The language shortname (e.g., 'es', 'en') to get translated language names
-   * @returns A list of available languages with translated names. If the API call fails, it returns a default list.
+   * @deprecated Prefer getLanguagesForSwitcher for toolbar chrome.
    */
   getLanguagesTranslated(lang: string): Observable<LanguageDTO[]> {
     return this.i18nService.getLanguagesTranslated(lang).pipe(
       map((response: any) => {
-        // Handle different response formats
         let languages: LanguageDTO[] = [];
         if (Array.isArray(response)) {
           languages = response;
@@ -107,27 +201,14 @@ export class LanguageService {
     );
   }
 
-  /**
-   * Get languages with names translated in the specified language, sorted alphabetically
-   * @param lang The language shortname to get translated names
-   * @returns Observable of sorted LanguageDTO array
-   */
   getLanguagesTranslatedSorted(lang: string): Observable<LanguageDTO[]> {
-    return this.getLanguagesTranslated(lang).pipe(
-      map((languages) => languages.sort((a, b) => a.name.localeCompare(b.name)))
-    );
+    return this.getLanguagesForSwitcher();
   }
 
-  /**
-   * Load user language from backend if logged in, otherwise use localStorage/default
-   * Should be called during app initialization
-   */
   loadUserLanguage(): Observable<string> {
     if (this.authenticationService.isLoggedIn()) {
-      // Get the full LanguageDTO from API to extract shortname
       return this.http.get<LanguageDTO>(URL_API_I18N_LANGUAGE).pipe(
         map((languageDto: LanguageDTO) => {
-          // Use shortname if available, otherwise fall back to name or current language
           const lang =
             languageDto?.shortname ||
             languageDto?.name ||
@@ -138,26 +219,29 @@ export class LanguageService {
           }
           return lang;
         }),
-        catchError(() => {
-          // If backend fails, use local storage/default
-          return of(this.getCurrentLanguage());
-        })
+        catchError(() => of(this.getCurrentLanguage()))
       );
     }
     return of(this.getCurrentLanguage());
   }
 
-  /**
-   * Get the icon/flag for a language by its shortname
-   * @param shortname Language shortname (e.g., 'es', 'en', 'oc-aranes')
-   * @returns Icon string (emoji or image path) or empty string if not found
-   */
   getLanguageIcon(shortname: string): string {
     return this.appConfigService.getLanguageIcon(shortname);
+  }
+
+  private availableShortnames(): string[] {
+    if (this.availableLanguages.length > 0) {
+      return this.availableLanguages.map((l) => l.shortname);
+    }
+    return (this.appConfigService.getDefaultLanguages() || []).map(
+      (l) => l.shortname
+    );
   }
 }
 
 export interface LanguageDTO {
   name: string;
   shortname: string;
+  order?: number | null;
+  enabled?: boolean;
 }

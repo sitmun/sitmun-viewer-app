@@ -54,6 +54,7 @@ import {
   AppConfigService,
   initializeAppConfig
 } from './services/app-config.service';
+import { LanguageService } from './services/language.service';
 import {
   AppInitializerService,
   initializeApp
@@ -127,6 +128,9 @@ registerLocaleData(localeEs);
     ...ALL_CONTROL_HANDLERS,
     provideAppInitializer(() =>
       initializeAppConfig(inject(AppConfigService))()
+    ),
+    provideAppInitializer(() =>
+      inject(LanguageService).bootstrapUiLanguage()
     ),
     provideAppInitializer(() => initializeApp(inject(AppInitializerService))()),
     provideAppInitializer(() => {

@@ -50,12 +50,31 @@
         <mat-icon>expand_less</mat-icon>
       </button>
 
+      <button
+        mat-button
+        class="language-toolbar-button"
+        [matMenuTriggerFor]="languageMenu"
+        (menuOpened)="onLanguageMenuOpened()"
+        *ngIf="languages.length > 0"
+        [attr.aria-label]="'language'">
+        <mat-icon>language</mat-icon>
+        <span>{{ isoCode(currentLang) }}</span>
+      </button>
+      <mat-menu #languageMenu="matMenu">
+        <button
+          mat-menu-item
+          *ngFor="let language of languages"
+          (click)="changeLanguage(language.shortname)">
+          {{ language.name }}
+        </button>
+      </mat-menu>
+
       <app-menu
         #menuComponent
         [username]="username"
         [isConnected]="isConnected()"
         [showLogoutButton]="showLogoutButton"
-        [showSwitchLanguageButton]="showSwitchLanguageButton"
+        [showSwitchLanguageButton]="false"
         [showProfileButton]="showProfileButton"
         [showLoginButton]="!isOnAuthLogin"
         [showDashboardButton]="shouldShowDashboardButton()"
@@ -63,7 +82,6 @@
         (loginEvent)="loginRedirect()"
         (logoutEvent)="logoutRedirect()"
         (profileEvent)="profileRedirect()"
-        (languageEvent)="changeLanguage($event)"
         (dashboardEvent)="homeRedirect()"
         (changeAppEvent)="openTerritoriesDialog()"></app-menu>
 
@@ -78,12 +96,31 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<!-- Show navbar button when hidden -->
-<button
-  mat-icon-button
-  class="show-toolbar-btn"
-  *ngIf="isOnMap() && navigationBarIsHidden"
-  (click)="navigationBarIsHidden = false"
-  aria-label="Show toolbar">
-  <mat-icon>expand_more</mat-icon>
-</button>
+<!-- Show navbar button when hidden (language stays reachable) -->
+<div class="collapsed-toolbar-actions" *ngIf="isOnMap() && navigationBarIsHidden">
+  <button
+    mat-button
+    class="language-toolbar-button"
+    [matMenuTriggerFor]="collapsedLanguageMenu"
+    (menuOpened)="onLanguageMenuOpened()"
+    *ngIf="languages.length > 0"
+    [attr.aria-label]="'language'">
+    <mat-icon>language</mat-icon>
+    <span>{{ isoCode(currentLang) }}</span>
+  </button>
+  <mat-menu #collapsedLanguageMenu="matMenu">
+    <button
+      mat-menu-item
+      *ngFor="let language of languages"
+      (click)="changeLanguage(language.shortname)">
+      {{ language.name }}
+    </button>
+  </mat-menu>
+  <button
+    mat-icon-button
+    class="show-toolbar-btn"
+    (click)="navigationBarIsHidden = false"
+    aria-label="Show toolbar">
+    <mat-icon>expand_more</mat-icon>
+  </button>
+</div>

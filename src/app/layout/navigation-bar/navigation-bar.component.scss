@@ -132,9 +132,36 @@ $icon-button-size: 40px; // Material standard (touch target 48px with padding)
         }
       }
 
+      // Match hamburger (mat-icon-button) ink color, not Material mat-button primary.
+      .language-toolbar-button {
+        color: inherit;
+        min-width: auto;
+        padding: 0 $spacing-sm;
+        border-radius: 10px !important;
+
+        .mat-icon,
+        .mdc-button__label,
+        span {
+          color: inherit;
+        }
+
+        &:hover {
+          color: colors.$orange;
+        }
+      }
+
       .header-img {
         height: $spacing-xl; // 32px for custom header images
         margin: 0 $spacing-xs; // 4px horizontal margin
+      }
+    }
+
+    &.login .toolbar-right .language-toolbar-button {
+      color: white;
+
+      &:hover {
+        color: white;
+        opacity: 0.8;
       }
     }
   }
@@ -187,6 +214,18 @@ $icon-button-size: 40px; // Material standard (touch target 48px with padding)
         }
       }
     }
+  }
+}
+
+.collapsed-toolbar-actions .language-toolbar-button {
+  color: colors.$white;
+  min-width: auto;
+  padding: 0 $spacing-sm;
+
+  .mat-icon,
+  .mdc-button__label,
+  span {
+    color: inherit;
   }
 }
 

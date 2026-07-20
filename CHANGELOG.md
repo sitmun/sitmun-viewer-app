@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Languages**: toolbar/menu switcher omits languages with `enabled: false` from `GET /api/languages`.
+- **Language chrome**: toolbar control left of the hamburger (and beside expand when the map bar is collapsed) shows closed BCP-47 ISO and open API endonyms; landing language is `localStorage` → STM_CONF `language.default` → static; language entry removed from the hamburger menu.
 - **Map**: multi-tree apps default to the lowest `trees[].order`; Capas disponibles shows an icon-only **Cambiar tema** toolbar control (not `sitna-toggle`); current tree name is on the button tooltip via localized `currentTopic`.
 - **Map**: non-radio cartography leaves show a `sitmun-lcat-leaf-load` checkbox that loads/unloads the working layer; radio leaves keep radios; folders no longer use italic as a loaded-state cue ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **Map**: catalog load checkboxes sync via the `checked` property only (no HTML `checked` attribute) so leaving search after adding a layer does not open SITNA’s empty info modal ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
@@ -24,6 +26,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Language chrome**: toolbar language control uses the same ink as the hamburger (inherit + orange hover; white on login); collapsed-bar control stays white beside expand.
+- **Languages**: navigation bar subscribes to `LanguageService.languagesToUse$` and re-fetches enabled/order when the language menu opens so admin enable/order changes appear without a full reload.
 - **Map**: multi-tree Capas disponibles **Cambiar tema** is a 24×24px control clustered immediately left of the search/tree switch (`right: 54px`, 6px gap); inline SVG with forced `stroke:#111`; tooltip ignores unresolved `currentTopic` locale keys.
 - **Map**: multi-tree Capas disponibles header: **Cambiar tema** is a neutral icon-only square left of SITNA’s search/tree-view switch (was zero-sized because `font-size:0` collapsed `em` layout); topic badge removed in favor of the button tooltip.
 - **Map**: catalog `LAYERERROR` (including during self-commit add) unwraps the event `layer`, removes Capas rows for that `nodeId`, and clears claims so a failed load is not left in WorkLayerManager ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
