@@ -4,7 +4,10 @@ import { Subscription } from 'rxjs';
 
 import { AppCfg } from '@api/model/app-cfg';
 
-import { collapseCatalogCompositeWorkLayerPath } from './work-layer-display-path';
+import {
+  collapseCatalogCompositeWorkLayerPath,
+  removeOrphanWorkLayerElements
+} from './work-layer-display-path';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
@@ -137,7 +140,26 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
             }
           }
 
-          return joinPoint.proceed();
+          const rendered = joinPoint.proceed();
+          // Abort late elm HTML when the layer was removed during legend fetch.
+          if (
+            typeof templateId === 'string' &&
+            templateId.endsWith(WLM_ELEMENT_TEMPLATE_SUFFIX) &&
+            layerData?.id &&
+            this.map &&
+            typeof this.map.getLayer === 'function'
+          ) {
+            const map = this.map;
+            const layerId = layerData.id;
+            return Promise.resolve(rendered).then((html) => {
+              if (!map.getLayer(layerId)) {
+                // Never settle: SITNA's then() must not insert a Capas LI.
+                return new Promise(() => undefined);
+              }
+              return html;
+            });
+          }
+          return rendered;
         }
       );
 
@@ -160,7 +182,10 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           handler.ensureWlmGfiObserver(this);
           const result = joinPoint.proceed();
-          queueMicrotask(() => handler.decorateGfiIndicators(this));
+          queueMicrotask(() => {
+            handler.scrubOrphanWorkLayerRows(this);
+            handler.decorateGfiIndicators(this);
+          });
           return result;
         }
       );
@@ -185,6 +210,7 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
 
     if (!this.wlmGfiObservers.has(wlmControl)) {
       const observer = new MutationObserver(() => {
+        this.scrubOrphanWorkLayerRows(wlmControl);
         this.decorateGfiIndicators(wlmControl);
       });
       observer.observe(div, {
@@ -255,6 +281,16 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         this.wlmGfiChangeHooks.delete(wlmControl);
       });
     }
+  }
+
+  /** Remove Capas LIs left behind by SITNA's async updateLayerTree race. */
+  private scrubOrphanWorkLayerRows(wlmControl: any): void {
+    const div = wlmControl?.div as ParentNode | undefined;
+    const map = wlmControl?.map;
+    if (!div || !map || typeof map.getLayer !== 'function') {
+      return;
+    }
+    removeOrphanWorkLayerElements(div, (id) => map.getLayer(id));
   }
 
   /** Inject / sync Capas GFI toggles for queryable catalog leaves. */

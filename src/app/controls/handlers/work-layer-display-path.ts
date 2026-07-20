@@ -1,3 +1,25 @@
+/**
+ * Drop Capas (WLM) rows whose layer is no longer on the map.
+ * SITNA `updateLayerTree` inserts the LI asynchronously after legend/HTML
+ * render; if `map.removeLayer` wins that race, LAYERREMOVE finds no LI and a
+ * zombie row appears later.
+ */
+export function removeOrphanWorkLayerElements(
+  root: ParentNode,
+  getLayer: (layerId: string) => unknown
+): string[] {
+  const removed: string[] = [];
+  root.querySelectorAll('li.tc-ctl-wlm-elm[data-layer-id]').forEach((node) => {
+    const li = node as HTMLElement;
+    const layerId = li.dataset['layerId'];
+    if (!layerId || !getLayer(layerId)) {
+      removed.push(layerId ?? '');
+      li.remove();
+    }
+  });
+  return removed;
+}
+
 /** Mirrors SITNA WorkLayerManager path assembly before template render. */
 export function simulateSitnaWorkLayerPaths(
   names: string[],

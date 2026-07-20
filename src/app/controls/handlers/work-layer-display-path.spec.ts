@@ -1,5 +1,6 @@
 import {
   collapseCatalogCompositeWorkLayerPath,
+  removeOrphanWorkLayerElements,
   simulateSitnaWorkLayerPaths
 } from './work-layer-display-path';
 
@@ -68,6 +69,31 @@ describe('work-layer-display-path', () => {
           layerNameCount: 2
         })
       ).toEqual(path);
+    });
+  });
+
+  describe('removeOrphanWorkLayerElements', () => {
+    it('removes Capas rows whose layer is missing from the map', () => {
+      const root = document.createElement('div');
+      const keep = document.createElement('li');
+      keep.className = 'tc-ctl-wlm-elm';
+      keep.dataset['layerId'] = 'lcat-1-1';
+      const orphan = document.createElement('li');
+      orphan.className = 'tc-ctl-wlm-elm';
+      orphan.dataset['layerId'] = 'lcat-1-2';
+      root.append(keep, orphan);
+
+      const removed = removeOrphanWorkLayerElements(root, (id) =>
+        id === 'lcat-1-1' ? { id } : undefined
+      );
+
+      expect(removed).toEqual(['lcat-1-2']);
+      expect(root.querySelectorAll('li.tc-ctl-wlm-elm')).toHaveLength(1);
+      expect(
+        (root.querySelector('li.tc-ctl-wlm-elm') as HTMLElement).dataset[
+          'layerId'
+        ]
+      ).toBe('lcat-1-1');
     });
   });
 });

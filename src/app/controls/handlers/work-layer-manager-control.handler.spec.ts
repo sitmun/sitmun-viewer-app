@@ -176,6 +176,38 @@ describe('WorkLayerManagerControlHandler', () => {
       expect(layerData.path).toEqual([['Adreces', 'Illes urbanes']]);
     });
 
+    it('does not settle elm HTML when the layer was already removed from the map', async () => {
+      const context: AppCfg = {} as any;
+      const TC = mockSitnaApi.getTC();
+      const wlmProto = TC.control.WorkLayerManager.prototype;
+
+      await handler.loadPatches(context);
+
+      const control = {
+        map: {
+          getLayer: jest.fn().mockReturnValue(undefined)
+        }
+      };
+      const pending = wlmProto.getRenderedHtml.call(control, 'tc-ctl-wlm-elm', {
+        id: 'lcat-1-2',
+        path: [['Folder', 'Layer']]
+      });
+
+      let settled = false;
+      void Promise.resolve(pending).then(
+        () => {
+          settled = true;
+        },
+        () => {
+          settled = true;
+        }
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(settled).toBe(false);
+    });
+
     it('restores WorkLayerManager.getRenderedHtml on cleanup', async () => {
       const context: AppCfg = {} as any;
       const TC = mockSitnaApi.getTC();
