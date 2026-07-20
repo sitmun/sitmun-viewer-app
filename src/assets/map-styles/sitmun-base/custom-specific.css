@@ -188,6 +188,138 @@
   margin-top: 5px;
   margin-bottom: 5px;
   width: 100% !important;
+  /* #142: Capas list scrolls inside WLM when still under the default row cap. */
+  max-height: calc(4 * 5.5em);
+  overflow: auto !important;
+}
+
+/*
+ * #142: Capas (WLM) default cap above Capas disponibles (LCAT).
+ * Capas must stay flex-grow:0 — flex:1 (same as catalog) steals half the column on open
+ * and overrides a locked height (ID selector beat .sitmun-pane-resized).
+ */
+.tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content > #tc-slot-wlm {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(2.75em + 4 * 5.5em);
+  overflow: hidden;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content > #tc-slot-wlm:not(.tc-collapsed) {
+  flex: 0 1 auto;
+  max-height: none;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm:not(.tc-collapsed) .tc-ctl-wlm-content ul {
+  max-height: none;
+}
+
+/*
+ * Locked Capas height from the splitter. Only while Capas is expanded — collapsed
+ * Capas must stay header-sized (inline height was leaving a white gap).
+ */
+.tc-tools-panel:not(.tc-collapsed-right)
+  > .tc-panel-content
+  > #tc-slot-wlm.sitmun-pane-resized:not(.tc-collapsed) {
+  flex: 0 0 auto;
+  height: var(--sitmun-pane-height);
+  max-height: none;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right)
+  > .tc-panel-content
+  > #tc-slot-wlm.tc-collapsed {
+  height: auto !important;
+  flex: 0 1 auto !important;
+  max-height: none !important;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right)
+  #tc-slot-wlm.sitmun-pane-resized:not(.tc-collapsed)
+  .tc-ctl-wlm-content
+  ul {
+  max-height: none;
+}
+
+.sitmun-tools-panel-splitter {
+  display: none;
+  flex: 0 0 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: row-resize;
+  touch-action: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    #bbb 2px,
+    #bbb 4px,
+    transparent 4px
+  );
+  background-color: #f0f0f0;
+}
+
+.tc-tools-panel.sitmun-tools-split-active:not(.tc-collapsed-right)
+  > .tc-panel-content
+  > .sitmun-tools-panel-splitter {
+  display: block;
+}
+
+.sitmun-tools-panel-splitter:hover,
+.sitmun-tools-panel-splitter:focus-visible,
+.sitmun-tools-panel-splitter.sitmun-tools-panel-splitter-active {
+  background-color: #e0e0e0;
+  outline: none;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content > #tc-slot-toc {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Slot hosts are the SITNA control roots (.tc-ctl-wlm / .tc-ctl-lcat). */
+.tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm.tc-ctl-wlm {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm .tc-ctl-wlm-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) #tc-slot-toc.tc-ctl-lcat {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0;
+}
+
+@media (max-height: 40em) {
+  .tc-ctl-wlm .tc-ctl-wlm-content ul {
+    max-height: calc(3 * 5.5em);
+  }
+
+  .tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content > #tc-slot-wlm {
+    max-height: calc(2.75em + 3 * 5.5em);
+  }
+
+  .tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content > #tc-slot-wlm:not(.tc-collapsed) {
+    flex: 0 1 auto;
+    max-height: none;
+  }
+
+  .tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm:not(.tc-collapsed) .tc-ctl-wlm-content ul {
+    max-height: none;
+  }
 }
 
 .tc-ctl-wlm li.tc-ctl-wlm-elm {
@@ -253,19 +385,22 @@
 .tc-ctl-wlm .tc-ctl-wlm-lyr {
   font-size: 0.75em;
   padding-bottom: 5px;
-  color: #757575 !important;
+  color: #777777 !important;
 }
 
 .tc-ctl-wlm .tc-ctl-wlm-path {
   color: #660000 !important;
 }
 
-.tc-ctl-wlm li.tc-ctl-wlm-elm.tc-ctl-wlm-elm-notvisible .tc-ctl-wlm-lyr {
-  color: #757575 !important;
+/* #92: out-of-scale Capas titles must not keep maroon path (#660000). */
+.tc-ctl-wlm li.tc-ctl-wlm-elm.tc-ctl-wlm-elm-notvisible .tc-ctl-wlm-path,
+.tc-ctl-wlm li.tc-ctl-wlm-elm.tc-ctl-wlm-elm-notvisible .tc-ctl-wlm-lyr,
+.tc-ctl-wlm li.tc-ctl-wlm-elm.tc-ctl-wlm-elm-notvisible .tc-ctl-wlm-type {
+  color: #777777 !important;
 }
 
 .tc-ctl-lcat li.tc-ctl-lcat-node-notvisible {
-  color: #757575 !important;
+  color: #777777 !important;
 }
 
 .tc-ctl-wlm input[type='range'] {
@@ -273,7 +408,30 @@
   margin-right: 5%;
 }
 
-/* Responsive adjustments */
+/*
+ * #135: map chrome stacking. Capas tab = .tc-tools-panel > h1 (not left #tools-tab).
+ * Below 480px hide Street View / 3D so zoom/home/Capas tab remain usable.
+ */
+.tc-tools-panel.tc-collapsed-right > h1::before,
+.tc-tools-panel.tc-collapsed-right > h1::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .tc-ctl.tc-ctl-sv {
+    top: 10.5em !important;
+  }
+
+  .tc-ctl.tc-ctl-nav {
+    top: 16.5em;
+  }
+
+  .tc-ctl.tc-ctl-3d {
+    top: 28em;
+  }
+}
+
 @media (max-width: 768px) {
   .tc-tools-panel > h1 {
     top: 84px;
@@ -281,6 +439,18 @@
 
   .tc-ctl-search-content {
     left: 20px;
+  }
+
+  .tc-ctl.tc-ctl-sv {
+    top: 9.5em !important;
+  }
+
+  .tc-ctl.tc-ctl-nav {
+    top: 14.5em;
+  }
+
+  .tc-ctl.tc-ctl-3d {
+    top: 24em;
   }
 
   .tc-left-panel.tc-collapsed .tc-ctl-sv {
@@ -291,6 +461,26 @@
   /* Hide coordinates on mobile */
   #tc-slot-coordinates {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .tc-ctl.tc-ctl-sv,
+  .tc-ctl.tc-ctl-3d {
+    display: none !important;
+  }
+
+  .tc-ctl.tc-ctl-nav {
+    top: 9em;
+  }
+
+  .tc-ctl.tc-ctl-nav-home {
+    top: 5.5em;
+  }
+
+  .tc-tools-panel.tc-collapsed-right > h1 {
+    top: auto;
+    bottom: 0;
   }
 }
 

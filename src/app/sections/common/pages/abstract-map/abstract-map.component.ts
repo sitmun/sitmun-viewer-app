@@ -35,6 +35,7 @@ import { MapConfigurationService } from 'src/app/services/map-configuration.serv
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
+import { ToolsPanelSplitterService } from 'src/app/services/tools-panel-splitter.service';
 
 const MAP_LOAD_TIMEOUT_MS = 30_000;
 
@@ -57,6 +58,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private activeRequestId = 0;
   private loadId = 0;
   private readonly layerCatalogHandler = inject(LayerCatalogControlHandler);
+  private readonly toolsPanelSplitter = inject(ToolsPanelSplitterService);
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -247,6 +249,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
 
+    this.toolsPanelSplitter.unmount();
+
     // Fully cleanup all control handlers (removes DOM artifacts, restores patches)
     this.controlRegistry.cleanupAll();
 
@@ -423,6 +427,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
   clearMap() {
     this.loadId++;
+    this.toolsPanelSplitter.unmount();
     if (this.map) {
       this.layerCatalogHandler.teardownMapState(this.map);
     }
@@ -537,6 +542,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
             error
           );
         }
+        this.toolsPanelSplitter.mount(this.document);
         this.loadingState = 'loaded';
         resolve();
       });

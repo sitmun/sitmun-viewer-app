@@ -376,20 +376,35 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         }
       };
 
+      // Capas + Capas disponibles share the tools column (splitter); keep them
+      // out of mutual accordion exclusion. BMS / click-tools still accordion.
+      const isLayerStackControl = function (ctl) {
+        const div = ctl && ctl.div;
+        if (!div) {
+          return false;
+        }
+        return (
+          div.id === 'tc-slot-wlm' ||
+          div.id === 'tc-slot-toc' ||
+          div.classList.contains('tc-ctl-wlm') ||
+          div.classList.contains('tc-ctl-lcat')
+        );
+      };
+
       map
         .on(SITNA.Consts.event.CONTROLHIGHLIGHT, function (e) {
           const ctl = e.control;
           toggleCollapsed.call(ctl, false);
 
           if (map.layout && map.layout.accordion) {
-            // Hacemos que solamente un control del panel de herramientas esté desplegado cada vez
             const toolPanelControls = map.controls
               .filter((ctl) => !ctl.containerControl)
               .filter((ctl) => ctl.div && toolsPanel.contains(ctl.div));
             if (toolPanelControls.includes(ctl)) {
               toolPanelControls
                 .filter((c) => c !== ctl)
-                .forEach((ctl) => ctl.unhighlight());
+                .filter((c) => !isLayerStackControl(c))
+                .forEach((peer) => peer.unhighlight());
             }
           }
         })
@@ -458,6 +473,26 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             .querySelector('.' + toc.CLASS + '-content')
             .insertAdjacentElement('afterend', mfi.div);
           mfi.containerControl = toc;
+        }
+
+        // Capas starts collapsed (header only). Catalog stays open. Accordion
+        // exclusion keeps Capas from collapsing the catalog when Capas is opened.
+        const layerCatalog = map.getControlsByClass('TC.control.LayerCatalog')[0];
+        if (toc) {
+          if (typeof toc.isHighlighted === 'function' && toc.isHighlighted()) {
+            toc.unhighlight();
+          } else if (toc.div) {
+            toc.div.classList.add(SITNA.Consts.classes.COLLAPSED);
+          }
+        }
+        if (layerCatalog && layerCatalog.div) {
+          layerCatalog.div.classList.remove(SITNA.Consts.classes.COLLAPSED);
+          if (
+            typeof layerCatalog.isHighlighted === 'function' &&
+            !layerCatalog.isHighlighted()
+          ) {
+            layerCatalog.highlight();
+          }
         }
 
         //Aplicar clases CSS cuando se haga click en elementos definidos por configuración

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map**: Capas and Capas disponibles are a paired stack (excluded from tools-panel accordion mutual exclusion; BMS/click-tools still accordion); Capas starts collapsed and opens when the first work layer is added; splitter appears only when Capas has layers; Capas drag keeps ≥160px for Capas disponibles; locked height clears when Capas is collapsed/empty (`localStorage` `sitmun.toolsPanel.paneHeights`) ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Languages**: toolbar/menu switcher omits languages with `enabled: false` from `GET /api/languages`.
 - **Language chrome**: toolbar control left of the hamburger (and beside expand when the map bar is collapsed) shows closed BCP-47 ISO and open API endonyms; landing language is `localStorage` → STM_CONF `language.default` → static; language entry removed from the hamburger menu.
 - **Map**: multi-tree apps default to the lowest `trees[].order`; Capas disponibles shows an icon-only **Cambiar tema** toolbar control (not `sitna-toggle`); current tree name is on the button tooltip via localized `currentTopic`.
@@ -27,6 +28,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: Capas out-of-scale rows (`tc-ctl-wlm-elm-notvisible`) use `#777777` for path/lyr/type so titles are not stuck on maroon `#660000` ([#92](https://github.com/sitmun/sitmun-viewer-app/issues/92)).
+- **Map**: Capas and Capas disponibles share the tools-panel column without overlap; Capas scrolls after 4 rows (3 on short viewports) ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
+- **Map**: map tool chrome stacks without overlap at 480/768/1024; Capas tab shows one glyph; Street View and 3D hide under 480px width ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).
 - **Map**: WMS legend GetLegendGraphic keeps a finite OGC `SCALE` on WKT-registered metre CRS (e.g. EPSG:3763) by coercing SITNA `getMetersPerUnit` when OpenLayers `METERS_PER_UNIT` misses `"meter"` ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 - **Language chrome**: toolbar language control uses the same ink as the hamburger (inherit + orange hover; white on login); collapsed-bar control stays white beside expand.
 - **Languages**: navigation bar subscribes to `LanguageService.languagesToUse$` and re-fetches enabled/order when the language menu opens so admin enable/order changes appear without a full reload.
