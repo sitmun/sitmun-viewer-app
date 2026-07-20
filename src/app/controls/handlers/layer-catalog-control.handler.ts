@@ -1,4 +1,6 @@
 import { inject, Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 
@@ -16,6 +18,10 @@ import {
   BootstrapEligibilityOptions,
   SitnaControlConfig
 } from '../control-handler.interface';
+
+const LCAT_LOADING_I18N = 'layerCatalog.loading';
+const LCAT_LOAD_FAILED_I18N = 'layerCatalog.loadFailed';
+const MATERIAL_ICON_WARNING = 'warning';
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
@@ -49,6 +55,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   private readonly catalogSwitching = inject(CatalogSwitchingService);
   private readonly rasterService = inject(RasterLayerService);
   private readonly capabilitiesInterceptor = inject(SitnaCapabilitiesInterceptor);
+  private readonly translate = inject(TranslateService);
 
   // Store AppCfg for use in patches
   // Set in loadPatches() before patches are applied, so it's guaranteed to be non-null when patches execute
@@ -62,6 +69,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   private radioControlCleanups = new WeakMap<object, () => void>();
   private radioControlCleanupFns = new Set<() => void>();
   private radioControlCleanupsByMap = new WeakMap<object, Set<() => void>>();
+  /** nodeIds that hit LAYERERROR during/after a catalog add (sync flag for runAdd). */
+  private catalogAddFailures = new WeakMap<object, Set<string>>();
+  /** Avoid stacking TILELOADERROR watchers on the same work layer. */
+  private catalogTileFailureWatchers = new WeakSet<object>();
+  /** Capas DOM observers: clear awaitingWlmUi when the WLM LI appears. */
+  private wlmUiWatchers = new WeakMap<object, MutationObserver>();
+  private wlmUiWatcherMaps = new Set<object>();
+  private readonly decoratedCatalogControls = new Set<object>();
+  private langChangeSub?: Subscription;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
@@ -120,11 +136,26 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     await this.patchRasterGetInfo();
     await this.patchLayerCatalogInjectCatalogSwitching();
 
+    this.langChangeSub?.unsubscribe();
+    this.langChangeSub = this.translate.onLangChange.subscribe(() => {
+      for (const catalog of this.decoratedCatalogControls) {
+        this.syncInFlightSpinners(catalog);
+        this.syncLoadFailedWarnings(catalog);
+      }
+    });
+    this.patchManager.add(() => {
+      this.langChangeSub?.unsubscribe();
+      this.langChangeSub = undefined;
+    });
+
     // Mark patches as applied
     this.patchesApplied = true;
   }
 
   override cleanup(): void {
+    this.langChangeSub?.unsubscribe();
+    this.langChangeSub = undefined;
+    this.decoratedCatalogControls.clear();
     this.teardownMapState();
     super.cleanup();
     this.patchesApplied = false;
@@ -135,6 +166,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       const detach = this.mapEventBridges.get(map);
       detach?.();
       this.teardownRadioControlsForMap(map);
+      this.teardownWlmUiWatchers(map);
       this.catalogSelection.clearMap(map);
       return;
     }
@@ -152,6 +184,21 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     this.radioControlCleanups = new WeakMap();
     this.radioControlCleanupFns.clear();
     this.radioControlCleanupsByMap = new WeakMap();
+    this.teardownWlmUiWatchers();
+  }
+
+  private teardownWlmUiWatchers(map?: object): void {
+    if (map) {
+      this.wlmUiWatchers.get(map)?.disconnect();
+      this.wlmUiWatchers.delete(map);
+      this.wlmUiWatcherMaps.delete(map);
+      return;
+    }
+    for (const watched of [...this.wlmUiWatcherMaps]) {
+      this.wlmUiWatchers.get(watched)?.disconnect();
+      this.wlmUiWatchers.delete(watched);
+    }
+    this.wlmUiWatcherMaps.clear();
   }
 
   /**
@@ -431,6 +478,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             );
           }
 
+          // Show title spinner for the in-flight slot until commit/fail.
+          handler.syncRadioCheckedState(self);
+
           const layerOptions = Util.extend({}, layerObj.options) as {
             id?: string;
             hideTree?: boolean;
@@ -486,38 +536,52 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
           const Raster = TC.layer.Raster;
 
-          const runAdd = async (): Promise<any> => {
-            try {
-              if (!prepared.needsPhysicalAdd) {
-                const removed = handler.catalogSelection.commitSelection(
+          const commitClaimOnly = async (): Promise<any> => {
+            const removed = handler.catalogSelection.commitSelection(
+              self.map,
+              layerName,
+              resource,
+              true
+            );
+            await handler.catalogSelection.runWithSelfCommit(
+              self.map,
+              async () => {
+                await handler.removePhysicalResources(
                   self.map,
-                  layerName,
-                  resource,
-                  true
-                );
-                await handler.catalogSelection.runWithSelfCommit(
-                  self.map,
-                  async () => {
-                    await handler.removePhysicalResources(
-                      self.map,
-                      removed.removeResources,
-                      self,
-                      layerName
-                    );
-                  }
-                );
-                handler.syncRadioCheckedState(self);
-                return handler.findRepresentativeWorkLayer(
-                  self.map,
-                  resource,
+                  removed.removeResources,
+                  self,
                   layerName
                 );
+              }
+            );
+            handler.afterCatalogClaimCommitted(self.map, self);
+            return handler.findRepresentativeWorkLayer(
+              self.map,
+              resource,
+              layerName
+            );
+          };
+
+          const runAdd = async (): Promise<any> => {
+            try {
+              // Orphan / race peer already on the map: claim only, never double-add.
+              const alreadyOnMap = handler.findRepresentativeWorkLayer(
+                self.map,
+                resource,
+                layerName
+              );
+              if (!prepared.needsPhysicalAdd || alreadyOnMap) {
+                return commitClaimOnly();
               }
 
               const newLayer = new Raster(layerOptions);
               await newLayer.getCapabilitiesPromise();
 
               if (!appCfgAdd) {
+                handler.catalogSelection.clearPendingReplacement(
+                  self.map,
+                  layerName
+                );
                 return joinPoint.proceed();
               }
               const nodeTitle = handler.getNodeTitle(layerName, appCfgAdd);
@@ -531,6 +595,16 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
               }
 
               if (newLayer.isCompatible(self.map.crs)) {
+                // Second check after await: a peer may have finished addLayer.
+                const racedOnMap = handler.findRepresentativeWorkLayer(
+                  self.map,
+                  resource,
+                  layerName
+                );
+                if (racedOnMap) {
+                  return commitClaimOnly();
+                }
+
                 const profileOpacity =
                   typeof transparency === 'number' && transparency > 0
                     ? (100 - transparency) / 100
@@ -552,6 +626,23 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                   self.map,
                   () => self.map.addLayer(layerOptions)
                 );
+
+                // LAYERERROR during add rolls back Capas; do not re-claim.
+                if (handler.consumeCatalogAddFailure(self.map, layerName)) {
+                  await handler.removePhysicalLayersByNodeIds(
+                    self.map,
+                    [layerName],
+                    self
+                  );
+                  handler.catalogSelection.commitSelection(
+                    self.map,
+                    layerName,
+                    resource,
+                    false
+                  );
+                  handler.syncRadioCheckedState(self);
+                  return undefined;
+                }
 
                 if (
                   addedLayer != null &&
@@ -585,7 +676,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                     );
                   }
                 );
-                handler.syncRadioCheckedState(self);
+                handler.attachCatalogTileFailureWatcher(
+                  self.map,
+                  addedLayer ?? newLayer,
+                  layerName,
+                  TC
+                );
+                handler.afterCatalogClaimCommitted(self.map, self);
                 return addedLayer ?? newLayer;
               }
 
@@ -606,6 +703,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                 self.map,
                 layerName
               );
+              handler.syncRadioCheckedState(self);
               throw error;
             }
           };
@@ -670,10 +768,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     const layerRemove = events.LAYERREMOVE ?? 'layerremove';
     const layerError = events.LAYERERROR ?? 'layererror';
 
-    const onAdd = (layer: any) => {
+    const onAdd = (eventOrLayer: any) => {
       if (this.catalogSelection.isSelfCommit(map)) {
         return;
       }
+      const layer = eventOrLayer?.layer ?? eventOrLayer;
       const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
       if (!nodeId) {
         return;
@@ -700,7 +799,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           });
           const catalog = this.findLayerCatalogControl(map, TC);
           if (catalog) {
-            this.syncRadioCheckedState(catalog);
+            this.afterCatalogClaimCommitted(map, catalog);
           }
         };
 
@@ -733,38 +832,34 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       if (!nodeId) {
         return;
       }
-      void this.catalogSelection.runExclusive(map, () => {
+      // Capas trash removes one LI; cascade any duplicate workLayers for the
+      // same catalog node, then drop claims (parity with catalog unload).
+      void this.catalogSelection.runExclusive(map, async () => {
+        const catalog = this.findLayerCatalogControl(map, TC);
+        await this.removePhysicalLayersByNodeIds(map, [nodeId], undefined);
         const resource = this.configLookup.findNode(nodeId)?.resource;
         if (resource) {
           this.catalogSelection.clearClaimsForResource(map, resource);
         } else {
           this.catalogSelection.deselectNode(map, nodeId);
         }
-        const catalog = this.findLayerCatalogControl(map, TC);
         if (catalog) {
           this.syncRadioCheckedState(catalog);
         }
       });
     };
 
-    const onError = (layer: any) => {
-      if (this.catalogSelection.isSelfCommit(map)) {
+    const onError = (eventOrLayer: any) => {
+      const errLayer = eventOrLayer?.layer ?? eventOrLayer;
+      const nodeId = this.catalogSelection.resolveNodeId(errLayer ?? {});
+      const knownNode = nodeId
+        ? !!this.configLookup.findNode(nodeId)
+        : false;
+      if (!nodeId || !knownNode) {
         return;
       }
-      const nodeId = this.catalogSelection.resolveNodeId(layer ?? {});
-      if (!nodeId) {
-        return;
-      }
-      this.catalogSelection.commitSelection(
-        map,
-        nodeId,
-        this.configLookup.findNode(nodeId)?.resource,
-        false
-      );
-      const catalog = this.findLayerCatalogControl(map, TC);
-      if (catalog) {
-        this.syncRadioCheckedState(catalog);
-      }
+      this.markCatalogAddFailure(map, nodeId);
+      void this.rollbackFailedCatalogLayer(map, nodeId, TC);
     };
 
     if (typeof map.on === 'function') {
@@ -813,6 +908,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     const previousCleanup = this.radioControlCleanups.get(catalogControl);
     previousCleanup?.();
+    this.decoratedCatalogControls.add(catalogControl);
 
     const inputHandler = (event: Event) => {
       const target = event.target as HTMLElement | null;
@@ -868,12 +964,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         if (!folderId || !this.configLookup.isLoadDataFolder(folderId)) {
           return;
         }
+        this.ensureFolderLoadControlType(target, folderId);
         const leaves = this.folderLeafIdsForControl(catalogControl, folderId);
         const loaded = this.loadedLeafIdsFromMap(map, leaves);
         const state = this.catalogSelection.folderLoadState(loaded, leaves);
         const willUnload = this.catalogSelection.shouldUnloadFolder(state);
         // Project intended visual immediately (native click already toggled once).
-        this.applyFolderCheckboxVisual(target, willUnload ? 'none' : 'all');
+        this.applyFolderCheckboxVisual(target, willUnload ? 'none' : 'all', {
+          radioFolder: this.configLookup.isRadioFolder(folderId)
+        });
         void this.handleLoadDataFolderCheckboxClick(catalogControl, folderId);
         return;
       }
@@ -960,12 +1059,15 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         this.applyCatalogRowLayout(searchList);
         this.syncLoadDataCheckboxState(catalogControl);
         this.syncLeafLoadCheckboxState(catalogControl);
+        this.syncInFlightSpinners(catalogControl);
+        this.syncLoadFailedWarnings(catalogControl);
       });
       observer.observe(searchList, { childList: true, subtree: true });
       this.radioSearchObservers.set(catalogControl, observer);
     }
 
     const cleanup = () => {
+      this.decoratedCatalogControls.delete(catalogControl);
       div.removeEventListener('click', inputHandler, true);
       div
         .querySelectorAll(
@@ -974,7 +1076,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         .forEach((label: Element) => label.remove());
       div
         .querySelectorAll(
-          '.sitmun-lcat-gfi, .sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot'
+          '.sitmun-lcat-gfi, .sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot, .sitmun-lcat-loading, .sitmun-lcat-load-failed'
         )
         .forEach((el: Element) => el.remove()); // drop legacy GFI/slot leftovers
       div
@@ -1144,7 +1246,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       });
   }
 
-  /** Trail meta after the row title (right-aligned with flex title growth). */
+  /** Trail meta after the row title (and spinner / load-failed when present). */
   private placeMetadataControl(meta: HTMLElement): void {
     const row =
       (meta.closest('li.tc-ctl-lcat-node, li.tc-ctl-lcat-leaf') as HTMLElement | null) ??
@@ -1154,10 +1256,19 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
     const titleSpan = this.findRowTitleElement(row);
     if (titleSpan) {
-      if (titleSpan.nextElementSibling === meta) {
+      let anchor: Element = titleSpan;
+      let next = titleSpan.nextElementSibling as HTMLElement | null;
+      while (
+        next?.classList.contains('sitmun-lcat-loading') ||
+        next?.classList.contains('sitmun-lcat-load-failed')
+      ) {
+        anchor = next;
+        next = next.nextElementSibling as HTMLElement | null;
+      }
+      if (anchor.nextElementSibling === meta) {
         return;
       }
-      titleSpan.after(meta);
+      anchor.after(meta);
       return;
     }
     const nestedUl = Array.from(row.children).find(
@@ -1389,9 +1500,18 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       // Stamp config node id so cleanup/sync stay aligned when SITNA omits Name.
       folderLi.dataset['layerName'] = folderId;
       folderLi.setAttribute('data-sitmun-load-folder', 'true');
-      if (
-        this.hasDirectCatalogControlLabel(folderLi, 'sitmun-lcat-load-label')
-      ) {
+      // Direct children only — nested folders also carry load labels; a
+      // descendant querySelector match would skip the ancestor control.
+      const existingLabel = Array.from(folderLi.children).find(
+        (child) =>
+          child instanceof HTMLLabelElement &&
+          child.classList.contains('sitmun-lcat-load-label')
+      ) as HTMLLabelElement | undefined;
+      const existingLoad = existingLabel?.querySelector(
+        'input.sitmun-lcat-load'
+      ) as HTMLInputElement | null | undefined;
+      if (existingLoad) {
+        this.ensureFolderLoadControlType(existingLoad, folderId);
         continue;
       }
       const folderNode = this.configLookup.findNode(folderId);
@@ -1400,10 +1520,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       input.type = isRadioFolder ? 'radio' : 'checkbox';
       input.className = 'sitmun-lcat-load';
       input.dataset['layerName'] = folderId;
-      if (isRadioFolder) {
-        // Own name group so this control does not share exclusivity with children.
-        input.name = `sitmun-lcat-load-${folderId}-${++this.radioGroupSequence}`;
-      }
+      this.ensureFolderLoadControlType(input, folderId);
       input.setAttribute(
         'aria-label',
         folderNode?.title
@@ -1603,10 +1720,36 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
   private folderLeafIds(folderId: string): string[] {
     if (this.configLookup.isRadioFolder(folderId)) {
-      // All direct children: folder load control tracks any selected sibling.
-      return this.configLookup.getDirectChildIds(folderId);
+      // Only exclusive resource siblings — nested browse folders are not load slots.
+      return this.configLookup.getDirectChildIds(folderId).filter((childId) => {
+        const child = this.configLookup.findNode(childId);
+        return (
+          !!child?.resource &&
+          !child.action &&
+          !this.configLookup.isLoadDataFolder(childId)
+        );
+      });
     }
     return this.configLookup.collectDescendantLeafIds(folderId);
+  }
+
+  /** Keep folder load control type aligned with isRadio (MutationObserver reinject). */
+  private ensureFolderLoadControlType(
+    input: HTMLInputElement,
+    folderId: string
+  ): void {
+    const isRadioFolder = this.configLookup.isRadioFolder(folderId);
+    const wantType = isRadioFolder ? 'radio' : 'checkbox';
+    if (input.type !== wantType) {
+      input.type = wantType;
+    }
+    if (isRadioFolder) {
+      if (!input.name) {
+        input.name = `sitmun-lcat-load-${folderId}-${++this.radioGroupSequence}`;
+      }
+    } else {
+      input.removeAttribute('name');
+    }
   }
 
   /** Prefer leaves that exist under the folder in the catalog DOM (profile may list more). */
@@ -1680,19 +1823,22 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
   private applyFolderCheckboxVisual(
     element: HTMLInputElement,
-    state: 'none' | 'partial' | 'all'
+    state: 'none' | 'partial' | 'all',
+    options?: { radioFolder?: boolean }
   ): void {
-    const isRadio = element.type === 'radio';
-    element.indeterminate = !isRadio && state === 'partial';
-    element.checked = state === 'all';
+    const radioFolder =
+      options?.radioFolder === true || element.type === 'radio';
+    const visual = radioFolder && state === 'partial' ? 'all' : state;
+    element.indeterminate = !radioFolder && visual === 'partial';
+    element.checked = visual === 'all';
     // Do not set HTML `checked` — SITNA search→tree uses `li [checked]` to
     // decide whether to open the info pane (empty modal if only our loads match).
     element.removeAttribute('checked');
     element.setAttribute(
       'aria-checked',
-      !isRadio && state === 'partial' ? 'mixed' : String(state === 'all')
+      !radioFolder && visual === 'partial' ? 'mixed' : String(visual === 'all')
     );
-    element.setAttribute('data-sitmun-folder-state', state);
+    element.setAttribute('data-sitmun-folder-state', visual);
   }
 
   private syncLoadDataCheckboxState(catalogControl: any): void {
@@ -1708,14 +1854,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       if (!folderId) {
         return;
       }
+      this.ensureFolderLoadControlType(element, folderId);
+      const radioFolder = this.configLookup.isRadioFolder(folderId);
       const leaves = this.folderLeafIdsForControl(catalogControl, folderId);
       const loaded = this.loadedLeafIdsFromMap(map, leaves);
-      let state = this.catalogSelection.folderLoadState(loaded, leaves);
-      // Radio folder load control: any selected child ⇒ checked (never partial).
-      if (element.type === 'radio' && state === 'partial') {
-        state = 'all';
-      }
-      this.applyFolderCheckboxVisual(element, state);
+      const state = this.catalogSelection.folderLoadState(loaded, leaves);
+      this.applyFolderCheckboxVisual(element, state, { radioFolder });
       element.disabled = this.catalogSelection.isAnyPending(map, leaves);
     });
   }
@@ -1752,8 +1896,269 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         li.classList.toggle('tc-checked', checked);
       }
     });
+    this.syncInFlightSpinners(catalogControl);
+    this.syncLoadFailedWarnings(catalogControl);
     this.syncLoadDataCheckboxState(catalogControl);
     this.syncLeafLoadCheckboxState(catalogControl);
+  }
+
+  /**
+   * Spinner after the title while the add is in flight or Capas has not
+   * painted the work-layer row yet (WLM updateLayerTree is async).
+   */
+  private syncInFlightSpinners(catalogControl: any): void {
+    const div = catalogControl?.div as ParentNode | undefined;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+    const label = this.translate.instant(LCAT_LOADING_I18N);
+    div.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
+      const li = node as HTMLElement;
+      const nodeId = li.dataset['layerName'];
+      const pending =
+        !!nodeId && this.catalogSelection.isCatalogLoadPending(map, nodeId);
+      let spinner = Array.from(li.children).find((child) =>
+        child.classList.contains('sitmun-lcat-loading')
+      ) as HTMLElement | undefined;
+      if (pending) {
+        if (!spinner) {
+          const doc = li.ownerDocument;
+          if (!doc) {
+            return;
+          }
+          spinner = doc.createElement('i');
+          spinner.className = 'sitmun-lcat-loading';
+          spinner.setAttribute('role', 'status');
+        }
+        spinner.setAttribute('aria-label', label);
+        spinner.title = label;
+        const title = this.findRowTitleElement(li);
+        if (title) {
+          if (title.nextElementSibling !== spinner) {
+            title.after(spinner);
+          }
+        } else if (spinner.parentElement !== li) {
+          li.appendChild(spinner);
+        }
+        li.setAttribute('aria-busy', 'true');
+      } else {
+        spinner?.remove();
+        li.removeAttribute('aria-busy');
+      }
+    });
+  }
+
+  /** Warning after the title for nodes that failed to load (cleared on success). */
+  private syncLoadFailedWarnings(catalogControl: any): void {
+    const div = catalogControl?.div as ParentNode | undefined;
+    const map = catalogControl?.map;
+    if (!div || !map) {
+      return;
+    }
+    const label = this.translate.instant(LCAT_LOAD_FAILED_I18N);
+    div.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
+      const li = node as HTMLElement;
+      const nodeId = li.dataset['layerName'];
+      const failed =
+        !!nodeId && this.catalogSelection.isLoadFailed(map, nodeId);
+      let warning = Array.from(li.children).find((child) =>
+        child.classList.contains('sitmun-lcat-load-failed')
+      ) as HTMLElement | undefined;
+      if (failed) {
+        if (!warning) {
+          const doc = li.ownerDocument;
+          if (!doc) {
+            return;
+          }
+          warning = doc.createElement('i');
+          warning.className = 'sitmun-lcat-load-failed material-icons';
+          warning.textContent = MATERIAL_ICON_WARNING;
+          warning.setAttribute('role', 'img');
+        }
+        warning.setAttribute('aria-label', label);
+        warning.title = label;
+        const title = this.findRowTitleElement(li);
+        const spinner = Array.from(li.children).find((child) =>
+          child.classList.contains('sitmun-lcat-loading')
+        );
+        const anchor = spinner ?? title;
+        if (anchor) {
+          if (anchor.nextElementSibling !== warning) {
+            anchor.after(warning);
+          }
+        } else if (warning.parentElement !== li) {
+          li.appendChild(warning);
+        }
+      } else {
+        warning?.remove();
+      }
+    });
+  }
+
+  /** After claim commit: keep spinner until Capas LI exists. */
+  private afterCatalogClaimCommitted(map: object, catalogControl: any): void {
+    this.ensureWlmUiWatcher(map, catalogControl);
+    this.settleAwaitingWlmUi(map, catalogControl);
+    this.syncRadioCheckedState(catalogControl);
+  }
+
+  private ensureWlmUiWatcher(map: object, catalogControl: any): void {
+    if (this.wlmUiWatchers.has(map)) {
+      return;
+    }
+    const roots = this.findWorkLayerManagerRoots(map);
+    if (roots.length === 0) {
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      this.settleAwaitingWlmUi(map, catalogControl);
+    });
+    for (const root of roots) {
+      observer.observe(root, { childList: true, subtree: true });
+    }
+    this.wlmUiWatchers.set(map, observer);
+    this.wlmUiWatcherMaps.add(map);
+    this.patchManager.add(() => this.teardownWlmUiWatchers(map));
+  }
+
+  private settleAwaitingWlmUi(map: object, catalogControl: any): void {
+    const pending = [...this.catalogSelection.getAwaitingWlmUi(map)];
+    if (pending.length === 0) {
+      return;
+    }
+    let changed = false;
+    for (const nodeId of pending) {
+      if (this.hasWorkLayerManagerRow(map, nodeId)) {
+        this.catalogSelection.clearAwaitingWlmUi(map, nodeId);
+        this.catalogSelection.clearLoadFailed(map, nodeId);
+        changed = true;
+        continue;
+      }
+      const resource = this.configLookup.findNode(nodeId)?.resource;
+      if (!this.findRepresentativeWorkLayer(map, resource, nodeId)) {
+        // Rolled back before Capas painted — drop the wait.
+        this.catalogSelection.clearAwaitingWlmUi(map, nodeId);
+        changed = true;
+      }
+    }
+    if (changed) {
+      this.syncInFlightSpinners(catalogControl);
+      this.syncLoadFailedWarnings(catalogControl);
+    }
+  }
+
+  private findWorkLayerManagerRoots(map: any): ParentNode[] {
+    const TC = this.sitnaApi.getTC();
+    const Wlm = TC?.control?.WorkLayerManager;
+    if (!Wlm || typeof map?.getControlsByClass !== 'function') {
+      return [];
+    }
+    const controls = map.getControlsByClass(Wlm);
+    if (!Array.isArray(controls)) {
+      return [];
+    }
+    return controls
+      .map((c: { div?: ParentNode }) => c?.div)
+      .filter((div: ParentNode | undefined): div is ParentNode => !!div);
+  }
+
+  private hasWorkLayerManagerRow(map: any, nodeId: string): boolean {
+    const resource = this.configLookup.findNode(nodeId)?.resource;
+    const layer = this.findRepresentativeWorkLayer(map, resource, nodeId);
+    if (!layer?.id) {
+      return false;
+    }
+    const roots = this.findWorkLayerManagerRoots(map);
+    if (roots.length === 0) {
+      // No Capas control — nothing to wait for.
+      return true;
+    }
+    const layerId = String(layer.id);
+    const escaped =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(layerId)
+        : layerId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return roots.some(
+      (root) =>
+        !!root.querySelector(`li.tc-ctl-wlm-elm[data-layer-id="${escaped}"]`)
+    );
+  }
+
+  private markCatalogAddFailure(map: object, nodeId: string): void {
+    let failed = this.catalogAddFailures.get(map);
+    if (!failed) {
+      failed = new Set();
+      this.catalogAddFailures.set(map, failed);
+    }
+    failed.add(nodeId);
+  }
+
+  private consumeCatalogAddFailure(map: object, nodeId: string): boolean {
+    const failed = this.catalogAddFailures.get(map);
+    if (!failed?.has(nodeId)) {
+      return false;
+    }
+    failed.delete(nodeId);
+    return true;
+  }
+
+  /**
+   * Restricted WMS often joins Capas successfully, then fails on GetMap with
+   * TILELOADERROR (e.g. 401) + toast — not LAYERERROR. Drop Capas + claims.
+   */
+  private attachCatalogTileFailureWatcher(
+    map: any,
+    layer: any,
+    nodeId: string,
+    TC: any
+  ): void {
+    const wrapEvents = layer?.wrap?.$events;
+    if (!wrapEvents || typeof wrapEvents.on !== 'function') {
+      return;
+    }
+    if (this.catalogTileFailureWatchers.has(layer)) {
+      return;
+    }
+    this.catalogTileFailureWatchers.add(layer);
+    const tileEvt =
+      TC?.Consts?.event?.TILELOADERROR ?? 'tileloaderror.tc';
+    const onTileError = (event: any) => {
+      const code = event?.error?.code?.toString?.() ?? '';
+      const text = String(event?.error?.text ?? '');
+      // Match SITNA appendRasterEvents toast gate (skip 404 / offline).
+      if (!code || code === '404' || text === 'offline') {
+        return;
+      }
+      if (typeof wrapEvents.off === 'function') {
+        wrapEvents.off(tileEvt, onTileError);
+      }
+      void this.rollbackFailedCatalogLayer(map, nodeId, TC);
+    };
+    wrapEvents.on(tileEvt, onTileError);
+  }
+
+  private async rollbackFailedCatalogLayer(
+    map: object,
+    nodeId: string,
+    TC: any
+  ): Promise<void> {
+    const resource = this.configLookup.findNode(nodeId)?.resource;
+    this.catalogSelection.commitSelection(map, nodeId, resource, false);
+    this.catalogSelection.clearPendingReplacement(map, nodeId);
+    this.catalogSelection.markLoadFailed(map, nodeId);
+    await this.catalogSelection.runExclusive(map, async () => {
+      const catalog = this.findLayerCatalogControl(map, TC);
+      await this.removePhysicalLayersByNodeIds(map, [nodeId], undefined);
+      if (resource) {
+        this.catalogSelection.clearClaimsForResource(map, resource);
+      } else {
+        this.catalogSelection.deselectNode(map, nodeId);
+      }
+      if (catalog) {
+        this.syncRadioCheckedState(catalog);
+      }
+    });
   }
 
   private findRepresentativeWorkLayer(
@@ -1828,12 +2233,47 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       if (!nodeId || !wanted.has(nodeId)) {
         continue;
       }
-      await this.catalogSelection.runWithSelfCommit(map, () =>
-        map.removeLayer(layer)
-      );
+      // Prefer map.getLayer(id): indexOf(reference) can miss and leave Capas orphans.
+      const target =
+        (layer?.id != null && typeof map.getLayer === 'function'
+          ? map.getLayer(layer.id)
+          : null) ?? layer;
+      try {
+        await this.catalogSelection.runWithSelfCommit(map, () =>
+          map.removeLayer(target)
+        );
+        this.scrubWorkLayerManagerRow(map, target?.id ?? layer?.id);
+      } catch {
+        // Keep removing remaining matches if one removeLayer rejects.
+      }
     }
     if (catalogControl) {
       this.syncRadioCheckedState(catalogControl);
+    }
+  }
+
+  /**
+   * Capas may still hold a LI (or insert one later) after map.removeLayer when
+   * SITNA's async updateLayerTree wins the race. Scrub the known row id now.
+   */
+  private scrubWorkLayerManagerRow(map: any, layerId: string | undefined): void {
+    if (!layerId || !map) {
+      return;
+    }
+    const TC = this.sitnaApi.getTC();
+    const Wlm = TC?.control?.WorkLayerManager;
+    const controls =
+      Wlm && typeof map.getControlsByClass === 'function'
+        ? map.getControlsByClass(Wlm)
+        : [];
+    for (const wlm of Array.isArray(controls) ? controls : []) {
+      if (typeof wlm?.removeLayer === 'function') {
+        wlm.removeLayer({ id: layerId });
+      }
+      const div = wlm?.div as ParentNode | undefined;
+      div
+        ?.querySelectorAll(`li.tc-ctl-wlm-elm[data-layer-id="${layerId}"]`)
+        .forEach((li) => li.remove());
     }
   }
 

@@ -666,15 +666,67 @@ input[type='range']:focus {
   background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
 }
 
+/*
+ * Custom paint (not accent-color): Chromium drops accent after programmatic
+ * checked sync that follows Capas load / WLM remove.
+ */
 .sitmun-lcat-radio,
 .sitmun-lcat-load,
 .sitmun-lcat-leaf-load {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
   width: var(--sitmun-lcat-control);
   height: var(--sitmun-lcat-control);
   margin: 0;
+  padding: 0;
   vertical-align: middle;
-  accent-color: var(--main-hl-color, #c62828);
+  border: 1px solid #000;
+  background-color: #fff;
+  background-position: center;
+  background-repeat: no-repeat;
   cursor: pointer;
+}
+
+.sitmun-lcat-radio {
+  border-radius: 50%;
+}
+
+.sitmun-lcat-load,
+.sitmun-lcat-leaf-load {
+  border-radius: 2px;
+}
+
+/* Radio loadData folders: circular control (same paint as leaf radios). */
+.sitmun-lcat-load[type='radio'] {
+  border-radius: 50%;
+}
+
+.sitmun-lcat-radio:checked,
+.sitmun-lcat-load[type='radio']:checked {
+  border-color: var(--main-hl-color, #c62828);
+  background-color: var(--main-hl-color, #c62828);
+  background-image: radial-gradient(
+    circle,
+    #fff 0 35%,
+    transparent 36%
+  );
+}
+
+.sitmun-lcat-load:checked:not([type='radio']),
+.sitmun-lcat-leaf-load:checked {
+  border-color: var(--main-hl-color, #c62828);
+  background-color: var(--main-hl-color, #c62828);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M2 6l3 3 5-5'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
+}
+
+.sitmun-lcat-load:not([type='radio']):indeterminate,
+.sitmun-lcat-load:not([type='radio'])[data-sitmun-folder-state='partial'] {
+  border-color: var(--main-hl-color, #c62828);
+  background-color: var(--main-hl-color, #c62828);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2' d='M2 6h8'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
 }
 
 .tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-radio-label,
@@ -736,12 +788,61 @@ input[type='range']:focus {
 .sitmun-lcat-load:disabled {
   opacity: 0.55;
   cursor: wait;
-  accent-color: var(--main-hl-color, #c62828);
 }
 
-.sitmun-lcat-load:indeterminate,
-.sitmun-lcat-load[data-sitmun-folder-state='partial'] {
-  accent-color: var(--main-hl-color, #c62828);
+/* In-flight catalog add: spinner immediately after the row title. */
+.tc-ctl-lcat li > .sitmun-lcat-loading {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  box-sizing: border-box !important;
+  flex: 0 0 var(--sitmun-lcat-control) !important;
+  width: var(--sitmun-lcat-control) !important;
+  height: var(--sitmun-lcat-control) !important;
+  margin: 0 0 0 3px !important;
+  padding: 0 !important;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: var(--main-hl-color, #c62828);
+  border-radius: 50%;
+  background: transparent !important;
+  animation: sitmun-lcat-spin 0.7s linear infinite;
+  /* Allow hover so native title tooltips work. */
+  pointer-events: auto;
+  cursor: inherit;
+  z-index: 1;
+}
+
+@keyframes sitmun-lcat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Prior load failure: Material warning after the title (cleared on success). */
+.tc-ctl-lcat li > .sitmun-lcat-load-failed {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  box-sizing: border-box !important;
+  flex: 0 0 var(--sitmun-lcat-control) !important;
+  width: var(--sitmun-lcat-control) !important;
+  height: var(--sitmun-lcat-control) !important;
+  margin: 0 0 0 3px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  font-family: 'Material Icons', sans-serif !important;
+  font-size: var(--sitmun-lcat-control) !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  line-height: var(--sitmun-lcat-control) !important;
+  color: #ed6c02 !important;
+  background: transparent !important;
+  pointer-events: auto;
+  cursor: inherit;
+  z-index: 1;
+  user-select: none;
 }
 
 /* Folders never use italic as a loaded-state cue (SITNA .tc-checked > span). */

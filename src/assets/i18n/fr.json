@@ -142,6 +142,8 @@
   "layerCatalog.linkType.format.text_html": "HTML",
   "layerCatalog.linkType.format.text_xml": "XML",
   "layerCatalog.linkType.metadata": "Métadonnées",
+  "layerCatalog.loading": "Chargement de la couche…",
+  "layerCatalog.loadFailed": "Échec du chargement de la couche",
   "workLayerManager.gfi.label": "Information sur les entités",
   "workLayerManager.gfi.off": "Information sur les entités désactivée",
   "workLayerManager.gfi.on": "Information sur les entités activée",

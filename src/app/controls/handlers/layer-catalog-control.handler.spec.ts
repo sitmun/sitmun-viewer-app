@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Subject } from 'rxjs';
 
 import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
@@ -103,7 +104,10 @@ describe('LayerCatalogControlHandler', () => {
         { provide: SitnaCapabilitiesInterceptor, useValue: mockInterceptor },
         {
           provide: TranslateService,
-          useValue: { instant: (k: string) => k }
+          useValue: {
+            instant: (k: string) => k,
+            onLangChange: new Subject<{ lang: string }>().asObservable()
+          }
         },
         { provide: AppConfigService, useValue: mockAppConfigService }
       ]
@@ -2205,6 +2209,7 @@ describe('LayerCatalogControlHandler', () => {
         layerremove: []
       };
       const sharedLayer = { options: { nodeId: 'node/shared-a' } };
+      const workLayers = [sharedLayer];
       const map = {
         crs: 'EPSG:25831',
         addLayer: jest.fn().mockResolvedValue(sharedLayer),
@@ -2213,7 +2218,9 @@ describe('LayerCatalogControlHandler', () => {
           listeners[event]?.push(fn);
         }),
         off: jest.fn(),
-        workLayers: [sharedLayer]
+        get workLayers() {
+          return workLayers;
+        }
       };
       const ctx = {
         map,
@@ -2234,6 +2241,8 @@ describe('LayerCatalogControlHandler', () => {
       expect(selection.isNodeSelected(map, 'node/shared-a')).toBe(true);
       expect(selection.isNodeSelected(map, 'node/shared-b')).toBe(true);
 
+      // SITNA splices workLayers before dispatching LAYERREMOVE.
+      workLayers.splice(0, 1);
       listeners['layerremove'][0]?.({ layer: sharedLayer });
       await selection.runExclusive(map, async () => undefined);
 
@@ -2338,26 +2347,254 @@ describe('LayerCatalogControlHandler', () => {
       expect(result).toBe(existingLayer);
     });
 
-    it('self-generated LAYERERROR does not mutate catalog claims', async () => {
+    it('concurrent addLayerToMap for the same node adds only one physical layer', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      let releaseCaps!: () => void;
+      const capsGate = new Promise<void>((resolve) => {
+        releaseCaps = resolve;
+      });
+      const newLayerInstance: any = {
+        getCapabilitiesPromise: jest.fn().mockReturnValue(capsGate),
+        isCompatible: jest.fn().mockReturnValue(true),
+        Capability: { Layer: { Name: 'n1' } }
+      };
+      const Raster = jest.fn().mockImplementation(() => newLayerInstance);
+      const LayerCatalog: any = function () {};
+      LayerCatalog.prototype.addLayerToMap = function () {};
+      LayerCatalog.prototype.renderBranch = function (
+        _layer: unknown,
+        callback?: () => void
+      ) {
+        callback?.();
+      };
+      const TC = {
+        Util: {
+          extend: (target: any, ...sources: any[]) =>
+            Object.assign(target ?? {}, ...sources)
+        },
+        layer: { Raster },
+        control: { LayerCatalog },
+        Consts: {
+          event: {
+            LAYERADD: 'layeradd',
+            LAYERREMOVE: 'layerremove',
+            LAYERERROR: 'layererror'
+          }
+        }
+      };
+      mockSitnaApi.getTC.mockReturnValue(TC);
+      handler.cleanup();
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const workLayers: Array<{ options: { nodeId: string } }> = [];
+      const addLayer = jest
+        .fn()
+        .mockImplementation(async (opts: { nodeId?: string }) => {
+          const layer = { options: { nodeId: opts.nodeId ?? 'unknown' } };
+          workLayers.push(layer);
+          return layer;
+        });
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer,
+        on: jest.fn(),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const ctx = {
+        map,
+        getUID: () => `uid-${addLayer.mock.calls.length + 1}`,
+        showProjectionChangeDialog: () => undefined
+      };
+
+      const first = TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+      const second = TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+      releaseCaps();
+      await Promise.all([first, second]);
+
+      expect(addLayer).toHaveBeenCalledTimes(1);
+      expect(workLayers).toHaveLength(1);
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(true);
+    });
+
+    it('reclaims an orphan work layer without a second physical add', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const orphan = { options: { nodeId: 'node/plain-leaf' } };
+      const addLayer = jest.fn();
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer,
+        on: jest.fn(),
+        off: jest.fn(),
+        workLayers: [orphan]
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+
+      expect(addLayer).not.toHaveBeenCalled();
+      expect(result).toBe(orphan);
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(true);
+    });
+
+    it('external LAYERREMOVE cascades remaining duplicates for the same nodeId', async () => {
       const selection = TestBed.inject(CatalogLayerSelectionService);
       const { TC } = buildPatchedHandler();
       await patchWithTc(TC);
       const listeners: Record<string, Array<(layer: any) => void>> = {
-        layererror: []
+        layerremove: []
       };
-      const failingLayer = { options: { nodeId: 'node/a' } };
+      const layer1 = { id: 'wl-1', options: { nodeId: 'node/plain-leaf' } };
+      const layer2 = { id: 'wl-2', options: { nodeId: 'node/plain-leaf' } };
+      const workLayers = [layer1, layer2];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+        for (const fn of listeners['layerremove']) {
+          fn({ layer });
+        }
+      });
       const map = {
         crs: 'EPSG:25831',
-        addLayer: jest.fn().mockImplementation(async () => {
-          listeners['layererror'].forEach((fn) => fn(failingLayer));
-          return failingLayer;
-        }),
-        removeLayer: jest.fn(),
+        addLayer: jest.fn(),
+        removeLayer,
         on: jest.fn((event: string, fn: (layer: any) => void) => {
           listeners[event]?.push(fn);
         }),
         off: jest.fn(),
-        workLayers: []
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      selection.commitSelection(map, 'node/plain-leaf', 'layer/plain', true);
+      (handler as any).attachMapEventBridge(map, TC);
+
+      // Capas trash: SITNA removes one row, then we cascade the orphan.
+      workLayers.splice(0, 1);
+      listeners['layerremove'][0]?.({ layer: layer1 });
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(removeLayer).toHaveBeenCalledWith(layer2);
+      expect(workLayers).toHaveLength(0);
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(false);
+    });
+
+    it('LAYERERROR during add rolls back Capas and clears the catalog claim', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layererror: [],
+        layerremove: []
+      };
+      const failingLayer = { id: 'fail-1', options: { nodeId: 'node/a' } };
+      const workLayers: Array<{ id: string; options: { nodeId: string } }> = [];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          workLayers.push(failingLayer);
+          // SITNA delivers CustomEvent detail as { layer, message }.
+          listeners['layererror'].forEach((fn) =>
+            fn({ layer: failingLayer, message: 'layerNameNotValid' })
+          );
+          return failingLayer;
+        }),
+        removeLayer,
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(result).toBeUndefined();
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
+      expect(removeLayer).toHaveBeenCalledWith(failingLayer);
+      expect(workLayers).toHaveLength(0);
+    });
+
+    it('TILELOADERROR 401 after add removes the Capas row for the catalog node', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      (TC.Consts.event as { TILELOADERROR?: string }).TILELOADERROR =
+        'tileloaderror.tc';
+      await patchWithTc(TC);
+      const tileListeners: Array<(event: any) => void> = [];
+      const liveLayer = {
+        id: 'live-401',
+        options: { nodeId: 'node/plain-leaf' },
+        wrap: {
+          $events: {
+            on: jest.fn((event: string, fn: (event: any) => void) => {
+              if (event === 'tileloaderror.tc') {
+                tileListeners.push(fn);
+              }
+            }),
+            off: jest.fn()
+          }
+        }
+      };
+      const workLayers: Array<typeof liveLayer> = [];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          workLayers.push(liveLayer);
+          return liveLayer;
+        }),
+        removeLayer,
+        on: jest.fn(),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
       };
       const ctx = {
         map,
@@ -2367,10 +2604,69 @@ describe('LayerCatalogControlHandler', () => {
 
       await TC.control.LayerCatalog.prototype.addLayerToMap.call(
         ctx,
-        { title: 'A', options: {} },
-        'node/a'
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
       );
-      expect(selection.isNodeSelected(map, 'node/a')).toBe(true);
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(true);
+      expect(tileListeners.length).toBeGreaterThan(0);
+
+      tileListeners[0]?.({ error: { code: 401, text: null } });
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(false);
+      expect(removeLayer).toHaveBeenCalledWith(liveLayer);
+      expect(workLayers).toHaveLength(0);
+    });
+
+    it('LAYERERROR after load removes the Capas row for the catalog node', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layererror: []
+      };
+      const liveLayer = { id: 'live-1', options: { nodeId: 'node/plain-leaf' } };
+      const workLayers = [liveLayer];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockResolvedValue(liveLayer),
+        removeLayer,
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
+      };
+      const ctx = {
+        map,
+        getUID: () => 'uid-1',
+        showProjectionChangeDialog: () => undefined
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        ctx,
+        { title: 'Plain', options: {} },
+        'node/plain-leaf'
+      );
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(true);
+
+      listeners['layererror'][0]?.({
+        layer: liveLayer,
+        message: 'layerSrsNotCompatible'
+      });
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(selection.isNodeSelected(map, 'node/plain-leaf')).toBe(false);
+      expect(removeLayer).toHaveBeenCalledWith(liveLayer);
+      expect(workLayers).toHaveLength(0);
     });
 
     it('attaches one event bridge per map across repeated adds', async () => {
@@ -2926,6 +3222,138 @@ describe('LayerCatalogControlHandler', () => {
       (handler as any).decorateRadioControls(catalog);
       expect(titleA?.nextElementSibling).toBe(metaA);
       expect(catalog.div.querySelector('.sitmun-lcat-gfi')).toBeNull();
+    });
+
+    it('shows a spinner until Capas (WLM) renders the work-layer row', () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const realLookup = TestBed.inject(ConfigLookupService);
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+
+      class WorkLayerManager {}
+      const TC = mockSitnaApi.getTC();
+      TC.control.WorkLayerManager = WorkLayerManager;
+
+      const wlmDiv = document.createElement('div');
+      const workLayer = { id: 'lcat-1', options: { nodeId: 'node/a' } };
+      const map = {
+        workLayers: [workLayer],
+        getControlsByClass: (type: unknown) =>
+          type === WorkLayerManager ? [{ div: wlmDiv }] : []
+      };
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/a">
+            <span class="tc-ctl-lcat-node-title">A</span>
+            <sitna-toggle class="tc-ctl-lcat-btn-info"></sitna-toggle>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const leaf = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      const title = leaf.querySelector(':scope > .tc-ctl-lcat-node-title');
+      const meta = leaf.querySelector('.tc-ctl-lcat-btn-info');
+
+      selection.prepareSelection(map, 'node/a', 'layer/a', realLookup);
+      (handler as any).syncRadioCheckedState(catalog);
+
+      const spinner = leaf.querySelector(
+        ':scope > .sitmun-lcat-loading'
+      ) as HTMLElement | null;
+      expect(spinner).not.toBeNull();
+      expect(spinner?.title).toBe('layerCatalog.loading');
+      expect(spinner?.getAttribute('aria-label')).toBe('layerCatalog.loading');
+      expect(leaf.getAttribute('aria-busy')).toBe('true');
+
+      // Map claim commit alone must not clear the spinner (WLM LI still missing).
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      (handler as any).afterCatalogClaimCommitted(map, catalog);
+
+      expect(selection.isAwaitingWlmUi(map, 'node/a')).toBe(true);
+      expect(leaf.querySelector(':scope > .sitmun-lcat-loading')).not.toBeNull();
+
+      const capasRow = document.createElement('li');
+      capasRow.className = 'tc-ctl-wlm-elm';
+      capasRow.dataset['layerId'] = 'lcat-1';
+      wlmDiv.appendChild(capasRow);
+      (handler as any).settleAwaitingWlmUi(map, catalog);
+
+      expect(selection.isAwaitingWlmUi(map, 'node/a')).toBe(false);
+      expect(leaf.querySelector('.sitmun-lcat-loading')).toBeNull();
+      expect(leaf.hasAttribute('aria-busy')).toBe(false);
+      expect(title?.nextElementSibling).toBe(meta);
+    });
+
+    it('shows a load-failed warning until a later Capas load succeeds', () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const realLookup = TestBed.inject(ConfigLookupService);
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+
+      class WorkLayerManager {}
+      const TC = mockSitnaApi.getTC();
+      TC.control.WorkLayerManager = WorkLayerManager;
+
+      const wlmDiv = document.createElement('div');
+      const workLayer = { id: 'lcat-1', options: { nodeId: 'node/a' } };
+      const map = {
+        workLayers: [] as Array<typeof workLayer>,
+        getControlsByClass: (type: unknown) =>
+          type === WorkLayerManager ? [{ div: wlmDiv }] : []
+      };
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/a">
+            <span class="tc-ctl-lcat-node-title">A</span>
+            <sitna-toggle class="tc-ctl-lcat-btn-info"></sitna-toggle>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const leaf = catalog.div.querySelector(
+        'li[data-layer-name="node/a"]'
+      ) as HTMLElement;
+      const title = leaf.querySelector(':scope > .tc-ctl-lcat-node-title');
+      const meta = leaf.querySelector('.tc-ctl-lcat-btn-info');
+
+      selection.markLoadFailed(map, 'node/a');
+      (handler as any).syncLoadFailedWarnings(catalog);
+
+      const warning = leaf.querySelector(
+        ':scope > .sitmun-lcat-load-failed'
+      ) as HTMLElement | null;
+      expect(warning).not.toBeNull();
+      expect(warning?.textContent).toBe('warning');
+      expect(warning?.title).toBe('layerCatalog.loadFailed');
+      expect(warning?.getAttribute('aria-label')).toBe('layerCatalog.loadFailed');
+      expect(title?.nextElementSibling).toBe(warning);
+      expect(warning?.nextElementSibling).toBe(meta);
+
+      map.workLayers.push(workLayer);
+      selection.clearLoadFailed(map, 'node/a');
+      selection.markAwaitingWlmUi(map, 'node/a');
+      const capasRow = document.createElement('li');
+      capasRow.className = 'tc-ctl-wlm-elm';
+      capasRow.dataset['layerId'] = 'lcat-1';
+      wlmDiv.appendChild(capasRow);
+      (handler as any).settleAwaitingWlmUi(map, catalog);
+      (handler as any).syncLoadFailedWarnings(catalog);
+
+      expect(selection.isLoadFailed(map, 'node/a')).toBe(false);
+      expect(leaf.querySelector('.sitmun-lcat-load-failed')).toBeNull();
+      expect(title?.nextElementSibling).toBe(meta);
     });
 
     it('does not inject sitmun-lcat-radio on a nested loadData folder under a radio folder', async () => {
@@ -3536,6 +3964,133 @@ describe('LayerCatalogControlHandler', () => {
       expect(secondRadio.checked).toBe(true);
       expect(loadControl.checked).toBe(true);
       expect(loadControl.getAttribute('data-sitmun-folder-state')).toBe('all');
+    });
+
+    it('radio loadData folder never shows partial when only one resource child is loaded', async () => {
+      const mixedRadioContext = {
+        ...minimalContext,
+        trees: [
+          {
+            ...minimalContext.trees[0],
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/radio'],
+                order: 0
+              },
+              'node/radio': {
+                title: 'Rutes',
+                isRadio: true,
+                loadData: true,
+                children: ['node/nested', 'node/a'],
+                order: 1
+              },
+              'node/nested': {
+                title: 'Nested browse',
+                isRadio: false,
+                loadData: false,
+                children: ['node/b'],
+                order: 1
+              },
+              'node/a': {
+                title: 'A',
+                resource: 'layer/a',
+                isRadio: false,
+                children: [],
+                order: 2
+              },
+              'node/b': {
+                title: 'B',
+                resource: 'layer/b',
+                isRadio: false,
+                children: [],
+                order: 1
+              }
+            }
+          }
+        ]
+      } as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(mixedRadioContext);
+      (handler as any).configLookup = realLookup;
+
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      const map = {
+        workLayers: [{ options: { nodeId: 'node/a' } }]
+      };
+      catalog.map = map;
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Rutes</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/nested">
+                <span class="tc-ctl-lcat-node-title">Nested</span>
+                <ul>
+                  <li class="tc-ctl-lcat-node" data-layer-name="node/b"><span>B</span></li>
+                </ul>
+              </li>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      selection.commitSelection(map, 'node/a', 'layer/a', true);
+      (handler as any).decorateRadioControls(catalog);
+
+      const loadControl = catalog.div.querySelector(
+        'input.sitmun-lcat-load[data-layer-name="node/radio"]'
+      ) as HTMLInputElement;
+      expect(loadControl.type).toBe('radio');
+      expect(loadControl.indeterminate).toBe(false);
+      expect(loadControl.checked).toBe(true);
+      expect(loadControl.getAttribute('data-sitmun-folder-state')).toBe('all');
+      expect(loadControl.getAttribute('aria-checked')).toBe('true');
+    });
+
+    it('repairs a stale checkbox-typed radio folder load control on reinject', async () => {
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(minimalContext);
+      (handler as any).configLookup = realLookup;
+
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = { workLayers: [] };
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node" data-layer-name="node/radio">
+            <span class="tc-ctl-lcat-node-title">Radio</span>
+            <ul>
+              <li class="tc-ctl-lcat-node" data-layer-name="node/a"><span>A</span></li>
+            </ul>
+          </li>
+        </ul>`;
+      const folderLi = catalog.div.querySelector(
+        'li[data-layer-name="node/radio"]'
+      ) as HTMLElement;
+      const stale = document.createElement('input');
+      stale.type = 'checkbox';
+      stale.className = 'sitmun-lcat-load';
+      stale.dataset['layerName'] = 'node/radio';
+      stale.indeterminate = true;
+      stale.setAttribute('data-sitmun-folder-state', 'partial');
+      const label = document.createElement('label');
+      label.className = 'sitmun-lcat-load-label';
+      label.appendChild(stale);
+      folderLi.insertBefore(label, folderLi.firstChild);
+      folderLi.dataset['sitmunLcatControl'] = 'true';
+      folderLi.setAttribute('data-sitmun-load-folder', 'true');
+
+      (handler as any).injectLoadDataCheckboxes(catalog, catalog.div);
+      (handler as any).syncLoadDataCheckboxState(catalog);
+
+      expect(stale.type).toBe('radio');
+      expect(stale.indeterminate).toBe(false);
+      expect(stale.getAttribute('data-sitmun-folder-state')).not.toBe('partial');
     });
 
     it('radio loadData folder unload clears a non-first selected child', async () => {

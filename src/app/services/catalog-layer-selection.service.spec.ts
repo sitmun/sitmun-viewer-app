@@ -97,6 +97,7 @@ describe('CatalogLayerSelectionService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(CatalogLayerSelectionService);
+    service.clearAll();
     configLookup = TestBed.inject(ConfigLookupService);
     configLookup.initialize(context);
   });
@@ -118,6 +119,32 @@ describe('CatalogLayerSelectionService', () => {
     expect(configLookup.getFirstRadioChildId('node/radio')).toBe('node/a');
   });
 
+  it('tracks in-flight adds until commitSelection', () => {
+    expect(service.isInFlightAdd(mapA, 'node/plain')).toBe(false);
+    const prepared = prepare(mapA, 'node/plain', 'layer/shared');
+    expect(prepared.action).toBe('add');
+    expect(service.isInFlightAdd(mapA, 'node/plain')).toBe(true);
+    expect(service.isCatalogLoadPending(mapA, 'node/plain')).toBe(true);
+
+    service.commitSelection(mapA, 'node/plain', 'layer/shared', true);
+    expect(service.isInFlightAdd(mapA, 'node/plain')).toBe(false);
+    // Still pending until Capas paints the row.
+    expect(service.isAwaitingWlmUi(mapA, 'node/plain')).toBe(true);
+    expect(service.isCatalogLoadPending(mapA, 'node/plain')).toBe(true);
+
+    service.clearAwaitingWlmUi(mapA, 'node/plain');
+    expect(service.isCatalogLoadPending(mapA, 'node/plain')).toBe(false);
+  });
+
+  it('marks loadFailed on commitSelection failure and clears on success path helper', () => {
+    prepare(mapA, 'node/plain', 'layer/shared');
+    service.commitSelection(mapA, 'node/plain', 'layer/shared', false);
+    expect(service.isLoadFailed(mapA, 'node/plain')).toBe(true);
+
+    service.clearLoadFailed(mapA, 'node/plain');
+    expect(service.isLoadFailed(mapA, 'node/plain')).toBe(false);
+  });
+
   it('replaces sibling claims and clears the group on second select', () => {
     service.commitSelection(mapA, 'node/a', 'layer/a', true);
     expect(service.isNodeSelected(mapA, 'node/a')).toBe(true);
@@ -135,6 +162,16 @@ describe('CatalogLayerSelectionService', () => {
     expect(deselect.action).toBe('deselect');
     service.deselectNode(mapA, 'node/b');
     expect(service.getSelectedNodes(mapA).size).toBe(0);
+  });
+
+  it('skips a second prepare while an add is in flight for the same node', () => {
+    const first = prepare(mapA, 'node/plain', 'layer/shared');
+    expect(first.action).toBe('add');
+    const second = prepare(mapA, 'node/plain', 'layer/shared');
+    expect(second.action).toBe('skip');
+    service.commitSelection(mapA, 'node/plain', 'layer/shared', true);
+    const afterCommit = prepare(mapA, 'node/plain', 'layer/shared');
+    expect(afterCommit.action).toBe('skip');
   });
 
   it('deduplicates physical requirements for one resource with multiple node claims', () => {

@@ -142,6 +142,8 @@
   "layerCatalog.linkType.format.text_html": "HTML",
   "layerCatalog.linkType.format.text_xml": "XML",
   "layerCatalog.linkType.metadata": "Metadatos",
+  "layerCatalog.loading": "Cargando capa…",
+  "layerCatalog.loadFailed": "La capa no se pudo cargar",
   "workLayerManager.gfi.label": "Información de entidades",
   "workLayerManager.gfi.off": "Información de entidades desactivada",
   "workLayerManager.gfi.on": "Información de entidades activada",

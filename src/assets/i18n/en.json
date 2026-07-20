@@ -142,6 +142,8 @@
   "layerCatalog.linkType.format.text_html": "HTML",
   "layerCatalog.linkType.format.text_xml": "XML",
   "layerCatalog.linkType.metadata": "Metadata",
+  "layerCatalog.loading": "Loading layer…",
+  "layerCatalog.loadFailed": "Layer failed to load",
   "workLayerManager.gfi.label": "Feature Info",
   "workLayerManager.gfi.off": "Feature Info off",
   "workLayerManager.gfi.on": "Feature Info on",

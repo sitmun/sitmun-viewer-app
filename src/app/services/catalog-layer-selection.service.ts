@@ -28,6 +28,15 @@ interface MapSelectionState {
   exclusiveTail: Promise<void>;
   exclusiveDepth: number;
   pendingNodes: Set<string>;
+  /** In-flight catalog adds; not cleared by clearStalePending. */
+  inFlightAdds: Set<string>;
+  /**
+   * Claim committed / layer on map, but Capas (WLM) row not rendered yet.
+   * Spinner stays until the WLM LI appears (or the claim is dropped).
+   */
+  awaitingWlmUi: Set<string>;
+  /** Nodes that failed to load; warning UI until a later load succeeds. */
+  loadFailedNodes: Set<string>;
 }
 
 @Injectable({
@@ -43,7 +52,10 @@ export class CatalogLayerSelectionService {
   }
 
   clearPendingReplacement(map: object, nodeId: string): void {
-    this.state(map).pendingReplacements.delete(nodeId);
+    const state = this.state(map);
+    state.pendingReplacements.delete(nodeId);
+    state.inFlightAdds.delete(nodeId);
+    state.awaitingWlmUi.delete(nodeId);
   }
 
   clearAll(): void {
@@ -55,6 +67,46 @@ export class CatalogLayerSelectionService {
 
   isNodeSelected(map: object, nodeId: string): boolean {
     return this.state(map).selectedNodes.has(nodeId);
+  }
+
+  /** True while prepareSelection reserved an add slot that is not yet committed. */
+  isInFlightAdd(map: object, nodeId: string): boolean {
+    return this.state(map).inFlightAdds.has(nodeId);
+  }
+
+  /** True after claim commit until Capas renders the work-layer row. */
+  isAwaitingWlmUi(map: object, nodeId: string): boolean {
+    return this.state(map).awaitingWlmUi.has(nodeId);
+  }
+
+  /** Catalog title spinner: map add in flight or Capas row not painted yet. */
+  isCatalogLoadPending(map: object, nodeId: string): boolean {
+    const state = this.state(map);
+    return state.inFlightAdds.has(nodeId) || state.awaitingWlmUi.has(nodeId);
+  }
+
+  markAwaitingWlmUi(map: object, nodeId: string): void {
+    this.state(map).awaitingWlmUi.add(nodeId);
+  }
+
+  clearAwaitingWlmUi(map: object, nodeId: string): void {
+    this.state(map).awaitingWlmUi.delete(nodeId);
+  }
+
+  getAwaitingWlmUi(map: object): ReadonlySet<string> {
+    return this.state(map).awaitingWlmUi;
+  }
+
+  markLoadFailed(map: object, nodeId: string): void {
+    this.state(map).loadFailedNodes.add(nodeId);
+  }
+
+  clearLoadFailed(map: object, nodeId: string): void {
+    this.state(map).loadFailedNodes.delete(nodeId);
+  }
+
+  isLoadFailed(map: object, nodeId: string): boolean {
+    return this.state(map).loadFailedNodes.has(nodeId);
   }
 
   getSelectedNodes(map: object): ReadonlySet<string> {
@@ -103,6 +155,17 @@ export class CatalogLayerSelectionService {
       };
     }
 
+    // Concurrent catalog clicks: first add owns the slot until commit/fail.
+    if (state.inFlightAdds.has(nodeId)) {
+      return {
+        action: 'skip',
+        nodeId,
+        resource,
+        needsPhysicalAdd: false,
+        releaseNodeIds: []
+      };
+    }
+
     if (radioParent) {
       for (const siblingId of configLookup.getDirectChildIds(radioParent)) {
         if (siblingId !== nodeId && state.selectedNodes.has(siblingId)) {
@@ -116,6 +179,8 @@ export class CatalogLayerSelectionService {
 
     const needsPhysicalAdd =
       !resource || this.getResourceRefCount(map, resource) === 0;
+
+    state.inFlightAdds.add(nodeId);
 
     return {
       action: 'add',
@@ -137,6 +202,9 @@ export class CatalogLayerSelectionService {
     state.pendingReplacements.delete(nodeId);
 
     if (!success) {
+      state.inFlightAdds.delete(nodeId);
+      state.awaitingWlmUi.delete(nodeId);
+      state.loadFailedNodes.add(nodeId);
       return { removeResources: [] };
     }
 
@@ -159,6 +227,9 @@ export class CatalogLayerSelectionService {
       }
       return { removeResources };
     } finally {
+      state.inFlightAdds.delete(nodeId);
+      // Capas may still be rendering the LI asynchronously after map.addLayer.
+      state.awaitingWlmUi.add(nodeId);
       state.selfCommitDepth--;
     }
   }
@@ -183,8 +254,11 @@ export class CatalogLayerSelectionService {
     resource: string | undefined,
     configLookup: ConfigLookupService
   ): { releaseNodeIds: string[]; removeResources: string[] } {
-    const prepared = this.prepareSelection(map, nodeId, resource, configLookup);
     const state = this.state(map);
+    // A prior prepareSelection may have reserved inFlight; release so we can
+    // re-prepare and commit the external claim.
+    state.inFlightAdds.delete(nodeId);
+    const prepared = this.prepareSelection(map, nodeId, resource, configLookup);
 
     // External LAYERADD registers a claim; never toggle-off an existing claim.
     if (prepared.action === 'deselect' || prepared.action === 'skip') {
@@ -213,6 +287,8 @@ export class CatalogLayerSelectionService {
       };
     } finally {
       state.pendingReplacements.delete(nodeId);
+      state.inFlightAdds.delete(nodeId);
+      state.awaitingWlmUi.add(nodeId);
       state.selfCommitDepth--;
     }
   }
@@ -394,7 +470,10 @@ export class CatalogLayerSelectionService {
         selfCommitDepth: 0,
         exclusiveTail: Promise.resolve(),
         exclusiveDepth: 0,
-        pendingNodes: new Set()
+        pendingNodes: new Set(),
+        inFlightAdds: new Set(),
+        awaitingWlmUi: new Set(),
+        loadFailedNodes: new Set()
       };
       this.mapStates.set(map, state);
     }
@@ -428,6 +507,8 @@ export class CatalogLayerSelectionService {
     state.selectedNodes.delete(nodeId);
     state.nodeResources.delete(nodeId);
     state.pendingReplacements.delete(nodeId);
+    state.inFlightAdds.delete(nodeId);
+    state.awaitingWlmUi.delete(nodeId);
     if (!resource) {
       return [];
     }

@@ -142,6 +142,8 @@
   "layerCatalog.linkType.format.text_html": "HTML",
   "layerCatalog.linkType.format.text_xml": "XML",
   "layerCatalog.linkType.metadata": "Metadades",
+  "layerCatalog.loading": "S'està carregant la capa…",
+  "layerCatalog.loadFailed": "No s'ha pogut carregar la capa",
   "workLayerManager.gfi.label": "Informació d'entitats",
   "workLayerManager.gfi.off": "Informació d'entitats desactivada",
   "workLayerManager.gfi.on": "Informació d'entitats activada",
