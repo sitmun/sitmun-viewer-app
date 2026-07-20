@@ -2826,8 +2826,8 @@ describe('LayerCatalogControlHandler', () => {
       expect(leafLi.getAttribute('data-sitmun-lcat-control')).toBe('true');
     });
 
-    it('injects sitmun-lcat-gfi after select for queryableActive leaves only', async () => {
-      const gfiContext = {
+    it('does not inject catalog GFI; trails meta after title', async () => {
+      const metaContext = {
         ...minimalContext,
         layers: [
           {
@@ -2842,7 +2842,6 @@ describe('LayerCatalogControlHandler', () => {
             title: 'B',
             layers: ['b'],
             service: 'service/1',
-            // Layer GFI off must not hide the marker when the node flag is on.
             queryableFeatureEnabled: false
           }
         ],
@@ -2884,7 +2883,7 @@ describe('LayerCatalogControlHandler', () => {
         ]
       } as AppCfg;
       const realLookup = new ConfigLookupService();
-      realLookup.initialize(gfiContext);
+      realLookup.initialize(metaContext);
       (handler as any).configLookup = realLookup;
 
       const LayerCatalog: any = function () {};
@@ -2911,83 +2910,21 @@ describe('LayerCatalogControlHandler', () => {
       const leafA = catalog.div.querySelector(
         'li[data-layer-name="node/a"]'
       ) as HTMLElement;
-      const leafB = catalog.div.querySelector(
-        'li[data-layer-name="node/b"]'
-      ) as HTMLElement;
-      const gfiA = Array.from(leafA.children).find((c) =>
-        (c as HTMLElement).classList?.contains('sitmun-lcat-gfi')
-      ) as HTMLElement | undefined;
       const radioA = Array.from(leafA.children).find((c) =>
         (c as HTMLElement).classList?.contains('sitmun-lcat-radio-label')
       );
       const titleA = leafA.querySelector(':scope > .tc-ctl-lcat-node-title');
+      const metaA = leafA.querySelector('.tc-ctl-lcat-btn-info') as HTMLElement;
 
-      expect(gfiA).toBeTruthy();
-      expect(gfiA?.tagName).toBe('I');
-      expect(gfiA?.textContent).toBe('i');
-      expect(gfiA?.previousElementSibling).toBe(radioA);
-      expect(gfiA?.nextElementSibling).toBe(titleA);
-      expect(titleA?.contains(gfiA as Node)).toBe(false);
-      // SITNA resolves the leaf title via querySelector('span') — GFI must not win.
+      expect(catalog.div.querySelector('.sitmun-lcat-gfi')).toBeNull();
+      expect(radioA?.nextElementSibling).toBe(titleA);
+      expect(titleA?.nextElementSibling).toBe(metaA);
+      expect(metaA?.getAttribute('data-sitmun-lcat-meta')).toBe('true');
+      expect(metaA?.getAttribute('checked-icon-text')).toBe('article');
       expect(leafA.querySelector('span')).toBe(titleA);
-      expect(leafB.querySelector('.sitmun-lcat-gfi')).toBeNull();
-      expect(
-        leafA
-          .querySelector('.tc-ctl-lcat-btn-info')
-          ?.getAttribute('data-sitmun-lcat-meta')
-      ).toBe('true');
-    });
 
-    it('omits sitmun-lcat-gfi when queryableActive is false', async () => {
-      const gfiContext = {
-        ...minimalContext,
-        layers: [
-          {
-            id: 'layer/a',
-            title: 'A',
-            layers: ['a'],
-            service: 'service/1',
-            queryableFeatureEnabled: true
-          }
-        ],
-        trees: [
-          {
-            ...minimalContext.trees[0],
-            nodes: {
-              'node/root': {
-                title: 'Root',
-                isRadio: false,
-                children: ['node/a'],
-                order: 0
-              },
-              'node/a': {
-                title: 'A',
-                resource: 'layer/a',
-                queryableActive: false,
-                isRadio: false,
-                children: [],
-                order: 1
-              }
-            }
-          }
-        ]
-      } as AppCfg;
-      const realLookup = new ConfigLookupService();
-      realLookup.initialize(gfiContext);
-      (handler as any).configLookup = realLookup;
-
-      const LayerCatalog: any = function () {};
-      const catalog = new LayerCatalog();
-      catalog.map = {};
-      catalog.div = document.createElement('div');
-      catalog.div.innerHTML = `
-        <ul>
-          <li class="tc-ctl-lcat-node" data-layer-name="node/a">
-            <span>A</span>
-          </li>
-        </ul>`;
       (handler as any).decorateRadioControls(catalog);
-
+      expect(titleA?.nextElementSibling).toBe(metaA);
       expect(catalog.div.querySelector('.sitmun-lcat-gfi')).toBeNull();
     });
 
@@ -4312,7 +4249,7 @@ describe('LayerCatalogControlHandler', () => {
       const folderTitle = folder.querySelector(':scope > .tc-ctl-lcat-node-title');
       expect(folderTitle?.previousElementSibling?.tagName).not.toBe('I');
 
-      expect(leaf.querySelector(':scope > i.sitmun-lcat-gfi')).toBeNull();
+      expect(leaf.querySelector(':scope > .sitmun-lcat-gfi')).toBeNull();
       expect(leaf.querySelector('.sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot')).toBeNull();
       // Non-radio leaf still gets a real load checkbox (not an empty spacer).
       expect(
@@ -4381,9 +4318,8 @@ describe('LayerCatalogControlHandler', () => {
       const leafB = catalog.div.querySelector(
         'li[data-layer-name="node/b"]'
       ) as HTMLElement;
-      const gfiA = leafA.querySelector(':scope > i.sitmun-lcat-gfi');
-      expect(gfiA?.textContent).toBe('i');
-      expect(leafB.querySelector(':scope > i.sitmun-lcat-gfi')).toBeNull();
+      expect(leafA.querySelector(':scope > .sitmun-lcat-gfi')).toBeNull();
+      expect(leafB.querySelector(':scope > .sitmun-lcat-gfi')).toBeNull();
       expect(leafB.querySelector('.sitmun-lcat-gfi-slot')).toBeNull();
 
       const titleA = leafA.querySelector(
@@ -4392,7 +4328,10 @@ describe('LayerCatalogControlHandler', () => {
       const titleB = leafB.querySelector(
         ':scope > .tc-ctl-lcat-node-title'
       ) as HTMLElement;
-      expect(gfiA?.nextElementSibling).toBe(titleA);
+      const selectA = leafA.querySelector(
+        ':scope > label.sitmun-lcat-leaf-load-label'
+      );
+      expect(selectA?.nextElementSibling).toBe(titleA);
       const selectB = leafB.querySelector(
         ':scope > label.sitmun-lcat-leaf-load-label'
       );

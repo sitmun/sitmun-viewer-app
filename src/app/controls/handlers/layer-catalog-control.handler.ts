@@ -440,6 +440,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerNames?: string | string[];
             nodeId?: string;
             serviceId?: string;
+            sitmunGfiEnabled?: boolean;
             [key: string]: unknown;
           };
 
@@ -465,6 +466,14 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.url = layerObj.url;
             layerOptions.type = layerObj.type;
             layerOptions.layerNames = layerName;
+          }
+
+          if (
+            typeof handler.configLookup.isQueryableLeaf === 'function' &&
+            handler.configLookup.isQueryableLeaf(layerName)
+          ) {
+            layerOptions.nodeId = layerOptions.nodeId ?? layerName;
+            layerOptions.sitmunGfiEnabled = true;
           }
 
           const effectiveLayerNames: string[] = Array.isArray(
@@ -813,8 +822,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       // Folder title → expand/collapse (type icon is covered by widened collapse btn).
       const isFolderTitle =
         target.classList.contains('tc-ctl-lcat-node-title') ||
-        (target.tagName === 'SPAN' &&
-          !target.classList.contains('sitmun-lcat-gfi'));
+        target.tagName === 'SPAN';
       if (isFolderTitle) {
         const li = target.parentElement;
         if (
@@ -895,7 +903,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     this.injectRadioInputs(catalogControl, div);
     this.injectLoadDataCheckboxes(catalogControl, div);
     this.injectLeafLoadCheckboxes(catalogControl, div);
-    this.injectGfiIndicators(catalogControl, div);
     this.stampMetadataControls(div);
     this.applyCatalogRowLayout(div);
     this.applyZebraStriping(div);
@@ -905,9 +912,16 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
     this.catalogTreeObservers.get(catalogControl)?.disconnect();
     const treeObserver = new MutationObserver((mutations) => {
-      const structureChanged = mutations.some(
-        (m) => m.type === 'childList' && m.addedNodes.length > 0
-      );
+      // Ignore info-panel HTML updates (meta open) — they are not tree structure.
+      const structureChanged = mutations.some((m) => {
+        if (m.type !== 'childList' || m.addedNodes.length === 0) {
+          return false;
+        }
+        const target = m.target;
+        return !(
+          target instanceof Element && target.closest('.tc-ctl-lcat-info')
+        );
+      });
       const classChanged = mutations.some(
         (m) => m.type === 'attributes' && m.attributeName === 'class'
       );
@@ -915,7 +929,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         this.injectRadioInputs(catalogControl, div);
         this.injectLoadDataCheckboxes(catalogControl, div);
         this.injectLeafLoadCheckboxes(catalogControl, div);
-        this.injectGfiIndicators(catalogControl, div);
         this.stampMetadataControls(div);
         this.applyCatalogRowLayout(div);
         this.syncRadioCheckedState(catalogControl);
@@ -943,7 +956,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         this.injectRadioInputs(catalogControl, searchList);
         this.injectLoadDataCheckboxes(catalogControl, searchList);
         this.injectLeafLoadCheckboxes(catalogControl, searchList);
-        this.injectGfiIndicators(catalogControl, searchList);
         this.stampMetadataControls(searchList);
         this.applyCatalogRowLayout(searchList);
         this.syncLoadDataCheckboxState(catalogControl);
@@ -964,7 +976,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         .querySelectorAll(
           '.sitmun-lcat-gfi, .sitmun-lcat-gfi-slot, .sitmun-lcat-select-slot'
         )
-        .forEach((el: Element) => el.remove());
+        .forEach((el: Element) => el.remove()); // drop legacy GFI/slot leftovers
       div
         .querySelectorAll('[data-sitmun-load-folder]')
         .forEach((node: Element) =>
@@ -1115,79 +1127,49 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
   }
 
-  /**
-   * SITNA-style informative GFI `i` after the select control (or before title).
-   */
-  private injectGfiIndicators(_catalogControl: any, root: ParentNode): void {
-    root.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
-      const li = node as HTMLElement;
-      const nodeId = li.dataset['layerName'];
-      if (!nodeId) {
-        return;
-      }
-      const existing = Array.from(li.children).find(
-        (child) =>
-          child instanceof HTMLElement &&
-          child.classList.contains('sitmun-lcat-gfi')
-      );
-      if (!this.configLookup.isQueryableLeaf(nodeId)) {
-        existing?.remove();
-        return;
-      }
-      if (existing) {
-        return;
-      }
-      // <i>, not <span>: SITNA LayerCatalog uses querySelector('span') for the title.
-      const gfi = document.createElement('i');
-      gfi.className = 'sitmun-lcat-gfi';
-      gfi.textContent = 'i';
-      gfi.setAttribute('aria-hidden', 'true');
-      gfi.title = 'Queryable';
-      this.insertGfiIndicator(li, gfi);
-    });
-  }
-
-  private insertGfiIndicator(li: HTMLElement, gfi: HTMLElement): void {
-    const selectSlot = this.findSelectSlotElement(li);
-    if (selectSlot) {
-      selectSlot.after(gfi);
-      return;
-    }
-    const titleSpan = this.findRowTitleElement(li);
-    if (titleSpan) {
-      li.insertBefore(gfi, titleSpan);
-    } else {
-      li.insertBefore(gfi, li.firstChild);
-    }
-  }
-
-  private findSelectSlotElement(li: HTMLElement): Element | null {
-    return (
-      Array.from(li.children).find(
-        (child) =>
-          child instanceof HTMLLabelElement &&
-          (child.classList.contains('sitmun-lcat-radio-label') ||
-            child.classList.contains('sitmun-lcat-load-label') ||
-            child.classList.contains('sitmun-lcat-leaf-load-label'))
-      ) ?? null
-    );
-  }
-
-  /** Mark SITNA info toggles as the clickable metadata affordance (not GFI). */
+  /** Mark SITNA info toggles as the trailing metadata affordance. */
   private stampMetadataControls(root: ParentNode): void {
     root
       .querySelectorAll('.tc-ctl-lcat-btn-info, .tc-ctl-lcat-search-btn-info')
       .forEach((el: Element) => {
         const element = el as HTMLElement;
         element.setAttribute('data-sitmun-lcat-meta', 'true');
+        // Material Icons “article”; Sitna “i” / --icon-info is reserved for GFI.
+        element.setAttribute('checked-icon-text', 'article');
+        element.setAttribute('unchecked-icon-text', 'article');
         if (!element.getAttribute('aria-label')) {
           element.setAttribute('aria-label', 'Layer information');
         }
+        this.placeMetadataControl(element);
       });
   }
 
+  /** Trail meta after the row title (right-aligned with flex title growth). */
+  private placeMetadataControl(meta: HTMLElement): void {
+    const row =
+      (meta.closest('li.tc-ctl-lcat-node, li.tc-ctl-lcat-leaf') as HTMLElement | null) ??
+      (meta.parentElement as HTMLElement | null);
+    if (!row) {
+      return;
+    }
+    const titleSpan = this.findRowTitleElement(row);
+    if (titleSpan) {
+      if (titleSpan.nextElementSibling === meta) {
+        return;
+      }
+      titleSpan.after(meta);
+      return;
+    }
+    const nestedUl = Array.from(row.children).find(
+      (child) => child instanceof HTMLUListElement
+    );
+    if (nestedUl) {
+      row.insertBefore(meta, nestedUl);
+    }
+  }
+
   /**
-   * Level inset (0/1/2…). Absent select/GFI icons do not reserve empty slots.
+   * Level inset (0/1/2…). Absent select icons do not reserve empty slots.
    * Nest depth = ancestor folder count (search hits stay level 0).
    */
   private applyCatalogRowLayout(root: ParentNode): void {

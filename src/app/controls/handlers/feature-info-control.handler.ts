@@ -213,6 +213,29 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         });
       }
 
+      // --- Capas GFI user toggle: gate queryable via layer.options.sitmunGfiEnabled ---
+      const WrapRasterProto = TC?.wrap?.layer?.Raster?.prototype;
+      if (WrapRasterProto?.getInfo && !WrapRasterProto.__sitmunGfiUserGate) {
+        const getInfoAdvice = meld.around(
+          WrapRasterProto,
+          'getInfo',
+          function (this: {
+            parent?: { options?: { sitmunGfiEnabled?: boolean } };
+          }, jp: MeldJoinPoint): unknown {
+            const result = jp.proceed() as { queryable?: boolean };
+            if (this.parent?.options?.sitmunGfiEnabled === false) {
+              return { ...result, queryable: false };
+            }
+            return result;
+          }
+        );
+        WrapRasterProto.__sitmunGfiUserGate = true;
+        this.patchManager.add(() => {
+          getInfoAdvice.remove();
+          delete WrapRasterProto.__sitmunGfiUserGate;
+        });
+      }
+
       // --- Patch A: Tolerate DescribeLayer failures (#155) ---
       // SITNA's getFeatureInfo (api-sitna ol.js:7228) does:
       //   const isFromRasterOrigin = (await layer.describeLayer(true)).every(...)

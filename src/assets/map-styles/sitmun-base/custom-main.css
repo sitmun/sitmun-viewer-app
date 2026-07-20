@@ -523,10 +523,10 @@ input[type='range']:focus {
 
 /*
  * Catalog row contract: level inset (0/1/2… × type-icon width) + present
- * controls only (select / leaf GFI) then title and trailing meta. Missing
- * icons do not reserve empty slots. Nest step = type-icon width of the parent
- * row. Nested <ul> is pulled back by the parent pad so level padding is not
- * stacked.
+ * select control, title, then right-aligned Sitna-toggle-style [ℹ][?].
+ * Missing icons do not reserve empty slots. Nest step = type-icon width of
+ * the parent row. Nested <ul> is pulled back by the parent pad so level
+ * padding is not stacked.
  *
  * Density targets SITMUN 2 (~20px rows, 11px type, 16px icon, 18px controls).
  * Assets: folder_*.png 64×64; mapLayer.png 20×20. Top offset only.
@@ -539,8 +539,10 @@ input[type='range']:focus {
   --sitmun-lcat-control: 14px;
   --sitmun-lcat-hit: var(--sitmun-lcat-slot);
   --sitmun-lcat-row-min: 20px;
-  --sitmun-lcat-folder-icon-y: 2px;
-  --sitmun-lcat-leaf-icon-y: 2px;
+  --sitmun-lcat-gap: 3px;
+  --sitmun-lcat-icon-y: calc(
+    (var(--sitmun-lcat-row-min) - var(--sitmun-lcat-icon)) / 2
+  );
   /*
    * Align root type-icons with the drawn stack in mapLayersStackN.png (300px,
    * content ~x=87) when shown at 38px / bg-pos -6px → visual left ≈ +5px.
@@ -570,20 +572,58 @@ input[type='range']:focus {
   --sitmun-lcat-pad-left: calc(
     var(--sitmun-lcat-root-align) + (var(--sitmun-lcat-level, 0) + 1) * var(--sitmun-lcat-indent)
   );
+  /* Sitna-toggle chrome (white square, 1px border, half border-radius). */
+  --sitmun-lcat-btn-radius: calc(var(--sitna-border-radius, 4.8px) / 2);
+  --sitmun-lcat-btn-border: #000;
+  --sitmun-lcat-btn-bg: #fff;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  /* Nested <ul> wraps below; keep the chrome line at the top of the li. */
+  align-content: flex-start !important;
+  column-gap: var(--sitmun-lcat-gap) !important;
   margin: 0 !important;
-  padding: 0 0 2px var(--sitmun-lcat-pad-left) !important;
+  padding: 0 2px 0 var(--sitmun-lcat-pad-left) !important;
   min-height: var(--sitmun-lcat-row-min) !important;
-  line-height: var(--sitmun-lcat-row-min) !important;
+  line-height: var(--sitmun-lcat-slot) !important;
   box-sizing: border-box !important;
+}
+
+/*
+ * Zero-width strut: force the first flex line to --sitmun-lcat-row-min so
+ * type-icon background-position, select, title, and [ℹ]/[?] share one band.
+ * (::before is the zebra paint.)
+ */
+.tc-ctl-lcat li.tc-ctl-lcat-node::after,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf::after {
+  content: '';
+  order: -1;
+  flex: 0 0 auto;
+  width: 0;
+  height: var(--sitmun-lcat-row-min);
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/*
+ * Single-line rows: exact chrome height. Sitna’s sitna-toggle min-content
+ * (~1.5em) and collapsed padding otherwise make some bands taller than others.
+ */
+.tc-ctl-lcat li.tc-ctl-lcat-leaf,
+.tc-ctl-lcat li.tc-ctl-lcat-node.tc-collapsed {
+  height: var(--sitmun-lcat-row-min) !important;
+  max-height: var(--sitmun-lcat-row-min) !important;
+  overflow: hidden !important;
 }
 
 /* Collapse hit target = type-icon; title toggles via JS. */
 .tc-ctl-lcat li.tc-ctl-lcat-node > button.tc-ctl-lcat-collapse-btn {
   position: absolute !important;
   left: var(--sitmun-lcat-icon-x) !important;
-  top: 0 !important;
+  top: var(--sitmun-lcat-icon-y) !important;
   width: var(--sitmun-lcat-icon) !important;
-  height: var(--sitmun-lcat-row-min) !important;
+  height: var(--sitmun-lcat-icon) !important;
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
@@ -596,7 +636,7 @@ input[type='range']:focus {
   background-image: url(./img/folder_open.png) !important;
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
-  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
 }
 
 /* Collapsed folders/nodes */
@@ -604,8 +644,7 @@ input[type='range']:focus {
   background-image: url(./img/folder_closed.png) !important;
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
-  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
-  padding-bottom: 2px !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
 }
 
 /* Last node in branch (only for actual nodes, not leaves) */
@@ -615,7 +654,7 @@ input[type='range']:focus {
   background-image: url(./img/folder_open.png) !important;
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
-  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
 }
 
 .tc-ctl-lcat
@@ -624,7 +663,7 @@ input[type='range']:focus {
   background-image: url(./img/folder_closed.png) !important;
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
-  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-folder-icon-y) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
 }
 
 .sitmun-lcat-radio,
@@ -634,17 +673,17 @@ input[type='range']:focus {
   height: var(--sitmun-lcat-control);
   margin: 0;
   vertical-align: middle;
-  accent-color: #c45c26;
+  accent-color: var(--main-hl-color, #c62828);
   cursor: pointer;
 }
 
 .tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-radio-label,
 .tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-load-label,
-.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-leaf-load-label,
-.tc-ctl-lcat li > i.sitmun-lcat-gfi {
+.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-leaf-load-label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   box-sizing: border-box;
   width: var(--sitmun-lcat-slot);
   height: var(--sitmun-lcat-slot);
@@ -652,27 +691,9 @@ input[type='range']:focus {
   min-height: var(--sitmun-lcat-slot);
   margin: 0;
   padding: 0;
+  flex: 0 0 var(--sitmun-lcat-slot);
   vertical-align: middle;
-}
-
-.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-radio-label,
-.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-load-label,
-.tc-ctl-lcat li[data-sitmun-lcat-control] > label.sitmun-lcat-leaf-load-label {
   cursor: pointer;
-}
-
-/* SITNA 2-style GFI marker: informative only, after select / before title.
- * Use <i>, not <span>: SITNA LayerCatalog resolves the title via querySelector('span'). */
-.tc-ctl-lcat li > i.sitmun-lcat-gfi {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-weight: 700;
-  font-style: normal;
-  font-size: calc(var(--sitmun-lcat-control) * 0.95);
-  line-height: 1;
-  color: #222;
-  pointer-events: none;
-  user-select: none;
-  background-image: none !important;
 }
 
 .tc-ctl-lcat li.tc-ctl-lcat-node > :not(ul),
@@ -687,12 +708,22 @@ input[type='range']:focus {
 .tc-ctl-lcat li.tc-ctl-lcat-node > .tc-ctl-lcat-node-title,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf > span,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf > .tc-ctl-lcat-node-title {
-  margin-left: 0 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  box-sizing: border-box !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: var(--sitmun-lcat-slot) !important;
+  max-height: var(--sitmun-lcat-slot) !important;
+  min-height: var(--sitmun-lcat-slot) !important;
+  margin: 0 !important;
   padding: 0 !important;
-  line-height: calc(var(--sitmun-lcat-row-min) - 2px) !important;
+  line-height: 1 !important;
   vertical-align: middle !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -705,12 +736,12 @@ input[type='range']:focus {
 .sitmun-lcat-load:disabled {
   opacity: 0.55;
   cursor: wait;
-  accent-color: #c45c26;
+  accent-color: var(--main-hl-color, #c62828);
 }
 
 .sitmun-lcat-load:indeterminate,
 .sitmun-lcat-load[data-sitmun-folder-state='partial'] {
-  accent-color: #c45c26;
+  accent-color: var(--main-hl-color, #c62828);
 }
 
 /* Folders never use italic as a loaded-state cue (SITNA .tc-checked > span). */
@@ -728,8 +759,8 @@ input[type='range']:focus {
   background-image: url(./img/mapLayer.png) !important;
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
-  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-leaf-icon-y) !important;
-  padding: 0 0 2px var(--sitmun-lcat-pad-left) !important;
+  background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
+  padding: 0 2px 0 var(--sitmun-lcat-pad-left) !important;
 }
 
 /* Nest indent is per-li level; root branch stays flush with the tree. */
@@ -750,6 +781,8 @@ input[type='range']:focus {
  */
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul.tc-ctl-lcat-branch,
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul {
+  flex: 1 0 100% !important;
+  width: 100% !important;
   margin-left: calc(-1 * var(--sitmun-lcat-pad-left)) !important;
 }
 
@@ -776,8 +809,7 @@ input[type='range']:focus {
 /* Tree container padding */
 .tc-ctl-lcat .tc-ctl-lcat-tree {
   width: 100% !important;
-  padding: 0 !important;
-  padding-top: 0 !important;
+  padding: 0 0 4px !important;
   margin-top: 4px !important;
   flex: 1 !important;
   overflow: auto !important;
@@ -811,7 +843,7 @@ input[type='range']:focus {
   left: var(--sitmun-lcat-zebra-left, 0);
   width: var(--sitmun-lcat-zebra-width, 100%);
   top: 0;
-  height: calc(var(--sitmun-lcat-row-min) + 2px);
+  height: var(--sitmun-lcat-row-min);
   background-color: var(--sitmun-lcat-zebra);
   pointer-events: none;
   z-index: 0;
@@ -833,50 +865,58 @@ input[type='range']:focus {
   border-top: none !important;
 }
 
-/*
- * Metadata action (SITNA btn-info / sitna-toggle): page-fold via host background.
- * Do not paint host ::before/::after or zero host font-size — the clickable
- * checkbox lives in shadow DOM and inherits font-size; a host ::before also
- * intercepts pointer events before the shadow checkbox.
- */
+/* Beat Sitna `.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-btn-info { top:0 }`.
+ * Host carries 1px chrome; inner checkbox border cleared so host paints state. */
+.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-btn-info[data-sitmun-lcat-meta],
+.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-search-btn-info[data-sitmun-lcat-meta],
 .tc-ctl-lcat .tc-ctl-lcat-btn-info[data-sitmun-lcat-meta],
 .tc-ctl-lcat .tc-ctl-lcat-search-btn-info[data-sitmun-lcat-meta] {
-  --sitna-unchecked-icon-text: '';
-  --sitna-checked-icon-text: '';
+  --sitna-icon-font-family: 'Material Icons';
+  --sitna-icon-font-weight: normal;
+  /* Material Icons “article” — layer details (not “i”; GFI keeps --icon-info). */
+  --sitna-unchecked-icon-text: 'article';
+  --sitna-checked-icon-text: 'article';
   --sitna-checkbox-border-color: transparent;
+  --sitna-checked-checkbox-border-color: transparent;
   --sitna-checkbox-background-color: transparent;
-  --sitna-checkbox-icon-color: transparent;
-  --sitna-checked-checkbox-icon-color: transparent;
-  /* Scale shadow checkbox toward the hit box without covering it. */
-  font-size: 12px !important;
+  --sitna-checked-checkbox-background-color: transparent;
+  --sitna-checkbox-icon-color: #000;
+  --sitna-checked-checkbox-icon-color: #fff;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  align-self: center !important;
   box-sizing: border-box !important;
+  flex: 0 0 var(--sitmun-lcat-hit) !important;
   width: var(--sitmun-lcat-hit) !important;
   height: var(--sitmun-lcat-hit) !important;
-  min-width: var(--sitmun-lcat-hit) !important;
-  min-height: var(--sitmun-lcat-hit) !important;
+  min-width: 0 !important;
+  max-width: var(--sitmun-lcat-hit) !important;
+  /* 0 beats flex min-content sizing from the shadow checkbox (1.5em). */
+  min-height: 0 !important;
+  max-height: var(--sitmun-lcat-hit) !important;
+  overflow: hidden !important;
+  line-height: 1 !important;
+  font-size: var(--sitmun-lcat-control) !important;
   vertical-align: middle !important;
-  margin: 0 0 0 var(--sitmun-lcat-gap) !important;
+  margin: 0 !important;
+  background-color: var(--sitmun-lcat-btn-bg) !important;
+  border: 1px solid var(--sitmun-lcat-btn-border) !important;
+  border-radius: var(--sitmun-lcat-btn-radius) !important;
   cursor: pointer !important;
-  background-color: transparent !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='15' viewBox='0 0 13 15'%3E%3Cpath fill='%23fff' stroke='%23444' stroke-width='1.2' d='M1.1 1.1h7.2L11.9 4.7v9.2H1.1z'/%3E%3Cpath fill='%23666' d='M8.3 1.1v3.6h3.6z'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: 13px 15px !important;
+  z-index: 1 !important;
 }
 
-/* Add padding-bottom to last child of last branch */
-.tc-ctl-lcat
-  .tc-ctl-lcat-tree
-  > .tc-ctl-lcat-branch:last-child
-  > li.tc-ctl-lcat-node:last-child,
-.tc-ctl-lcat
-  .tc-ctl-lcat-tree
-  > .tc-ctl-lcat-branch:last-child
-  > li.tc-ctl-lcat-leaf:last-child {
-  padding-bottom: 4px !important;
+/* Meta open (Sitna sets [checked]): red host like Capas visibility / GFI. */
+.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-btn-info[data-sitmun-lcat-meta][checked],
+.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-search-btn-info[data-sitmun-lcat-meta][checked],
+.tc-ctl-lcat .tc-ctl-lcat-btn-info[data-sitmun-lcat-meta][checked],
+.tc-ctl-lcat .tc-ctl-lcat-search-btn-info[data-sitmun-lcat-meta][checked] {
+  background-color: var(--main-hl-color, #c62828) !important;
+  border-color: var(--main-hl-color, #c62828) !important;
 }
 
 /* Layer catalog info: metadata / download links (SITNA-aligned list) */
