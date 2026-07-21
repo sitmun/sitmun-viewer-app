@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: Capas open/drag floor measures the full work-layer LI (path/title/type/tools), not `.tc-ctl-wlm-input` alone; expanded details still do not raise the floor ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Map**: When cartography `queryableFeatureEnabled` is false, profile merge sets GetCapabilities `queryable` false on the matched WMS layer **and all nested descendants** (SITNA FeatureInfo expands groups via `getDisgregatedLayerNames`); layer add also sets `sitmunGfiEnabled` from the profile so identify stays off.
 - **Map**: Tree node consultable (`queryableActive`) off blocks Capas GFI and map-click identify (`sitmunGfiEnabled=false`), even when cartography still has `queryableFeatureEnabled` true.
 - **Map**: Legend task (`sitna.legend`) falls back to capabilities `Style/LegendURL` (same source as Capas “i”) when SITNA `Raster.getLegend` fails or returns empty — covers ArcGIS/DiBa WMS that deny `DescribeLayer` ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).

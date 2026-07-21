@@ -12,11 +12,16 @@ import {
   SPLITTER_CLASS,
   TOOLS_PANEL_PANE_HEIGHTS_KEY,
   TOOLS_PANEL_WLM_HEIGHT_KEY,
+  WLM_ENTRY_EM,
   WLM_HEIGHT_MIN_PX,
   WLM_LIST_MARGIN_PX,
-  WLM_ROW_EM,
   writePaneHeight
 } from './tools-panel-splitter';
+
+/** Header + entry chrome + list margins. */
+function expectedCapasOpenHeight(headerPx: number, entryPx: number): number {
+  return Math.round(headerPx + entryPx + WLM_LIST_MARGIN_PX);
+}
 
 function pointerEvent(type: string, clientY: number, pointerId = 1): PointerEvent {
   const event = new Event(type, { bubbles: true, cancelable: true }) as PointerEvent;
@@ -38,28 +43,72 @@ describe('tools-panel-splitter', () => {
   });
 
   describe('heightToShowFirstCapasEntry', () => {
-    it('uses measured header and first row when laid out', () => {
+    it('uses measured header and full LI entry chrome (not input-only)', () => {
       document.body.innerHTML = `
         <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm" style="font-size: 16px">
           <h2>Loaded Layers</h2>
           <div class="tc-ctl-wlm-content">
-            <ul><li class="tc-ctl-wlm-elm"></li></ul>
+            <ul>
+              <li class="tc-ctl-wlm-elm">
+                <div class="tc-ctl-wlm-lyr"></div>
+                <div class="tc-ctl-wlm-path"></div>
+                <div class="tc-ctl-wlm-input"></div>
+                <div class="tc-ctl-wlm-info tc-hidden"></div>
+              </li>
+            </ul>
           </div>
         </div>
       `;
       const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
       const h2 = wlm.querySelector('h2') as HTMLElement;
       const li = wlm.querySelector('li') as HTMLElement;
+      const input = wlm.querySelector('.tc-ctl-wlm-input') as HTMLElement;
       Object.defineProperty(h2, 'getBoundingClientRect', {
         value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
       });
-      Object.defineProperty(li, 'getBoundingClientRect', {
-        value: () => ({ height: 88, width: 300, top: 40, left: 0, bottom: 128, right: 300 })
+      // Input-only is shorter; floor must use the full LI (path+title+tools).
+      Object.defineProperty(input, 'getBoundingClientRect', {
+        value: () => ({ height: 24, width: 300, top: 40, left: 0, bottom: 64, right: 300 })
       });
-      expect(heightToShowFirstCapasEntry(wlm)).toBe(40 + 88 + WLM_LIST_MARGIN_PX);
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({ height: 71, width: 300, top: 40, left: 0, bottom: 111, right: 300 })
+      });
+      expect(heightToShowFirstCapasEntry(wlm)).toBe(expectedCapasOpenHeight(40, 71));
+      expect(heightToShowFirstCapasEntry(wlm)).toBeLessThan(expectedCapasOpenHeight(40, 120));
     });
 
-    it('falls back to 5.5em row when the first entry has no layout yet', () => {
+    it('ignores expanded layer details for the open/drag floor', () => {
+      document.body.innerHTML = `
+        <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm" style="font-size: 16px">
+          <h2>Loaded Layers</h2>
+          <div class="tc-ctl-wlm-content">
+            <ul>
+              <li class="tc-ctl-wlm-elm">
+                <div class="tc-ctl-wlm-input"></div>
+                <div class="tc-ctl-wlm-info"></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      `;
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      const li = wlm.querySelector('li') as HTMLElement;
+      const info = wlm.querySelector('.tc-ctl-wlm-info') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      Object.defineProperty(info, 'getBoundingClientRect', {
+        value: () => ({ height: 320, width: 300, top: 128, left: 0, bottom: 448, right: 300 })
+      });
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({ height: 408, width: 300, top: 40, left: 0, bottom: 448, right: 300 })
+      });
+      // 408 LI − 320 info = 88 entry chrome
+      expect(heightToShowFirstCapasEntry(wlm)).toBe(expectedCapasOpenHeight(40, 88));
+    });
+
+    it('falls back to 5.5em entry chrome when the first entry has no layout yet', () => {
       document.body.innerHTML = `
         <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm" style="font-size: 16px">
           <h2>Loaded Layers</h2>
@@ -75,9 +124,8 @@ describe('tools-panel-splitter', () => {
       Object.defineProperty(li, 'getBoundingClientRect', {
         value: () => ({ height: 0, width: 0, top: 0, left: 0, bottom: 0, right: 0 })
       });
-      expect(heightToShowFirstCapasEntry(wlm)).toBe(
-        Math.round(40 + WLM_ROW_EM * 16 + WLM_LIST_MARGIN_PX)
-      );
+      expect(heightToShowFirstCapasEntry(wlm)).toBe(WLM_HEIGHT_MIN_PX);
+      expect(WLM_ENTRY_EM * 16).toBe(88);
     });
   });
 
@@ -172,20 +220,196 @@ describe('tools-panel-splitter', () => {
       const ul = wlm.querySelector('ul') as HTMLElement;
       const li = document.createElement('li');
       li.className = 'tc-ctl-wlm-elm';
+      const input = document.createElement('div');
+      input.className = 'tc-ctl-wlm-input';
+      li.appendChild(input);
       ul.appendChild(li);
       const h2 = wlm.querySelector('h2') as HTMLElement;
       Object.defineProperty(h2, 'getBoundingClientRect', {
         value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
-      });
-      Object.defineProperty(li, 'getBoundingClientRect', {
-        value: () => ({ height: 88, width: 300, top: 40, left: 0, bottom: 128, right: 300 })
       });
       handles!.sync();
 
       expect(wlm.classList.contains('tc-collapsed')).toBe(false);
       expect(document.querySelectorAll(`.${SPLITTER_CLASS}`).length).toBe(1);
       expect(wlm.classList.contains(PANE_RESIZED_CLASS)).toBe(true);
-      expect(parseFloat(wlm.style.height)).toBe(40 + 88 + WLM_LIST_MARGIN_PX);
+      expect(parseFloat(wlm.style.height)).toBe(WLM_HEIGHT_MIN_PX);
+      handles?.dispose();
+    });
+
+    it('locks Capas height when the first layer appears on already-expanded Capas', () => {
+      document.body.innerHTML = `
+        <div class="tc-tools-panel">
+          <div class="tc-panel-content" style="height: 500px">
+            <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm">
+              <h2>Loaded Layers</h2>
+              <div class="tc-ctl-wlm-content"><ul></ul></div>
+            </div>
+            <div id="tc-slot-toc" class="tc-ctl tc-ctl-lcat"></div>
+          </div>
+        </div>
+      `;
+      const content = document.querySelector('.tc-panel-content') as HTMLElement;
+      Object.defineProperty(content, 'getBoundingClientRect', {
+        value: () => ({ height: 500, width: 300, top: 0, left: 0, bottom: 500, right: 300 })
+      });
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      Object.defineProperty(wlm, 'getBoundingClientRect', {
+        value: () => {
+          const h = parseFloat(wlm.style.height || '48');
+          return { height: h, width: 300, top: 0, left: 0, bottom: h, right: 300 };
+        }
+      });
+      const handles = attachToolsPanelSplitter(document, null);
+      expect(wlm.classList.contains(PANE_RESIZED_CLASS)).toBe(false);
+
+      const ul = wlm.querySelector('ul') as HTMLElement;
+      const li = document.createElement('li');
+      li.className = 'tc-ctl-wlm-elm';
+      const input = document.createElement('div');
+      input.className = 'tc-ctl-wlm-input';
+      li.appendChild(input);
+      ul.appendChild(li);
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      handles!.sync();
+
+      expect(wlm.classList.contains(PANE_RESIZED_CLASS)).toBe(true);
+      expect(parseFloat(wlm.style.height)).toBe(WLM_HEIGHT_MIN_PX);
+      handles?.dispose();
+    });
+
+    it('does not grow Capas to fit expanded layer details on sync', () => {
+      document.body.innerHTML = `
+        <div class="tc-tools-panel">
+          <div class="tc-panel-content" style="height: 500px">
+            <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm">
+              <h2>Loaded Layers</h2>
+              <div class="tc-ctl-wlm-content">
+                <ul>
+                  <li class="tc-ctl-wlm-elm">
+                    <div class="tc-ctl-wlm-input"></div>
+                    <div class="tc-ctl-wlm-info tc-hidden"></div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div id="tc-slot-toc" class="tc-ctl tc-ctl-lcat"></div>
+          </div>
+        </div>
+      `;
+      const content = document.querySelector('.tc-panel-content') as HTMLElement;
+      Object.defineProperty(content, 'getBoundingClientRect', {
+        value: () => ({ height: 500, width: 300, top: 0, left: 0, bottom: 500, right: 300 })
+      });
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      const li = wlm.querySelector('li') as HTMLElement;
+      const input = wlm.querySelector('.tc-ctl-wlm-input') as HTMLElement;
+      const info = wlm.querySelector('.tc-ctl-wlm-info') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      let liHeight = 48;
+      let infoHeight = 0;
+      Object.defineProperty(info, 'getBoundingClientRect', {
+        value: () => ({
+          height: infoHeight,
+          width: 300,
+          top: 88,
+          left: 0,
+          bottom: 88 + infoHeight,
+          right: 300
+        })
+      });
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({
+          height: liHeight,
+          width: 300,
+          top: 40,
+          left: 0,
+          bottom: 40 + liHeight,
+          right: 300
+        })
+      });
+      Object.defineProperty(wlm, 'getBoundingClientRect', {
+        value: () => {
+          const h = parseFloat(wlm.style.height || String(WLM_HEIGHT_MIN_PX));
+          return { height: h, width: 300, top: 0, left: 0, bottom: h, right: 300 };
+        }
+      });
+
+      const store = new Map<string, string>([
+        [TOOLS_PANEL_PANE_HEIGHTS_KEY, JSON.stringify({ 'tc-slot-wlm': WLM_HEIGHT_MIN_PX })]
+      ]);
+      const storage = {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => {
+          store.set(k, v);
+        }
+      };
+      const handles = attachToolsPanelSplitter(document, storage);
+      const before = parseFloat(wlm.style.height);
+      expect(before).toBe(WLM_HEIGHT_MIN_PX);
+
+      info.classList.remove('tc-hidden');
+      infoHeight = 320;
+      liHeight = 368;
+      handles!.sync();
+
+      const after = parseFloat(wlm.style.height);
+      expect(after).toBe(before);
+      expect(after).toBe(before);
+      handles?.dispose();
+    });
+
+    it('drag floor uses the measured entry min even when stored height is larger', () => {
+      document.body.innerHTML = `
+        <div class="tc-tools-panel">
+          <div class="tc-panel-content" style="height: 500px">
+            <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm">
+              <h2>Loaded Layers</h2>
+              <ul><li class="tc-ctl-wlm-elm"><div class="tc-ctl-wlm-input"></div></li></ul>
+            </div>
+            <div id="tc-slot-toc" class="tc-ctl tc-ctl-lcat"></div>
+          </div>
+        </div>
+      `;
+      const content = document.querySelector('.tc-panel-content') as HTMLElement;
+      Object.defineProperty(content, 'getBoundingClientRect', {
+        value: () => ({ height: 500, width: 300, top: 0, left: 0, bottom: 500, right: 300 })
+      });
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      Object.defineProperty(wlm, 'getBoundingClientRect', {
+        value: () => {
+          const h = parseFloat(wlm.style.height || '220');
+          return { height: h, width: 300, top: 0, left: 0, bottom: h, right: 300 };
+        }
+      });
+      const store = new Map<string, string>([
+        [TOOLS_PANEL_PANE_HEIGHTS_KEY, JSON.stringify({ 'tc-slot-wlm': 220 })]
+      ]);
+      const storage = {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => {
+          store.set(k, v);
+        }
+      };
+      const handles = attachToolsPanelSplitter(document, storage);
+      const splitter = document.querySelector(`.${SPLITTER_CLASS}`) as HTMLElement;
+      splitter.setPointerCapture = jest.fn();
+      splitter.releasePointerCapture = jest.fn();
+      splitter.dispatchEvent(pointerEvent('pointerdown', 200));
+      // Drag upward past the old large floor; stop at the measured entry min.
+      window.dispatchEvent(pointerEvent('pointermove', 200 - 200));
+      window.dispatchEvent(pointerEvent('pointerup', 200 - 200));
+      expect(parseFloat(wlm.style.height)).toBe(WLM_HEIGHT_MIN_PX);
       handles?.dispose();
     });
 
@@ -289,6 +513,9 @@ describe('tools-panel-splitter', () => {
       expect(splitters[0]!.previousElementSibling?.id).toBe('tc-slot-wlm');
       expect(splitters[0]!.nextElementSibling?.id).toBe('tc-slot-toc');
 
+      const openHeight = parseFloat(wlm.style.height);
+      expect(openHeight).toBe(WLM_HEIGHT_MIN_PX);
+
       const toc = document.querySelector('#tc-slot-toc') as HTMLElement;
       const wlmSplitter = splitters[0]!;
       wlmSplitter.setPointerCapture = jest.fn();
@@ -298,17 +525,18 @@ describe('tools-panel-splitter', () => {
       window.dispatchEvent(pointerEvent('pointermove', 260));
       window.dispatchEvent(pointerEvent('pointerup', 260));
 
+      const afterDrag = openHeight + 60;
       expect(wlm.classList.contains(PANE_RESIZED_CLASS)).toBe(true);
       expect(wlm.style.flex).toBe('0 0 auto');
-      expect(parseFloat(wlm.style.height)).toBe(220);
-      expect(readPaneHeights(storage)['tc-slot-wlm']).toBe(220);
+      expect(parseFloat(wlm.style.height)).toBe(afterDrag);
+      expect(readPaneHeights(storage)['tc-slot-wlm']).toBe(afterDrag);
       expect(document.querySelectorAll(`.${SPLITTER_CLASS}`).length).toBe(1);
 
       wlmSplitter.dispatchEvent(pointerEvent('pointerdown', 200));
       window.dispatchEvent(pointerEvent('pointermove', 200 + 400));
       window.dispatchEvent(pointerEvent('pointerup', 200 + 400));
       // Capas grows, but catalog keeps ≥ CATALOG_MIN_REMAINING (+ xdata header).
-      expect(parseFloat(wlm.style.height)).toBeGreaterThan(220);
+      expect(parseFloat(wlm.style.height)).toBeGreaterThan(afterDrag);
       expect(parseFloat(wlm.style.height)).toBeLessThanOrEqual(500 - 160 - 40 - 6);
       expect(toc.classList.contains('tc-collapsed')).toBe(false);
 

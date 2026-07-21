@@ -5,16 +5,20 @@ export const TOOLS_PANEL_PANE_HEIGHTS_KEY = 'sitmun.toolsPanel.paneHeights';
 export const TOOLS_PANEL_WLM_HEIGHT_KEY = 'sitmun.toolsPanel.wlmHeightPx';
 
 export const PANE_HEIGHT_MIN_PX = 48;
-/** Matches Capas CSS row budget (`5.5em` in custom-specific.css). */
-export const WLM_ROW_EM = 5.5;
+/**
+ * Fallback Capas entry chrome (path + title + type + tools) when the LI is not
+ * laid out yet. Matches CSS row budget (`5.5em` in custom-specific.css).
+ * At runtime font-size ~12.8px this is ≈70–71px — one full work-layer row.
+ */
+export const WLM_ENTRY_EM = 5.5;
 /** Capas list `ul` top+bottom margin (5px + 5px). */
 export const WLM_LIST_MARGIN_PX = 10;
 export const PANE_BELOW_MIN_PX = 80;
 /** Measured collapsed tools-panel header (`h2`) height. */
 export const COLLAPSED_HEADER_MIN_PX = 40;
-/** Fallback Capas min at 16px root (h2 + one 5.5em row + list margins). */
+/** Fallback Capas min at 16px root (h2 + one entry + list margins). */
 export const WLM_HEIGHT_MIN_PX = Math.round(
-  COLLAPSED_HEADER_MIN_PX + WLM_ROW_EM * 16 + WLM_LIST_MARGIN_PX
+  COLLAPSED_HEADER_MIN_PX + WLM_ENTRY_EM * 16 + WLM_LIST_MARGIN_PX
 );
 /** Keep Capas disponibles usable — do not let Capas drag crush it to a header strip. */
 export const CATALOG_MIN_REMAINING_PX = 160;
@@ -26,8 +30,33 @@ export const CATALOG_SLOT_ID = 'tc-slot-toc';
 export type PaneHeights = Record<string, number>;
 
 /**
- * Height that fully shows the Capas header plus the first work-layer row
- * (path + title + tools). Used as the Capas drag floor and first-layer open size.
+ * Capas entry chrome height: full `li.tc-ctl-wlm-elm` minus expanded details.
+ * Path/title/type are siblings of `.tc-ctl-wlm-input` (tools only) — do not
+ * measure input alone.
+ */
+function capasEntryChromeHeightPx(li: HTMLElement, fontSize: number): number {
+  const liH = li.getBoundingClientRect().height;
+  if (liH <= 0) {
+    return WLM_ENTRY_EM * fontSize;
+  }
+  const info = li.querySelector('.tc-ctl-wlm-info') as HTMLElement | null;
+  if (!info) {
+    return liH;
+  }
+  const infoHidden =
+    info.classList.contains('tc-hidden') ||
+    window.getComputedStyle(info).display === 'none';
+  if (infoHidden) {
+    return liH;
+  }
+  const infoH = info.getBoundingClientRect().height;
+  return Math.max(WLM_ENTRY_EM * fontSize * 0.5, liH - infoH);
+}
+
+/**
+ * Height that shows the Capas header plus one work-layer entry chrome
+ * (~71px list row at runtime). Used as the Capas drag floor and first-layer
+ * open size. Expanded details scroll inside the pane.
  */
 export function heightToShowFirstCapasEntry(capas: HTMLElement): number {
   const fontSize = parseFloat(window.getComputedStyle(capas).fontSize) || 16;
@@ -37,11 +66,10 @@ export function heightToShowFirstCapasEntry(capas: HTMLElement): number {
     h2 && h2.getBoundingClientRect().height > 0
       ? h2.getBoundingClientRect().height
       : COLLAPSED_HEADER_MIN_PX;
-  const rowH =
-    li && li.getBoundingClientRect().height > 0
-      ? li.getBoundingClientRect().height
-      : WLM_ROW_EM * fontSize;
-  return Math.round(headerH + rowH + WLM_LIST_MARGIN_PX);
+  const entryH = li
+    ? capasEntryChromeHeightPx(li, fontSize)
+    : WLM_ENTRY_EM * fontSize;
+  return Math.round(headerH + entryH + WLM_LIST_MARGIN_PX);
 }
 
 export function minHeightForPane(pane: HTMLElement): number {
@@ -424,24 +452,28 @@ export function attachToolsPanelSplitter(
       const splitter = createSplitter(capas, catalog);
       capas.after(splitter);
 
-      if (storedHeight != null && capasExpanded) {
-        const next = clampPaneHeight(
-          storedHeight,
-          content.getBoundingClientRect().height,
-          {
-            minPx: minHeightForPane(capas),
-            reserveBelowPx: reserveBelowPx(belowPanes),
-            splitterPx: 6
-          }
-        );
-        applyPaneHeight(capas, next);
-        splitter.setAttribute('aria-valuenow', String(next));
-      } else if (didAutoExpand) {
-        // Just opened from collapsed — size to the full first work-layer row.
-        const minPx = heightToShowFirstCapasEntry(capas);
-        const next = clampPaneHeight(minPx, content.getBoundingClientRect().height, {
+      // Always lock Capas while expanded with layers so detail expand scrolls
+      // inside the pane instead of pushing the splitter.
+      if (capasExpanded) {
+        const minPx = minHeightForPane(capas);
+        const contentH = content.getBoundingClientRect().height;
+        const reserve = reserveBelowPx(belowPanes);
+        let requested: number;
+        if (storedHeight != null) {
+          requested = storedHeight;
+        } else if (didAutoExpand || firstLayerReveal) {
+          // First work layer: open to one full entry chrome (LI minus details).
+          requested = minPx;
+        } else if (capas.classList.contains(PANE_RESIZED_CLASS)) {
+          requested = capas.getBoundingClientRect().height || minPx;
+        } else {
+          // Freeze current layout (or first-row floor) so content growth cannot
+          // drive the pane; do not persist until the user drags.
+          requested = Math.max(capas.getBoundingClientRect().height || 0, minPx);
+        }
+        const next = clampPaneHeight(requested, contentH, {
           minPx,
-          reserveBelowPx: reserveBelowPx(belowPanes),
+          reserveBelowPx: reserve,
           splitterPx: 6
         });
         applyPaneHeight(capas, next);
