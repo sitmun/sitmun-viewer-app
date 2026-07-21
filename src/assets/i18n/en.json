@@ -165,6 +165,7 @@
   "loginPage.usernameText": "User",
   "map.applicationsListFilter": "Filter the list of applications",
   "map.error.badConfigTree": "Some of the layer catalogs in this application are not configured correctly and have been omitted from the map. Please check the app settings.",
+  "map.basemap.none": "No base map",
   "map.error.baseLayers": "There are no layers defined as background. Please add at least one base layer and try again.",
   "map.error.config.empty": "Map configuration is empty. Please check the application settings.",
   "map.error.config.fetch.failed": "Failed to load map configuration. Please try again.",

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { AppBackground, AppCfg, AppGroup } from '@api/model/app-cfg';
 import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
+import { TranslateService } from '@ngx-translate/core';
 
 import { AppConfigService } from './app-config.service';
 import { ConfigLookupService } from './config-lookup.service';
@@ -10,6 +11,7 @@ import {
   sortBackgroundsByOrder,
   toDefaultBaseLayer
 } from '../utils/background-order.util';
+import { createNoBaseMapLayer } from '../utils/no-base-map.util';
 
 /**
  * Service for converting AppCfg to SITNA map-level configuration.
@@ -25,7 +27,8 @@ export class MapConfigurationService {
   constructor(
     private configLookup: ConfigLookupService,
     private appConfigService: AppConfigService,
-    private controlRegistry: ControlRegistryService
+    private controlRegistry: ControlRegistryService,
+    private translate: TranslateService
   ) {}
 
   /**
@@ -139,6 +142,11 @@ export class MapConfigurationService {
           }
         }
       }
+    }
+    if (baseLayers.length > 0) {
+      baseLayers.push(
+        createNoBaseMapLayer(this.translate.instant('map.basemap.none'))
+      );
     }
     return baseLayers;
   }

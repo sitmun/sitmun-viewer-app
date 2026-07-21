@@ -1,6 +1,7 @@
 export interface SitnaBaseLayer {
   id: string;
-  url: string;
+  /** Omit for empty VECTOR basemaps (e.g. No base map). */
+  url?: string;
   layerNames?: string[] | string;
   thumbnail?: string;
   matrixSet?: string;

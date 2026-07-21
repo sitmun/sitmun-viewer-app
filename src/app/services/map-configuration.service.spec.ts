@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { AppCfg } from '@api/model/app-cfg';
+import { TranslateService } from '@ngx-translate/core';
 
 import { AppConfigService } from './app-config.service';
 import { ConfigLookupService } from './config-lookup.service';
@@ -31,7 +32,14 @@ describe('MapConfigurationService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AppConfigService, useValue: appConfigService },
-        { provide: ControlRegistryService, useValue: controlRegistry }
+        { provide: ControlRegistryService, useValue: controlRegistry },
+        {
+          provide: TranslateService,
+          useValue: {
+            instant: (key: string) =>
+              key === 'map.basemap.none' ? 'No base map' : key
+          }
+        }
       ]
     });
     service = TestBed.inject(MapConfigurationService);
@@ -381,7 +389,38 @@ describe('MapConfigurationService', () => {
 
     it('should convert backgrounds to base layers', () => {
       const result = service.toBaseLayers(mockAppCfg);
-      expect(result.length).toBe(3); // 3 layers total from 2 backgrounds
+      expect(result.length).toBe(4); // 3 real layers + No base map
+    });
+
+    it('appends No base map VECTOR after real base layers', () => {
+      const result = service.toBaseLayers(mockAppCfg);
+      const last = result[result.length - 1];
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(last.id).toBe('sitmun-no-base-map');
+      expect(last.type).toBe('vector');
+      expect(last.isBase).toBe(true);
+      expect(last.title).toBe('No base map');
+      expect('url' in last).toBe(false);
+      expect(
+        result.slice(0, -1).every((layer) => layer.id !== 'sitmun-no-base-map')
+      ).toBe(true);
+    });
+
+    it('does not use No base map as defaultBaseLayer', () => {
+      const baseLayers = service.toBaseLayers(mockAppCfg);
+      const defaultId = service.toDefaultBaseLayer(baseLayers);
+
+      expect(defaultId).toBe('Base Layer 1');
+      expect(defaultId).not.toBe('sitmun-no-base-map');
+    });
+
+    it('does not invent a blank-only list when backgrounds are empty', () => {
+      const result = service.toBaseLayers({
+        ...mockAppCfg,
+        backgrounds: []
+      });
+      expect(result).toEqual([]);
     });
 
     it('should order base layers by background order independent of profile array order', () => {
@@ -417,7 +456,8 @@ describe('MapConfigurationService', () => {
       expect(result.map((layer) => layer.title)).toEqual([
         'Base Layer 1',
         'Base Layer 2',
-        'Base Layer 3'
+        'Base Layer 3',
+        'No base map'
       ]);
     });
 

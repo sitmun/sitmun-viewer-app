@@ -1,6 +1,8 @@
 import { AppBackground } from '@api/model/app-cfg';
 import { SitnaBaseLayer } from '@api/model/sitna-cfg';
 
+import { NO_BASE_MAP_LAYER_ID } from './no-base-map.util';
+
 /**
  * Sort application backgrounds by profile `order` ascending.
  * Missing/null `order` values sort last; ties preserve original input order.
@@ -45,5 +47,5 @@ function compareBackgroundOrder(
 export function toDefaultBaseLayer(
   baseLayers: SitnaBaseLayer[]
 ): string | undefined {
-  return baseLayers[0]?.id;
+  return baseLayers.find((layer) => layer.id !== NO_BASE_MAP_LAYER_ID)?.id;
 }

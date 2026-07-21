@@ -165,6 +165,7 @@
   "loginPage.usernameText": "Usuari",
   "map.applicationsListFilter": "Filtra la llista d'aplicacions",
   "map.error.badConfigTree": "Alguns dels catàlegs de capes d'aquesta aplicació no estan configurats correctament i han estat omesos del mapa. Reviseu la configuració de l'aplicació si us plau.",
+  "map.basemap.none": "Sense mapa de fons",
   "map.error.baseLayers": "No hi ha capes definides com a base. Si us plau, afegiu almenys una capa base i torneu-ho a provar.",
   "map.error.config.empty": "La configuració del mapa està buida. Si us plau, reviseu la configuració de l'aplicació.",
   "map.error.config.fetch.failed": "Error en carregar la configuració del mapa. Si us plau, torneu-ho a provar.",

@@ -165,6 +165,7 @@
   "loginPage.usernameText": "Nom d'utilisateur",
   "map.applicationsListFilter": "Filtrer la liste des applications",
   "map.error.badConfigTree": "Certains catalogues de couches de cette application sont mal configurés et ont été omis de la carte. Veuillez vérifier la configuration de l’application.",
+  "map.basemap.none": "Sans fond de carte",
   "map.error.baseLayers": "Aucune couche de fond définie. Veuillez en ajouter au moins une et réessayer.",
   "map.error.config.empty": "La configuration de la carte est vide. Veuillez vérifier les paramètres de l'application.",
   "map.error.config.fetch.failed": "Échec du chargement de la configuration de la carte. Veuillez réessayer.",

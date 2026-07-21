@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map**: basemap selector includes **No base map** (empty SITNA VECTOR base layer) so users can clear the raster background while keeping operational layers ([#167](https://github.com/sitmun/sitmun-viewer-app/issues/167)).
 - **Map**: Capas and Capas disponibles are a paired stack (excluded from tools-panel accordion mutual exclusion; BMS/click-tools still accordion); Capas starts collapsed and opens to the full first work-layer row when a layer is added; splitter appears only when Capas has layers; Capas drag keeps ≥160px for Capas disponibles; locked height clears when Capas is collapsed/empty (`localStorage` `sitmun.toolsPanel.paneHeights`) ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Languages**: toolbar/menu switcher omits languages with `enabled: false` from `GET /api/languages`.
 - **Language chrome**: toolbar control left of the hamburger (and beside expand when the map bar is collapsed) shows closed BCP-47 ISO and open API endonyms; landing language is `localStorage` → STM_CONF `language.default` → static; language entry removed from the hamburger menu.
