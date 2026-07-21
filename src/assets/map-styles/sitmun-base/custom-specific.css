@@ -211,7 +211,9 @@
 }
 
 .tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm:not(.tc-collapsed) .tc-ctl-wlm-content ul {
+  /* Pane/content scrolls; do not re-cap the list (that clipped rows). */
   max-height: none;
+  overflow: visible;
 }
 
 /*
@@ -241,6 +243,7 @@
   .tc-ctl-wlm-content
   ul {
   max-height: none;
+  overflow: visible;
 }
 
 .sitmun-tools-panel-splitter {
@@ -291,10 +294,12 @@
   overflow: hidden;
 }
 
+/* Capas list always scrolls inside the pane when rows exceed the Capas height. */
 .tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm .tc-ctl-wlm-content {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .tc-tools-panel:not(.tc-collapsed-right) #tc-slot-toc.tc-ctl-lcat {
@@ -319,6 +324,7 @@
 
   .tc-tools-panel:not(.tc-collapsed-right) #tc-slot-wlm:not(.tc-collapsed) .tc-ctl-wlm-content ul {
     max-height: none;
+    overflow: visible;
   }
 }
 

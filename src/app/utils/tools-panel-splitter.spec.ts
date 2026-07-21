@@ -4,6 +4,7 @@ import {
   clampPaneHeight,
   clearPaneHeight,
   findCapasCatalogPair,
+  heightToShowFirstCapasEntry,
   listLoadedToolsPanes,
   listSplitToolsPanes,
   PANE_RESIZED_CLASS,
@@ -12,6 +13,8 @@ import {
   TOOLS_PANEL_PANE_HEIGHTS_KEY,
   TOOLS_PANEL_WLM_HEIGHT_KEY,
   WLM_HEIGHT_MIN_PX,
+  WLM_LIST_MARGIN_PX,
+  WLM_ROW_EM,
   writePaneHeight
 } from './tools-panel-splitter';
 
@@ -31,6 +34,50 @@ describe('tools-panel-splitter', () => {
       expect(
         clampPaneHeight(500, 400, { minPx: WLM_HEIGHT_MIN_PX, reserveBelowPx: 160 })
       ).toBe(400 - 160 - 6);
+    });
+  });
+
+  describe('heightToShowFirstCapasEntry', () => {
+    it('uses measured header and first row when laid out', () => {
+      document.body.innerHTML = `
+        <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm" style="font-size: 16px">
+          <h2>Loaded Layers</h2>
+          <div class="tc-ctl-wlm-content">
+            <ul><li class="tc-ctl-wlm-elm"></li></ul>
+          </div>
+        </div>
+      `;
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      const li = wlm.querySelector('li') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({ height: 88, width: 300, top: 40, left: 0, bottom: 128, right: 300 })
+      });
+      expect(heightToShowFirstCapasEntry(wlm)).toBe(40 + 88 + WLM_LIST_MARGIN_PX);
+    });
+
+    it('falls back to 5.5em row when the first entry has no layout yet', () => {
+      document.body.innerHTML = `
+        <div id="tc-slot-wlm" class="tc-ctl tc-ctl-wlm" style="font-size: 16px">
+          <h2>Loaded Layers</h2>
+          <ul><li class="tc-ctl-wlm-elm"></li></ul>
+        </div>
+      `;
+      const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      const li = wlm.querySelector('li') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({ height: 0, width: 0, top: 0, left: 0, bottom: 0, right: 0 })
+      });
+      expect(heightToShowFirstCapasEntry(wlm)).toBe(
+        Math.round(40 + WLM_ROW_EM * 16 + WLM_LIST_MARGIN_PX)
+      );
     });
   });
 
@@ -126,12 +173,19 @@ describe('tools-panel-splitter', () => {
       const li = document.createElement('li');
       li.className = 'tc-ctl-wlm-elm';
       ul.appendChild(li);
+      const h2 = wlm.querySelector('h2') as HTMLElement;
+      Object.defineProperty(h2, 'getBoundingClientRect', {
+        value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
+      });
+      Object.defineProperty(li, 'getBoundingClientRect', {
+        value: () => ({ height: 88, width: 300, top: 40, left: 0, bottom: 128, right: 300 })
+      });
       handles!.sync();
 
       expect(wlm.classList.contains('tc-collapsed')).toBe(false);
       expect(document.querySelectorAll(`.${SPLITTER_CLASS}`).length).toBe(1);
       expect(wlm.classList.contains(PANE_RESIZED_CLASS)).toBe(true);
-      expect(parseFloat(wlm.style.height)).toBe(WLM_HEIGHT_MIN_PX);
+      expect(parseFloat(wlm.style.height)).toBe(40 + 88 + WLM_LIST_MARGIN_PX);
       handles?.dispose();
     });
 

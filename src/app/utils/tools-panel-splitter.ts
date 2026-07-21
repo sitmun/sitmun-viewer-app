@@ -5,10 +5,17 @@ export const TOOLS_PANEL_PANE_HEIGHTS_KEY = 'sitmun.toolsPanel.paneHeights';
 export const TOOLS_PANEL_WLM_HEIGHT_KEY = 'sitmun.toolsPanel.wlmHeightPx';
 
 export const PANE_HEIGHT_MIN_PX = 48;
-export const WLM_HEIGHT_MIN_PX = 96;
+/** Matches Capas CSS row budget (`5.5em` in custom-specific.css). */
+export const WLM_ROW_EM = 5.5;
+/** Capas list `ul` top+bottom margin (5px + 5px). */
+export const WLM_LIST_MARGIN_PX = 10;
 export const PANE_BELOW_MIN_PX = 80;
 /** Measured collapsed tools-panel header (`h2`) height. */
 export const COLLAPSED_HEADER_MIN_PX = 40;
+/** Fallback Capas min at 16px root (h2 + one 5.5em row + list margins). */
+export const WLM_HEIGHT_MIN_PX = Math.round(
+  COLLAPSED_HEADER_MIN_PX + WLM_ROW_EM * 16 + WLM_LIST_MARGIN_PX
+);
 /** Keep Capas disponibles usable — do not let Capas drag crush it to a header strip. */
 export const CATALOG_MIN_REMAINING_PX = 160;
 export const SPLITTER_CLASS = 'sitmun-tools-panel-splitter';
@@ -18,8 +25,29 @@ export const CATALOG_SLOT_ID = 'tc-slot-toc';
 
 export type PaneHeights = Record<string, number>;
 
+/**
+ * Height that fully shows the Capas header plus the first work-layer row
+ * (path + title + tools). Used as the Capas drag floor and first-layer open size.
+ */
+export function heightToShowFirstCapasEntry(capas: HTMLElement): number {
+  const fontSize = parseFloat(window.getComputedStyle(capas).fontSize) || 16;
+  const h2 = capas.querySelector(':scope > h2') as HTMLElement | null;
+  const li = capas.querySelector('li.tc-ctl-wlm-elm') as HTMLElement | null;
+  const headerH =
+    h2 && h2.getBoundingClientRect().height > 0
+      ? h2.getBoundingClientRect().height
+      : COLLAPSED_HEADER_MIN_PX;
+  const rowH =
+    li && li.getBoundingClientRect().height > 0
+      ? li.getBoundingClientRect().height
+      : WLM_ROW_EM * fontSize;
+  return Math.round(headerH + rowH + WLM_LIST_MARGIN_PX);
+}
+
 export function minHeightForPane(pane: HTMLElement): number {
-  return pane.classList.contains('tc-ctl-wlm') ? WLM_HEIGHT_MIN_PX : PANE_HEIGHT_MIN_PX;
+  return pane.classList.contains('tc-ctl-wlm')
+    ? heightToShowFirstCapasEntry(pane)
+    : PANE_HEIGHT_MIN_PX;
 }
 
 export function clampPaneHeight(
@@ -409,16 +437,13 @@ export function attachToolsPanelSplitter(
         applyPaneHeight(capas, next);
         splitter.setAttribute('aria-valuenow', String(next));
       } else if (didAutoExpand) {
-        // Just opened from collapsed — lock a usable min so the first row is not clipped.
-        const next = clampPaneHeight(
-          minHeightForPane(capas),
-          content.getBoundingClientRect().height,
-          {
-            minPx: minHeightForPane(capas),
-            reserveBelowPx: reserveBelowPx(belowPanes),
-            splitterPx: 6
-          }
-        );
+        // Just opened from collapsed — size to the full first work-layer row.
+        const minPx = heightToShowFirstCapasEntry(capas);
+        const next = clampPaneHeight(minPx, content.getBoundingClientRect().height, {
+          minPx,
+          reserveBelowPx: reserveBelowPx(belowPanes),
+          splitterPx: 6
+        });
         applyPaneHeight(capas, next);
         splitter.setAttribute('aria-valuenow', String(next));
       }
