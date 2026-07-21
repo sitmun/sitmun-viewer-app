@@ -229,6 +229,12 @@ $icon-button-size: 40px; // Material standard (touch target 48px with padding)
   }
 }
 
+// Overlay panel (outside :host) — width follows longest endonym
+::ng-deep .language-menu-panel.mat-mdc-menu-panel {
+  min-width: max-content;
+  width: max-content;
+}
+
 // Show button styles - outside ::ng-deep since button is in component template
 .show-toolbar-btn {
   position: fixed !important;

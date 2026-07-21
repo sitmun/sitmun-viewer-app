@@ -60,7 +60,7 @@
         <mat-icon>language</mat-icon>
         <span>{{ isoCode(currentLang) }}</span>
       </button>
-      <mat-menu #languageMenu="matMenu">
+      <mat-menu #languageMenu="matMenu" panelClass="language-menu-panel">
         <button
           mat-menu-item
           *ngFor="let language of languages"
@@ -108,7 +108,7 @@
     <mat-icon>language</mat-icon>
     <span>{{ isoCode(currentLang) }}</span>
   </button>
-  <mat-menu #collapsedLanguageMenu="matMenu">
+  <mat-menu #collapsedLanguageMenu="matMenu" panelClass="language-menu-panel">
     <button
       mat-menu-item
       *ngFor="let language of languages"

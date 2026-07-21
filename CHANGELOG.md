@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file. The format 
 - **Map**: map tool chrome stacks without overlap at 480/768/1024; Capas tab shows one glyph; Street View and 3D hide under 480px width ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).
 - **Map**: WMS legend GetLegendGraphic keeps a finite OGC `SCALE` on WKT-registered metre CRS (e.g. EPSG:3763) by coercing SITNA `getMetersPerUnit` when OpenLayers `METERS_PER_UNIT` misses `"meter"` ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 - **Language chrome**: toolbar language control uses the same ink as the hamburger (inherit + orange hover; white on login); collapsed-bar control stays white beside expand.
+- **Language chrome**: language menu width follows the longest endonym instead of inheriting the hamburger menu’s 360px min-width.
 - **Languages**: navigation bar subscribes to `LanguageService.languagesToUse$` and re-fetches enabled/order when the language menu opens so admin enable/order changes appear without a full reload.
 - **Map**: multi-tree Capas disponibles **Cambiar tema** is a 24×24px control clustered immediately left of the search/tree switch (`right: 54px`, 6px gap); inline SVG with forced `stroke:#111`; tooltip ignores unresolved `currentTopic` locale keys.
 - **Map**: multi-tree Capas disponibles header: **Cambiar tema** is a neutral icon-only square left of SITNA’s search/tree-view switch (was zero-sized because `font-size:0` collapsed `em` layout); topic badge removed in favor of the button tooltip.
