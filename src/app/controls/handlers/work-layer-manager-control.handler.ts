@@ -321,8 +321,15 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
       const layer = map.getLayer(layerId);
       const nodeId = layer?.options?.nodeId as string | undefined;
       const tools = li.querySelector('.tc-ctl-wlm-tools');
-      if (!tools || !nodeId || !this.configLookup.isQueryableLeaf(nodeId)) {
+      if (!tools || !nodeId) {
+        return;
+      }
+      if (!this.configLookup.isQueryableLeaf(nodeId)) {
+        // Consultable off on the tree node: hide Capas GFI and block identify.
         li.querySelector(`:scope .${WLM_GFI_CLASS}`)?.remove();
+        if (layer?.options) {
+          layer.options.sitmunGfiEnabled = false;
+        }
         return;
       }
 

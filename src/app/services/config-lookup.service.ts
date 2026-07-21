@@ -211,10 +211,10 @@ export class ConfigLookupService {
   }
 
   /**
-   * Leaf eligible for the catalog GFI `i` marker: cartography resource and
-   * tree {@code queryableActive}. Layer {@code queryableFeatureEnabled} gates
-   * the admin toggle (and GetCapabilities queryable); the marker follows the
-   * node flag so admin and viewer stay aligned.
+   * Leaf eligible for Capas GFI UI and map-click identify: cartography resource
+   * and tree {@code queryableActive} (consultable). Cartography
+   * {@code queryableFeatureEnabled} still gates GetCapabilities queryable and
+   * is AND-ed at layer add via {@code resolveSitmunGfiEnabled}.
    */
   isQueryableLeaf(nodeId: string): boolean {
     const node = this.findNode(nodeId);

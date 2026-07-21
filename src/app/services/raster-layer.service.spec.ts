@@ -650,6 +650,126 @@ describe('RasterLayerService', () => {
       expect(wmtsLayer['Abstract']).toBe('from exact row');
       expect(wmtsLayer['Title']).toBe('Exact match layer');
     });
+
+    it('sets queryable false on matched WMS group and all descendants', () => {
+      const serviceUrl = 'https://ide.cime.es/geoserver/ordenacio/ows';
+      const cfg: AppCfg = {
+        ...minimalAppCfg(),
+        layers: [
+          {
+            id: 'layer/4658',
+            title: 'RPT Sòl Rústic',
+            layers: ['OR007RPT_solrustic'],
+            service: 'S1',
+            queryableFeatureEnabled: false
+          }
+        ],
+        services: [
+          {
+            id: 'S1',
+            title: 'IDEMenorca - Ordenacio',
+            type: 'WMS',
+            url: serviceUrl,
+            parameters: {}
+          }
+        ]
+      };
+      const childNested: WMSLayer = {
+        Name: 'or007rpt_anei_child',
+        Title: 'nested',
+        queryable: true
+      };
+      const group: WMSLayer = {
+        Name: 'OR007RPT_solrustic',
+        Title: 'Sòl Rústic',
+        queryable: true,
+        Layer: [
+          { Name: 'or007rpt_zavas', Title: 'ZAVAS', queryable: true },
+          {
+            Name: 'or007rpt_anei',
+            Title: 'ANEIs',
+            queryable: true,
+            Layer: [childNested]
+          }
+        ]
+      };
+      const caps = {
+        version: '1.3.0',
+        Service: {},
+        Capability: { Layer: { Title: 'Root', Layer: [group] } }
+      } as WMSCapabilities;
+
+      service.processWmtCapabilitiesResult(
+        { type: 'WMS', url: serviceUrl, options: { serviceId: 'S1', type: 'WMS' } },
+        serviceUrl,
+        caps,
+        cfg
+      );
+
+      expect(group.queryable).toBe(false);
+      expect(group.Layer![0].queryable).toBe(false);
+      expect(group.Layer![1].queryable).toBe(false);
+      expect(childNested.queryable).toBe(false);
+    });
+
+    it('sets queryable true on matched WMS group and descendants when profile enables GFI', () => {
+      const serviceUrl = 'https://ide.cime.es/geoserver/ordenacio/ows';
+      const cfg: AppCfg = {
+        ...minimalAppCfg(),
+        layers: [
+          {
+            id: 'layer/4658',
+            title: 'RPT Sòl Rústic',
+            layers: ['OR007RPT_solrustic'],
+            service: 'S1',
+            queryableFeatureEnabled: true
+          }
+        ],
+        services: [
+          {
+            id: 'S1',
+            type: 'WMS',
+            url: serviceUrl,
+            parameters: {}
+          }
+        ]
+      };
+      const childNested: WMSLayer = {
+        Name: 'or007rpt_anei_child',
+        Title: 'nested',
+        queryable: false
+      };
+      const group: WMSLayer = {
+        Name: 'OR007RPT_solrustic',
+        Title: 'Sòl Rústic',
+        queryable: false,
+        Layer: [
+          { Name: 'or007rpt_zavas', Title: 'ZAVAS', queryable: false },
+          {
+            Name: 'or007rpt_anei',
+            Title: 'ANEIs',
+            queryable: false,
+            Layer: [childNested]
+          }
+        ]
+      };
+      const caps = {
+        version: '1.3.0',
+        Service: {},
+        Capability: { Layer: { Title: 'Root', Layer: [group] } }
+      } as WMSCapabilities;
+
+      service.processWmtCapabilitiesResult(
+        { type: 'WMS', url: serviceUrl, options: { serviceId: 'S1', type: 'WMS' } },
+        serviceUrl,
+        caps,
+        cfg
+      );
+
+      expect(group.queryable).toBe(true);
+      expect(group.Layer![0].queryable).toBe(true);
+      expect(childNested.queryable).toBe(true);
+    });
   });
 
   describe('isRasterWms and isRasterWmts', () => {

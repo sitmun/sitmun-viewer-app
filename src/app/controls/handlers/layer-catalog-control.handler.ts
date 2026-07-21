@@ -8,6 +8,7 @@ import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordanc
 import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
 import { CatalogSwitchingService } from '../../services/catalog-switching.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
+import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
 import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
@@ -518,12 +519,19 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.layerNames = layerName;
           }
 
-          if (
+          const appLayer = resource
+            ? appCfgAdd.layers.find((l) => l.id === resource)
+            : undefined;
+          const queryableLeaf =
             typeof handler.configLookup.isQueryableLeaf === 'function' &&
-            handler.configLookup.isQueryableLeaf(layerName)
-          ) {
+            handler.configLookup.isQueryableLeaf(layerName);
+          // Node consultable (queryableActive) AND cartography GFI flag.
+          layerOptions.sitmunGfiEnabled = resolveSitmunGfiEnabled(
+            queryableLeaf,
+            appLayer
+          );
+          if (queryableLeaf) {
             layerOptions.nodeId = layerOptions.nodeId ?? layerName;
-            layerOptions.sitmunGfiEnabled = true;
           }
 
           const effectiveLayerNames: string[] = Array.isArray(

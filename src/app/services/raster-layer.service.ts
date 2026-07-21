@@ -395,7 +395,13 @@ export class RasterLayerService {
             }
             this.mergeProfileTitleAbstractOntoLayer(ly, appLayer);
             this.mergeProfileOgcOnlineResourceLinks(ly, appLayer);
-            ly.queryable = isProfileLayerQueryable(appLayer);
+            // SITNA FeatureInfo expands groups via getDisgregatedLayerNames;
+            // apply the profile flag to the match and all descendants so child
+            // names cannot stay queryable when the cartography disables GFI.
+            this.setQueryableOnLayerTree(
+              ly,
+              isProfileLayerQueryable(appLayer)
+            );
             break;
           }
         }
@@ -408,6 +414,18 @@ export class RasterLayerService {
       }
     };
     visit(root);
+  }
+
+  /** Set OGC `queryable` on a WMS capability node and every nested `Layer`. */
+  private setQueryableOnLayerTree(ly: WMSLayer, queryable: boolean): void {
+    ly.queryable = queryable;
+    const children = ly.Layer;
+    if (!Array.isArray(children)) {
+      return;
+    }
+    for (const child of children) {
+      this.setQueryableOnLayerTree(child, queryable);
+    }
   }
 
   /**

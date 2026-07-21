@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: When cartography `queryableFeatureEnabled` is false, profile merge sets GetCapabilities `queryable` false on the matched WMS layer **and all nested descendants** (SITNA FeatureInfo expands groups via `getDisgregatedLayerNames`); layer add also sets `sitmunGfiEnabled` from the profile so identify stays off.
+- **Map**: Tree node consultable (`queryableActive`) off blocks Capas GFI and map-click identify (`sitmunGfiEnabled=false`), even when cartography still has `queryableFeatureEnabled` true.
 - **Map**: Legend task (`sitna.legend`) falls back to capabilities `Style/LegendURL` (same source as Capas “i”) when SITNA `Raster.getLegend` fails or returns empty — covers ArcGIS/DiBa WMS that deny `DescribeLayer` ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 - **Map**: Legend control retries `updateLayerTree` when Style/LegendURL is present but the layer node was skipped (SITNA sticky `layerLoaded` / late caps), and refreshes symbology when the left Legend drawer opens after layers were already loaded ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 - **Map**: FeatureInfo DescribeLayer safety fallback includes `layerName` so `getLegend` does not throw when that wrapper is active ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).

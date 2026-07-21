@@ -415,24 +415,29 @@ describe('WorkLayerManagerControlHandler', () => {
       expect(layer.options.sitmunGfiEnabled).toBe(false);
     });
 
-    it('omits sitmun-wlm-gfi when the layer is not queryable', () => {
+    it('omits sitmun-wlm-gfi and clears sitmunGfiEnabled when node consultable is off', () => {
       mockConfigLookup.isQueryableLeaf.mockReturnValue(false);
       const div = document.createElement('div');
       const li = createWlmRow('layer-nq');
       div.appendChild(li);
+      const layer = {
+        options: {
+          nodeId: 'node/other',
+          sitmunGfiEnabled: true
+        } as { nodeId: string; sitmunGfiEnabled?: boolean },
+        getVisibility: () => true
+      };
       const wlm = {
         div,
         map: {
-          getLayer: jest.fn().mockReturnValue({
-            options: { nodeId: 'node/other' },
-            getVisibility: () => true
-          })
+          getLayer: jest.fn().mockReturnValue(layer)
         }
       };
 
       (handler as any).decorateGfiIndicators(wlm);
 
       expect(li.querySelector('.sitmun-wlm-gfi')).toBeNull();
+      expect(layer.options.sitmunGfiEnabled).toBe(false);
     });
 
     it('blocks interaction when out of scale but preserves sitmunGfiEnabled', () => {
