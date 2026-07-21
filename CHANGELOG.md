@@ -24,10 +24,14 @@ All notable changes to this project will be documented in this file. The format 
 - **Application details**: shows `responsibleInstitutionName` and `pointOfContact` independently when the client API provides them; blocked or ineligible PoC emails are omitted by the backend only ([sitmun-admin-app#316](https://github.com/sitmun/sitmun-admin-app/issues/316)).
 - **E2E**: same-origin `/backend` and `/middleware` serve profile for root Playwright viewer/proxy tests.
 - **E2E**: root `viewer-catalog` Playwright project covers layer-catalog radio inputs, visible `loadData` folder load controls, and trailing meta (Material `article`) order on a seeded queryable leaf ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)). Capas trash-then-clear after partial WLM remove is covered by viewer Jest (Playwright leaf load under WMS stubs remains a gap).
+- **E2E**: root `viewer-legend` Playwright project covers Capas + Legend task symbology when the WMS stub denies DescribeLayer and serves Style/LegendURL on `/legend` ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 - **Tests**: `api-sitna-meters-per-unit-upstream.spec.ts` characterizes the api-sitna WKT `"meter"` vs OpenLayers `METERS_PER_UNIT.m` miss that yields legend `SCALE=NaN` (for upstream reporting; remove viewer workaround when this assertion flips) ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 
 ### Fixed
 
+- **Map**: Legend task (`sitna.legend`) falls back to capabilities `Style/LegendURL` (same source as Capas “i”) when SITNA `Raster.getLegend` fails or returns empty — covers ArcGIS/DiBa WMS that deny `DescribeLayer` ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
+- **Map**: Legend control retries `updateLayerTree` when Style/LegendURL is present but the layer node was skipped (SITNA sticky `layerLoaded` / late caps), and refreshes symbology when the left Legend drawer opens after layers were already loaded ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
+- **Map**: FeatureInfo DescribeLayer safety fallback includes `layerName` so `getLegend` does not throw when that wrapper is active ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 - **Map**: Capas out-of-scale rows (`tc-ctl-wlm-elm-notvisible`) use `#777777` for path/lyr/type so titles are not stuck on maroon `#660000` ([#92](https://github.com/sitmun/sitmun-viewer-app/issues/92)).
 - **Map**: Capas and Capas disponibles share the tools-panel column without overlap; Capas list scrolls inside the pane whenever rows exceed the Capas height ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Map**: map tool chrome stacks without overlap at 480/768/1024; Capas tab shows one glyph; Street View and 3D hide under 480px width ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).

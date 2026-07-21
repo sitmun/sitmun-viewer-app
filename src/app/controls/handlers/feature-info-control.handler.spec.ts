@@ -260,9 +260,11 @@ describe('FeatureInfoControlHandler', () => {
       // Act: loadPatches installs meld.around wrapper
       await handler.loadPatches({} as AppCfg);
 
-      // Assert: wrapped describeLayer resolves instead of rejecting
-      const result = await TC.layer.Raster.prototype.describeLayer(true);
-      expect(result).toEqual([{ owsType: 'WMS' }]);
+      // Assert: wrapped describeLayer resolves with layerName for getLegend (#164)
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['CAE1M_141A'];
+      const result = await layer.describeLayer(true);
+      expect(result).toEqual([{ owsType: 'WMS', layerName: 'CAE1M_141A' }]);
     });
 
     it('should wrap Raster.describeLayer to resolve with WMS fallback when full=false and rejection occurs', async () => {
@@ -275,8 +277,10 @@ describe('FeatureInfoControlHandler', () => {
       await handler.loadPatches({} as AppCfg);
 
       // Assert
-      const result = await TC.layer.Raster.prototype.describeLayer(false);
-      expect(result).toEqual({ owsType: 'WMS' });
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['L1', 'L2'];
+      const result = await layer.describeLayer(false);
+      expect(result).toEqual({ owsType: 'WMS', layerName: 'L1' });
     });
 
     it('should wrap Proxification.fetch to resolve with empty JSON when GFI request fails', async () => {
@@ -413,7 +417,7 @@ describe('FeatureInfoControlHandler', () => {
 
       // Assert: still works correctly (no double-wrap)
       const result = await TC.layer.Raster.prototype.describeLayer(true);
-      expect(result).toEqual([{ owsType: 'WMS' }]);
+      expect(result).toEqual([{ owsType: 'WMS', layerName: '' }]);
     });
   });
 });

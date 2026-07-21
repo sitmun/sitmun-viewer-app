@@ -247,9 +247,25 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         const describeAdvice = meld.around(
           RasterProto,
           'describeLayer',
-          function (this: unknown, jp: MeldJoinPoint): unknown {
+          function (
+            this: { availableNames?: string[]; names?: string[] | string },
+            jp: MeldJoinPoint
+          ): unknown {
             const full = jp.args[0] as boolean | undefined;
-            const fallback = full ? [{ owsType: 'WMS' }] : { owsType: 'WMS' };
+            const names = Array.isArray(this.availableNames)
+              ? this.availableNames
+              : Array.isArray(this.names)
+                ? this.names
+                : typeof this.names === 'string' && this.names
+                  ? [this.names]
+                  : [];
+            // Include layerName so Raster.getLegend's describeLayer.find(...)
+            // does not throw when FeatureInfo's safe wrapper is active (#164).
+            const fallback = full
+              ? names.length
+                ? names.map((layerName) => ({ owsType: 'WMS', layerName }))
+                : [{ owsType: 'WMS', layerName: '' }]
+              : { owsType: 'WMS', layerName: names[0] ?? '' };
             return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
               () => fallback
             );
