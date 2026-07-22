@@ -23,11 +23,11 @@
   position: absolute;
 }
 
-/* Search positioning */
+/* Search positioning — always clear of the left icon column (tools = first icon). */
 .tc-ctl-search-content {
   position: absolute;
-  top: 3.7em;
-  left: 6%;
+  top: 12px;
+  left: 68px; /* 20px inset + 40px tools + 8px gap */
   padding: 0;
   width: 340px;
   z-index: 9998;
@@ -415,8 +415,10 @@
 }
 
 /*
- * #135: map chrome stacking. Capas tab = .tc-tools-panel > h1 (not left #tools-tab).
- * Below 480px hide Street View / 3D so zoom/home/Capas tab remain usable.
+ * #135: map chrome stacking (partner profile 12/4 control set).
+ * GOOD left: tools → legend → fscreen → Street View → home → + → slider → − → 3D.
+ * Right: Capas top-right 40×40; overview bottom-right 40×40 (above scale).
+ * Search always right of tools. Opaque tools/legend/fscreen.
  */
 .tc-tools-panel.tc-collapsed-right > h1::before,
 .tc-tools-panel.tc-collapsed-right > h1::after {
@@ -424,46 +426,525 @@
   display: none !important;
 }
 
-@media (max-width: 1024px) {
-  .tc-ctl.tc-ctl-sv {
-    top: 10.5em !important;
+/*
+ * Cancel SITNA 90° rotate / bottom docking on left tabs.
+ * Left panel stays translateX(-100%) when collapsed; stick tabs into the map
+ * with right:-60px (40px icon + 20px inset), upright.
+ */
+.tc-left-panel.tc-collapsed #tools-tab,
+.tc-left-panel.tc-collapsed-left #tools-tab,
+.tc-left-panel.tc-collapsed #legend-tab,
+.tc-left-panel.tc-collapsed-left #legend-tab {
+  opacity: 1 !important;
+  background-color: #000000cc !important;
+  z-index: 10001;
+  transform: none !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: -60px !important;
+  margin: 0 !important;
+  margin-right: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+/* Fscreen: opaque button only (host stays transparent to avoid double wash). */
+.tc-ctl.tc-ctl-fscreen {
+  opacity: 1 !important;
+  background-color: transparent !important;
+}
+
+.tc-ctl.tc-ctl-fscreen button,
+button.tc-ctl-fscreen-btn {
+  opacity: 1 !important;
+  background-color: #000000cc !important;
+}
+
+/*
+ * Pixel ladder (not em). Step = 44px (40px control + 4px gap).
+ * Absolute nav internals kill SITNA zoomin@-10em so order is always
+ * + → (slider) → − with 3D below the nav block.
+ */
+.tc-slide-panel.tc-left-panel #tools-tab {
+  top: 64px;
+}
+
+.tc-slide-panel.tc-left-panel #legend-tab {
+  top: 108px;
+}
+
+/*
+ * Left panel open: both openers become the red close control at the same
+ * ladder top (tools 64px / legend 108px). Kill SITNA FA :after arrows.
+ */
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab {
+  background-image: url(./img/closeIcon.png) !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: 40px 40px !important;
+  background-color: #b51818 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  overflow: hidden !important;
+}
+
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab {
+  top: 64px !important;
+}
+
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab {
+  top: 108px !important;
+}
+
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab::before,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab::after,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab::before,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab::after {
+  content: none !important;
+  display: none !important;
+}
+
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab:hover,
+.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab:hover {
+  background-color: #a51818 !important;
+}
+
+.tc-ctl.tc-ctl-fscreen {
+  top: 152px !important;
+  left: 20px !important;
+}
+
+.tc-ctl.tc-ctl-sv {
+  top: 196px !important;
+  left: 20px !important;
+}
+
+.tc-ctl.tc-ctl-nav-home {
+  top: 240px !important;
+  left: 20px !important;
+}
+
+.tc-ctl.tc-ctl-nav {
+  position: absolute !important;
+  top: 284px !important;
+  left: 20px !important;
+  width: 40px !important;
+  height: 84px !important;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin,
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+  position: absolute !important;
+  left: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn-zoomin {
+  top: 0 !important;
+}
+
+.tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+  top: 44px !important;
+}
+
+/* Compact: hide slider between +/−. */
+.tc-ctl-nav-slider,
+.tc-ctl-nav-bar,
+.tc-ctl-nav .ol-zoomslider {
+  display: none !important;
+}
+
+.tc-ctl.tc-ctl-3d {
+  /* Compact nav ends at 284+84=368; keep a clear gap under zoom−. */
+  top: 388px !important;
+  left: 20px !important;
+}
+
+/*
+ * Capas + overview: same slide model as left (transform .3s ease).
+ * Drawer has fixed width docked right; collapsed = translateX(100%);
+ * tab sticks out at left:-60px (40px + 20px gap) and rides the slide.
+ */
+.tc-tools-panel {
+  width: 420px !important;
+  max-width: 420px !important;
+  left: auto !important;
+  right: 0 !important;
+  background-color: transparent !important;
+  overflow: visible !important;
+  transition: transform 0.3s ease !important;
+}
+
+.tc-tools-panel > .tc-panel-content {
+  width: 100% !important;
+  right: 0 !important;
+  transition: none !important; /* slide via panel transform only */
+  background-color: var(--main-bg-color, #ffffff) !important;
+  pointer-events: auto;
+}
+
+/*
+ * Open Capas: SITNA reserves margin-top: 3.75em for a full-width header tab we
+ * replaced with a stick-out close. That empty strip showed a leftover vertical
+ * seam up to the top bar. Fill the drawer; keep the edge only on visible content.
+ */
+.tc-tools-panel:not(.tc-collapsed-right) > .tc-panel-content,
+.tc-tools-panel:not(.tc-collapsed-right).tc-slide-panel > div.tc-panel-content {
+  margin-top: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  /* Edge only where the grey drawer is — not in the old header slot. */
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.15) !important;
+  border: 0 !important;
+}
+
+.tc-tools-panel.tc-collapsed-right {
+  transform: translateX(100%) !important;
+  border: 0 !important;
+  background-color: transparent !important;
+}
+
+.tc-tools-panel.tc-collapsed-right > .tc-panel-content {
+  /* Stay laid out off-screen with the drawer (no display:none pop). */
+  visibility: visible !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  display: flex !important;
+  right: 0 !important;
+}
+
+.tc-tools-panel.tc-collapsed-right > h1 {
+  position: absolute !important;
+  top: 64px !important;
+  bottom: auto !important;
+  left: -60px !important;
+  right: auto !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+  background-color: #000000cc !important;
+  background-size: 56px 56px !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  overflow: hidden !important;
+  transform: none !important;
+  z-index: 10001 !important;
+  visibility: visible !important;
+  display: block !important;
+  pointer-events: auto !important;
+  box-shadow: none !important;
+}
+
+.tc-tools-panel.tc-collapsed-right > h1::before,
+.tc-tools-panel.tc-collapsed-right > h1::after {
+  content: none !important;
+  display: none !important;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) {
+  transform: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.tc-tools-panel:not(.tc-collapsed-right) > h1,
+.tc-tools-panel:not(.tc-collapsed-right).tc-slide-panel > h1.tc-panel-tab {
+  position: absolute !important;
+  top: 64px !important;
+  bottom: auto !important;
+  left: -60px !important;
+  right: auto !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  opacity: 1 !important;
+  background-image: url(./img/mapaCerrarReverse.png) !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: 40px 40px !important;
+  background-color: #b51818 !important;
+  transform: none !important;
+  overflow: hidden !important;
+  z-index: 10001 !important;
+  pointer-events: auto !important;
+  text-indent: -999em !important; /* hide panel title text (e.g. "layers") */
+  font-size: 0 !important;
+  line-height: 40px !important;
+  color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Kill SITNA open-header ::before { content: attr(title) } ("layers"). */
+.tc-tools-panel:not(.tc-collapsed-right) > h1::before,
+.tc-tools-panel:not(.tc-collapsed-right) > h1::after,
+.tc-tools-panel:not(.tc-collapsed-right).tc-slide-panel > h1.tc-panel-tab::before,
+.tc-tools-panel:not(.tc-collapsed-right).tc-slide-panel > h1.tc-panel-tab::after {
+  content: none !important;
+  display: none !important;
+}
+
+/*
+ * Overview drawer: same transform slide; geometry shared collapsed/expanded
+ * so only translateX animates (bottom:80px tab stays map-aligned).
+ */
+.tc-ovmap-panel {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  width: 220px !important;
+  max-width: 220px !important;
+  height: max(15%, 136px) !important;
+  min-height: 136px !important;
+  max-height: 40% !important;
+  border: 0 !important;
+  background-color: transparent !important;
+  overflow: visible !important;
+  transition: transform 0.3s ease !important;
+  z-index: 10006 !important;
+}
+
+.tc-ovmap-panel.tc-collapsed-right {
+  transform: translateX(100%) !important;
+  pointer-events: none !important;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) {
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.tc-ovmap-panel.tc-collapsed-right > .tc-panel-content,
+.tc-ovmap-panel.tc-collapsed-right > #tc-slot-ovmap,
+.tc-ovmap-panel.tc-collapsed-right .tc-ctl-ovmap {
+  /* Off-screen with the drawer; keep layout for a smooth slide-in. */
+  visibility: visible !important;
+  pointer-events: none !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.tc-ovmap-panel > h1,
+.tc-ovmap-panel #ovmap-tab {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 80px !important;
+  left: -60px !important;
+  right: auto !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  z-index: 10001 !important;
+  visibility: visible !important;
+  display: block !important;
+  pointer-events: auto !important;
+  text-indent: -999em !important;
+  font-size: 0 !important;
+  line-height: 40px !important;
+  overflow: hidden !important;
+}
+
+.tc-ovmap-panel.tc-collapsed-right > h1,
+.tc-ovmap-panel.tc-collapsed-right #ovmap-tab {
+  opacity: 1 !important;
+  background-color: #000000cc !important;
+  background-image: none !important;
+}
+
+.tc-ovmap-panel.tc-collapsed-right > h1::after,
+.tc-ovmap-panel.tc-collapsed-right #ovmap-tab::after {
+  content: none !important;
+  display: none !important;
+}
+
+.tc-ovmap-panel.tc-collapsed-right > h1::before,
+.tc-ovmap-panel.tc-collapsed-right #ovmap-tab::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  transform: none !important;
+  background-color: #ffffff !important;
+  -webkit-mask: url(./img/overview-map.svg) center/28px 28px no-repeat !important;
+  mask: url(./img/overview-map.svg) center/28px 28px no-repeat !important;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1,
+.tc-ovmap-panel:not(.tc-collapsed-right) #ovmap-tab {
+  opacity: 1 !important;
+  background-image: url(./img/mapaCerrarReverse.png) !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: 40px 40px !important;
+  background-color: #b51818 !important;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1::before,
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1::after,
+.tc-ovmap-panel:not(.tc-collapsed-right) #ovmap-tab::before,
+.tc-ovmap-panel:not(.tc-collapsed-right) #ovmap-tab::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Overview has no .tc-panel-content — slot is the visible card. */
+.tc-ovmap-panel:not(.tc-collapsed-right) > #tc-slot-ovmap {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  background-color: var(--main-bg-color, #ffffff) !important;
+  border: 0 !important;
+  /* Same open-drawer edge as Capas; top too — overview is a bottom card. */
+  box-shadow:
+    -2px 0 4px rgba(0, 0, 0, 0.15),
+    0 -2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tc-ovmap-panel:not(.tc-collapsed-right) .tc-ctl-ovmap {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  background-color: var(--main-bg-color, #ffffff) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Very short height only: hide overview before Capas collision (keep 576 visible). */
+@media (max-height: 400px) {
+  .tc-ovmap-panel.tc-collapsed-right > h1,
+  .tc-ovmap-panel.tc-collapsed-right #ovmap-tab,
+  .tc-ovmap-panel.tc-collapsed-right {
+    display: none !important;
+  }
+}
+
+.tc-left-panel.tc-collapsed .tc-ctl-sv,
+.tc-left-panel.tc-collapsed-left .tc-ctl-sv,
+.tc-left-panel.tc-collapsed .tc-ctl-fscreen,
+.tc-left-panel.tc-collapsed-left .tc-ctl-fscreen,
+.tc-left-panel.tc-collapsed .tc-ctl.tc-ctl-nav,
+.tc-left-panel.tc-collapsed-left .tc-ctl.tc-ctl-nav,
+.tc-left-panel.tc-collapsed .tc-ctl.tc-ctl-nav-home,
+.tc-left-panel.tc-collapsed-left .tc-ctl.tc-ctl-nav-home,
+.tc-left-panel.tc-collapsed .tc-ctl.tc-ctl-3d,
+.tc-left-panel.tc-collapsed-left .tc-ctl.tc-ctl-3d {
+  left: 20px !important;
+}
+
+/* Short viewports: keep compact +/− (no slider) and 3D clear of zoom−. */
+@media (max-height: 639px) {
+  .tc-ctl-nav-slider,
+  .tc-ctl-nav-bar,
+  .tc-ctl-nav .ol-zoomslider {
+    display: none !important;
   }
 
   .tc-ctl.tc-ctl-nav {
-    top: 16.5em;
+    height: 84px !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomin {
+    top: 0 !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+    top: 44px !important;
   }
 
   .tc-ctl.tc-ctl-3d {
-    top: 28em;
+    top: 400px !important;
+  }
+}
+
+/* Tall: + → 120px slider → − → 3D. */
+@media (min-width: 481px) and (min-height: 640px) {
+  .tc-ctl.tc-ctl-nav {
+    height: 208px !important;
+  }
+
+  /* Track background: icon-wide (40px). Thumb: same width, thin vertically. */
+  .tc-ctl-nav-bar,
+  .tc-ctl-nav .ol-zoomslider {
+    display: block !important;
+    position: absolute !important;
+    top: 44px !important;
+    left: 0 !important;
+    width: 40px !important;
+    height: 120px !important;
+    padding: 0 !important;
+  }
+
+  .tc-ctl-nav-slider,
+  .tc-ctl-nav .ol-zoomslider-thumb {
+    display: block !important;
+    width: 40px !important;
+    height: 6px !important;
+    left: 0 !important;
+    border-radius: 2px !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomin {
+    top: 0 !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+    top: 168px !important;
+  }
+
+  .tc-ctl.tc-ctl-3d {
+    top: 504px !important;
   }
 }
 
 @media (max-width: 768px) {
-  .tc-tools-panel > h1 {
-    top: 84px;
-  }
-
-  .tc-ctl-search-content {
-    left: 20px;
-  }
-
-  .tc-ctl.tc-ctl-sv {
-    top: 9.5em !important;
-  }
-
-  .tc-ctl.tc-ctl-nav {
-    top: 14.5em;
-  }
-
-  .tc-ctl.tc-ctl-3d {
-    top: 24em;
-  }
-
-  .tc-left-panel.tc-collapsed .tc-ctl-sv {
-    left: 20px;
-    top: 215px !important;
-  }
-
   /* Hide coordinates on mobile */
   #tc-slot-coordinates {
     display: none;
@@ -476,17 +957,133 @@
     display: none !important;
   }
 
-  .tc-ctl.tc-ctl-nav {
-    top: 9em;
+  .tc-slide-panel.tc-left-panel #tools-tab {
+    top: 56px;
+  }
+
+  .tc-slide-panel.tc-left-panel #legend-tab {
+    top: 100px;
+  }
+
+  .tc-ctl.tc-ctl-fscreen {
+    top: 144px !important;
   }
 
   .tc-ctl.tc-ctl-nav-home {
-    top: 5.5em;
+    top: 188px !important;
   }
 
-  .tc-tools-panel.tc-collapsed-right > h1 {
-    top: auto;
-    bottom: 0;
+  .tc-ctl.tc-ctl-nav {
+    top: 232px !important;
+    height: 84px !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomin {
+    top: 0 !important;
+  }
+
+  .tc-ctl-nav .tc-ctl-nav-btn-zoomout {
+    top: 44px !important;
+  }
+
+  .tc-ctl-nav-slider,
+  .tc-ctl-nav-bar,
+  .tc-ctl-nav .ol-zoomslider {
+    display: none !important;
+  }
+
+  /*
+   * Compact drawers on 480-wide viewports.
+   * Capas/left ≤160px so map stays usable; Capas close sticks at left:-60px
+   * (same top as opener). Left close docks with right:-60px at drawer top
+   * (content is flush to map top — opener ladder top:56px would sit on row 2).
+   */
+  .tc-tools-panel {
+    width: min(160px, calc(100% - 140px)) !important;
+    max-width: min(160px, calc(100% - 140px)) !important;
+  }
+
+  .tc-tools-panel.tc-collapsed-right > h1,
+  .tc-tools-panel:not(.tc-collapsed-right) > h1,
+  .tc-tools-panel:not(.tc-collapsed-right).tc-slide-panel > h1.tc-panel-tab {
+    top: 56px !important;
+    left: -60px !important;
+    right: auto !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .tc-slide-panel.tc-right-panel > .tc-panel-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left),
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) {
+    width: 160px !important;
+    max-width: 160px !important;
+  }
+
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) > .tc-panel-content,
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) > .tc-panel-content,
+  .tc-slide-panel.tc-left-panel > .tc-panel-content {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+  }
+
+  .tc-left-panel .tc-panel-content > div > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /*
+   * Capas-mirror seam: right:-60px (40px + 20px gap) on the 160px drawer.
+   * Open close sits at drawer top (8px), not the collapsed ladder (56px).
+   */
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) > h1,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab,
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) > #tools-tab,
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) > #legend-tab {
+    left: auto !important;
+    right: -60px !important;
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #tools-tab,
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) > #tools-tab {
+    top: 8px !important;
+  }
+
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) #legend-tab,
+  .tc-slide-panel.tc-left-panel:not(.tc-collapsed-left) > #legend-tab {
+    top: 8px !important;
+  }
+
+  /* Keep zoom/home/fscreen off the seam while the drawer is open. */
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl.tc-ctl-nav,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-sv,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-be,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl-fscreen,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl.tc-ctl-nav-home,
+  .tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left) .tc-ctl.tc-ctl-3d {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .tc-ctl-search-content {
+    width: min(300px, calc(100% - 76px)) !important;
+  }
+
+  .tc-map:has(.tc-left-panel:not(.tc-collapsed):not(.tc-collapsed-left))
+    .tc-ctl-search-content,
+  .tc-ctl-search-content.search-left-expanded {
+    left: 228px !important; /* 160 drawer + 68px search clearance */
+    width: min(160px, calc(100% - 240px)) !important;
   }
 }
 

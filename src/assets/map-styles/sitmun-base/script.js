@@ -232,16 +232,57 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           });
       };
 
-      const setRightPanelView = function (isCollapsed) {
+      const isCapasPanel = function (panel) {
+        return (
+          panel === rightPanel ||
+          (panel && panel.classList.contains('tc-tools-panel'))
+        );
+      };
+
+      const isOverviewPanel = function (panel) {
+        return (
+          panel === ovPanel ||
+          (panel && panel.classList.contains('tc-ovmap-panel'))
+        );
+      };
+
+      /*
+       * Overview OL map must not run while its drawer is off-screen: enable()
+       * calls updateSize(); with width/height 0 the situation map goes blank /
+       * out of sync (SITNA bug 23855). Match responsive layout: enable only
+       * after the 0.3s slide completes.
+       */
+      const syncOverviewMapControl = function (overviewCollapsed) {
+        if (!ovmap) {
+          return;
+        }
+        if (overviewCollapsed) {
+          ovmap.disable();
+          return;
+        }
+        setTimeout(function () {
+          ovmap.enable();
+        }, 300);
+      };
+
+      const setRightPanelView = function (capasCollapsed) {
         toggleControlsVisibility(rightToolControls, true);
-        if (ovmap) {
-          if (isCollapsed) {
+        if (!capasCollapsed && ovPanel) {
+          // Capas covers the overview dock: collapse + stop OL sync.
+          ovPanel.classList.add(rcollapsedClass);
+          if (ovmap) {
             ovmap.disable();
-          } else {
-            ovmap.enable();
           }
         }
       };
+
+      // Default: overview drawer collapsed; control disabled until opened.
+      if (ovPanel) {
+        ovPanel.classList.add(rcollapsedClass);
+      }
+      if (ovmap) {
+        ovmap.disable();
+      }
 
       if (rightPanel) {
         const initialCollapsed =
@@ -261,7 +302,11 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             const tab = e.target;
             const panel = tab.parentElement;
             const isCollapsed = panel.classList.toggle(rcollapsedClass);
-            setRightPanelView(isCollapsed);
+            if (isCapasPanel(panel)) {
+              setRightPanelView(isCollapsed);
+            } else if (isOverviewPanel(panel)) {
+              syncOverviewMapControl(isCollapsed);
+            }
           });
         });
 
@@ -458,8 +503,14 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           }
         }
 
-        const ovmap = map.getControlsByClass('TC.control.OverviewMap')[0];
-        if (ovmap && rightPanel) {
+        const ovmapLoaded = map.getControlsByClass('TC.control.OverviewMap')[0];
+        if (ovmapLoaded) {
+          ovmapLoaded.loaded(function () {
+            // Start disabled (drawer collapsed); enable only when user opens it.
+            ovmapLoaded.disable();
+          });
+        }
+        if (rightPanel) {
           const isCollapsed =
             rightPanel.classList.contains(rcollapsedClass) ||
             rightPanel.classList.contains(TC.Consts.classes.COLLAPSED);
