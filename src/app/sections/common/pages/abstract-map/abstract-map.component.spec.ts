@@ -15,6 +15,7 @@ import { ControlRegistryService } from 'src/app/services/control-registry.servic
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
+import { MoreInfoAdvancedService } from 'src/app/services/more-info-advanced.service';
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
 
 import { AbstractMapComponent } from './abstract-map.component';
@@ -116,6 +117,10 @@ describe('AbstractMapComponent lifecycle', () => {
       providers: [
         TestMapComponent,
         { provide: LayerCatalogControlHandler, useValue: layerCatalogHandler },
+        {
+          provide: MoreInfoAdvancedService,
+          useValue: { setMapContext: jest.fn() }
+        },
         {
           provide: SitnaApiService,
           useValue: {

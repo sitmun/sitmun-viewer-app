@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map / MIA**: More Info Advanced render POST sends map-session `appId`/`terId` and current UI `lang` query param; rendered HTML sanitize allows iframes; popup overlay is resizable with scrollable panels ([#162](https://github.com/sitmun/sitmun-viewer-app/pull/162)).
+- **Tests**: Jest covers MIA render `lang` + coords contract and iframe-preserving `sanitizeMiaRenderedHtml`.
 - **Map**: basemap selector includes **No base map** (empty SITNA VECTOR base layer) so users can clear the raster background while keeping operational layers ([#167](https://github.com/sitmun/sitmun-viewer-app/issues/167)).
 - **Map**: Capas and Capas disponibles are a paired stack (excluded from tools-panel accordion mutual exclusion; BMS/click-tools still accordion); Capas starts collapsed and opens to the full first work-layer row when a layer is added; splitter appears only when Capas has layers; Capas drag keeps ≥160px for Capas disponibles; locked height clears when Capas is collapsed/empty (`localStorage` `sitmun.toolsPanel.paneHeights`) ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Languages**: toolbar/menu switcher omits languages with `enabled: false` from `GET /api/languages`.

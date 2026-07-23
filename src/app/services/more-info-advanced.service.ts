@@ -5,6 +5,7 @@ import { AppCfg } from '@api/model/app-cfg';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+import { LanguageService } from './language.service';
 import { environment } from '../../environments/environment';
 
 /**
@@ -55,8 +56,22 @@ export class MoreInfoAdvancedService {
 
   private readonly miaTasksByCartography = new Map<string, MiaTask[]>();
   private hasMiaControlTask = false;
+  private appId: number | null = null;
+  private terId: number | null = null;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly languageService: LanguageService
+  ) {}
+
+  /**
+   * Map session coordinates required by backend MIA render authz.
+   * Omit → backend 400 / wrong-context security hole.
+   */
+  setMapContext(appId: number, terId: number): void {
+    this.appId = Number.isFinite(appId) ? appId : null;
+    this.terId = Number.isFinite(terId) ? terId : null;
+  }
 
   /**
    * Initializes MIA tasks from the application configuration.
@@ -102,15 +117,30 @@ export class MoreInfoAdvancedService {
   }
 
   renderMiaTasks(miaTasks: MiaTask[], featureData: any): Observable<MiaRenderedTask[]> {
+    // Required for backend authz; omit → 400 / security hole.
+    if (this.appId == null || this.terId == null) {
+      return of([{
+        taskId: 0,
+        title: '',
+        html: '',
+        error: 'MIA render requires appId and terId from the map session'
+      }]);
+    }
+
     const neededFields = this.extractNeededFields(miaTasks);
     const body = {
       miaTaskIds: miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite),
+      appId: this.appId,
+      terId: this.terId,
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
+    const lang = this.languageService.getCurrentLanguage()?.trim();
+    const options = lang ? { params: { lang } } : {};
 
     return this.http.post<MiaRenderResponse>(
       `${environment.apiUrl}/api/tasks/template/more-info-advanced/render`,
-      body
+      body,
+      options
     ).pipe(
       map((response) => response.tasks || []),
       catchError((error) => of([{
