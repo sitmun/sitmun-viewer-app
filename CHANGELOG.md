@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map / MIA**: More Info Advanced render POST sends map-session `appId`/`terId` and current UI `lang` query param; rendered HTML sanitize allows iframes; popup overlay is resizable with scrollable panels ([#162](https://github.com/sitmun/sitmun-viewer-app/pull/162)).
+- **Tests**: Jest covers MIA render `lang` + coords contract and iframe-preserving `sanitizeMiaRenderedHtml`.
 - **Map**: basemap selector includes **No base map** (empty SITNA VECTOR base layer) so users can clear the raster background while keeping operational layers ([#167](https://github.com/sitmun/sitmun-viewer-app/issues/167)).
 - **Map**: Capas and Capas disponibles are a paired stack (excluded from tools-panel accordion mutual exclusion; BMS/click-tools still accordion); Capas starts collapsed and opens to the full first work-layer row when a layer is added; splitter appears only when Capas has layers; Capas drag keeps ≥160px for Capas disponibles; locked height clears when Capas is collapsed/empty (`localStorage` `sitmun.toolsPanel.paneHeights`) ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Languages**: toolbar/menu switcher omits languages with `enabled: false` from `GET /api/languages`.
@@ -38,7 +40,7 @@ All notable changes to this project will be documented in this file. The format 
 - **Map**: FeatureInfo DescribeLayer safety fallback includes `layerName` so `getLegend` does not throw when that wrapper is active ([#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 - **Map**: Capas out-of-scale rows (`tc-ctl-wlm-elm-notvisible`) use `#777777` for path/lyr/type so titles are not stuck on maroon `#660000` ([#92](https://github.com/sitmun/sitmun-viewer-app/issues/92)).
 - **Map**: Capas and Capas disponibles share the tools-panel column without overlap; Capas list scrolls inside the pane whenever rows exceed the Capas height ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
-- **Map**: map tool chrome stacks without overlap at 480/768/1024; Capas tab shows one glyph; Street View and 3D hide under 480px width ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).
+- **Map**: left map chrome keeps desktop stack order without overlap at 480/768/1024 (tools/legend/fscreen/Street View/home/zoom+/slider/zoom−/3D); opaque tools/legend/fscreen; search stays right of the tools icon; Capas 40×40 top-right and overview 40×40 bottom-right; Street View and 3D hide under 480px width ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).
 - **Map**: WMS legend GetLegendGraphic keeps a finite OGC `SCALE` on WKT-registered metre CRS (e.g. EPSG:3763) by coercing SITNA `getMetersPerUnit` when OpenLayers `METERS_PER_UNIT` misses `"meter"` ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152)).
 - **Language chrome**: toolbar language control uses the same ink as the hamburger (inherit + orange hover; white on login); collapsed-bar control stays white beside expand.
 - **Language chrome**: language menu width follows the longest endonym instead of inheriting the hamburger menu’s 360px min-width.

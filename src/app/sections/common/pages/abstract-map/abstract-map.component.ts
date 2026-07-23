@@ -34,6 +34,7 @@ import { ControlRegistryService } from 'src/app/services/control-registry.servic
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
+import { MoreInfoAdvancedService } from 'src/app/services/more-info-advanced.service';
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
 import { ToolsPanelSplitterService } from 'src/app/services/tools-panel-splitter.service';
 
@@ -59,6 +60,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private loadId = 0;
   private readonly layerCatalogHandler = inject(LayerCatalogControlHandler);
   private readonly toolsPanelSplitter = inject(ToolsPanelSplitterService);
+  private readonly moreInfoAdvancedService = inject(MoreInfoAdvancedService);
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -104,6 +106,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         tap((params) => {
           this.applicationId = Number(params['applicationId']);
           this.territoryId = Number(params['territoryId']);
+          this.moreInfoAdvancedService.setMapContext(
+            this.applicationId,
+            this.territoryId
+          );
           if (this.isInEmbedded) {
             this.locale = this.parseLang(params['lang']);
           }
