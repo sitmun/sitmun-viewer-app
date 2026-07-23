@@ -141,4 +141,24 @@ describe('MoreInfoAdvancedService', () => {
     );
     expect(emitted[0].error).toContain('appId and terId');
   });
+
+  it('maps HTTP render failures onto each requested MIA task id', () => {
+    let emitted: any;
+
+    service.setMapContext(5, 7);
+    service.renderMiaTasks([
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
+      { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], { id: 99 }).subscribe((result) => {
+      emitted = result;
+    });
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
+    req.flush({ message: 'boom' }, { status: 500, statusText: 'Server Error' });
+
+    expect(emitted).toEqual([
+      { taskId: 16, title: 'One', html: '', error: expect.stringMatching(/500|Http failure|boom/i) },
+      { taskId: 18, title: 'Two', html: '', error: expect.stringMatching(/500|Http failure|boom/i) }
+    ]);
+  });
 });
