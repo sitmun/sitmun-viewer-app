@@ -143,12 +143,16 @@ export class MoreInfoAdvancedService {
       options
     ).pipe(
       map((response) => response.tasks || []),
-      catchError((error) => of([{
-        taskId: 0,
-        title: '',
-        html: '',
-        error: error.message || 'MIA rendering failed'
-      }]))
+      catchError((error) =>
+        of(
+          miaTasks.map((task) => ({
+            taskId: this.parseTaskId(task.id),
+            title: task.name || '',
+            html: '',
+            error: error.message || 'MIA rendering failed',
+          })),
+        ),
+      ),
     );
   }
 
