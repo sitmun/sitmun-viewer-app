@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: overview open no longer leaves `.tc-map` scrolled (`scrollTop` reset on toggle/enable); close control shares Capas top pin on a full-height host ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)).
 - **Map / MIA**: GetFeatureInfo targeting uses only layers whose cartography has MIA parents, prefers FeatureInfo `currentFeature` when it belongs to such a layer, and re-renders when the active FI feature changes.
 - **Map / MIA**: overlay chrome (title, close, loading, empty) uses `mia.*` ngx-translate keys; close control follows SITNA `sitna-button.tc-ctl-popup-close` (toolbar drag skips `sitna-button` so close `pointerup` is not stolen by `setPointerCapture`).
 - **Map / MIA**: in-flight render cancel + generation guard; late identify responses cannot overwrite a newer open or a closed overlay.

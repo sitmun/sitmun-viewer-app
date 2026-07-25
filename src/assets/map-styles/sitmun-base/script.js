@@ -247,12 +247,37 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
       };
 
       /*
+       * Opening the overview (focus / scroll-into-view) can set .tc-map
+       * scrollTop even with overflow:hidden; absolute chrome then shifts.
+       * Clamp scroll — the map div is not a scroll surface in this layout.
+       */
+      const resetMapScroll = function () {
+        if (!map.div) {
+          return;
+        }
+        if (map.div.scrollTop) {
+          map.div.scrollTop = 0;
+        }
+        if (map.div.scrollLeft) {
+          map.div.scrollLeft = 0;
+        }
+      };
+      map.div.addEventListener(
+        'scroll',
+        function () {
+          resetMapScroll();
+        },
+        { passive: true }
+      );
+
+      /*
        * Overview OL map must not run while its drawer is off-screen: enable()
        * calls updateSize(); with width/height 0 the situation map goes blank /
        * out of sync (SITNA bug 23855). Match responsive layout: enable only
        * after the 0.3s slide completes.
        */
       const syncOverviewMapControl = function (overviewCollapsed) {
+        resetMapScroll();
         if (!ovmap) {
           return;
         }
@@ -262,6 +287,7 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         }
         setTimeout(function () {
           ovmap.enable();
+          resetMapScroll();
         }, 300);
       };
 

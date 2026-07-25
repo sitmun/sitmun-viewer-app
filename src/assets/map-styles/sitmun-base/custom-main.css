@@ -220,7 +220,6 @@ button.tc-ctl-fscreen-btn {
 
 .tc-ovmap-panel > h1 {
   background-color: rgba(0, 0, 0, 1);
-  top: auto !important;
 }
 
 /* When collapsed, hide the text and show icon */
@@ -240,7 +239,6 @@ button.tc-ctl-fscreen-btn {
   left: -60px;
   right: auto;
   margin-left: 0;
-  bottom: 80px;
   width: 40px;
   height: 40px;
   pointer-events: auto;

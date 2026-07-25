@@ -710,35 +710,36 @@ button.tc-ctl-fscreen-btn {
 }
 
 /*
- * Overview drawer: same transform slide; geometry shared collapsed/expanded
- * so only translateX animates (bottom:80px tab stays map-aligned).
+ * Overview drawer: full-height transparent host (like Capas). Tab uses a
+ * top pin (not bottom) so open/collapsed y matches even if h1 box height
+ * differs; 100% - 120px == former bottom:80px + 40px control.
  */
+.tc-map > .tc-ovmap-panel,
 .tc-ovmap-panel {
   position: absolute !important;
-  top: auto !important;
+  top: 0 !important;
   bottom: 0 !important;
   right: 0 !important;
   left: auto !important;
   width: 220px !important;
   max-width: 220px !important;
-  height: max(15%, 136px) !important;
-  min-height: 136px !important;
-  max-height: 40% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
   border: 0 !important;
   background-color: transparent !important;
   overflow: visible !important;
   transition: transform 0.3s ease !important;
   z-index: 10006 !important;
+  pointer-events: none !important;
 }
 
 .tc-ovmap-panel.tc-collapsed-right {
   transform: translateX(100%) !important;
-  pointer-events: none !important;
 }
 
 .tc-ovmap-panel:not(.tc-collapsed-right) {
   transform: none !important;
-  pointer-events: auto !important;
 }
 
 .tc-ovmap-panel.tc-collapsed-right > .tc-panel-content,
@@ -748,15 +749,19 @@ button.tc-ctl-fscreen-btn {
   visibility: visible !important;
   pointer-events: none !important;
   display: block !important;
-  width: 100% !important;
-  height: 100% !important;
 }
 
+.tc-map > .tc-ovmap-panel > h1,
+.tc-map > .tc-ovmap-panel #ovmap-tab,
 .tc-ovmap-panel > h1,
-.tc-ovmap-panel #ovmap-tab {
+.tc-ovmap-panel #ovmap-tab,
+.tc-ovmap-panel.tc-collapsed-right > h1,
+.tc-ovmap-panel.tc-collapsed-right #ovmap-tab,
+.tc-ovmap-panel:not(.tc-collapsed-right) > h1,
+.tc-ovmap-panel:not(.tc-collapsed-right) #ovmap-tab {
   position: absolute !important;
-  top: auto !important;
-  bottom: 80px !important;
+  top: calc(100% - 120px) !important;
+  bottom: auto !important;
   left: -60px !important;
   right: auto !important;
   width: 40px !important;
@@ -829,16 +834,26 @@ button.tc-ctl-fscreen-btn {
   display: none !important;
 }
 
-/* Overview has no .tc-panel-content — slot is the visible card. */
+/* Overview has no .tc-panel-content — slot is the visible bottom card. */
+.tc-ovmap-panel > #tc-slot-ovmap {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: max(15%, 136px) !important;
+  min-height: 136px !important;
+  max-height: 40% !important;
+  overflow: hidden !important;
+  border: 0 !important;
+}
+
 .tc-ovmap-panel:not(.tc-collapsed-right) > #tc-slot-ovmap {
   display: block !important;
   visibility: visible !important;
   pointer-events: auto !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden !important;
   background-color: var(--main-bg-color, #ffffff) !important;
-  border: 0 !important;
   /* Same open-drawer edge as Capas; top too — overview is a bottom card. */
   box-shadow:
     -2px 0 4px rgba(0, 0, 0, 0.15),
