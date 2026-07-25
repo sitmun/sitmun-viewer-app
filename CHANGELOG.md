@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-07-25
+
 ### Added
 
 - **Map / MIA**: More Info Advanced render POST sends map-session `appId`/`terId` and UI `lang`; iframe-preserving sanitize; resizable scrollable overlay ([#162](https://github.com/sitmun/sitmun-viewer-app/pull/162)).
@@ -356,7 +358,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...HEAD
+[1.2.8]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...sitmun-viewer-app/1.2.8
 [1.2.7]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...sitmun-viewer-app/1.2.7
 [1.2.6]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...sitmun-viewer-app/1.2.6
 [1.2.5]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...sitmun-viewer-app/1.2.5
