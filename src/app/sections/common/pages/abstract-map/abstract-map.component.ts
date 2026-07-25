@@ -264,14 +264,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.clearMap();
   }
 
-  /**
-   * Remove MIA popup overlay from DOM without destroying the handler.
-   * Used during map rebuild (clearMap) to avoid stale overlays.
-   */
-  private removeMiaOverlayFromDom(): void {
-    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
-  }
-
   removeSitnaDivs() {
     const divs = this.document.querySelectorAll('.tc-modal');
     divs.forEach((div) => {
@@ -434,9 +426,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   clearMap() {
     this.loadId++;
     this.toolsPanelSplitter.unmount();
-    if (this.map) {
-      this.layerCatalogHandler.teardownMapState(this.map);
-    }
+    // Light handler teardown (MIA body overlay, LayerCatalog per-map state) — not cleanupAll.
+    this.controlRegistry.clearMapArtifacts(this.map);
     this.sitnaApi.setGlobal('abstractMapObject', undefined);
     this.sitnaApi.setGlobal('layerCatalogsForModal', undefined);
     this.sitnaApi.setGlobal('currentAppCfg', undefined);
@@ -466,9 +457,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       // If no old div exists, just append
       this.renderer.appendChild(mapFather, div);
     }
-
-    // Cleanup control handlers (removes MIA overlay and other DOM artifacts)
-    this.removeMiaOverlayFromDom();
 
     // Body
     this.removeSitnaDivs();

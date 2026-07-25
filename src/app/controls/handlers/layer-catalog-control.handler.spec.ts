@@ -2201,6 +2201,13 @@ describe('LayerCatalogControlHandler', () => {
       expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
     });
 
+    it('onMapClear delegates to teardownMapState', () => {
+      const map = { id: 'map-clear' };
+      const spy = jest.spyOn(handler, 'teardownMapState');
+      handler.onMapClear(map);
+      expect(spy).toHaveBeenCalledWith(map);
+    });
+
     it('wrapped LAYERREMOVE with nodeId clears all claims for the shared resource', async () => {
       const selection = TestBed.inject(CatalogLayerSelectionService);
       const { TC } = buildPatchedHandler();

@@ -162,6 +162,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     this.patchesApplied = false;
   }
 
+  onMapClear(map?: object): void {
+    this.teardownMapState(map);
+  }
+
   teardownMapState(map?: object): void {
     if (map) {
       const detach = this.mapEventBridges.get(map);

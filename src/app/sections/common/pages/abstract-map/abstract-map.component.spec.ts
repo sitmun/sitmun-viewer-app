@@ -76,7 +76,12 @@ describe('AbstractMapComponent lifecycle', () => {
   let component: TestMapComponent;
   let layerCatalogHandler: {
     applyDefaultWorkingLayers: jest.Mock;
-    teardownMapState: jest.Mock;
+  };
+  let controlRegistry: {
+    processControls: jest.Mock;
+    cleanupAll: jest.Mock;
+    unregisterAll: jest.Mock;
+    clearMapArtifacts: jest.Mock;
   };
 
   const appCfg: AppCfg = {
@@ -109,8 +114,13 @@ describe('AbstractMapComponent lifecycle', () => {
     sitnaMapInstances = [];
 
     layerCatalogHandler = {
-      applyDefaultWorkingLayers: jest.fn().mockResolvedValue(undefined),
-      teardownMapState: jest.fn()
+      applyDefaultWorkingLayers: jest.fn().mockResolvedValue(undefined)
+    };
+    controlRegistry = {
+      processControls: jest.fn().mockResolvedValue({}),
+      cleanupAll: jest.fn(),
+      unregisterAll: jest.fn(),
+      clearMapArtifacts: jest.fn()
     };
 
     TestBed.configureTestingModule({
@@ -180,11 +190,7 @@ describe('AbstractMapComponent lifecycle', () => {
         { provide: Document, useValue: document },
         {
           provide: ControlRegistryService,
-          useValue: {
-            processControls: jest.fn().mockResolvedValue({}),
-            cleanupAll: jest.fn(),
-            unregisterAll: jest.fn()
-          }
+          useValue: controlRegistry
         },
         { provide: ConfigLookupService, useValue: { initialize: jest.fn() } },
         {
@@ -224,14 +230,14 @@ describe('AbstractMapComponent lifecycle', () => {
     expect(layerCatalogHandler.applyDefaultWorkingLayers).toBeDefined();
   });
 
-  it('teardownMapState runs when clearMap is invoked', () => {
+  it('clearMapArtifacts runs when clearMap is invoked', () => {
     const oldMap = { id: 'old-map' };
     component.setMap(oldMap);
     component.exposeClearMap();
-    expect(layerCatalogHandler.teardownMapState).toHaveBeenCalledWith(oldMap);
+    expect(controlRegistry.clearMapArtifacts).toHaveBeenCalledWith(oldMap);
   });
 
-  it('teardownMapState runs before catalog switch rebuild', async () => {
+  it('clearMapArtifacts runs before catalog switch rebuild', async () => {
     const oldMap = { id: 'old-map' };
     component.setMap(oldMap);
     component.setConfigs(appCfg, generalCfg);
@@ -239,7 +245,7 @@ describe('AbstractMapComponent lifecycle', () => {
     component.exposeUpdateCatalog();
     await Promise.resolve();
 
-    expect(layerCatalogHandler.teardownMapState).toHaveBeenCalledWith(oldMap);
+    expect(controlRegistry.clearMapArtifacts).toHaveBeenCalledWith(oldMap);
   });
 
   it('awaits default working layers before resolving map load', async () => {
@@ -290,14 +296,10 @@ describe('AbstractMapComponent lifecycle', () => {
   });
 
   it('cleans up handlers without unregistering them on destroy', () => {
-    const registry = TestBed.inject(
-      ControlRegistryService
-    ) as jest.Mocked<ControlRegistryService>;
-
     component.exposeDestroy();
 
-    expect(registry.cleanupAll).toHaveBeenCalledTimes(1);
-    expect(registry.unregisterAll).not.toHaveBeenCalled();
+    expect(controlRegistry.cleanupAll).toHaveBeenCalledTimes(1);
+    expect(controlRegistry.unregisterAll).not.toHaveBeenCalled();
   });
 
   it('catalog switch applies defaults exactly once to the new map', async () => {
@@ -311,7 +313,7 @@ describe('AbstractMapComponent lifecycle', () => {
     await loadedCallback?.();
     await Promise.resolve();
 
-    expect(layerCatalogHandler.teardownMapState).toHaveBeenCalledWith(oldMap);
+    expect(controlRegistry.clearMapArtifacts).toHaveBeenCalledWith(oldMap);
     expect(layerCatalogHandler.applyDefaultWorkingLayers).toHaveBeenCalledTimes(1);
     expect(sitnaMapInstances).toHaveLength(1);
   });

@@ -506,6 +506,19 @@ export class ControlRegistryService {
   }
 
   /**
+   * Light map-rebuild teardown for body/runtime artifacts (does not restore patches).
+   */
+  clearMapArtifacts(map?: object): void {
+    this.handlers.forEach((handler, key) => {
+      try {
+        handler.onMapClear?.(map);
+      } catch (error) {
+        console.warn(`[ControlRegistry] onMapClear failed for '${key}':`, error);
+      }
+    });
+  }
+
+  /**
    * Get statistics about registered handlers.
    *
    * @returns Object with handler statistics

@@ -32,6 +32,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map / MIA**: GetFeatureInfo targeting uses only layers whose cartography has MIA parents, prefers FeatureInfo `currentFeature` when it belongs to such a layer, and re-renders when the active FI feature changes.
+- **Map / MIA**: overlay chrome (title, close, loading, empty) uses `mia.*` ngx-translate keys; close control follows SITNA `sitna-button.tc-ctl-popup-close` (toolbar drag skips `sitna-button` so close `pointerup` is not stolen by `setPointerCapture`).
+- **Map / MIA**: in-flight render cancel + generation guard; late identify responses cannot overwrite a newer open or a closed overlay.
+- **Map**: `ControlHandler.onMapClear` / `ControlRegistry.clearMapArtifacts` run light map-rebuild teardown (MIA overlay + LayerCatalog per-map state) without restoring patches; `AbstractMap.clearMap` no longer hardcodes those handlers.
 - **Map**: Capas open/drag floor measures the full work-layer LI (path/title/type/tools), not `.tc-ctl-wlm-input` alone; expanded details still do not raise the floor ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)).
 - **Map**: When cartography `queryableFeatureEnabled` is false, profile merge sets GetCapabilities `queryable` false on the matched WMS layer **and all nested descendants** (SITNA FeatureInfo expands groups via `getDisgregatedLayerNames`); layer add also sets `sitmunGfiEnabled` from the profile so identify stays off.
 - **Map**: Tree node consultable (`queryableActive`) off blocks Capas GFI and map-click identify (`sitmunGfiEnabled=false`), even when cartography still has `queryableFeatureEnabled` true.
