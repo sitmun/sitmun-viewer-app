@@ -6,7 +6,7 @@ export const environment = {
   hideBackgroundImage: true,
   hideDNIEAccess: true,
   apiUrl: '/backend',
-  version: '1.2.8-SNAPSHOT',
+  version: '1.2.8',
   environmentName: 'E2E',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
