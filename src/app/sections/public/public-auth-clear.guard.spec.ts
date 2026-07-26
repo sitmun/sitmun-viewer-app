@@ -1,100 +1,162 @@
+import { HttpRequest, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 
+import { URL_AUTH_LOGOUT } from '@api/api-config';
+import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { isObservable, from, of, throwError } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { from, isObservable, of, throwError } from 'rxjs';
 
 import { publicAuthClearGuard } from './public-auth-clear.guard';
+import { environment } from '../../../environments/environment';
+import { IndexedDbService } from '../../auth/services/indexed-db.service';
 import { NotificationService } from '../../notifications/services/NotificationService';
 
 describe('publicAuthClearGuard', () => {
-  let authServiceSpy: { clearAuthentication: jest.Mock };
-  let notificationServiceSpy: { error: jest.Mock };
+  let clearAuthentication: jest.Mock;
+  let warning: jest.Mock;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-
-    authServiceSpy = {
-      clearAuthentication: jest.fn()
-    };
-    notificationServiceSpy = {
-      error: jest.fn()
-    };
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    clearAuthentication = jest.fn().mockReturnValue(of(undefined));
+    warning = jest.fn();
 
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       providers: [
-        { provide: AuthenticationService, useValue: authServiceSpy },
-        { provide: NotificationService, useValue: notificationServiceSpy }
+        {
+          provide: AuthenticationService,
+          useValue: { clearAuthentication }
+        },
+        {
+          provide: NotificationService,
+          useValue: { warning, error: jest.fn() }
+        }
       ]
     });
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    consoleErrorSpy.mockRestore();
   });
 
-  const runGuard = () => {
-    let result: boolean | undefined;
+  const toObservable = (result: unknown) =>
+    isObservable(result) ? result : from(Promise.resolve(result));
+
+  it('allows activation when clearAuthentication succeeds', fakeAsync(() => {
+    let canActivate: boolean | undefined;
     TestBed.runInInjectionContext(() => {
-      const guard = publicAuthClearGuard({} as any, {} as any);
-      const obs = isObservable(guard) ? guard : from(Promise.resolve(guard as boolean));
-      obs.subscribe((val: unknown) => { result = val as boolean; });
+      toObservable(publicAuthClearGuard({} as never, {} as never)).subscribe(
+        (value) => {
+          canActivate = value as boolean;
+        }
+      );
     });
-    return () => result;
-  };
 
-  it('calls clearAuthentication before activating the route', fakeAsync(() => {
-    authServiceSpy.clearAuthentication.mockReturnValue(of(undefined));
-    const getResult = runGuard();
     flush();
-    expect(authServiceSpy.clearAuthentication).toHaveBeenCalledTimes(1);
-    expect(getResult()).toBe(true);
+
+    expect(canActivate).toBe(true);
+    expect(clearAuthentication).toHaveBeenCalled();
+    expect(warning).not.toHaveBeenCalled();
   }));
 
-  it('returns true after clearAuthentication completes', fakeAsync(() => {
-    authServiceSpy.clearAuthentication.mockReturnValue(of(undefined));
-    const getResult = runGuard();
-    flush();
-    expect(getResult()).toBe(true);
-  }));
-
-  it('waits for clearAuthentication to complete before activating', fakeAsync(() => {
-    const { observable, complete } = makeControlledObservable<void>();
-    authServiceSpy.clearAuthentication.mockReturnValue(observable);
-
-    const getResult = runGuard();
-    flush();
-    expect(getResult()).toBeUndefined();
-
-    complete();
-    flush();
-    expect(getResult()).toBe(true);
-  }));
-
-  it('returns false and shows error notification when clearAuthentication fails', fakeAsync(() => {
-    authServiceSpy.clearAuthentication.mockReturnValue(
-      throwError(() => new Error('backend error'))
+  it('allows activation when clearAuthentication fails after local cleanup', fakeAsync(() => {
+    clearAuthentication.mockReturnValue(
+      throwError(() => new Error('logout failed'))
     );
-    const getResult = runGuard();
+
+    let canActivate: boolean | undefined;
+    TestBed.runInInjectionContext(() => {
+      toObservable(publicAuthClearGuard({} as never, {} as never)).subscribe(
+        (value) => {
+          canActivate = value as boolean;
+        }
+      );
+    });
+
     flush();
-    expect(getResult()).toBe(false);
-    expect(notificationServiceSpy.error).toHaveBeenCalled();
+
+    expect(canActivate).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalled();
   }));
 
-  it('does not activate the public route when clearAuthentication fails', fakeAsync(() => {
-    authServiceSpy.clearAuthentication.mockReturnValue(
-      throwError(() => new Error('network error'))
+  it('shows a translated warning when clearAuthentication fails', fakeAsync(() => {
+    clearAuthentication.mockReturnValue(
+      throwError(() => new Error('logout failed'))
     );
-    const getResult = runGuard();
+    const translate = TestBed.inject(TranslateService);
+    jest
+      .spyOn(translate, 'get')
+      .mockReturnValue(of('Could not prepare public access.'));
+
+    let canActivate: boolean | undefined;
+    TestBed.runInInjectionContext(() => {
+      toObservable(publicAuthClearGuard({} as never, {} as never)).subscribe(
+        (value) => {
+          canActivate = value as boolean;
+        }
+      );
+    });
+
     flush();
-    expect(getResult()).toBe(false);
+
+    expect(canActivate).toBe(true);
+    expect(translate.get).toHaveBeenCalledWith('auth.publicAccessFailed');
+    expect(warning).toHaveBeenCalledWith('Could not prepare public access.');
   }));
 });
 
-function makeControlledObservable<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void;
-  const promise = new Promise<T>((res) => { resolve = res; });
-  return {
-    observable: from(promise).pipe(),
-    complete: () => resolve(undefined as unknown as T)
-  };
-}
+describe('publicAuthClearGuard — HTTP contract regression', () => {
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    const indexedDbStub = {
+      init: () => Promise.resolve(),
+      remove: () => Promise.resolve(),
+      get: () => Promise.resolve(undefined),
+      set: () => Promise.resolve()
+    };
+
+    TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        AuthenticationService,
+        {
+          provide: AUTH_CONFIG_DI,
+          useValue: {
+            localStoragePrefix: 'test',
+            routes: { loginPath: '/login' }
+          }
+        },
+        { provide: IndexedDbService, useValue: indexedDbStub },
+        { provide: NotificationService, useValue: { warning: jest.fn(), error: jest.fn() } }
+      ]
+    });
+
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('logout request has no X-SITMUN-Client header so backend clears viewer_access_token', fakeAsync(() => {
+    TestBed.runInInjectionContext(() => {
+      const result = publicAuthClearGuard({} as never, {} as never);
+      (isObservable(result) ? result : from(Promise.resolve(result))).subscribe();
+    });
+
+    const req = httpMock.expectOne(
+      (r: HttpRequest<unknown>) => r.url === environment.apiUrl + URL_AUTH_LOGOUT
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.headers.has('X-SITMUN-Client')).toBe(false);
+    req.flush(null, { status: 200, statusText: 'OK' });
+
+    flush();
+  }));
+});

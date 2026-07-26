@@ -23,6 +23,8 @@ class MockHandler implements ControlHandler {
   loadPatchesCalled = false;
   buildConfigCalled = false;
   cleanupCalled = false;
+  onMapClearCalled = false;
+  lastOnMapClearMap: object | undefined;
 
   constructor(
     controlIdentifier: string,
@@ -66,6 +68,11 @@ class MockHandler implements ControlHandler {
 
   cleanup(): void {
     this.cleanupCalled = true;
+  }
+
+  onMapClear(map?: object): void {
+    this.onMapClearCalled = true;
+    this.lastOnMapClearMap = map;
   }
 }
 
@@ -503,6 +510,54 @@ describe('ControlRegistryService', () => {
 
     it('should handle empty registry', () => {
       expect(() => service.unregisterAll()).not.toThrow();
+    });
+  });
+
+  describe('clearMapArtifacts()', () => {
+    it('invokes onMapClear on registered handlers with the map', () => {
+      const handler1 = new MockHandler('sitna.test1');
+      const handler2 = new MockHandler('sitna.test2');
+      service.register(handler1);
+      service.register(handler2);
+      const map = { id: 'map-1' };
+
+      service.clearMapArtifacts(map);
+
+      expect(handler1.onMapClearCalled).toBe(true);
+      expect(handler2.onMapClearCalled).toBe(true);
+      expect(handler1.lastOnMapClearMap).toBe(map);
+      expect(handler2.lastOnMapClearMap).toBe(map);
+      expect(handler1.cleanupCalled).toBe(false);
+    });
+
+    it('isolates per-handler onMapClear errors', () => {
+      const failing: ControlHandler = {
+        controlIdentifier: 'sitna.fail',
+        sitnaConfigKey: 'fail',
+        loadPatches: async () => undefined,
+        buildConfiguration: () => ({ div: 'fail' }),
+        onMapClear: () => {
+          throw new Error('onMapClear failed');
+        }
+      };
+      const ok = new MockHandler('sitna.ok');
+      service.register(failing);
+      service.register(ok);
+
+      expect(() => service.clearMapArtifacts({ id: 'm' })).not.toThrow();
+      expect(ok.onMapClearCalled).toBe(true);
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining("onMapClear failed for 'sitna.fail'"),
+        expect.any(Error)
+      );
+    });
+
+    it('skips handlers without onMapClear', () => {
+      const handler = new MockHandler('sitna.test');
+      delete (handler as { onMapClear?: unknown }).onMapClear;
+      service.register(handler);
+
+      expect(() => service.clearMapArtifacts()).not.toThrow();
     });
   });
 

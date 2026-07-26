@@ -31,7 +31,12 @@ import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change
 import { MenuComponent } from '@ui/components/menu/menu.component';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { LanguageService } from 'src/app/services/language.service';
+import {
+  LanguageDTO,
+  LanguageService
+} from 'src/app/services/language.service';
+import { toLanguageIsoCode } from 'src/app/services/language-iso';
+import { resolveUiLanguage } from 'src/app/services/ui-language.resolver';
 
 @Component({
   standalone: false,
@@ -91,6 +96,8 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   showLogoutButton = true;
   showChangeAppOrTerritoryButton = true;
   navigationBarIsHidden = false;
+  languages: LanguageDTO[] = [];
+  currentLang = '';
 
   constructor(
     private router: Router,
@@ -106,6 +113,14 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
     if (this.isConnected() && !this.isPublicDashboard()) {
       this.username = this.authenticationService.getLoggedUsername();
     }
+    this.languageService.languagesToUse$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((languages) => this.applyLanguages(languages));
+    if (this.languageService.getAvailableLanguages().length === 0) {
+      this.languageService.refreshLanguagesToUse()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
     this.checkWhichClassIsActive();
     this.overrideNavbar(this.router.url);
     this.routerSubscription = this.router.events.subscribe((event) => {
@@ -118,18 +133,26 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
         this.overrideNavbar(this.router.url);
         // Update visibility flags on navigation
         this.updateButtonVisibility();
-        // Dismiss menu overlays so nested submenus (e.g. language) cannot orphan on route change
+        // Dismiss menu overlays so nested submenus cannot orphan on route change
         this.closeToolbarMenu();
       }
     });
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
+      .subscribe((event) => {
+        this.currentLang = event.lang;
         this.overrideNavbar(this.router.url);
         this.updateButtonVisibility();
       });
     // Initial update
     this.updateButtonVisibility();
+  }
+
+  /** Re-fetch enabled/order when the user opens the language menu. */
+  onLanguageMenuOpened(): void {
+    this.languageService.refreshLanguagesToUse()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
   }
 
   ngDoCheck() {
@@ -281,7 +304,32 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   changeLanguage(language: string) {
+    this.currentLang = language;
     this.languageService.setLanguage(language).subscribe();
+  }
+
+  isoCode(shortname: string): string {
+    return toLanguageIsoCode(shortname || '');
+  }
+
+  private applyLanguages(languages: LanguageDTO[]): void {
+    this.languages = languages;
+    if (languages.length === 0) {
+      return;
+    }
+    const chosen = resolveUiLanguage({
+      stored:
+        this.translate.currentLang ||
+        localStorage.getItem(this.languageService.STORED_LANGUAGE),
+      backendDefault: null,
+      availableShortnames: languages.map((language) => language.shortname),
+      staticFallback: languages[0]?.shortname || 'en'
+    });
+    if (chosen !== this.currentLang) {
+      this.changeLanguage(chosen);
+    } else {
+      this.currentLang = chosen;
+    }
   }
 
   isConnected(): boolean {

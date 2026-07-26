@@ -23,10 +23,13 @@ $menu-header-font-size: 20px; // Material headline-6
     z-index: 100000 !important; // Higher than toolbar (z-index: 99999)
   }
 
-  // Target menu content for this component's menu
   .mat-mdc-menu-panel {
-    min-width: $menu-min-width; // 280px Material minimum
     z-index: 100000 !important; // Ensure menu appears above toolbar (z-index: 99999)
+  }
+
+  // App hamburger menu only — do not widen language (or other) menus
+  .app-menu-panel.mat-mdc-menu-panel {
+    min-width: $menu-min-width;
   }
 
   .mat-mdc-menu-content {

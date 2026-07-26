@@ -21,7 +21,7 @@ import {
   TranslateFakeLoader
 } from '@ngx-translate/core';
 import { MenuComponent } from '@ui/components/menu/menu.component';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { ErrorTrackingService } from 'src/app/services/error-tracking.service';
 import { LanguageService } from 'src/app/services/language.service';
 
@@ -31,8 +31,13 @@ describe('NavigationBarComponent', () => {
   let component: NavigationBarComponent;
   let fixture: ComponentFixture<NavigationBarComponent>;
   let router: jest.Mocked<Router>;
+  let languagesToUse$: BehaviorSubject<any[]>;
 
   beforeEach(async () => {
+    languagesToUse$ = new BehaviorSubject<any[]>([
+      { shortname: 'en', name: 'English', order: 0, enabled: true },
+      { shortname: 'ca', name: 'Català', order: 1, enabled: true }
+    ]);
     const routerSpy = {
       navigate: jest.fn(),
       navigateByUrl: jest.fn(),
@@ -86,8 +91,12 @@ describe('NavigationBarComponent', () => {
         {
           provide: LanguageService,
           useValue: {
+            STORED_LANGUAGE: 'language',
+            languagesToUse$,
             setLanguage: jest.fn().mockReturnValue(of(null)),
             getCurrentLanguage: jest.fn().mockReturnValue('en'),
+            getAvailableLanguages: jest.fn().mockReturnValue(languagesToUse$.value),
+            refreshLanguagesToUse: jest.fn().mockReturnValue(of(languagesToUse$.value)),
             getLanguagesTranslatedSorted: jest.fn().mockReturnValue(of([])),
             getLanguageName: jest.fn().mockReturnValue('English'),
             getLanguageIcon: jest.fn().mockReturnValue('assets/flags/en.svg')
@@ -184,5 +193,12 @@ describe('NavigationBarComponent', () => {
       configurable: true
     });
     expect(component.isOnMap()).toBe(false);
+  });
+
+  it('refreshes language menu when languagesToUse changes', () => {
+    languagesToUse$.next([
+      { shortname: 'ca', name: 'Català', order: 0, enabled: true }
+    ]);
+    expect(component.languages.map((l) => l.shortname)).toEqual(['ca']);
   });
 });

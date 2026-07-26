@@ -2,6 +2,7 @@ import { Location } from '@angular/common';
 import {
   Directive,
   ElementRef,
+  inject,
   Injector,
   OnDestroy,
   OnInit,
@@ -26,13 +27,16 @@ import {
   tap
 } from 'rxjs/operators';
 import { MAP_CONTAINER_ID } from 'src/app/config/sitna.constants';
+import { LayerCatalogControlHandler } from 'src/app/controls/handlers/layer-catalog-control.handler';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
 import { MapConfigurationService } from 'src/app/services/map-configuration.service';
 import { MapInterfaceService } from 'src/app/services/map-interface.service';
 import { MapServiceWorkerService } from 'src/app/services/map-service-worker.service';
+import { MoreInfoAdvancedService } from 'src/app/services/more-info-advanced.service';
 import { SitnaApiService } from 'src/app/services/sitna-api.service';
+import { ToolsPanelSplitterService } from 'src/app/services/tools-panel-splitter.service';
 
 const MAP_LOAD_TIMEOUT_MS = 30_000;
 
@@ -54,6 +58,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   protected loadingState: LoadingState = 'idle';
   private activeRequestId = 0;
   private loadId = 0;
+  private readonly layerCatalogHandler = inject(LayerCatalogControlHandler);
+  private readonly toolsPanelSplitter = inject(ToolsPanelSplitterService);
+  private readonly moreInfoAdvancedService = inject(MoreInfoAdvancedService);
   applicationId!: number;
   territoryId!: number;
   locale: string | undefined;
@@ -99,6 +106,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         tap((params) => {
           this.applicationId = Number(params['applicationId']);
           this.territoryId = Number(params['territoryId']);
+          this.moreInfoAdvancedService.setMapContext(
+            this.applicationId,
+            this.territoryId
+          );
           if (this.isInEmbedded) {
             this.locale = this.parseLang(params['lang']);
           }
@@ -244,19 +255,13 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
 
+    this.toolsPanelSplitter.unmount();
+
     // Fully cleanup all control handlers (removes DOM artifacts, restores patches)
-    this.controlRegistry.unregisterAll();
+    this.controlRegistry.cleanupAll();
 
     // Clear map resources
     this.clearMap();
-  }
-
-  /**
-   * Remove MIA popup overlay from DOM without destroying the handler.
-   * Used during map rebuild (clearMap) to avoid stale overlays.
-   */
-  private removeMiaOverlayFromDom(): void {
-    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
   }
 
   removeSitnaDivs() {
@@ -306,6 +311,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       const initialExtent = this.mapConfig.toInitialExtent(appCfg);
       const defaultZoomLevel = this.mapConfig.toDefaultZoomLevel(appCfg);
 
+      const baseLayers = this.mapConfig.toBaseLayers(appCfg);
+      const defaultBaseLayer = this.mapConfig.toDefaultBaseLayer(baseLayers);
+
       this.currentGeneralCfg = {
         locale: this.locale,
         crs: this.mapConfig.toCrs(appCfg),
@@ -313,7 +321,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         defaultZoomLevel,
         attribution: attribution,
         layout: this.mapConfig.toLayout(appCfg),
-        baseLayers: this.mapConfig.toBaseLayers(appCfg),
+        baseLayers,
+        ...(defaultBaseLayer ? { defaultBaseLayer } : {}),
         controls: controls as any, // Handler system returns Partial<SitnaControls>
         views: this.mapConfig.toViews(appCfg)
       };
@@ -404,6 +413,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
           if (savedCatalogState) {
             this.sitnaApi.setGlobal('layerCatalogsForModal', savedCatalogState);
           }
+          this.sitnaApi.setGlobal('currentAppCfg', this.currentAppCfg);
           await this.loadMap(newCfg);
           this.sitnaApi.setGlobal('abstractMapObject', this);
         })
@@ -415,6 +425,9 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
 
   clearMap() {
     this.loadId++;
+    this.toolsPanelSplitter.unmount();
+    // Light handler teardown (MIA body overlay, LayerCatalog per-map state) — not cleanupAll.
+    this.controlRegistry.clearMapArtifacts(this.map);
     this.sitnaApi.setGlobal('abstractMapObject', undefined);
     this.sitnaApi.setGlobal('layerCatalogsForModal', undefined);
     this.sitnaApi.setGlobal('currentAppCfg', undefined);
@@ -444,9 +457,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
       // If no old div exists, just append
       this.renderer.appendChild(mapFather, div);
     }
-
-    // Cleanup control handlers (removes MIA overlay and other DOM artifacts)
-    this.removeMiaOverlayFromDom();
 
     // Body
     this.removeSitnaDivs();
@@ -507,12 +517,27 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     }
 
     const loadedPromise = new Promise<void>((resolve) => {
-      this.map.loaded(() => {
-        if (thisLoadId === this.loadId && !this.componentDestroyed.closed) {
-          this.loadingState = 'loaded';
-          this.mapInterface.updateInterface();
-          this.applyInitialViewAfterLoad(cfg);
+      this.map.loaded(async () => {
+        if (thisLoadId !== this.loadId || this.componentDestroyed.closed) {
+          resolve();
+          return;
         }
+        this.mapInterface.updateInterface();
+        this.applyInitialViewAfterLoad(cfg);
+        try {
+          await this.layerCatalogHandler.applyDefaultWorkingLayers(
+            this.map,
+            this.currentAppCfg,
+            thisLoadId
+          );
+        } catch (error) {
+          console.error(
+            '[AbstractMapComponent] applyDefaultWorkingLayers failed',
+            error
+          );
+        }
+        this.toolsPanelSplitter.mount(this.document);
+        this.loadingState = 'loaded';
         resolve();
       });
     });

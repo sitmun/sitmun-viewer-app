@@ -193,6 +193,15 @@ describe('FeatureInfoControlHandler', () => {
             }
           }
         },
+        wrap: {
+          layer: {
+            Raster: {
+              prototype: {
+                getInfo: jest.fn().mockReturnValue({ queryable: true, title: 'L' })
+              }
+            }
+          }
+        },
         tool: {
           Proxification: {
             prototype: {
@@ -214,6 +223,34 @@ describe('FeatureInfoControlHandler', () => {
       mockSitnaApi.getSITNA.mockReturnValue(SITNA);
     });
 
+    it('getInfo returns queryable false when parent.options.sitmunGfiEnabled is false', async () => {
+      const wrapProto = TC.wrap.layer.Raster.prototype;
+      wrapProto.getInfo.mockReturnValue({ queryable: true, title: 'L' });
+
+      await handler.loadPatches({} as AppCfg);
+
+      const wrap = Object.create(wrapProto);
+      wrap.parent = { options: { sitmunGfiEnabled: false } };
+      expect(wrap.getInfo('layer-a')).toEqual({
+        queryable: false,
+        title: 'L'
+      });
+    });
+
+    it('getInfo keeps capabilities queryable when sitmunGfiEnabled is not false', async () => {
+      const wrapProto = TC.wrap.layer.Raster.prototype;
+      wrapProto.getInfo.mockReturnValue({ queryable: true, title: 'L' });
+
+      await handler.loadPatches({} as AppCfg);
+
+      const wrap = Object.create(wrapProto);
+      wrap.parent = { options: { sitmunGfiEnabled: true } };
+      expect(wrap.getInfo('layer-a')).toEqual({
+        queryable: true,
+        title: 'L'
+      });
+    });
+
     it('should wrap Raster.describeLayer to resolve with WMS fallback when full=true and rejection occurs', async () => {
       // Arrange: describeLayer rejects (simulates Catastro ServiceException)
       TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
@@ -223,9 +260,11 @@ describe('FeatureInfoControlHandler', () => {
       // Act: loadPatches installs meld.around wrapper
       await handler.loadPatches({} as AppCfg);
 
-      // Assert: wrapped describeLayer resolves instead of rejecting
-      const result = await TC.layer.Raster.prototype.describeLayer(true);
-      expect(result).toEqual([{ owsType: 'WMS' }]);
+      // Assert: wrapped describeLayer resolves with layerName for getLegend (#164)
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['CAE1M_141A'];
+      const result = await layer.describeLayer(true);
+      expect(result).toEqual([{ owsType: 'WMS', layerName: 'CAE1M_141A' }]);
     });
 
     it('should wrap Raster.describeLayer to resolve with WMS fallback when full=false and rejection occurs', async () => {
@@ -238,8 +277,10 @@ describe('FeatureInfoControlHandler', () => {
       await handler.loadPatches({} as AppCfg);
 
       // Assert
-      const result = await TC.layer.Raster.prototype.describeLayer(false);
-      expect(result).toEqual({ owsType: 'WMS' });
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['L1', 'L2'];
+      const result = await layer.describeLayer(false);
+      expect(result).toEqual({ owsType: 'WMS', layerName: 'L1' });
     });
 
     it('should wrap Proxification.fetch to resolve with empty JSON when GFI request fails', async () => {
@@ -304,6 +345,66 @@ describe('FeatureInfoControlHandler', () => {
       ).rejects.toThrow('HTTP 500');
     });
 
+    it('restores all meld-wrapped prototypes and guard markers on cleanup', async () => {
+      TC.Map.prototype.addControl = jest.fn();
+      TC.control.FeatureInfo.prototype.register = jest.fn();
+      TC.control.FeatureInfo.prototype.responseCallback = jest.fn();
+      TC.control.FeatureInfo.prototype.displayResultsCallback = jest.fn();
+
+      const originalAddControl = TC.Map.prototype.addControl;
+      const originalRegister = TC.control.FeatureInfo.prototype.register;
+      const originalResponseCallback =
+        TC.control.FeatureInfo.prototype.responseCallback;
+      const originalDisplayResultsCallback =
+        TC.control.FeatureInfo.prototype.displayResultsCallback;
+      const originalDescribeLayer = TC.layer.Raster.prototype.describeLayer;
+      const originalGetInfo = TC.wrap.layer.Raster.prototype.getInfo;
+      const originalFetch = TC.tool.Proxification.prototype.fetch;
+
+      await handler.loadPatches({} as AppCfg);
+
+      expect(TC.Map.prototype.addControl).not.toBe(originalAddControl);
+      expect(TC.control.FeatureInfo.prototype.register).not.toBe(
+        originalRegister
+      );
+      expect(TC.control.FeatureInfo.prototype.responseCallback).not.toBe(
+        originalResponseCallback
+      );
+      expect(TC.control.FeatureInfo.prototype.displayResultsCallback).not.toBe(
+        originalDisplayResultsCallback
+      );
+      expect(TC.layer.Raster.prototype.describeLayer).not.toBe(
+        originalDescribeLayer
+      );
+      expect(TC.wrap.layer.Raster.prototype.getInfo).not.toBe(originalGetInfo);
+      expect(TC.tool.Proxification.prototype.fetch).not.toBe(originalFetch);
+
+      handler.cleanup();
+
+      expect(TC.Map.prototype.addControl).toBe(originalAddControl);
+      expect(TC.control.FeatureInfo.prototype.register).toBe(originalRegister);
+      expect(TC.control.FeatureInfo.prototype.responseCallback).toBe(
+        originalResponseCallback
+      );
+      expect(TC.control.FeatureInfo.prototype.displayResultsCallback).toBe(
+        originalDisplayResultsCallback
+      );
+      expect(TC.layer.Raster.prototype.describeLayer).toBe(
+        originalDescribeLayer
+      );
+      expect(TC.wrap.layer.Raster.prototype.getInfo).toBe(originalGetInfo);
+      expect(TC.tool.Proxification.prototype.fetch).toBe(originalFetch);
+      expect(TC.Map.prototype.__sitmunFiAddControl).toBeUndefined();
+      expect(TC.control.FeatureInfo.prototype.__sitmunFiRegister).toBeUndefined();
+      expect(TC.control.FeatureInfo.prototype.__sitmunMoreInfo).toBeUndefined();
+      expect(
+        TC.control.FeatureInfo.prototype.__sitmunMoreInfoDisplayResults
+      ).toBeUndefined();
+      expect(TC.layer.Raster.prototype.__sitmunDescribeLayerSafe).toBeUndefined();
+      expect(TC.wrap.layer.Raster.prototype.__sitmunGfiUserGate).toBeUndefined();
+      expect(TC.tool.Proxification.prototype.__sitmunGfiIsolation).toBeUndefined();
+    });
+
     it('should be idempotent when loadPatches is called twice', async () => {
       // Arrange
       TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
@@ -316,7 +417,7 @@ describe('FeatureInfoControlHandler', () => {
 
       // Assert: still works correctly (no double-wrap)
       const result = await TC.layer.Raster.prototype.describeLayer(true);
-      expect(result).toEqual([{ owsType: 'WMS' }]);
+      expect(result).toEqual([{ owsType: 'WMS', layerName: '' }]);
     });
   });
 });

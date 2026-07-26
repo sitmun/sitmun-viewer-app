@@ -15,6 +15,28 @@ body {
   background-color: white;
 
 }
+
+.tc-ctl-lcat .sitmun-lcat-radio-label {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 0.25rem;
+  position: relative;
+  top: -2px;
+  vertical-align: middle;
+}
+
+.tc-ctl-lcat .sitmun-lcat-radio {
+  inline-size: 0.85rem;
+  block-size: 0.85rem;
+  margin: 0;
+  accent-color: #b00000;
+  cursor: pointer;
+}
+
+.tc-ctl-lcat span.tc-selectable:has(> .sitmun-lcat-radio-label)::after {
+  display: none !important;
+  content: none !important;
+}
  
 /* CDK Overlay Container - ensures Material menus and overlays appear above all content */
 
@@ -252,18 +274,25 @@ body {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   display: none;
+  flex-direction: column;
+  height: min(70vh, calc(100vh - 70px));
   left: 12px;
+  max-height: calc(100vh - 70px);
   max-width: min(760px, calc(100vw - 48px));
+  min-height: 280px;
   min-width: 360px;
+  overflow: hidden;
   pointer-events: auto;
   position: fixed !important;
+  resize: both;
   top: 12px;
   user-select: text;
+  width: min(540px, calc(100vw - 48px));
   z-index: 10050;
 }
 
 .sitmun-mia-popup-overlay.sitmun-mia-popup-visible {
-  display: block;
+  display: flex;
 }
 
 .sitmun-mia-popup-toolbar {
@@ -281,32 +310,53 @@ body {
 }
 
 .sitmun-mia-popup-overlay .tc-ctl-popup-content {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: 100%;
+  max-height: unset !important;
+  max-width: unset !important;
+  min-height: 0;
+  overflow: hidden;
   padding: 10px;
+  width: 98%;
 }
 
-.sitmun-mia-popup-close {
-  background: transparent;
-  border: 0;
+/* Prefer SITNA .tc-ctl-popup-close icon styling; keep a compact toolbar hit target. */
+.sitmun-mia-popup-overlay .sitmun-mia-popup-close {
   cursor: pointer;
-  font-size: 1.2rem;
-  line-height: 1;
+  flex: 0 0 auto;
 }
 
 .tc-ctl-popup-content .sitmun-mia-tabs-bar {
   display: flex;
+  flex: 0 0 auto;
   gap: 4px;
   margin-bottom: 8px;
   overflow-x: auto;
 }
 
+.tc-ctl-popup-content .sitmun-mia-tab-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
 .tc-ctl-popup-content .sitmun-mia-main-tabs-bar {
   border-bottom: 1px solid #ccc;
   display: flex;
+  flex: 0 0 auto;
   gap: 4px;
   margin-bottom: 10px;
   overflow-x: auto;
   padding-bottom: 4px;
+}
+
+.tc-ctl-popup-content .sitmun-mia-main-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .tc-ctl-popup-content .sitmun-mia-tab {
@@ -340,14 +390,17 @@ body {
 }
 
 .tc-ctl-popup-content .sitmun-mia-body {
-  max-height: 420px;
-  max-width: 720px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   overflow: auto;
+  width: 100%;
   -webkit-overflow-scrolling: touch;
 }
 
 .tc-ctl-popup-content .sitmun-mia-body .sitmun-mia-body {
-  max-height: 380px;
+  min-height: 0;
 }
 
 .tc-ctl-popup-content .sitmun-mia-scroll-section + .sitmun-mia-scroll-section {
@@ -367,8 +420,35 @@ body {
   font-style: italic;
 }
 
-.tc-ctl-popup-content .sitmun-mia-error {
+.tc-ctl-popup-content .sitmun-mia-error,
+.tc-ctl-popup-content .sitmun-template-child-error {
   color: #b00020;
+}
+
+.tc-ctl-popup-content .sitmun-mia-spinner {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.35rem;
+  border: 2px solid #ccc;
+  border-top-color: #666;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  animation: sitmun-mia-spin 0.8s linear infinite;
+}
+
+@keyframes sitmun-mia-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tc-ctl-popup-content .sitmun-template-placeholder {
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-family: monospace;
 }
 
 .tc-ctl-popup-content .sitmun-mia-body .sitmun-json-table {

@@ -26,6 +26,7 @@
             "assets": [
               "src/favicon.ico",
               "src/ServiceWorker.js",
+              "src/service-worker-auth-policy.js",
               {
                 "glob": "**/*",
                 "input": "node_modules/api-sitna",
@@ -120,6 +121,20 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
+            },
+            "e2e": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.e2e.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "development"
@@ -138,6 +153,10 @@
             },
             "development": {
               "buildTarget": "viewer-app:build:development"
+            },
+            "e2e": {
+              "buildTarget": "viewer-app:build:e2e",
+              "proxyConfig": "proxy.conf.e2e.json"
             }
           },
           "defaultConfiguration": "development"

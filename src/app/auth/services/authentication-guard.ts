@@ -41,12 +41,13 @@ export class AuthenticationGuard {
       return false;
     }
 
-    if (isPublicUrl && isAuthenticated) {
-      // Send to default user page (if authenticated, cannot access to login, register...)
-      void this.router.navigateByUrl(NavigationPath.Section.User.Dashboard);
+    if (isAuthenticated && url.startsWith(NavigationPath.Auth.Base)) {
+      // Authenticated users must not activate auth pages; public routes clear session via publicAuthClearGuard.
+      return this.router.createUrlTree([NavigationPath.Section.User.Dashboard]);
     }
 
     //  isAuthenticated && !isPublicUrl => OK
+    //  isAuthenticated && /public/** => OK (child publicAuthClearGuard clears stale session)
     //  !isAuthenticated && isPublicUrl => OK
     return true;
   }

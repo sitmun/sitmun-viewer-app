@@ -15,6 +15,7 @@ describe('RasterLayerService', () => {
   let service: RasterLayerService;
   let virtualWms: VirtualWmsCapabilitiesService;
   let configLookup: ConfigLookupService;
+  let currentLanguage: string;
 
   const minimalAppCfg = (): AppCfg => ({
     application: {
@@ -62,6 +63,7 @@ describe('RasterLayerService', () => {
     )[key] ?? key;
 
   beforeEach(() => {
+    currentLanguage = 'en';
     TestBed.configureTestingModule({
       providers: [
         RasterLayerService,
@@ -74,7 +76,7 @@ describe('RasterLayerService', () => {
         },
         {
           provide: LanguageService,
-          useValue: { getCurrentLanguage: () => 'en' }
+          useValue: { getCurrentLanguage: () => currentLanguage }
         },
         {
           provide: AppConfigService,
@@ -648,6 +650,126 @@ describe('RasterLayerService', () => {
       expect(wmtsLayer['Abstract']).toBe('from exact row');
       expect(wmtsLayer['Title']).toBe('Exact match layer');
     });
+
+    it('sets queryable false on matched WMS group and all descendants', () => {
+      const serviceUrl = 'https://ide.cime.es/geoserver/ordenacio/ows';
+      const cfg: AppCfg = {
+        ...minimalAppCfg(),
+        layers: [
+          {
+            id: 'layer/4658',
+            title: 'RPT Sòl Rústic',
+            layers: ['OR007RPT_solrustic'],
+            service: 'S1',
+            queryableFeatureEnabled: false
+          }
+        ],
+        services: [
+          {
+            id: 'S1',
+            title: 'IDEMenorca - Ordenacio',
+            type: 'WMS',
+            url: serviceUrl,
+            parameters: {}
+          }
+        ]
+      };
+      const childNested: WMSLayer = {
+        Name: 'or007rpt_anei_child',
+        Title: 'nested',
+        queryable: true
+      };
+      const group: WMSLayer = {
+        Name: 'OR007RPT_solrustic',
+        Title: 'Sòl Rústic',
+        queryable: true,
+        Layer: [
+          { Name: 'or007rpt_zavas', Title: 'ZAVAS', queryable: true },
+          {
+            Name: 'or007rpt_anei',
+            Title: 'ANEIs',
+            queryable: true,
+            Layer: [childNested]
+          }
+        ]
+      };
+      const caps = {
+        version: '1.3.0',
+        Service: {},
+        Capability: { Layer: { Title: 'Root', Layer: [group] } }
+      } as WMSCapabilities;
+
+      service.processWmtCapabilitiesResult(
+        { type: 'WMS', url: serviceUrl, options: { serviceId: 'S1', type: 'WMS' } },
+        serviceUrl,
+        caps,
+        cfg
+      );
+
+      expect(group.queryable).toBe(false);
+      expect(group.Layer![0].queryable).toBe(false);
+      expect(group.Layer![1].queryable).toBe(false);
+      expect(childNested.queryable).toBe(false);
+    });
+
+    it('sets queryable true on matched WMS group and descendants when profile enables GFI', () => {
+      const serviceUrl = 'https://ide.cime.es/geoserver/ordenacio/ows';
+      const cfg: AppCfg = {
+        ...minimalAppCfg(),
+        layers: [
+          {
+            id: 'layer/4658',
+            title: 'RPT Sòl Rústic',
+            layers: ['OR007RPT_solrustic'],
+            service: 'S1',
+            queryableFeatureEnabled: true
+          }
+        ],
+        services: [
+          {
+            id: 'S1',
+            type: 'WMS',
+            url: serviceUrl,
+            parameters: {}
+          }
+        ]
+      };
+      const childNested: WMSLayer = {
+        Name: 'or007rpt_anei_child',
+        Title: 'nested',
+        queryable: false
+      };
+      const group: WMSLayer = {
+        Name: 'OR007RPT_solrustic',
+        Title: 'Sòl Rústic',
+        queryable: false,
+        Layer: [
+          { Name: 'or007rpt_zavas', Title: 'ZAVAS', queryable: false },
+          {
+            Name: 'or007rpt_anei',
+            Title: 'ANEIs',
+            queryable: false,
+            Layer: [childNested]
+          }
+        ]
+      };
+      const caps = {
+        version: '1.3.0',
+        Service: {},
+        Capability: { Layer: { Title: 'Root', Layer: [group] } }
+      } as WMSCapabilities;
+
+      service.processWmtCapabilitiesResult(
+        { type: 'WMS', url: serviceUrl, options: { serviceId: 'S1', type: 'WMS' } },
+        serviceUrl,
+        caps,
+        cfg
+      );
+
+      expect(group.queryable).toBe(true);
+      expect(group.Layer![0].queryable).toBe(true);
+      expect(childNested.queryable).toBe(true);
+    });
   });
 
   describe('isRasterWms and isRasterWmts', () => {
@@ -676,10 +798,42 @@ describe('RasterLayerService', () => {
     });
   });
 
+  describe('getRasterCapabilities', () => {
+    const realLayerConfig = {
+      url: 'http://localhost:9000/middleware/proxy/12/4/WMS/16',
+      type: 'WMS',
+      layerNames: ['ns:roads']
+    };
+
+    it('returns cached capabilities', () => {
+      const capabilities = { Service: {} } as WMSCapabilities;
+      const rasterInstancesCache = new Map([
+        [`${realLayerConfig.url}|${realLayerConfig.type}`, { capabilities }]
+      ]);
+
+      const result = service.getRasterCapabilities(
+        realLayerConfig,
+        rasterInstancesCache
+      );
+
+      expect(result).toBe(capabilities);
+    });
+
+    it('returns null without fetching when capabilities are not cached', () => {
+      const result = service.getRasterCapabilities(realLayerConfig, new Map());
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe('enrichRasterLayerInfo', () => {
     const enrichAppCfg = (overrides?: {
       layerMeta?: string;
       layerData?: string;
+      serviceTitle?: unknown;
+      serviceDescription?: unknown;
+      serviceAbstract?: unknown;
+      treeAbstract?: unknown;
     }): AppCfg => ({
       ...minimalAppCfg(),
       layers: [
@@ -696,12 +850,29 @@ describe('RasterLayerService', () => {
             : {})
         }
       ],
+      services: [
+        {
+          ...minimalAppCfg().services[0],
+          ...(overrides?.serviceTitle != null
+            ? { title: overrides.serviceTitle }
+            : {}),
+          ...(overrides?.serviceDescription != null
+            ? { description: overrides.serviceDescription }
+            : {}),
+          ...(overrides?.serviceAbstract != null
+            ? { abstract: overrides.serviceAbstract }
+            : {})
+        }
+      ],
       trees: [
         {
           id: 'tree/1',
           title: 'T',
           image: null,
           rootNode: 'node/1',
+          ...(overrides?.treeAbstract != null
+            ? { abstract: overrides.treeAbstract }
+            : {}),
           nodes: {
             'node/2': {
               title: 'Leaf',
@@ -825,6 +996,162 @@ describe('RasterLayerService', () => {
       );
       expect(info.metadata?.[0]?.url).toBe('https://upstream.example/metadata');
       expect(info.dataUrl?.[0]?.url).toBe('https://upstream.example/data.zip');
+    });
+
+    it('uses profile service description for service description display', () => {
+      currentLanguage = 'ca';
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceDescription: {
+            'ca-ES': 'Descripció catalana',
+            'es-ES': 'Descripción castellana'
+          },
+          serviceAbstract: 'Profile abstract fallback'
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.parentAbstract).toBe('Descripció catalana');
+    });
+
+    it('uses profile service abstract when service description is absent', () => {
+      currentLanguage = 'ca';
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceAbstract: {
+            'ca-ES': 'Abstracte català',
+            'es-ES': 'Abstracto castellano'
+          }
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.parentAbstract).toBe('Abstracte català');
+    });
+
+    it('uses WMS service abstract only when profile service text is absent', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Abstract = {
+        'ca-ES': 'Servei publicat en català',
+        'es-ES': 'Servicio publicado en castellano'
+      };
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentAbstract).toBe('Servei publicat en català');
+    });
+
+    it('uses profile service title for service title display', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Title = {
+        'ca-ES': 'Títol WMS',
+        'es-ES': 'Título WMS'
+      };
+      configLookup.initialize(
+        enrichAppCfg({
+          serviceTitle: {
+            'ca-ES': 'Títol català',
+            'es-ES': 'Título castellano'
+          }
+        })
+      );
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('Títol català');
+    });
+
+    it('uses WMS service title when profile service title is absent', () => {
+      currentLanguage = 'ca';
+      const caps = upstreamCaps();
+      caps.Service.Title = {
+        'ca-ES': 'Títol WMS',
+        'es-ES': 'Título WMS'
+      };
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('Títol WMS');
+    });
+
+    it('uses plain-string WMS service title when profile service title is absent', () => {
+      const caps = upstreamCaps();
+      caps.Service.Title = 'WMS service title';
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads']
+        },
+        caps
+      );
+
+      expect(info.parentTitle).toBe('WMS service title');
+    });
+
+    it('lists every WMS layer id for composite catalog layers', () => {
+      configLookup.initialize(enrichAppCfg());
+
+      const info = service.enrichRasterLayerInfo(
+        'node/2',
+        {
+          url: 'https://wms.example/wms',
+          type: 'WMS',
+          layerNames: ['ns:roads', 'ns:buildings']
+        },
+        upstreamCaps()
+      );
+
+      expect(info.name).toBe('roads, buildings');
     });
   });
 });

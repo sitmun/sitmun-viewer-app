@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-07-25
+
+### Added
+
+- **Map / MIA**: More Info Advanced render POST sends map-session `appId`/`terId` and UI `lang`; iframe-preserving sanitize; resizable scrollable overlay ([#162](https://github.com/sitmun/sitmun-viewer-app/pull/162)).
+- **Map**: Layers (WorkLayerManager) and Available layers paired stack with splitter/`localStorage` pane heights ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)); multi-tree apps default to lowest `trees[].order` with icon-only **Change topic** (`changeTopic`); **No base map** option ([#167](https://github.com/sitmun/sitmun-viewer-app/issues/167)).
+- **Map**: Catalog `loadByDefault` auto-load; leaf load checkboxes; radio folders; `loadData` folder controls (checkbox/radio, indeterminate); GFI/`sitmunGfiEnabled` and Material `article` meta; load spinner/warning feedback; zebra/density aligned with SITMUN 2; `CatalogLayerSelectionService` claims/`nodeId` alignment ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)). Composite single WorkLayerManager entry remains [#166](https://github.com/sitmun/sitmun-viewer-app/issues/166).
+- **Languages** / **Language chrome**: Toolbar switcher omits `enabled: false`; closed BCP-47 ISO + open endonyms left of hamburger; landing language `localStorage` → `language.default` → static; language removed from hamburger menu.
+- **Application details**: Shows `responsibleInstitutionName` and `pointOfContact` independently when provided ([sitmun-admin-app#316](https://github.com/sitmun/sitmun-admin-app/issues/316)).
+- **E2E** / **Tests**: Same-origin `/backend`/`/middleware` serve profile; `viewer-catalog` and `viewer-legend` Playwright projects; Jest for MIA sanitize/lang, dashboard, auth/session, and api-sitna metres-per-unit ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45), [#152](https://github.com/sitmun/sitmun-viewer-app/issues/152), [#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
+
+### Changed
+
+- **Map**: Radio folder title activation requires `loadData=true`; default-layer collection uses profile tree order, resource dedupe, one claim per radio group, and per-map WeakMap idempotency ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **i18n** / **Dashboard search**: `application.contact` means PoC email; added `application.responsibleInstitution`; autocomplete while typing, card grid filters on Enter (or clear) only.
+
+### Fixed
+
+- **Map**: Overview scroll reset and Layers pin ([#135](https://github.com/sitmun/sitmun-viewer-app/issues/135)); Layers/Available layers layout, drag floor, and list scroll ([#142](https://github.com/sitmun/sitmun-viewer-app/issues/142)); left chrome stack order at 480/768/1024; **Change topic** 24×24 sizing left of search/tree switch; out-of-scale row color ([#92](https://github.com/sitmun/sitmun-viewer-app/issues/92)).
+- **Map / MIA**: GFI targeting limited to MIA-parent layers; overlay `mia.*` chrome; in-flight cancel/generation guard; light map-rebuild teardown without restoring patches.
+- **Map**: `queryableFeatureEnabled`/`queryableActive` gate identify and Layers GFI; Legend Style/LegendURL fallback, sticky-load retry, and finite OGC `SCALE` on WKT metre CRS ([#152](https://github.com/sitmun/sitmun-viewer-app/issues/152), [#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
+- **Map**: Catalog claim/load hardening — property-only checked sync; LAYERERROR/TILELOADERROR cleanup and zombie-row scrub; in-flight duplicate-add guard and trash cascade; radio/`loadData` control type and indeterminate recovery; folder unload/re-add fixes; GFI/meta DOM freeze avoidance; `nodeId` identity and radio-group lock cleanup; map load awaits defaults ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
+- **Map**: Composite catalog layers show one Loaded Layers breadcrumb ([#161](https://github.com/sitmun/sitmun-viewer-app/issues/161)); layer info modal lists WMS ids, multilingual descriptions, profile/WMS titles, cached capabilities; backgrounds follow admin `order` ([#428](https://github.com/sitmun/sitmun-admin-app/issues/428)); control teardown removes SITNA patches cleanly.
+- **Language chrome** / **Auth** / **Service worker** / **Errors** / **Dashboard**: Language control ink/menu width and live `languagesToUse$` refresh; login prevents native submit; coalesced 401/session cleanup; HTTP middleware URLs preserved with proxy auth; proxy `401` token refresh / `403` warn without session clear; absolute backend URL error tracking; dashboard pagination/search/resync.
+
+### Security
+
+- **Service worker** / **Auth**: Reject empty/root middleware URL in `isMiddlewareRequest`; `publicAuthClearGuard` logout omits `X-SITMUN-Client` so only `viewer_access_token` is cleared.
+
 ## [1.2.7] - 2026-06-05
 
 ### Added
@@ -329,7 +358,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...HEAD
+[1.2.8]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...sitmun-viewer-app/1.2.8
 [1.2.7]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...sitmun-viewer-app/1.2.7
 [1.2.6]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...sitmun-viewer-app/1.2.6
 [1.2.5]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.4...sitmun-viewer-app/1.2.5

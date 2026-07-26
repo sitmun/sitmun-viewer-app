@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { IndexedDbService } from '@auth/services/indexed-db.service';
 
 import { MapServiceWorkerService } from './map-service-worker.service';
+import { SitnaApiService } from './sitna-api.service';
 
 function makeAppCfg(proxy?: string) {
   return { global: proxy ? { proxy } : {} } as any;
@@ -11,6 +12,9 @@ function makeAppCfg(proxy?: string) {
 describe('MapServiceWorkerService', () => {
   let service: MapServiceWorkerService;
   let mockIndexedDb: jest.Mocked<IndexedDbService>;
+  let proxificationPrototype: {
+    _isServiceWorker: jest.Mock;
+  };
 
   let mockServiceWorkerContainer: {
     ready: Promise<{ active: { postMessage: jest.Mock } | null }>;
@@ -28,6 +32,9 @@ describe('MapServiceWorkerService', () => {
       controller: {} as ServiceWorker,
       addEventListener: jest.fn()
     };
+    proxificationPrototype = {
+      _isServiceWorker: jest.fn(() => true)
+    };
 
     Object.defineProperty(navigator, 'serviceWorker', {
       value: mockServiceWorkerContainer,
@@ -37,7 +44,15 @@ describe('MapServiceWorkerService', () => {
     TestBed.configureTestingModule({
       providers: [
         MapServiceWorkerService,
-        { provide: IndexedDbService, useValue: mockIndexedDb }
+        { provide: IndexedDbService, useValue: mockIndexedDb },
+        {
+          provide: SitnaApiService,
+          useValue: {
+            getTC: () => ({
+              tool: { Proxification: { prototype: proxificationPrototype } }
+            })
+          }
+        }
       ]
     });
 
@@ -87,6 +102,22 @@ describe('MapServiceWorkerService', () => {
         type: 'MIDDLEWARE_URL',
         url: 'http://proxy.example.com'
       });
+    });
+
+    it('keeps HTTP middleware requests on HTTP when the worker controls the viewer', async () => {
+      await service.configureMiddleware(
+        makeAppCfg('http://localhost:9000/middleware/proxy')
+      );
+
+      expect(proxificationPrototype._isServiceWorker()).toBe(false);
+    });
+
+    it('retains SITNA service-worker handling for HTTPS middleware', async () => {
+      await service.configureMiddleware(
+        makeAppCfg('https://middleware.example/proxy')
+      );
+
+      expect(proxificationPrototype._isServiceWorker()).toBe(true);
     });
 
     it('does not throw when active registration is null', async () => {

@@ -16,13 +16,8 @@ export class AppComponent implements OnInit {
     private readonly languageService: LanguageService,
     private readonly authenticationService: AuthenticationService<any>
   ) {
-    // Initialize TranslateService with current language
-    this.languageService.initializeTranslateService();
-
-    // Optionally load user language from backend if logged in
-    // This can be done asynchronously without blocking app initialization
+    // UI language is bootstrapped in APP_INITIALIZER (language.default + languages).
     this.languageService.loadUserLanguage().subscribe();
-
     this.generateDeviceID();
   }
 

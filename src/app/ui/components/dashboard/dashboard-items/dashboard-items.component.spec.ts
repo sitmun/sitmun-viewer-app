@@ -343,6 +343,37 @@ describe('DashboardItemsComponent', () => {
       expect(Array.isArray(component['observers'])).toBe(true);
     });
 
+    it('rebinds intersection observers when items arrive after init', () => {
+      jest.useFakeTimers();
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.hasMorePages = true;
+      component.ngOnInit();
+      component.ngAfterViewInit();
+
+      const setupSpy = jest.spyOn(
+        component as unknown as { setupIntersectionObservers: () => void },
+        'setupIntersectionObservers'
+      );
+      setupSpy.mockClear();
+
+      component.items = [createMockItem(1, 'App 1', 'I')];
+      component.ngOnChanges({
+        items: {
+          currentValue: component.items,
+          previousValue: [],
+          firstChange: false,
+          isFirstChange: () => false
+        }
+      });
+
+      jest.advanceTimersByTime(100);
+
+      expect(setupSpy).toHaveBeenCalled();
+      jest.useRealTimers();
+    });
+
     it('should emit loadMore event when sentinel visible', () => {
       Object.defineProperty(mockRouter, 'url', {
         get: () => '/public/dashboard'
@@ -395,6 +426,43 @@ describe('DashboardItemsComponent', () => {
       component['onSentinelVisible']();
 
       expect(loadMoreSpy).not.toHaveBeenCalled();
+    });
+
+    it('checkIncompleteRows does not emit loadMore when loading is true', () => {
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.items = Array.from({ length: 4 }, (_, i) =>
+        createMockItem(i + 1, `App${i + 1}`, 'E')
+      );
+      component.hasMorePages = true;
+      component.loadingMore = false;
+      component.loading = true;
+      component.ngOnInit();
+
+      const loadMoreSpy = jest.spyOn(component.loadMore, 'emit');
+      component['checkIncompleteRows']();
+
+      expect(loadMoreSpy).not.toHaveBeenCalled();
+    });
+
+    it('checkIncompleteRows emits loadMore when loading is false and row is incomplete', () => {
+      Object.defineProperty(mockRouter, 'url', {
+        get: () => '/public/dashboard'
+      });
+      component.items = Array.from({ length: 4 }, (_, i) =>
+        createMockItem(i + 1, `App${i + 1}`, 'E')
+      );
+      component.hasMorePages = true;
+      component.loadingMore = false;
+      component.loading = false;
+      component.ngOnInit();
+      component['currentColumns'] = 3;
+
+      const loadMoreSpy = jest.spyOn(component.loadMore, 'emit');
+      component['checkIncompleteRows']();
+
+      expect(loadMoreSpy).toHaveBeenCalled();
     });
 
     it('should cleanup observers on destroy', () => {

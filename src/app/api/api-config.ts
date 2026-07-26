@@ -38,3 +38,6 @@ export const URL_API_I18N_LANGUAGE = '';
 export const URL_API_I18N_MESSAGES_LIST = '/api/languages';
 export const URL_API_I18N_LANGUAGES_TRANSLATED = (lang: string) =>
   `/api/languages?lang=${lang}`;
+
+export const URL_API_CONFIGURATION_PARAMETERS =
+  BASE_URL + '/configuration-parameters';

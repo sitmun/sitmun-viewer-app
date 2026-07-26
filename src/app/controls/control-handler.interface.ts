@@ -102,6 +102,12 @@ export interface ControlHandler {
    * Called when control is no longer needed.
    */
   cleanup?(): void;
+
+  /**
+   * Light map-rebuild teardown. Must not restore patches (unlike cleanup).
+   * Called from AbstractMap.clearMap before the map DOM is replaced.
+   */
+  onMapClear?(map?: object): void;
 }
 
 /**

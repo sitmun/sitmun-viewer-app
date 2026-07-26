@@ -43,7 +43,7 @@ export class SitnaCapabilitiesInterceptor {
   /** Cached install promise; collapses concurrent `ensurePatched` calls into one install. */
   private installPromise: Promise<void> | null = null;
 
-  /** Restore callback returned by `meld.remove` for the installed advice (test-only `restore`). */
+  /** Restore callback returned by the installed advice handle (test-only `restore`). */
   private removeAdvice: (() => void) | null = null;
 
   /**

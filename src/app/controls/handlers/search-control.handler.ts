@@ -116,7 +116,7 @@ export class SearchControlHandler extends ControlHandlerBase {
 
       MapProto.__sitmunFeaturesAddPatched = true;
       this.patchManager.add(() => {
-        meld.remove(advice);
+        advice.remove();
         delete MapProto.__sitmunFeaturesAddPatched;
       });
     });

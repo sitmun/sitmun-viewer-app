@@ -1,589 +1,318 @@
 import { provideHttpClient } from '@angular/common/http';
 import {
-  provideHttpClientTesting,
-  HttpTestingController
+  HttpTestingController,
+  provideHttpClientTesting
 } from '@angular/common/http/testing';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { URL_AUTH_LOGOUT, URL_AUTH_PROXY } from '@api/api-config';
+import {
+  URL_API_USER_ACCOUNT,
+  URL_AUTH_LOGIN,
+  URL_AUTH_LOGOUT,
+  URL_AUTH_PROXY
+} from '@api/api-config';
 import { AUTH_CONFIG_DI } from '@auth/authentication.options';
-import { CustomAuthConfig } from '@config/app.config';
-import { TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { CustomAuthConfig, NavigationPath } from '@config/app.config';
+import { TranslateModule } from '@ngx-translate/core';
+import { NEVER } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
+import { SUPPRESS_AUTH_REDIRECT_ON_401 } from './auth-http-context';
 import { AuthenticationService } from './authentication.service';
 import { IndexedDbService } from './indexed-db.service';
-import { environment } from '../../../environments/environment';
 import { NotificationService } from '../../notifications/services/NotificationService';
 
-const PROXY_URL = environment.apiUrl + URL_AUTH_PROXY;
-const LOGOUT_URL = environment.apiUrl + URL_AUTH_LOGOUT;
-const USERNAME_KEY = 'sitmun_viewer_app_username';
-
-describe('AuthenticationService', () => {
+describe('AuthenticationService (FS-03)', () => {
   let service: AuthenticationService<unknown>;
+  let router: { navigate: jest.Mock; navigateByUrl: jest.Mock };
+  let indexedDbRemove: jest.Mock;
+  let indexedDbSet: jest.Mock;
   let httpMock: HttpTestingController;
-  let mockIndexedDb: jest.Mocked<IndexedDbService>;
-  let mockRouter: { navigateByUrl: jest.Mock; navigate: jest.Mock };
-  let mockSWContainer: { addEventListener: jest.Mock };
-  let mockNotification: jest.Mocked<Pick<NotificationService, 'warning' | 'error'>>;
-  let mockTranslate: { get: jest.Mock };
+  let notificationService: NotificationService;
+  let messageListener: ((event: MessageEvent) => void) | undefined;
+  let serviceWorkerController: object | null;
 
   beforeEach(() => {
-    jest.spyOn(console, 'debug').mockImplementation(() => {});
-
-    mockIndexedDb = {
-      init: jest.fn().mockResolvedValue(undefined),
-      set: jest.fn().mockResolvedValue(undefined),
-      remove: jest.fn().mockResolvedValue(undefined),
-      setConfig: jest.fn().mockResolvedValue(undefined)
-    } as Partial<jest.Mocked<IndexedDbService>> as jest.Mocked<IndexedDbService>;
-
-    mockRouter = {
-      navigateByUrl: jest.fn().mockResolvedValue(true),
-      navigate: jest.fn().mockResolvedValue(true)
+    router = {
+      navigate: jest.fn().mockResolvedValue(true),
+      navigateByUrl: jest.fn().mockResolvedValue(true)
     };
-
-    mockNotification = {
-      warning: jest.fn(),
-      error: jest.fn()
-    };
-
-    mockTranslate = {
-      get: jest.fn().mockImplementation((key: string) => of(key))
-    };
-
-    mockSWContainer = { addEventListener: jest.fn() };
-
+    indexedDbRemove = jest.fn();
+    indexedDbSet = jest.fn().mockResolvedValue(undefined);
+    serviceWorkerController = {};
     Object.defineProperty(navigator, 'serviceWorker', {
-      value: mockSWContainer,
       configurable: true,
-      writable: true
+      value: {
+        get controller() {
+          return serviceWorkerController;
+        },
+        addEventListener: jest.fn(
+          (type: string, listener: (event: MessageEvent) => void) => {
+            if (type === 'message') {
+              messageListener = listener;
+            }
+          }
+        )
+      }
     });
 
     TestBed.configureTestingModule({
-            providers: [
+      imports: [TranslateModule.forRoot()],
+      providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         AuthenticationService,
-        { provide: Router, useValue: mockRouter },
-        { provide: IndexedDbService, useValue: mockIndexedDb },
-        { provide: NotificationService, useValue: mockNotification },
-        { provide: TranslateService, useValue: mockTranslate },
-        { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig }
+        NotificationService,
+        { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig },
+        { provide: Router, useValue: router },
+        {
+          provide: IndexedDbService,
+          useValue: {
+            init: jest.fn().mockResolvedValue(undefined),
+            remove: indexedDbRemove,
+            set: indexedDbSet
+          }
+        }
       ]
     });
 
     service = TestBed.inject(AuthenticationService);
     httpMock = TestBed.inject(HttpTestingController);
+    notificationService = TestBed.inject(NotificationService);
+    sessionStorage.setItem(`${CustomAuthConfig.localStoragePrefix}_username`, 'tester');
   });
 
   afterEach(() => {
     httpMock.verify();
-    jest.clearAllMocks();
+    sessionStorage.clear();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  const postWorkerMessage = (
+    type: string,
+    source: object | null = serviceWorkerController
+  ): void => {
+    messageListener?.({
+      source,
+      data: { type }
+    } as unknown as MessageEvent);
+  };
+
+  /** BUG-050: IndexedDB cleanup must finish before login redirect. */
+  it('awaits clearSession before redirecting to login', fakeAsync(() => {
+    let sessionCleared = false;
+    indexedDbRemove.mockReturnValue(
+      new Promise<void>((resolve) => {
+        setTimeout(() => {
+          sessionCleared = true;
+          resolve();
+        }, 20);
+      })
+    );
+
+    service.clearSessionAndRedirectToLogin();
+
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+    expect(sessionCleared).toBe(false);
+
+    tick(20);
+
+    expect(sessionCleared).toBe(true);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(NavigationPath.Auth.Login);
+  }));
+
+  it('logout delegates to explicitLogout', () => {
+    const explicitLogoutSpy = jest
+      .spyOn(service, 'explicitLogout')
+      .mockImplementation(() => undefined);
+
+    service.logout();
+
+    expect(explicitLogoutSpy).toHaveBeenCalledTimes(1);
   });
 
-  describe('setupServiceWorkerListener', () => {
-    it('registers a message listener on navigator.serviceWorker', () => {
-      expect(mockSWContainer.addEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function)
+  it('explicitLogout ignores duplicate calls while logout is in flight', () => {
+    jest.spyOn(service, 'clearAuthentication').mockReturnValue(NEVER);
+
+    service.explicitLogout();
+    service.explicitLogout();
+
+    expect(service.clearAuthentication).toHaveBeenCalledTimes(1);
+  });
+
+  it('login POST sets SUPPRESS_AUTH_REDIRECT_ON_401 on the HTTP context', () => {
+    service
+      .login({ username: 'user', password: 'secret' })
+      .subscribe({ error: () => undefined });
+
+    const loginReq = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_LOGIN}`
+    );
+    expect(loginReq.request.context.get(SUPPRESS_AUTH_REDIRECT_ON_401)).toBe(
+      true
+    );
+
+    loginReq.flush(null, { status: 401, statusText: 'Unauthorized' });
+  });
+
+  it('coalesces passive 401 validation and preserves a valid session', () => {
+    service.validateSessionAfterUnauthorized();
+    service.validateSessionAfterUnauthorized();
+
+    const probe = httpMock.expectOne(
+      `${environment.apiUrl}${URL_API_USER_ACCOUNT}`
+    );
+    expect(probe.request.context.get(SUPPRESS_AUTH_REDIRECT_ON_401)).toBe(true);
+    probe.flush({ username: 'tester' });
+
+    expect(service.isLoggedIn()).toBe(true);
+    expect(indexedDbRemove).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('clears only client state when passive 401 validation confirms expiry', fakeAsync(() => {
+    indexedDbRemove.mockResolvedValue(undefined);
+
+    service.validateSessionAfterUnauthorized();
+    const probe = httpMock.expectOne(
+      `${environment.apiUrl}${URL_API_USER_ACCOUNT}`
+    );
+    probe.flush(null, { status: 401, statusText: 'Unauthorized' });
+    tick();
+
+    expect(service.isLoggedIn()).toBe(false);
+    expect(indexedDbRemove).toHaveBeenCalledWith('proxy_token');
+    expect(router.navigate).toHaveBeenCalledWith(
+      [NavigationPath.Auth.Login],
+      { queryParams: { 'session-expired': 'true' } }
+    );
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_LOGOUT}`);
+  }));
+
+  it.each([403, 503])(
+    'preserves the session when passive 401 validation returns %i',
+    (status) => {
+      service.validateSessionAfterUnauthorized();
+      const probe = httpMock.expectOne(
+        `${environment.apiUrl}${URL_API_USER_ACCOUNT}`
       );
-    });
+      probe.flush(null, { status, statusText: 'Probe failed' });
 
-    it('does not throw when serviceWorker is null (e.g. private browsing)', () => {
-      // Simulate navigator.serviceWorker present as property but null at runtime
-      Object.defineProperty(navigator, 'serviceWorker', {
-        value: null,
-        configurable: true,
-        writable: true
-      });
-
-      expect(() => {
-        TestBed.resetTestingModule();
-        TestBed.configureTestingModule({
-                    providers: [
-            provideHttpClient(),
-            provideHttpClientTesting(),
-            AuthenticationService,
-            { provide: Router, useValue: { navigateByUrl: jest.fn(), navigate: jest.fn() } },
-            { provide: IndexedDbService, useValue: mockIndexedDb },
-            { provide: NotificationService, useValue: mockNotification },
-            { provide: TranslateService, useValue: mockTranslate },
-            { provide: AUTH_CONFIG_DI, useValue: CustomAuthConfig }
-          ]
-        });
-        TestBed.inject(AuthenticationService);
-      }).not.toThrow();
-
-      // Restore for subsequent tests
-      Object.defineProperty(navigator, 'serviceWorker', {
-        value: mockSWContainer,
-        configurable: true,
-        writable: true
-      });
-    });
-  });
-
-  describe('AUTH_ERROR → refreshProxyToken', () => {
-    function getSwMessageHandler(): (event: MessageEvent) => void {
-      const call = mockSWContainer.addEventListener.mock.calls.find(
-        ([event]) => event === 'message'
-      );
-      return call![1] as (event: MessageEvent) => void;
+      expect(service.isLoggedIn()).toBe(true);
+      expect(indexedDbRemove).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
     }
+  );
 
-    function dispatchAuthError(): void {
-      const handler = getSwMessageHandler();
-      handler({ data: { type: 'AUTH_ERROR', timestamp: Date.now() } } as MessageEvent);
-    }
+  it('preserves the session when passive 401 validation has a network error', () => {
+    service.validateSessionAfterUnauthorized();
+    const probe = httpMock.expectOne(
+      `${environment.apiUrl}${URL_API_USER_ACCOUNT}`
+    );
+    probe.error(new ProgressEvent('error'));
 
-    it('calls URL_AUTH_PROXY once when AUTH_ERROR is received', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-
-      const req = httpMock.expectOne(PROXY_URL);
-      expect(req.request.method).toBe('POST');
-      req.flush({ proxy_token: 'new-token' });
-      tick();
-    }));
-
-    it('persists the new proxy_token via IndexedDbService.set on success', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-
-      const req = httpMock.expectOne(PROXY_URL);
-      req.flush({ proxy_token: 'refreshed-token' });
-      tick();
-
-      expect(mockIndexedDb.set).toHaveBeenCalledWith('proxy_token', 'refreshed-token');
-    }));
-
-    it('does not make a second HTTP request when refresh is already in flight', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-      // First request is in flight — second AUTH_ERROR should be a no-op
-      dispatchAuthError();
-      tick();
-
-      const requests = httpMock.match(PROXY_URL);
-      expect(requests.length).toBe(1);
-      requests[0].flush({ proxy_token: 'token' });
-      tick();
-    }));
-
-    it('clears the in-flight flag after a successful refresh so a later AUTH_ERROR can retry', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-      httpMock.expectOne(PROXY_URL).flush({ proxy_token: 'token-1' });
-      tick();
-
-      // Flag is now cleared — a new AUTH_ERROR should trigger a fresh request
-      dispatchAuthError();
-      tick();
-      const req = httpMock.expectOne(PROXY_URL);
-      req.flush({ proxy_token: 'token-2' });
-      tick();
-
-      expect(mockIndexedDb.set).toHaveBeenLastCalledWith('proxy_token', 'token-2');
-    }));
-
-    it('clears the in-flight flag after a failed refresh so a later AUTH_ERROR can retry', fakeAsync(() => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      dispatchAuthError();
-      tick();
-      httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-      tick();
-
-      expect(warn).toHaveBeenCalledWith(
-        '[Auth] Error refreshing proxy token:',
-        expect.any(Object)
-      );
-
-      // Flag should be cleared after error — next AUTH_ERROR should produce a new request
-      dispatchAuthError();
-      tick();
-      const req = httpMock.expectOne(PROXY_URL);
-      req.flush({ proxy_token: 'token-after-error' });
-      tick();
-
-      expect(mockIndexedDb.set).toHaveBeenCalledWith('proxy_token', 'token-after-error');
-    }));
-
-    it('does not persist a token when response has no proxy_token field', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-      httpMock.expectOne(PROXY_URL).flush({});
-      tick();
-
-      expect(mockIndexedDb.set).not.toHaveBeenCalled();
-    }));
-
-    it('clears the in-flight flag when IndexedDbService.set rejects', fakeAsync(() => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      mockIndexedDb.set.mockRejectedValue(new Error('IDB write failed'));
-
-      dispatchAuthError();
-      tick();
-      httpMock.expectOne(PROXY_URL).flush({ proxy_token: 'token' });
-      tick();
-
-      expect(warn).toHaveBeenCalledWith(
-        '[Auth] Error refreshing proxy token:',
-        expect.objectContaining({ message: 'IDB write failed' })
-      );
-
-      // Flag must be cleared so a later AUTH_ERROR can retry
-      dispatchAuthError();
-      tick();
-      const req = httpMock.expectOne(PROXY_URL);
-      req.flush({ proxy_token: 'token-2' });
-      tick();
-
-      expect(mockIndexedDb.set).toHaveBeenLastCalledWith('proxy_token', 'token-2');
-    }));
+    expect(service.isLoggedIn()).toBe(true);
+    expect(indexedDbRemove).not.toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  describe('refreshProxyToken - status-specific error handling', () => {
-    function getSwMessageHandler(): (event: MessageEvent) => void {
-      const call = mockSWContainer.addEventListener.mock.calls.find(
-        ([event]) => event === 'message'
-      );
-      return call![1] as (event: MessageEvent) => void;
-    }
+  it('refreshes the proxy token for a worker authentication message', () => {
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
 
-    function dispatchAuthError(): void {
-      const handler = getSwMessageHandler();
-      handler({ data: { type: 'AUTH_ERROR', timestamp: Date.now() } } as MessageEvent);
-    }
+    const refresh = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_PROXY}`
+    );
+    refresh.flush({ proxy_token: 'renewed-token' });
 
-    beforeEach(() => {
-      sessionStorage.setItem(USERNAME_KEY, 'testuser');
-    });
-
-    afterEach(() => {
-      sessionStorage.removeItem(USERNAME_KEY);
-    });
-
-    it('clears session and redirects to login with session-expired when proxy refresh returns 401', fakeAsync(() => {
-      dispatchAuthError();
-      tick();
-
-      httpMock
-        .expectOne(PROXY_URL)
-        .flush({}, { status: 401, statusText: 'Unauthorized' });
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(
-        [CustomAuthConfig.routes.loginPath],
-        { queryParams: { 'session-expired': 'true' } }
-      );
-    }));
-
-    it('does not clear session when proxy refresh returns 403', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      dispatchAuthError();
-      tick();
-
-      httpMock
-        .expectOne(PROXY_URL)
-        .flush({}, { status: 403, statusText: 'Forbidden' });
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBe('testuser');
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
-    }));
-
-    it('does not clear session when proxy refresh returns 5xx', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      dispatchAuthError();
-      tick();
-
-      httpMock
-        .expectOne(PROXY_URL)
-        .flush({}, { status: 500, statusText: 'Internal Server Error' });
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBe('testuser');
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
-    }));
-
-    it('does not clear session on network error', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      dispatchAuthError();
-      tick();
-
-      httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBe('testuser');
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
-    }));
-
-    it('shows a warning notification on 403', fakeAsync(() => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      dispatchAuthError();
-      tick();
-
-      httpMock
-        .expectOne(PROXY_URL)
-        .flush({}, { status: 403, statusText: 'Forbidden' });
-      tick();
-
-      expect(mockNotification.warning).toHaveBeenCalledWith(
-        'auth.proxyForbidden',
-        8000
-      );
-    }));
-
-    it('shows the 403 notification only once across multiple 403 responses', fakeAsync(() => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      for (let i = 0; i < 3; i++) {
-        dispatchAuthError();
-        tick();
-        httpMock
-          .expectOne(PROXY_URL)
-          .flush({}, { status: 403, statusText: 'Forbidden' });
-        tick();
-      }
-
-      expect(mockNotification.warning).toHaveBeenCalledTimes(1);
-    }));
-
-    it('shows a warning notification after 3 consecutive non-401 errors', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      for (let i = 0; i < 3; i++) {
-        dispatchAuthError();
-        tick();
-        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-        tick();
-      }
-
-      expect(mockNotification.warning).toHaveBeenCalledWith(
-        'auth.proxyUnavailable',
-        8000
-      );
-      expect(mockNotification.warning).toHaveBeenCalledTimes(1);
-    }));
-
-    it('does not show a warning notification before the 3rd consecutive error', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      for (let i = 0; i < 2; i++) {
-        dispatchAuthError();
-        tick();
-        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-        tick();
-      }
-
-      expect(mockNotification.warning).not.toHaveBeenCalled();
-    }));
-
-    it('resets the consecutive error counter on a successful refresh', fakeAsync(() => {
-      jest.spyOn(console, 'warn').mockImplementation(() => {});
-
-      // Two failures
-      for (let i = 0; i < 2; i++) {
-        dispatchAuthError();
-        tick();
-        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-        tick();
-      }
-
-      // Recovery
-      dispatchAuthError();
-      tick();
-      httpMock.expectOne(PROXY_URL).flush({ proxy_token: 'ok' });
-      tick();
-
-      // Two more failures — counter reset so notification should not fire yet
-      for (let i = 0; i < 2; i++) {
-        dispatchAuthError();
-        tick();
-        httpMock.expectOne(PROXY_URL).error(new ProgressEvent('network'));
-        tick();
-      }
-
-      expect(mockNotification.warning).not.toHaveBeenCalled();
-    }));
+    expect(indexedDbSet).toHaveBeenCalledWith(
+      'proxy_token',
+      'renewed-token'
+    );
   });
 
-  describe('clearAuthentication', () => {
-    beforeEach(() => {
-      sessionStorage.setItem(USERNAME_KEY, 'testuser');
-    });
+  it('coalesces duplicate worker authentication messages', () => {
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
 
-    afterEach(() => {
-      sessionStorage.removeItem(USERNAME_KEY);
-    });
+    const refresh = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_PROXY}`
+    );
+    refresh.flush({ proxy_token: 'renewed-token' });
 
-    it('sends POST to the logout URL', fakeAsync(() => {
-      let completed = false;
-      service.clearAuthentication().subscribe({ complete: () => { completed = true; } });
-      tick();
-
-      const req = httpMock.expectOne(LOGOUT_URL);
-      expect(req.request.method).toBe('POST');
-      req.flush(null);
-      tick();
-
-      expect(completed).toBe(true);
-    }));
-
-    it('clears sessionStorage username after successful logout', fakeAsync(() => {
-      service.clearAuthentication().subscribe();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-    }));
-
-    it('removes proxy_token from IndexedDbService after successful logout', fakeAsync(() => {
-      service.clearAuthentication().subscribe();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
-
-      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
-    }));
-
-    it('does not navigate to login after successful logout', fakeAsync(() => {
-      service.clearAuthentication().subscribe();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
-
-      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
-      expect(mockRouter.navigate).not.toHaveBeenCalled();
-    }));
-
-    it('still clears local state when backend logout returns 4xx', fakeAsync(() => {
-      let capturedError: unknown;
-      service.clearAuthentication().subscribe({
-        error: (err: unknown) => { capturedError = err; }
-      });
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 403, statusText: 'Forbidden' });
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
-      expect(capturedError).toBeDefined();
-    }));
-
-    it('still clears local state when backend logout returns 5xx', fakeAsync(() => {
-      let capturedError: unknown;
-      service.clearAuthentication().subscribe({
-        error: (err: unknown) => { capturedError = err; }
-      });
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
-      expect(capturedError).toBeDefined();
-    }));
-
-    it('still clears local state on network error and emits the error', fakeAsync(() => {
-      let capturedError: unknown;
-      service.clearAuthentication().subscribe({
-        error: (err: unknown) => { capturedError = err; }
-      });
-      tick();
-      httpMock.expectOne(LOGOUT_URL).error(new ProgressEvent('network'));
-      tick();
-
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-      expect(mockIndexedDb.remove).toHaveBeenCalledWith('proxy_token');
-      expect(capturedError).toBeDefined();
-    }));
-
-    it('completes only after IndexedDB proxy_token removal has resolved', fakeAsync(() => {
-      let removeResolve!: () => void;
-      mockIndexedDb.remove.mockReturnValue(new Promise<void>(res => { removeResolve = res; }));
-
-      let completed = false;
-      service.clearAuthentication().subscribe({ complete: () => { completed = true; } });
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
-
-      expect(completed).toBe(false);
-
-      removeResolve();
-      tick();
-
-      expect(completed).toBe(true);
-    }));
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+    expect(indexedDbSet).toHaveBeenCalledTimes(1);
   });
 
-  describe('logout', () => {
-    beforeEach(() => {
-      sessionStorage.setItem(USERNAME_KEY, 'testuser');
-    });
+  it('clears client state when the proxy refresh endpoint returns 401', fakeAsync(() => {
+    indexedDbRemove.mockResolvedValue(undefined);
 
-    afterEach(() => {
-      sessionStorage.removeItem(USERNAME_KEY);
-    });
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
+    const refresh = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_PROXY}`
+    );
+    refresh.flush(null, { status: 401, statusText: 'Unauthorized' });
+    tick();
 
-    it('sends POST to the logout URL', fakeAsync(() => {
-      service.logout();
-      tick();
+    expect(service.isLoggedIn()).toBe(false);
+    expect(indexedDbRemove).toHaveBeenCalledWith('proxy_token');
+    expect(router.navigate).toHaveBeenCalledWith(
+      [NavigationPath.Auth.Login],
+      { queryParams: { 'session-expired': 'true' } }
+    );
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_LOGOUT}`);
+  }));
 
-      const req = httpMock.expectOne(LOGOUT_URL);
-      expect(req.request.method).toBe('POST');
-      req.flush(null);
-      tick();
-    }));
+  it('ignores worker messages from a source other than the controller', () => {
+    postWorkerMessage('PROXY_AUTH_REQUIRED', {});
 
-    it('navigates to loginPath after successful logout', fakeAsync(() => {
-      service.logout();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+  });
 
-      expect(mockRouter.navigateByUrl).toHaveBeenCalledWith(
-        CustomAuthConfig.routes.loginPath
-      );
-    }));
+  it('ignores worker messages when the page has no controller', () => {
+    serviceWorkerController = null;
 
-    it('clears sessionStorage on successful logout', fakeAsync(() => {
-      service.logout();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null);
-      tick();
+    postWorkerMessage('PROXY_AUTH_REQUIRED', {});
 
-      expect(sessionStorage.getItem(USERNAME_KEY)).toBeNull();
-    }));
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+  });
 
-    it('shows error notification and does not navigate when clearAuthentication fails', fakeAsync(() => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-      service.logout();
-      tick();
-      httpMock.expectOne(LOGOUT_URL).flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick();
+  it('does not refresh a proxy token while explicit logout is in flight', () => {
+    indexedDbRemove.mockResolvedValue(undefined);
+    service.logout();
+    const logout = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_LOGOUT}`
+    );
 
-      expect(mockRouter.navigateByUrl).not.toHaveBeenCalled();
-      expect(mockNotification.error).toHaveBeenCalled();
-    }));
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
+
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+    logout.flush(null);
+  });
+
+  it('ignores a late worker authentication message after client cleanup', () => {
+    sessionStorage.clear();
+
+    postWorkerMessage('PROXY_AUTH_REQUIRED');
+
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+  });
+
+  it('warns without refreshing when the worker reports proxy denial', () => {
+    const warning = jest.spyOn(notificationService, 'warning');
+
+    postWorkerMessage('PROXY_ACCESS_DENIED');
+
+    httpMock.expectNone(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+    expect(warning).toHaveBeenCalledTimes(1);
+  });
+
+  it('deduplicates repeated proxy denial warnings', () => {
+    const warning = jest.spyOn(notificationService, 'warning');
+
+    postWorkerMessage('PROXY_ACCESS_DENIED');
+    postWorkerMessage('PROXY_ACCESS_DENIED');
+
+    expect(warning).toHaveBeenCalledTimes(1);
   });
 });

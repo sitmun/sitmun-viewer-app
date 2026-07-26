@@ -15,10 +15,49 @@ describe('LegendControlHandler', () => {
   let mockAppConfigService: jest.Mocked<AppConfigService>;
   let mockUIStateService: jest.Mocked<UIStateService>;
   let mockAppCfg: AppCfg;
+  let TC: {
+    layer: {
+      Raster: {
+        prototype: {
+          getLegend: jest.Mock;
+          getInfo?: jest.Mock;
+          __sitmunLegendUrlFallback?: boolean;
+        };
+      };
+    };
+    control: {
+      Legend: {
+        prototype: {
+          updateLayerTree: jest.Mock;
+          removeLayer: jest.Mock;
+          div?: HTMLElement;
+          __sitmunLegendTreeRetry?: boolean;
+        };
+      };
+    };
+  };
 
   beforeEach(() => {
+    TC = {
+      layer: {
+        Raster: {
+          prototype: {
+            getLegend: jest.fn()
+          }
+        }
+      },
+      control: {
+        Legend: {
+          prototype: {
+            updateLayerTree: jest.fn().mockResolvedValue(undefined),
+            removeLayer: jest.fn()
+          }
+        }
+      }
+    };
+
     mockSitnaApi = {
-      getTC: jest.fn(),
+      getTC: jest.fn().mockReturnValue(TC),
       getSITNA: jest.fn().mockReturnValue({} as any),
       getTCProperty: jest.fn(),
       isReady: jest.fn().mockReturnValue(true)
@@ -37,7 +76,7 @@ describe('LegendControlHandler', () => {
     } as Partial<jest.Mocked<UIStateService>> as jest.Mocked<UIStateService>;
 
     TestBed.configureTestingModule({
-            providers: [
+      providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         LegendControlHandler,
@@ -145,28 +184,117 @@ describe('LegendControlHandler', () => {
     });
   });
 
-  describe('loadPatches()', () => {
-    it('should resolve successfully with context', async () => {
+  describe('loadPatches() LegendURL fallback (#164)', () => {
+    it('falls back to getInfo LegendURL when native getLegend rejects', async () => {
+      TC.layer.Raster.prototype.getLegend.mockRejectedValue(
+        new Error('The request not allowed.')
+      );
+
       await handler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['CAE1M_141A'];
+      layer.getInfo = jest.fn().mockReturnValue({
+        legend: [{ src: 'http://127.0.0.1:18093/legend?layer=CAE1M_141A' }]
+      });
+
+      const result = await layer.getLegend(true);
+      expect(result).toEqual([
+        [
+          {
+            layerName: 'CAE1M_141A',
+            src: 'http://127.0.0.1:18093/legend?layer=CAE1M_141A'
+          }
+        ]
+      ]);
+      expect(layer.getInfo).toHaveBeenCalledWith('CAE1M_141A');
     });
 
-    it('should resolve immediately', async () => {
-      const start = Date.now();
-      await handler.loadPatches(mockAppCfg);
-      const duration = Date.now() - start;
+    it('falls back when native getLegend returns empty entries', async () => {
+      TC.layer.Raster.prototype.getLegend.mockResolvedValue([null, null]);
 
-      expect(duration).toBeLessThan(10); // Should be instant
+      await handler.loadPatches(mockAppCfg);
+
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['L1'];
+      layer.getInfo = jest.fn().mockReturnValue({
+        legend: [{ src: 'http://example.com/legend.png' }]
+      });
+
+      const result = await layer.getLegend(false);
+      expect(result).toEqual([
+        [{ layerName: 'L1', src: 'http://example.com/legend.png' }]
+      ]);
+    });
+
+    it('keeps native getLegend result when it has usable entries', async () => {
+      const native = [[{ layerName: 'L1', src: 'data:image/png;base64,abc' }]];
+      TC.layer.Raster.prototype.getLegend.mockResolvedValue(native);
+
+      await handler.loadPatches(mockAppCfg);
+
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.availableNames = ['L1'];
+      layer.getInfo = jest.fn();
+
+      const result = await layer.getLegend(true);
+      expect(result).toBe(native);
+      expect(layer.getInfo).not.toHaveBeenCalled();
+    });
+
+    it('restores prototype and guard marker on cleanup', async () => {
+      const original = TC.layer.Raster.prototype.getLegend;
+      const originalTree = TC.control.Legend.prototype.updateLayerTree;
+      await handler.loadPatches(mockAppCfg);
+      expect(TC.layer.Raster.prototype.getLegend).not.toBe(original);
+      expect(TC.layer.Raster.prototype.__sitmunLegendUrlFallback).toBe(true);
+      expect(TC.control.Legend.prototype.updateLayerTree).not.toBe(originalTree);
+      expect(TC.control.Legend.prototype.__sitmunLegendTreeRetry).toBe(true);
+
+      handler.cleanup();
+
+      expect(TC.layer.Raster.prototype.getLegend).toBe(original);
+      expect(TC.layer.Raster.prototype.__sitmunLegendUrlFallback).toBeUndefined();
+      expect(TC.control.Legend.prototype.updateLayerTree).toBe(originalTree);
+      expect(TC.control.Legend.prototype.__sitmunLegendTreeRetry).toBeUndefined();
+    });
+
+    it('retries updateLayerTree when LegendURL exists but DOM node is missing', async () => {
+      const branch = document.createElement('ul');
+      branch.className = 'tc-ctl-legend-branch';
+      const div = document.createElement('div');
+      div.appendChild(branch);
+      TC.control.Legend.prototype.div = div;
+      const updateMock = TC.control.Legend.prototype.updateLayerTree;
+      updateMock.mockResolvedValue(undefined);
+
+      await handler.loadPatches(mockAppCfg);
+
+      const legend = Object.create(TC.control.Legend.prototype);
+      legend.div = div;
+      legend.removeLayer = TC.control.Legend.prototype.removeLayer;
+
+      const layer = {
+        id: 'wl-1',
+        isBase: false,
+        options: {},
+        availableNames: ['L1'],
+        getInfo: jest.fn().mockReturnValue({
+          legend: [{ src: 'http://example.com/legend.png' }]
+        })
+      };
+
+      await legend.updateLayerTree(layer, true);
+
+      expect(TC.control.Legend.prototype.removeLayer).toHaveBeenCalledWith(layer);
+      expect(updateMock).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Integration', () => {
     it('should handle full lifecycle', async () => {
-      // Load patches (no-op for native control)
       await handler.loadPatches(mockAppCfg);
 
-      // Build config
       const task: AppTasks = {
         'ui-control': 'sitna.legend',
         parameters: { custom: 'value' }

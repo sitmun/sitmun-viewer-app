@@ -1,0 +1,28 @@
+{
+  "/backend": {
+    "target": "http://localhost:18080",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/backend": ""
+    },
+    "headers": {
+      "X-Forwarded-Host": "localhost:4400",
+      "X-Forwarded-Proto": "http",
+      "X-Forwarded-Prefix": "/backend"
+    }
+  },
+  "/middleware": {
+    "target": "http://localhost:18082",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/middleware": ""
+    },
+    "headers": {
+      "X-Forwarded-Host": "localhost:4400",
+      "X-Forwarded-Proto": "http",
+      "X-Forwarded-Prefix": "/middleware"
+    }
+  }
+}

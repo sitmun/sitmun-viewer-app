@@ -76,7 +76,6 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentLang = this.languageService.getCurrentLanguage();
-    this.loadLanguages();
     this.updateErrorCount();
 
     // Subscribe to error changes

@@ -232,16 +232,83 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           });
       };
 
-      const setRightPanelView = function (isCollapsed) {
+      const isCapasPanel = function (panel) {
+        return (
+          panel === rightPanel ||
+          (panel && panel.classList.contains('tc-tools-panel'))
+        );
+      };
+
+      const isOverviewPanel = function (panel) {
+        return (
+          panel === ovPanel ||
+          (panel && panel.classList.contains('tc-ovmap-panel'))
+        );
+      };
+
+      /*
+       * Opening the overview (focus / scroll-into-view) can set .tc-map
+       * scrollTop even with overflow:hidden; absolute chrome then shifts.
+       * Clamp scroll — the map div is not a scroll surface in this layout.
+       */
+      const resetMapScroll = function () {
+        if (!map.div) {
+          return;
+        }
+        if (map.div.scrollTop) {
+          map.div.scrollTop = 0;
+        }
+        if (map.div.scrollLeft) {
+          map.div.scrollLeft = 0;
+        }
+      };
+      map.div.addEventListener(
+        'scroll',
+        function () {
+          resetMapScroll();
+        },
+        { passive: true }
+      );
+
+      /*
+       * Overview OL map must not run while its drawer is off-screen: enable()
+       * calls updateSize(); with width/height 0 the situation map goes blank /
+       * out of sync (SITNA bug 23855). Match responsive layout: enable only
+       * after the 0.3s slide completes.
+       */
+      const syncOverviewMapControl = function (overviewCollapsed) {
+        resetMapScroll();
+        if (!ovmap) {
+          return;
+        }
+        if (overviewCollapsed) {
+          ovmap.disable();
+          return;
+        }
+        setTimeout(function () {
+          ovmap.enable();
+          resetMapScroll();
+        }, 300);
+      };
+
+      const setRightPanelView = function (capasCollapsed) {
         toggleControlsVisibility(rightToolControls, true);
-        if (ovmap) {
-          if (isCollapsed) {
+        if (!capasCollapsed && ovPanel) {
+          // Capas covers the overview dock: collapse + stop OL sync.
+          ovPanel.classList.add(rcollapsedClass);
+          if (ovmap) {
             ovmap.disable();
-          } else {
-            ovmap.enable();
           }
         }
       };
+
+      // Default: overview drawer collapsed; control disabled until opened.
+      if (ovPanel) {
+        ovPanel.classList.add(rcollapsedClass);
+      }
+      if (ovmap) {
+        ovmap.disable();
+      }
 
       if (rightPanel) {
         const initialCollapsed =
@@ -261,7 +328,11 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             const tab = e.target;
             const panel = tab.parentElement;
             const isCollapsed = panel.classList.toggle(rcollapsedClass);
-            setRightPanelView(isCollapsed);
+            if (isCapasPanel(panel)) {
+              setRightPanelView(isCollapsed);
+            } else if (isOverviewPanel(panel)) {
+              syncOverviewMapControl(isCollapsed);
+            }
           });
         });
 
@@ -376,20 +447,35 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
         }
       };
 
+      // Capas + Capas disponibles share the tools column (splitter); keep them
+      // out of mutual accordion exclusion. BMS / click-tools still accordion.
+      const isLayerStackControl = function (ctl) {
+        const div = ctl && ctl.div;
+        if (!div) {
+          return false;
+        }
+        return (
+          div.id === 'tc-slot-wlm' ||
+          div.id === 'tc-slot-toc' ||
+          div.classList.contains('tc-ctl-wlm') ||
+          div.classList.contains('tc-ctl-lcat')
+        );
+      };
+
       map
         .on(SITNA.Consts.event.CONTROLHIGHLIGHT, function (e) {
           const ctl = e.control;
           toggleCollapsed.call(ctl, false);
 
           if (map.layout && map.layout.accordion) {
-            // Hacemos que solamente un control del panel de herramientas esté desplegado cada vez
             const toolPanelControls = map.controls
               .filter((ctl) => !ctl.containerControl)
               .filter((ctl) => ctl.div && toolsPanel.contains(ctl.div));
             if (toolPanelControls.includes(ctl)) {
               toolPanelControls
                 .filter((c) => c !== ctl)
-                .forEach((ctl) => ctl.unhighlight());
+                .filter((c) => !isLayerStackControl(c))
+                .forEach((peer) => peer.unhighlight());
             }
           }
         })
@@ -443,8 +529,14 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
           }
         }
 
-        const ovmap = map.getControlsByClass('TC.control.OverviewMap')[0];
-        if (ovmap && rightPanel) {
+        const ovmapLoaded = map.getControlsByClass('TC.control.OverviewMap')[0];
+        if (ovmapLoaded) {
+          ovmapLoaded.loaded(function () {
+            // Start disabled (drawer collapsed); enable only when user opens it.
+            ovmapLoaded.disable();
+          });
+        }
+        if (rightPanel) {
           const isCollapsed =
             rightPanel.classList.contains(rcollapsedClass) ||
             rightPanel.classList.contains(TC.Consts.classes.COLLAPSED);
@@ -458,6 +550,26 @@ document.querySelectorAll('.tc-map').forEach(function (elm) {
             .querySelector('.' + toc.CLASS + '-content')
             .insertAdjacentElement('afterend', mfi.div);
           mfi.containerControl = toc;
+        }
+
+        // Capas starts collapsed (header only). Catalog stays open. Accordion
+        // exclusion keeps Capas from collapsing the catalog when Capas is opened.
+        const layerCatalog = map.getControlsByClass('TC.control.LayerCatalog')[0];
+        if (toc) {
+          if (typeof toc.isHighlighted === 'function' && toc.isHighlighted()) {
+            toc.unhighlight();
+          } else if (toc.div) {
+            toc.div.classList.add(SITNA.Consts.classes.COLLAPSED);
+          }
+        }
+        if (layerCatalog && layerCatalog.div) {
+          layerCatalog.div.classList.remove(SITNA.Consts.classes.COLLAPSED);
+          if (
+            typeof layerCatalog.isHighlighted === 'function' &&
+            !layerCatalog.isHighlighted()
+          ) {
+            layerCatalog.highlight();
+          }
         }
 
         //Aplicar clases CSS cuando se haga click en elementos definidos por configuración

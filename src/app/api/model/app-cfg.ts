@@ -57,6 +57,8 @@ export interface AppBackground {
   id: string;
   title: string;
   thumbnail: string;
+  /** Application-background order from admin (`ApplicationBackground.order` / `ABC_ORDER`). */
+  order?: number;
 }
 export interface AppGroup {
   id?: string;
@@ -116,6 +118,12 @@ export interface AppService {
   id: string;
   url: string;
   type: string;
+  /** Profile service title; may be language-keyed after i18n expansion. */
+  title?: unknown;
+  /** Profile service description; may be language-keyed after i18n expansion. */
+  description?: unknown;
+  /** Profile service abstract; used when description is absent. */
+  abstract?: unknown;
   parameters: AppParameters;
 }
 
@@ -140,12 +148,23 @@ export interface AppTree {
   title: string;
   image: string | null;
   rootNode: string;
+  /** Association order within the application (lower = higher priority / default). */
+  order?: number;
   nodes: any;
 }
 
 export interface AppNodeInfo {
   title: string;
-  resource: string;
+  resource?: string;
+  action?: string;
+  loadData?: boolean;
+  loadByDefault?: boolean;
+  /**
+   * When true on a cartography leaf, viewer shows the SITNA-style GFI `i`
+   * marker. Missing/false: no marker. Admin gates enabling this on layer
+   * {@code queryableFeatureEnabled}.
+   */
+  queryableActive?: boolean;
   isRadio: boolean;
   children: string[];
   order: number;

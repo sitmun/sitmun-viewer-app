@@ -13,14 +13,14 @@ import { Router } from '@angular/router';
 
 import { CommonService, DashboardSuggestion } from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
   switchMap,
   takeUntil,
   filter,
-  tap
+  finalize
 } from 'rxjs/operators';
 
 export interface SuggestionOption {
@@ -55,16 +55,18 @@ export class DashboardSearchboxComponent implements OnInit, OnDestroy {
         debounceTime(300),
         distinctUntilChanged(),
         filter((value) => typeof value === 'string'),
-        tap((query: string) => {
-          this.keywords.emit(query.trim());
-        }),
         switchMap((query: string) => {
           if (query.trim().length < 2) {
+            this.loading = false;
             this.suggestions = [];
-            return [];
+            return of({ applications: [], territories: [] });
           }
           this.loading = true;
-          return this.commonService.fetchDashboardSuggestions(query);
+          return this.commonService.fetchDashboardSuggestions(query).pipe(
+            finalize(() => {
+              this.loading = false;
+            })
+          );
         }),
         takeUntil(this.destroy$)
       )
@@ -133,8 +135,9 @@ export class DashboardSearchboxComponent implements OnInit, OnDestroy {
   }
 
   handleSubmit(): void {
-    const value = this.searchControl.value || '';
-    this.keywords.emit(value);
+    const raw = this.searchControl.value;
+    const query = typeof raw === 'string' ? raw.trim() : '';
+    this.keywords.emit(query);
     this.closeSuggestionsPanel();
   }
 

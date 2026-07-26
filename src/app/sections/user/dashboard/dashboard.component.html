@@ -8,13 +8,13 @@
     {{ 'dashboardPage.loadError' | translate }}
   </p>
 
-  <div id="research" *ngIf="!loading && !loadError && allItems.length > 0">
+  <div id="research" *ngIf="!loadError && (allItems.length > 0 || searchKeyword.length >= 2)">
     <app-dashboard-searchbox
       (keywords)="onKeywordsSearch($event)" />
   </div>
 
   <p
-    *ngIf="!loading && !loadError && allItems.length > 0 && items.length === 0"
+    *ngIf="!loadError && searchKeyword.length >= 2 && items.length === 0 && !loadingMore"
     class="dashboard-status"
     role="status">
     {{ 'dashboardPage.noSearchResults' | translate }}
@@ -25,5 +25,6 @@
     [items]="items"
     [hasMorePages]="hasMorePages"
     [loadingMore]="loadingMore"
+    [loading]="loading"
     (loadMore)="loadMoreItems()" />
 </div>

@@ -7,6 +7,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
 
+import { NotificationService } from '../../../../notifications/services/NotificationService';
+
 @Component({
   standalone: false,
   selector: 'app-login-modal',
@@ -23,7 +25,8 @@ export class LoginModalComponent extends BaseModal {
     private modalRef: OpenModalRef,
     private authenticationService: AuthenticationService<unknown>,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private notificationService: NotificationService
   ) {
     super();
     this.authenticationRequest = {
@@ -52,8 +55,9 @@ export class LoginModalComponent extends BaseModal {
         },
         error: (error) => {
           if (error.status && error.status === 401) {
-            this.translate.get('loginPage.incorrectLogin').subscribe(() => {
-              // Translation retrieved but not used (commented out alert)
+            this.authenticationRequest.password = '';
+            this.translate.get('loginPage.incorrectLogin').subscribe((message) => {
+              this.notificationService.error(message);
             });
           }
         }
