@@ -1,12 +1,12 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { AppCfg } from '@api/model/app-cfg';
+import { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-import { environment } from '../../environments/environment';
 import { LanguageService } from './language.service';
+import { environment } from '../../environments/environment';
 
 /**
  * Represents a child task inside a More Info Advanced (MIA) task.
@@ -16,8 +16,8 @@ export interface MiaChildTask {
   name: string;
   order: number;
   childType: 'query' | 'template' | 'documentExport';
-  parameters: Record<string, any> | null;
-  childTaskParameters?: Record<string, Record<string, any>> | null;
+  parameters: Record<string, unknown> | null;
+  childTaskParameters?: Record<string, Record<string, unknown>> | null;
 }
 
 /**
@@ -44,9 +44,18 @@ export interface TemplateExportResult {
 }
 
 export interface MiaExportAction {
-  taskId: number | null;
-  output: string;
+  taskId: number;
+  output: 'pdf';
   label?: string | null;
+}
+
+export interface TemplateExportRequest {
+  template: string;
+  output: 'pdf';
+  taskId: number;
+  templateTaskId?: number | null;
+  applicationId: number;
+  territoryId: number;
 }
 
 interface MiaRenderResponse {
@@ -55,6 +64,15 @@ interface MiaRenderResponse {
 
 export interface MiaViewerContext {
   featureBbox?: number[] | null;
+  applicationId: number;
+  territoryId: number;
+}
+
+interface MiaConfigTask extends AppTasks {
+  downloadFormat?: unknown;
+  filename?: unknown;
+  mimeType?: unknown;
+  output?: unknown;
 }
 
 /**
@@ -97,7 +115,7 @@ export class MoreInfoAdvancedService {
       return;
     }
 
-    config.tasks.forEach((task: any) => {
+    config.tasks.forEach((task) => {
       if (this.isMiaControlTask(task)) {
         this.hasMiaControlTask = true;
       }
@@ -113,7 +131,7 @@ export class MoreInfoAdvancedService {
       }
     });
 
-    config.tasks.forEach((task: any) => {
+    config.tasks.forEach((task) => {
       const exportAction = this.parseExportTask(task);
       if (!exportAction) {
         return;
@@ -154,21 +172,24 @@ export class MoreInfoAdvancedService {
       ...(this.exportActionsByCartography.get(key) || [])
     ];
 
-    return Array.from(new Map(actions.map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])).values());
+    return Array.from(new Map(actions.map((action) => [`${action.taskId}:${action.output}`, action])).values());
   }
 
   renderMiaTasks(
     miaTasks: MiaTask[],
-    featureData: any,
-    viewerContext: MiaViewerContext = {}
+    featureData: unknown,
+    viewerContext: MiaViewerContext
   ): Observable<MiaRenderedTask[]> {
     const neededFields = this.extractNeededFields(miaTasks);
-    const body: Record<string, any> = {
-      miaTaskIds: miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite),
+    const miaTaskIds = miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite);
+    const body: Record<string, unknown> = {
+      miaTaskIds,
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
-    if (Array.isArray(viewerContext.featureBbox) && viewerContext.featureBbox.length >= 4) {
-      body['featureBbox'] = viewerContext.featureBbox.slice(0, 4);
+    body['applicationId'] = viewerContext.applicationId;
+    body['territoryId'] = viewerContext.territoryId;
+    if (this.isValidBbox(viewerContext.featureBbox)) {
+      body['featureBbox'] = viewerContext.featureBbox;
     }
 
     const lang = this.languageService.getCurrentLanguage()?.trim();
@@ -179,37 +200,31 @@ export class MoreInfoAdvancedService {
       body,
       options
     ).pipe(
-      map((response) => response.tasks || []),
-      catchError((error) => of([{
-        taskId: 0,
-        title: '',
-        html: '',
-        error: error.message || 'MIA rendering failed'
-      }]))
+      map((response) => Array.isArray(response.tasks) ? response.tasks : []),
+      catchError((error: unknown) => {
+        const errorMessage = error != null && typeof error === 'object' && 'message' in error
+          ? error.message
+          : null;
+        const message = typeof errorMessage === 'string' && errorMessage.length > 0
+          ? errorMessage
+          : 'MIA rendering failed';
+        return of(miaTaskIds.map((taskId) => ({ taskId, title: '', html: '', error: message })));
+      })
     );
   }
 
   /**
    * Exports a rendered template to a downloadable file.
    *
-   * @param template  The rendered HTML content of the template (for PDF output).
-   * @param output    The desired output format: "pdf", "xml", etc.
-   * @param taskId    Optional template task id used by the backend to validate enabled outputs.
+   * @param request Export content and current authorized profile context.
    * @returns An Observable that emits the raw Blob for the browser to download.
    */
-  exportTemplate(
-    template: string,
-    output: string,
-    taskId?: number | null,
-    templateTaskId?: number | null
-  ): Observable<TemplateExportResult> {
+  exportTemplate(request: TemplateExportRequest): Observable<TemplateExportResult> {
     return this.http.post(
       `${environment.apiUrl}/api/tasks/template/export`,
       this.buildTemplateExportXml({
-        template,
-        output,
-        taskId: taskId ?? undefined,
-        templateTaskId: templateTaskId ?? undefined
+        ...request,
+        templateTaskId: request.templateTaskId ?? undefined
       }),
       {
         headers: MoreInfoAdvancedService.TEMPLATE_EXPORT_HEADERS,
@@ -244,17 +259,21 @@ export class MoreInfoAdvancedService {
   }
 
   private buildTemplateExportXml(request: {
-    output: string;
-    template?: string;
-    taskId?: number;
+    output: 'pdf';
+    template: string;
+    taskId: number;
     templateTaskId?: number;
+    applicationId: number;
+    territoryId: number;
   }): string {
     const output = this.escapeXml(request.output);
-    const template = request.template == null ? '' : `<template><![CDATA[${this.escapeCdata(request.template)}]]></template>`;
-    const taskId = request.taskId == null ? '' : `<taskId>${request.taskId}</taskId>`;
+    const template = `<template><![CDATA[${this.escapeCdata(request.template)}]]></template>`;
+    const taskId = `<taskId>${request.taskId}</taskId>`;
     const templateTaskId = request.templateTaskId == null ? '' : `<templateTaskId>${request.templateTaskId}</templateTaskId>`;
+    const applicationId = `<applicationId>${request.applicationId}</applicationId>`;
+    const territoryId = `<territoryId>${request.territoryId}</territoryId>`;
 
-    return `<templateExportRequest><output>${output}</output>${template}${taskId}${templateTaskId}</templateExportRequest>`;
+    return `<templateExportRequest><output>${output}</output>${template}${taskId}${templateTaskId}${applicationId}${territoryId}</templateExportRequest>`;
   }
 
   private escapeXml(value: string): string {
@@ -301,7 +320,7 @@ export class MoreInfoAdvancedService {
                 if (typeof val === 'string') {
                   fields.add(val);
                 } else if (val && typeof val === 'object' && 'value' in val) {
-                  fields.add(String((val as any).value));
+                  fields.add(String(val.value));
                 }
               }
             }
@@ -322,13 +341,13 @@ export class MoreInfoAdvancedService {
    * If null (template children present), keep all fields except injected HTML and very long strings.
    */
   private filterFeatureParameters(
-    featureData: any,
+    featureData: unknown,
     neededFields: Set<string> | null
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     if (!featureData || typeof featureData !== 'object') {
       return {};
     }
-    const filtered: Record<string, any> = {};
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(featureData)) {
       // Always skip MoreInfo injected HTML fields
       if (typeof value === 'string' && value.includes('sitmun-more-info-')) {
@@ -355,52 +374,53 @@ export class MoreInfoAdvancedService {
     return match ? Number(match[0].replace('/', '')) : Number(id);
   }
 
-  private parseMiaTask(task: any): MiaTask | null {
-    const params = task.parameters || {};
-    const cartographyId = task.cartographyId || params.cartographyId;
+  private parseMiaTask(task: AppTasks): MiaTask | null {
+    const params = this.asRecord(task.parameters);
+    const cartographyId = task.cartographyId || params['cartographyId'];
     if (!cartographyId) {
       return null;
     }
 
     const visualizationMode =
-      params.visualizationMode === 'scroll' ? 'scroll' : 'tabs';
+      params['visualizationMode'] === 'scroll' ? 'scroll' : 'tabs';
 
-    const rawIncluded: any[] = Array.isArray(params.includedTasks)
-      ? params.includedTasks
+    const rawIncluded = Array.isArray(params['includedTasks'])
+      ? params['includedTasks']
       : [];
     const includedTasks: MiaChildTask[] = rawIncluded
-      .map((child: any) => {
-        const childType = this.resolveChildType(child?.childType);
+      .map((rawChild) => {
+        const child = this.asRecord(rawChild);
+        const childType = this.resolveChildType(child['childType']);
         return {
-          id: child.id || '',
-          name: child.name || '',
-          order: typeof child.order === 'number' ? child.order : 999,
+          id: typeof child['id'] === 'string' ? child['id'] : '',
+          name: typeof child['name'] === 'string' ? child['name'] : '',
+          order: typeof child['order'] === 'number' ? child['order'] : 999,
           childType,
-          parameters: child.parameters || null,
-          childTaskParameters: child.childTaskParameters || null,
+          parameters: this.asOptionalRecord(child['parameters']),
+          childTaskParameters: this.asNestedRecord(child['childTaskParameters']),
         };
       })
       .sort((a, b) => a.order - b.order);
 
     return {
       id: task.id || '',
-      name: task.name || params.title || '',
+      name: task.name || (typeof params['title'] === 'string' ? params['title'] : ''),
       cartographyId: String(cartographyId),
       visualizationMode,
       includedTasks,
     };
   }
 
-  private isMiaControlTask(task: any): boolean {
+  private isMiaControlTask(task: AppTasks): boolean {
     return task?.['ui-control'] === 'sitna.moreInfoAdvanced'
       && task?.typeId === MoreInfoAdvancedService.BASIC_TASK_TYPE_ID;
   }
 
-  private isRenderableMiaTask(task: any): boolean {
-    const params = task?.parameters || {};
+  private isRenderableMiaTask(task: AppTasks): boolean {
+    const params = this.asRecord(task.parameters);
     return task?.typeId === MoreInfoAdvancedService.MIA_TASK_TYPE_ID
-      && (params.advancedTaskKind == null || params.advancedTaskKind === 'parent')
-      && !!(task.cartographyId || params.cartographyId);
+      && (params['advancedTaskKind'] == null || params['advancedTaskKind'] === 'parent')
+      && !!(task.cartographyId || params['cartographyId']);
   }
 
   private resolveChildType(rawChildType: unknown): MiaChildTask['childType'] {
@@ -413,29 +433,31 @@ export class MoreInfoAdvancedService {
     return 'query';
   }
 
-  private parseExportTask(task: any): MiaExportAction | null {
+  private parseExportTask(task: MiaConfigTask): MiaExportAction | null {
     if (!this.isDiscoverableExportTask(task)) {
       return null;
     }
 
     const output = this.resolveExportOutput(task);
-    if (!output) {
+    const taskId = this.parseOptionalTaskId(task?.id);
+    if (!output || taskId == null) {
       return null;
     }
 
     return {
-      taskId: this.parseOptionalTaskId(task?.id),
+      taskId,
       output,
       label: typeof task?.name === 'string' && task.name.trim().length > 0 ? task.name.trim() : null,
     };
   }
 
-  private isDiscoverableExportTask(task: any): boolean {
+  private isDiscoverableExportTask(task: MiaConfigTask): boolean {
     return task?.typeId === MoreInfoAdvancedService.DOCUMENT_EXPORT_TASK_TYPE_ID;
   }
 
-  private resolveTaskCartographyId(task: any): string | null {
-    const directCartographyId = task?.cartographyId || task?.parameters?.cartographyId;
+  private resolveTaskCartographyId(task: MiaConfigTask): string | null {
+    const params = this.asRecord(task.parameters);
+    const directCartographyId = task.cartographyId || params['cartographyId'];
     if (directCartographyId != null && directCartographyId !== '') {
       return String(directCartographyId);
     }
@@ -445,12 +467,12 @@ export class MoreInfoAdvancedService {
     return layerMatch ? layerMatch[1] : null;
   }
 
-  private resolveExportOutput(task: any): string | null {
-    const params = task?.parameters || {};
-    const directOutput = this.readOutputCandidate(params.output)
-      || this.readOutputCandidate(params.downloadFormat)
-      || this.readOutputCandidate(task?.output)
-      || this.readOutputCandidate(task?.downloadFormat);
+  private resolveExportOutput(task: MiaConfigTask): 'pdf' | null {
+    const params = this.asRecord(task.parameters);
+    const directOutput = this.readOutputCandidate(params['output'])
+      || this.readOutputCandidate(params['downloadFormat'])
+      || this.readOutputCandidate(task.output)
+      || this.readOutputCandidate(task.downloadFormat);
     if (directOutput) {
       return directOutput;
     }
@@ -459,30 +481,19 @@ export class MoreInfoAdvancedService {
     if (mimeType.includes('pdf')) {
       return 'pdf';
     }
-    if (mimeType.includes('xml')) {
-      return 'xml';
-    }
-
     const filename = typeof task?.filename === 'string' ? task.filename.toLowerCase() : '';
     if (filename.endsWith('.pdf')) {
       return 'pdf';
     }
-    if (filename.endsWith('.xml') || filename.endsWith('.jrxml')) {
-      return 'xml';
-    }
-
     return null;
   }
 
-  private readOutputCandidate(candidate: unknown): string | null {
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-      return candidate.trim().toLowerCase();
+  private readOutputCandidate(candidate: unknown): 'pdf' | null {
+    if (typeof candidate === 'string') {
+      return candidate.trim().toLowerCase() === 'pdf' ? 'pdf' : null;
     }
     if (candidate && typeof candidate === 'object' && 'value' in candidate) {
-      const rawValue = (candidate as any).value;
-      return typeof rawValue === 'string' && rawValue.trim().length > 0
-        ? rawValue.trim().toLowerCase()
-        : null;
+      return typeof candidate.value === 'string' && candidate.value.trim().toLowerCase() === 'pdf' ? 'pdf' : null;
     }
     return null;
   }
@@ -496,6 +507,39 @@ export class MoreInfoAdvancedService {
       return Number.isFinite(parsed) ? parsed : null;
     }
     return null;
+  }
+
+  private isValidBbox(bbox: number[] | null | undefined): bbox is number[] {
+    return Array.isArray(bbox)
+      && bbox.length === 4
+      && bbox.every((value) => typeof value === 'number' && Number.isFinite(value))
+      && bbox[0] <= bbox[2]
+      && bbox[1] <= bbox[3];
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> {
+    return value != null && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : {};
+  }
+
+  private asOptionalRecord(value: unknown): Record<string, unknown> | null {
+    return value != null && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : null;
+  }
+
+  private asNestedRecord(value: unknown): Record<string, Record<string, unknown>> | null {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    const record = this.asRecord(value);
+    const nestedEntries = Object.entries(record)
+      .filter((entry): entry is [string, Record<string, unknown>] => {
+        const nested = entry[1];
+        return nested != null && typeof nested === 'object' && !Array.isArray(nested);
+      });
+    return Object.fromEntries(nestedEntries);
   }
 
 }

@@ -13,11 +13,26 @@ import { SitnaControlConfig } from '../control-handler.interface';
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
 
+interface MiaFeatureInfoOptions {
+  services?: MiaFeatureInfoService[];
+}
+
+interface MiaFeatureInfoService {
+  layers?: MiaFeatureInfoLayer[];
+}
+
+interface MiaFeatureInfoLayer {
+  name?: string;
+  features?: unknown[];
+}
+
+interface MiaTabsContainer extends HTMLElement {
+  __sitmunMiaBackendTabs?: boolean;
+}
+
 const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
   ADD_TAGS: ['iframe'],
   ADD_ATTR: [
-    'allow',
-    'allowfullscreen',
     'frameborder',
     'scrolling',
     'src',
@@ -25,12 +40,23 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'width',
     'height',
     'data-mia-export-template',
-    'data-mia-template-task-id'
+    'data-mia-template-task-id',
+    'data-sitmun-pdf-template-scope'
   ],
 };
 
 export function sanitizeMiaRenderedHtml(html: string): string {
-  return DOMPurify.sanitize(html || '<div class="sitmun-mia-empty">Sense dades</div>', MIA_HTML_SANITIZE_OPTIONS);
+  const sanitized = DOMPurify.sanitize(
+    html || '<div class="sitmun-mia-empty">Sense dades</div>',
+    MIA_HTML_SANITIZE_OPTIONS,
+  );
+  const document = new DOMParser().parseFromString(sanitized, 'text/html');
+  document.querySelectorAll('iframe').forEach((iframe) => {
+    iframe.removeAttribute('allow');
+    iframe.removeAttribute('allowfullscreen');
+    iframe.setAttribute('sandbox', '');
+  });
+  return document.body.innerHTML;
 }
 
 @Injectable({
@@ -45,18 +71,12 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private appConfig: AppCfg | null = null;
   private miaOverlayElement: HTMLElement | null = null;
   private floatingZIndex = 10050;
-  private static readonly EXPORT_BUTTON_CONFIG: Record<string, { label: string; ariaLabel: string; icon: string; loadingLabel: string }> = {
+  private static readonly EXPORT_BUTTON_CONFIG: Record<MiaExportAction['output'], { label: string; ariaLabel: string; icon: string; loadingLabel: string }> = {
     pdf: {
       label: 'Exportar PDF',
       ariaLabel: 'Exportar plantilla en PDF',
       icon: 'pdf',
       loadingLabel: 'Generant PDF...'
-    },
-    xml: {
-      label: 'Descarregar XML',
-      ariaLabel: 'Descarregar plantilla en XML',
-      icon: 'xml',
-      loadingLabel: 'Preparant XML...'
     }
   };
 
@@ -108,7 +128,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
           fiProto,
           'responseCallback',
           (jp: MeldJoinPoint) => {
-            const [options] = jp.args as [any];
+            const [options] = jp.args as [MiaFeatureInfoOptions];
             const result = jp.proceedApply(jp.args);
 
             if (options?.services && this.miaService.hasMiaTasks()) {
@@ -202,7 +222,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     overlay.addEventListener('click', (event) => event.stopPropagation());
   }
 
-  private tryOpenMiaPopup(options: any): void {
+  private tryOpenMiaPopup(options: MiaFeatureInfoOptions): void {
     if (!options?.services || !Array.isArray(options.services)) return;
 
     for (const service of options.services) {
@@ -211,14 +231,21 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       for (const layer of service.layers) {
         if (!Array.isArray(layer?.features) || layer.features.length === 0) continue;
 
-        const cartographyId = this.getCartographyIdFromLayerName(layer.name);
+        const cartographyId = typeof layer.name === 'string'
+          ? this.getCartographyIdFromLayerName(layer.name)
+          : null;
         if (!cartographyId) continue;
 
         const miaTasks = this.miaService.getTasksForCartography(cartographyId);
         if (miaTasks.length === 0) continue;
 
-        const featureData = layer.features[0].getData ? layer.features[0].getData() : layer.features[0].data || {};
-        this.openMiaPopup(miaTasks, featureData, this.buildMiaViewerContext(layer));
+        const feature = this.asRecord(layer.features[0]);
+        const featureData = this.asRecord(
+          this.callUnknownFunction(feature['getData'], layer.features[0]) ?? feature['data']
+        );
+        const viewerContext = this.buildMiaViewerContext(layer);
+        if (!viewerContext) continue;
+        this.openMiaPopup(miaTasks, featureData, viewerContext);
         return;
       }
     }
@@ -226,8 +253,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
   private openMiaPopup(
     miaTasks: MiaTask[],
-    featureData: Record<string, any>,
-    viewerContext: MiaViewerContext = {}
+    featureData: Record<string, unknown>,
+    viewerContext: MiaViewerContext
   ): void {
     const overlay = this.ensureMiaOverlay();
     if (!overlay) return;
@@ -239,7 +266,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     const exportActions = Array.from(new Map(
       miaTasks
         .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
-        .map((action) => [`${action.taskId ?? 'none'}:${action.output}`, action])
+        .map((action) => [`${action.taskId}:${action.output}`, action])
     ).values());
 
     const position = this.getInitialMiaOverlayPosition(overlay);
@@ -252,13 +279,23 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
     this.miaService.renderMiaTasks(miaTasks, featureData, viewerContext).subscribe({
       next: (renderedTasks) => this.fillRenderedMiaTasks(contentDiv, renderedTasks, exportActions),
-      error: (error) => this.fillRenderedMiaError(contentDiv, error?.message || 'MIA rendering failed')
+      error: (error: unknown) => this.fillRenderedMiaError(
+        contentDiv,
+        error instanceof Error ? error.message : 'MIA rendering failed'
+      )
     });
   }
 
-  private buildMiaViewerContext(layer: any): MiaViewerContext {
+  private buildMiaViewerContext(layer: MiaFeatureInfoLayer): MiaViewerContext | null {
+    const applicationId = this.appConfig?.application.id;
+    const territoryId = this.appConfig?.application.territoryId;
+    if (applicationId == null || territoryId == null) {
+      return null;
+    }
     return {
-      featureBbox: this.getFeatureCollectionBbox(layer?.features)
+      featureBbox: this.getFeatureCollectionBbox(layer?.features),
+      applicationId,
+      territoryId
     };
   }
 
@@ -286,36 +323,41 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     return combinedBbox;
   }
 
-  private getFeatureBbox(feature: any): number[] | null {
+  private getFeatureBbox(feature: unknown): number[] | null {
+    const featureRecord = this.asRecord(feature);
     const runtimeExtent = this.getRuntimeFeatureExtent(feature);
     if (runtimeExtent != null) {
       return runtimeExtent;
     }
 
     return this.getGeoJsonGeometryBbox(
-      feature?.geometry
-      ?? feature?.feature?.geometry
-      ?? feature?.wrap?.feature?.geometry
-      ?? feature?.getData?.()?.geometry
-      ?? feature?.data?.geometry
+      featureRecord['geometry']
+      ?? this.asRecord(featureRecord['feature'])['geometry']
+      ?? this.asRecord(this.asRecord(featureRecord['wrap'])['feature'])['geometry']
+      ?? this.asRecord(this.callUnknownFunction(featureRecord['getData'], feature))['geometry']
+      ?? this.asRecord(featureRecord['data'])['geometry']
     );
   }
 
-  private getRuntimeFeatureExtent(feature: any): number[] | null {
-    const extent = feature?.getGeometry?.()?.getExtent?.()
-      ?? feature?.geometry?.getExtent?.()
-      ?? feature?.wrap?.feature?.getGeometry?.()?.getExtent?.();
+  private getRuntimeFeatureExtent(feature: unknown): number[] | null {
+    const featureRecord = this.asRecord(feature);
+    const wrappedFeature = this.asRecord(this.asRecord(featureRecord['wrap'])['feature']);
+    const extent = this.readGeometryExtent(this.callUnknownFunction(featureRecord['getGeometry'], feature))
+      ?? this.readGeometryExtent(featureRecord['geometry'])
+      ?? this.readGeometryExtent(this.callUnknownFunction(wrappedFeature['getGeometry'], wrappedFeature));
 
     return this.normalizeExtent(extent);
   }
 
-  private getGeoJsonGeometryBbox(geometry: any): number[] | null {
-    if (!geometry || typeof geometry !== 'object') {
+  private getGeoJsonGeometryBbox(geometry: unknown): number[] | null {
+    if (!geometry || typeof geometry !== 'object' || Array.isArray(geometry)) {
       return null;
     }
 
-    if (geometry.type === 'GeometryCollection' && Array.isArray(geometry.geometries)) {
-      return this.getFeatureCollectionBbox(geometry.geometries.map((item: unknown) => ({ geometry: item })));
+    const geometryRecord = geometry as Record<string, unknown>;
+
+    if (geometryRecord['type'] === 'GeometryCollection' && Array.isArray(geometryRecord['geometries'])) {
+      return this.getFeatureCollectionBbox(geometryRecord['geometries'].map((item) => ({ geometry: item })));
     }
 
     const bboxState = {
@@ -324,7 +366,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       maxX: Number.NEGATIVE_INFINITY,
       maxY: Number.NEGATIVE_INFINITY
     };
-    this.collectCoordinateBounds(geometry.coordinates, bboxState);
+    this.collectCoordinateBounds(geometryRecord['coordinates'], bboxState);
 
     if (!Number.isFinite(bboxState.minX) || !Number.isFinite(bboxState.minY)
       || !Number.isFinite(bboxState.maxX) || !Number.isFinite(bboxState.maxY)) {
@@ -359,12 +401,30 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   }
 
   private normalizeExtent(extent: unknown): number[] | null {
-    if (!Array.isArray(extent) || extent.length < 4) {
+    if (!Array.isArray(extent) || extent.length !== 4) {
       return null;
     }
 
-    const values = extent.slice(0, 4).map((value) => Number(value));
-    return values.every((value) => Number.isFinite(value)) ? values : null;
+    if (!extent.every((value) => typeof value === 'number' && Number.isFinite(value))) {
+      return null;
+    }
+    const values = extent as number[];
+    return values[0] <= values[2] && values[1] <= values[3] ? values : null;
+  }
+
+  private readGeometryExtent(geometry: unknown): unknown {
+    const getExtent = this.asRecord(geometry)['getExtent'];
+    return this.callUnknownFunction(getExtent, geometry);
+  }
+
+  private callUnknownFunction(value: unknown, owner: unknown): unknown {
+    return typeof value === 'function' ? value.call(owner) : undefined;
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> {
+    return value != null && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : {};
   }
 
   private hideMiaOverlay(): void {
@@ -456,7 +516,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   }
 
   private wireBackendRenderedTabs(contentDiv: HTMLElement): void {
-    if ((contentDiv as any).__sitmunMiaBackendTabs) return;
+    const tabsContainer = contentDiv as MiaTabsContainer;
+    if (tabsContainer.__sitmunMiaBackendTabs) return;
     contentDiv.addEventListener('click', (event: Event) => {
       const btn = (event.target as HTMLElement).closest('[data-mia-tab]') as HTMLElement;
       if (!btn) return;
@@ -474,7 +535,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         panelElement.style.display = panelElement.getAttribute('data-mia-panel') === tabId ? '' : 'none';
       });
     });
-    (contentDiv as any).__sitmunMiaBackendTabs = true;
+    tabsContainer.__sitmunMiaBackendTabs = true;
   }
 
   private fillRenderedMiaTasks(
@@ -580,9 +641,21 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     const htmlContent = downloadBar
       ? wrapper.innerHTML.replace(downloadBar.outerHTML, '')
       : wrapper.innerHTML;
-    const exportTemplate = action.output === 'xml' ? '' : htmlContent;
     const templateTaskId = this.resolveRenderedTemplateTaskId(wrapper);
-    const export$ = this.miaService.exportTemplate(exportTemplate, action.output, action.taskId, templateTaskId);
+    const applicationId = this.appConfig?.application.id;
+    const territoryId = this.appConfig?.application.territoryId;
+    if (applicationId == null || territoryId == null) {
+      this.restoreExportButton(btn, btnLabel, descriptor.label);
+      return;
+    }
+    const export$ = this.miaService.exportTemplate({
+      template: htmlContent,
+      output: action.output,
+      taskId: action.taskId,
+      templateTaskId,
+      applicationId,
+      territoryId
+    });
 
     export$.subscribe({
       next: (result: TemplateExportResult) => {
@@ -595,19 +668,24 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         anchor.remove();
         URL.revokeObjectURL(url);
 
-        btn.disabled = false;
-        if (btnLabel) {
-          btnLabel.textContent = descriptor.label;
-        }
+        this.restoreExportButton(btn, btnLabel, descriptor.label);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('[MIA] Export failed', err);
-        btn.disabled = false;
-        if (btnLabel) {
-          btnLabel.textContent = descriptor.label;
-        }
+        this.restoreExportButton(btn, btnLabel, descriptor.label);
       }
     });
+  }
+
+  private restoreExportButton(
+    button: HTMLButtonElement,
+    label: HTMLElement | null,
+    text: string
+  ): void {
+    button.disabled = false;
+    if (label) {
+      label.textContent = text;
+    }
   }
 
   private resolveRenderedTemplateTaskId(wrapper: HTMLElement): number | null {
@@ -620,13 +698,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     return Number.isFinite(parsedTaskId) ? parsedTaskId : null;
   }
 
-  private getExportButtonDescriptor(output: string, label?: string | null): { label: string; ariaLabel: string; icon: string; loadingLabel: string } {
-    const defaultDescriptor = MoreInfoAdvancedControlHandler.EXPORT_BUTTON_CONFIG[output] || {
-      label: `Exportar ${output.toUpperCase()}`,
-      ariaLabel: `Exportar plantilla en format ${output.toUpperCase()}`,
-      icon: 'generic',
-      loadingLabel: `Preparant ${output.toUpperCase()}...`
-    };
+  private getExportButtonDescriptor(output: MiaExportAction['output'], label?: string | null): { label: string; ariaLabel: string; icon: string; loadingLabel: string } {
+    const defaultDescriptor = MoreInfoAdvancedControlHandler.EXPORT_BUTTON_CONFIG[output];
     if (!label) {
       return defaultDescriptor;
     }

@@ -1,8 +1,8 @@
+import { HttpHeaders } from '@angular/common/http';
 import {
   HttpClientTestingModule,
   HttpTestingController
 } from '@angular/common/http/testing';
-import { HttpHeaders } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
 import { LanguageService } from './language.service';
@@ -139,7 +139,7 @@ describe('MoreInfoAdvancedService', () => {
     ]);
   });
 
-  it('merges global and cartography export actions and deduplicates by taskId and output', () => {
+  it('merges global and cartography PDF export actions and ignores XML output', () => {
     service.initialize({
       tasks: [
         {
@@ -172,8 +172,7 @@ describe('MoreInfoAdvancedService', () => {
     } as any);
 
     expect(service.getExportActionsForCartography('12')).toEqual([
-      { taskId: 32312, output: 'pdf', label: 'Layer PDF duplicate' },
-      { taskId: 32313, output: 'xml', label: 'Layer XML' }
+      { taskId: 32312, output: 'pdf', label: 'Layer PDF duplicate' }
     ]);
   });
 
@@ -206,7 +205,7 @@ describe('MoreInfoAdvancedService', () => {
     expect(service.getExportActionsForCartography('12')).toEqual([]);
   });
 
-  it('infers export output from downloadFormat value object, mime type and filename', () => {
+  it('accepts only PDF output while retaining PDF MIME and filename inference', () => {
     service.initialize({
       tasks: [
         {
@@ -219,8 +218,8 @@ describe('MoreInfoAdvancedService', () => {
           id: 'task/401',
           typeId: 17,
           cartographyId: '12',
-          name: 'Obj output',
-          parameters: { downloadFormat: { value: 'xml' } }
+          name: 'PDF value output',
+          parameters: { downloadFormat: { value: 'pdf' } }
         },
         {
           id: 'task/402',
@@ -240,9 +239,8 @@ describe('MoreInfoAdvancedService', () => {
     } as any);
 
     expect(service.getExportActionsForCartography('12')).toEqual([
-      { taskId: 401, output: 'xml', label: 'Obj output' },
-      { taskId: 402, output: 'pdf', label: 'Mime output' },
-      { taskId: 403, output: 'xml', label: 'Filename output' }
+      { taskId: 401, output: 'pdf', label: 'PDF value output' },
+      { taskId: 402, output: 'pdf', label: 'Mime output' }
     ]);
   });
 
@@ -252,7 +250,7 @@ describe('MoreInfoAdvancedService', () => {
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
       { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
-    ], { id: 99 }, { featureBbox: [5, 6, 7, 8] }).subscribe((result) => {
+    ], { id: 99 }, { featureBbox: [5, 6, 7, 8], applicationId: 7, territoryId: 11 }).subscribe((result) => {
       emitted = result;
     });
 
@@ -261,6 +259,8 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({
       miaTaskIds: [16, 18],
+      applicationId: 7,
+      territoryId: 11,
       parameters: { id: 99 },
       featureBbox: [5, 6, 7, 8]
     });
@@ -269,19 +269,41 @@ describe('MoreInfoAdvancedService', () => {
     expect(emitted).toEqual([{ taskId: 16, title: 'One', html: '<p>ok</p>' }]);
   });
 
-  it('returns synthetic error task when render request fails', () => {
+  it('associates render request errors with every requested MIA task', () => {
     let emitted: any;
 
     service.renderMiaTasks([
-      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
-    ], { id: 99 }).subscribe((result) => {
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
+      { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], { id: 99 }, { applicationId: 7, territoryId: 11 }).subscribe((result) => {
       emitted = result;
     });
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     req.error(new ProgressEvent('error'), { status: 500, statusText: 'Boom' });
 
-    expect(emitted).toEqual([{ taskId: 0, title: '', html: '', error: 'Http failure response for http://localhost:9000/backend/api/tasks/template/more-info-advanced/render?lang=ca: 500 Boom' }]);
+    const error = 'Http failure response for http://localhost:9000/backend/api/tasks/template/more-info-advanced/render?lang=ca: 500 Boom';
+    expect(emitted).toEqual([
+      { taskId: 16, title: '', html: '', error },
+      { taskId: 18, title: '', html: '', error }
+    ]);
+  });
+
+  it.each([
+    { featureBbox: [1, 2, 3] },
+    { featureBbox: [1, 2, 3, 4, 5] },
+    { featureBbox: [null, 2, 3, 4] },
+    { featureBbox: [1, 2, Number.POSITIVE_INFINITY, 4] },
+    { featureBbox: [5, 2, 3, 4] },
+    { featureBbox: [1, 6, 3, 4] }
+  ])('omits invalid featureBbox $featureBbox', ({ featureBbox }) => {
+    service.renderMiaTasks([
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], {}, { featureBbox: featureBbox as number[], applicationId: 7, territoryId: 11 }).subscribe();
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
+    expect(req.request.body).not.toHaveProperty('featureBbox');
+    req.flush({ tasks: [] });
   });
 
   it('sends only referenced fields when child parameter mappings are known', () => {
@@ -307,11 +329,13 @@ describe('MoreInfoAdvancedService', () => {
       featureName: 'Road',
       ignored: 'value',
       html: '<div class="sitmun-more-info-x">ignored</div>'
-    }).subscribe();
+    }, { applicationId: 7, territoryId: 11 }).subscribe();
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     expect(req.request.body).toEqual({
       miaTaskIds: [16],
+      applicationId: 7,
+      territoryId: 11,
       parameters: {
         featureId: 10,
         featureName: 'Road'
@@ -327,6 +351,9 @@ describe('MoreInfoAdvancedService', () => {
     ], {
       dificultat: 'Mitjana',
       descr_ca: 'x'.repeat(501)
+    }, {
+      applicationId: 7,
+      territoryId: 11
     }).subscribe();
 
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
@@ -334,6 +361,8 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({
       miaTaskIds: [32304],
+      applicationId: 7,
+      territoryId: 11,
       parameters: { dificultat: 'Mitjana' }
     });
 
@@ -343,7 +372,14 @@ describe('MoreInfoAdvancedService', () => {
   it('includes taskId and templateTaskId in html export requests when provided', () => {
     let emitted: any;
 
-    service.exportTemplate('<p>Hola</p>', 'pdf', 201, 32312).subscribe((result) => {
+    service.exportTemplate({
+      template: '<p>Hola</p>',
+      output: 'pdf',
+      taskId: 201,
+      templateTaskId: 32312,
+      applicationId: 7,
+      territoryId: 11
+    }).subscribe((result) => {
       emitted = result;
     });
 
@@ -352,7 +388,10 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.body).toContain('<output>pdf</output>');
     expect(req.request.body).toContain('<taskId>201</taskId>');
     expect(req.request.body).toContain('<templateTaskId>32312</templateTaskId>');
+    expect(req.request.body).toContain('<applicationId>7</applicationId>');
+    expect(req.request.body).toContain('<territoryId>11</territoryId>');
     expect(req.request.body).toContain('<template><![CDATA[<p>Hola</p>]]></template>');
+    expect(req.request.headers.get('Content-Type')).toBe('application/xml');
     expect(req.request.responseType).toBe('blob');
 
     req.flush(new Blob(['pdf']), {
@@ -363,29 +402,16 @@ describe('MoreInfoAdvancedService', () => {
     expect(emitted.blob).toBeInstanceOf(Blob);
   });
 
-  it('exports xml without taskId and decodes RFC5987 filename header', () => {
-    let emitted: any;
-
-    service.exportTemplate('<report>]]></report>', 'xml').subscribe((result) => {
-      emitted = result;
-    });
-
-    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/export'));
-    expect(req.request.body).toContain('<output>xml</output>');
-    expect(req.request.body).not.toContain('<taskId>');
-    expect(req.request.body).toContain('<template><![CDATA[<report>]]]]><![CDATA[></report>]]></template>');
-
-    req.flush(new Blob(['xml']), {
-      headers: new HttpHeaders({ 'Content-Disposition': "attachment; filename*=UTF-8''Plantilla%20territori.xml" })
-    });
-
-    expect(emitted.filename).toBe('Plantilla territori.xml');
-  });
-
   it('returns null filename when response has no content disposition header', () => {
     let emitted: any;
 
-    service.exportTemplate('<p>Hola</p>', 'pdf', 99).subscribe((result) => {
+    service.exportTemplate({
+      template: '<p>Hola</p>',
+      output: 'pdf',
+      taskId: 99,
+      applicationId: 7,
+      territoryId: 11
+    }).subscribe((result) => {
       emitted = result;
     });
 

@@ -1,8 +1,10 @@
+import { NEVER } from 'rxjs';
+
 import { MoreInfoAdvancedControlHandler, sanitizeMiaRenderedHtml } from './more-info-advanced-control.handler';
 
 describe('sanitizeMiaRenderedHtml', () => {
   it('keeps iframe tags for MIA rendered html', () => {
-    const html = '<p>before</p><iframe src="https://example.org/doc.pdf" width="100%" height="360" title="PDF"></iframe><p>after</p>';
+    const html = '<p>before</p><iframe src="https://example.org/doc.pdf" width="100%" height="360" title="PDF" allow="scripts" allowfullscreen></iframe><p>after</p>';
 
     const sanitized = sanitizeMiaRenderedHtml(html);
 
@@ -10,6 +12,9 @@ describe('sanitizeMiaRenderedHtml', () => {
     expect(sanitized).toContain('src="https://example.org/doc.pdf"');
     expect(sanitized).toContain('width="100%"');
     expect(sanitized).toContain('height="360"');
+    expect(sanitized).toContain('sandbox=""');
+    expect(sanitized).not.toContain('allow=');
+    expect(sanitized).not.toContain('allowfullscreen');
   });
 
   it('removes unsafe script tags from MIA rendered html', () => {
@@ -23,12 +28,14 @@ describe('sanitizeMiaRenderedHtml', () => {
   });
 
   it('keeps MIA export attributes needed for download buttons', () => {
-    const html = '<div data-mia-export-template="true" data-mia-template-task-id="201"><p>Plantilla</p></div>';
+    const html = '<div data-mia-export-template="true" data-mia-template-task-id="201">'
+      + '<p class="sitmun-pdf-header" data-sitmun-pdf-template-scope="root">Plantilla</p></div>';
 
     const sanitized = sanitizeMiaRenderedHtml(html);
 
     expect(sanitized).toContain('data-mia-export-template="true"');
     expect(sanitized).toContain('data-mia-template-task-id="201"');
+    expect(sanitized).toContain('data-sitmun-pdf-template-scope="root"');
   });
 });
 
@@ -55,8 +62,7 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
 
     (handler as any).injectDownloadButtons(container, [
       { taskId: 11, output: 'pdf', label: 'PDF A4 vertical' },
-      { taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' },
-      { taskId: 13, output: 'xml', label: 'XML' }
+      { taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' }
     ]);
 
     const menu = wrapper.querySelector('.sitmun-mia-download-menu');
@@ -64,10 +70,9 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
 
     expect(menu).not.toBeNull();
     expect(wrapper.querySelectorAll('.sitmun-mia-download-toggle')).toHaveLength(1);
-    expect(options).toHaveLength(3);
+    expect(options).toHaveLength(2);
     expect(wrapper.textContent).toContain('PDF A4 vertical');
     expect(wrapper.textContent).toContain('PDF A3 horitzontal');
-    expect(wrapper.textContent).toContain('XML');
 
     (options[1] as HTMLButtonElement).click();
 
@@ -76,16 +81,20 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
     expect(triggerSpy.mock.calls[0][1]).toEqual({ taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' });
   });
 
-  it('builds empty viewer context when clicked layer has no geometries', () => {
+  it('builds profile viewer context when clicked layer has no geometries', () => {
     const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
 
     expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades' })).toEqual({
-      featureBbox: null
+      featureBbox: null,
+      applicationId: 7,
+      territoryId: 11
     });
   });
 
   it('builds featureBbox from clicked feature geometries', () => {
     const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
 
     expect((handler as any).buildMiaViewerContext({
       name: 'or007tur_estades',
@@ -104,8 +113,55 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
         }
       ]
     })).toEqual({
-      featureBbox: [10, 18, 16, 24]
+      featureBbox: [10, 18, 16, 24],
+      applicationId: 7,
+      territoryId: 11
     });
+  });
+
+  it('preserves a point feature as a zero-area featureBbox', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
+
+    expect((handler as any).buildMiaViewerContext({
+      features: [{ geometry: { type: 'Point', coordinates: [10, 20] } }]
+    })).toEqual({
+      featureBbox: [10, 20, 10, 20],
+      applicationId: 7,
+      territoryId: 11
+    });
+  });
+
+  it('returns no viewer context when profile coordinates are unavailable', () => {
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+
+    expect((handler as any).buildMiaViewerContext({})).toBeNull();
+  });
+
+  it('forwards active profile coordinates to template export', () => {
+    const exportTemplate = jest.fn().mockReturnValue(NEVER);
+    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    (handler as any).miaService = { exportTemplate };
+    (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
+    const wrapper = document.createElement('div');
+    wrapper.dataset['miaTemplateTaskId'] = '301';
+    wrapper.innerHTML = '<div class="sitmun-mia-download-bar">Actions</div><p>Report</p>';
+    const button = document.createElement('button');
+    button.innerHTML = '<span class="sitmun-mia-download-btn-label">PDF</span>';
+
+    (handler as any).triggerMiaExport(
+      wrapper,
+      { taskId: 201, output: 'pdf', label: 'PDF' },
+      button,
+      { label: 'PDF', loadingLabel: 'Generating' },
+    );
+
+    expect(exportTemplate).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 201,
+      templateTaskId: 301,
+      applicationId: 7,
+      territoryId: 11,
+    }));
   });
 
   it('does not inject duplicate download menus', () => {
