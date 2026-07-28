@@ -22,7 +22,13 @@
         <span>{{ 'application.creationDate' | translate }} :</span>
         {{ application.createdDate | date : 'dd/MM/yyyy' }}
       </p>
-      <p *ngIf="application.pointOfContact; else emptyRow">
+      <p
+        id="application-responsible-institution"
+        *ngIf="application.responsibleInstitutionName">
+        <span>{{ 'application.responsibleInstitution' | translate }} :</span>
+        {{ application.responsibleInstitutionName }}
+      </p>
+      <p id="application-point-of-contact" *ngIf="application.pointOfContact">
         <span>{{ 'application.contact' | translate }} :</span>
         {{ application.pointOfContact }}
       </p>

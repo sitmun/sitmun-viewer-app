@@ -96,11 +96,21 @@ export class MoreInfoAdvancedService {
   private readonly exportActionsByCartography = new Map<string, MiaExportAction[]>();
   private globalExportActions: MiaExportAction[] = [];
   private hasMiaControlTask = false;
+  private appId: number | null = null;
+  private terId: number | null = null;
 
   constructor(
     private readonly http: HttpClient,
     private readonly languageService: LanguageService
   ) {}
+  /**
+   * Map session coordinates required by backend MIA render authz.
+   * Omit → backend 400 / wrong-context security hole.
+   */
+  setMapContext(appId: number, terId: number): void {
+    this.appId = Number.isFinite(appId) ? appId : null;
+    this.terId = Number.isFinite(terId) ? terId : null;
+  }
 
   /**
    * Initializes MIA tasks from the application configuration.
@@ -178,20 +188,29 @@ export class MoreInfoAdvancedService {
   renderMiaTasks(
     miaTasks: MiaTask[],
     featureData: unknown,
-    viewerContext: MiaViewerContext
+    viewerContext?: MiaViewerContext
   ): Observable<MiaRenderedTask[]> {
+    // Required for backend authz; omit -> 400 / wrong map-session context.
+    if (this.appId == null || this.terId == null) {
+      return of([{
+        taskId: 0,
+        title: '',
+        html: '',
+        error: 'MIA render requires appId and terId from the map session'
+      }]);
+    }
+
     const neededFields = this.extractNeededFields(miaTasks);
     const miaTaskIds = miaTasks.map((task) => this.parseTaskId(task.id)).filter(Number.isFinite);
     const body: Record<string, unknown> = {
       miaTaskIds,
+      appId: this.appId,
+      terId: this.terId,
       parameters: this.filterFeatureParameters(featureData, neededFields)
     };
-    body['applicationId'] = viewerContext.applicationId;
-    body['territoryId'] = viewerContext.territoryId;
-    if (this.isValidBbox(viewerContext.featureBbox)) {
+    if (this.isValidBbox(viewerContext?.featureBbox)) {
       body['featureBbox'] = viewerContext.featureBbox;
     }
-
     const lang = this.languageService.getCurrentLanguage()?.trim();
     const options = lang ? { params: { lang } } : {};
 
@@ -200,16 +219,17 @@ export class MoreInfoAdvancedService {
       body,
       options
     ).pipe(
-      map((response) => Array.isArray(response.tasks) ? response.tasks : []),
-      catchError((error: unknown) => {
-        const errorMessage = error != null && typeof error === 'object' && 'message' in error
-          ? error.message
-          : null;
-        const message = typeof errorMessage === 'string' && errorMessage.length > 0
-          ? errorMessage
-          : 'MIA rendering failed';
-        return of(miaTaskIds.map((taskId) => ({ taskId, title: '', html: '', error: message })));
-      })
+      map((response) => response.tasks || []),
+      catchError((error) =>
+        of(
+          miaTasks.map((task) => ({
+            taskId: this.parseTaskId(task.id),
+            title: task.name || '',
+            html: '',
+            error: error.message || 'MIA rendering failed',
+          })),
+        ),
+      ),
     );
   }
 

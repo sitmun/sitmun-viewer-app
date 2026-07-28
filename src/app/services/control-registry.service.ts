@@ -493,6 +493,32 @@ export class ControlRegistryService {
   }
 
   /**
+   * Clean up handler runtime state while preserving root-scoped registrations.
+   */
+  cleanupAll(): void {
+    this.handlers.forEach((handler, key) => {
+      try {
+        handler.cleanup?.();
+      } catch (error) {
+        console.warn(`[ControlRegistry] cleanup failed for '${key}':`, error);
+      }
+    });
+  }
+
+  /**
+   * Light map-rebuild teardown for body/runtime artifacts (does not restore patches).
+   */
+  clearMapArtifacts(map?: object): void {
+    this.handlers.forEach((handler, key) => {
+      try {
+        handler.onMapClear?.(map);
+      } catch (error) {
+        console.warn(`[ControlRegistry] onMapClear failed for '${key}':`, error);
+      }
+    });
+  }
+
+  /**
    * Get statistics about registered handlers.
    *
    * @returns Object with handler statistics

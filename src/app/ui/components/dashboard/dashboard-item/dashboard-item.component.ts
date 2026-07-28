@@ -2,8 +2,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
   inject
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -25,7 +27,7 @@ export interface DashboardTerritoryTagPayload {
   templateUrl: './dashboard-item.component.html',
   styleUrls: ['./dashboard-item.component.scss']
 })
-export class DashboardItemComponent implements OnInit {
+export class DashboardItemComponent implements OnInit, OnChanges {
   @Input() item!: DashboardItem;
   @Output() tag = new EventEmitter<DashboardTerritoryTagPayload>();
 
@@ -41,20 +43,38 @@ export class DashboardItemComponent implements OnInit {
   constructor(private commonService: CommonService, private router: Router) {}
 
   ngOnInit() {
-    // Use enriched dashboard data instead of eager territory fetch
+    this.syncFromItem();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['item']) {
+      this.syncFromItem();
+    }
+  }
+
+  private syncFromItem(): void {
+    this.nbTerritory = 0;
+    this.listOfTerritories = [];
+    this.territoriesLoading = false;
+    this.territoriesLoaded = false;
+
     if (this.item.territoryCount !== undefined) {
       this.nbTerritory = this.item.territoryCount;
       this.territoriesLoaded = true;
-      // For single-territory apps, prepare the territory list for navigation
       if (this.item.singleTerritoryId) {
         this.listOfTerritories = [
           { id: this.item.singleTerritoryId, name: '' }
         ];
       }
-    } else if (this.isExternalLink()) {
+      return;
+    }
+
+    if (this.isExternalLink()) {
       this.territoriesLoaded = true;
-    } else if (this.hasTerritory()) {
-      // Fallback: eager fetch if territoryCount not provided (should not happen with new API)
+      return;
+    }
+
+    if (this.hasTerritory()) {
       this.fillTerritory(this.item.id);
     }
   }
@@ -84,7 +104,6 @@ export class DashboardItemComponent implements OnInit {
         this.nbTerritory = res.content.length;
         this.territoriesLoading = false;
         this.territoriesLoaded = true;
-        // Auto-display territory picker after lazy load
         if (this.nbTerritory > 1) {
           this.displayTerritoriesTag(this.item);
         }
@@ -125,16 +144,13 @@ export class DashboardItemComponent implements OnInit {
       return;
     }
 
-    // For single-territory apps, navigate directly
     if (this.nbTerritory === 1 && this.listOfTerritories.length > 0) {
       void this.router.navigateByUrl(
         this.getMapUrl(idApp, this.listOfTerritories[0].id)
       );
     } else if (this.nbTerritory > 1) {
-      // Lazy load full territory list only when user clicks multi-territory app
       if (this.listOfTerritories.length === 0) {
         this.fillTerritory(idApp);
-        // After filling, the method will be called again via user interaction
       } else {
         this.displayTerritoriesTag(this.item);
       }
@@ -150,7 +166,6 @@ export class DashboardItemComponent implements OnInit {
     if (this.isExternalLink()) {
       return !this.item.externalUrl;
     }
-    // Allow interaction if we have territory count data (even if list not loaded yet)
     return this.territoriesLoading || (this.nbTerritory === 0 && !this.territoriesLoaded);
   }
 

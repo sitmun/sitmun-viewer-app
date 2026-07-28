@@ -6,11 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { AuthenticationService } from '@auth/services/authentication.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormFieldInputComponent } from '@ui/components/form-field-input/form-field-input.component';
 import { PrimaryButtonComponent } from '@ui/components/primary-button/primary-button.component';
 import { SecondaryButtonComponent } from '@ui/components/secondary-button/secondary-button.component';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
 
 import { LoginComponent } from './login.component';
@@ -134,5 +134,32 @@ describe('LoginComponent', () => {
     await f.whenStable();
 
     expect(notificationService.warning).toHaveBeenCalled();
+  });
+
+  it('shows a translated error notification when login returns 401', () => {
+    const authService = TestBed.inject(AuthenticationService) as jest.Mocked<
+      AuthenticationService<unknown>
+    >;
+    const notificationService = TestBed.inject(
+      NotificationService
+    ) as jest.Mocked<NotificationService>;
+    const translate = TestBed.inject(TranslateService);
+    jest.spyOn(authService, 'login').mockReturnValue(
+      throwError(() => ({ status: 401 }))
+    );
+    jest
+      .spyOn(translate, 'get')
+      .mockReturnValue(of('Incorrect access data'));
+
+    component.authenticationRequest = {
+      username: 'wrong',
+      password: 'secret'
+    };
+    component.login();
+
+    expect(notificationService.error).toHaveBeenCalledWith(
+      'Incorrect access data'
+    );
+    expect(component.authenticationRequest.password).toBe('');
   });
 });

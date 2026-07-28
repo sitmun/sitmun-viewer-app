@@ -11,6 +11,9 @@ export interface WmsOnlineResourceLink {
   };
 }
 
+/** Parsed WMS title/abstract; may be plain text or language-keyed structures. */
+export type LanguageAwareText = string | Record<string, unknown> | unknown[];
+
 /**
  * WMS Layer definition from GetCapabilities response
  */
@@ -23,12 +26,12 @@ export interface WMSLayer {
   /**
    * Human-readable layer title
    */
-  Title: string;
+  Title: LanguageAwareText;
 
   /**
    * Layer abstract/description
    */
-  Abstract?: string;
+  Abstract?: LanguageAwareText;
 
   /**
    * Keywords associated with the layer
@@ -192,12 +195,12 @@ export interface WMSService {
   /**
    * Service title
    */
-  Title: string;
+  Title: LanguageAwareText;
 
   /**
    * Service abstract/description
    */
-  Abstract?: string;
+  Abstract?: LanguageAwareText;
 
   /**
    * Keywords associated with the service

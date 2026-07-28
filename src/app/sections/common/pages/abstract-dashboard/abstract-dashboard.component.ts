@@ -28,17 +28,14 @@ export abstract class AbstractDashboardComponent implements OnInit, OnDestroy {
   searchKeyword = '';
   loading = false;
   loadError = false;
-  
-  // Server-side pagination state
-  private currentPage = 0;
+
   private get pageSize(): number {
     return this.appConfigService.getDashboardConfig().initialBatchSize;
   }
-  private get incrementSize(): number {
-    return this.appConfigService.getDashboardConfig().batchIncrement;
-  }
   hasMorePages = true;
   loadingMore = false;
+  /** Last Spring page index successfully loaded (0-based). */
+  private lastLoadedPage = -1;
 
   protected constructor(
     protected router: Router,
@@ -64,38 +61,86 @@ export abstract class AbstractDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadItems(): void {
-    this.loading = true;
-    this.loadError = false;
-    this.currentPage = 0;
-    this.allItems = [];
-    this.items = [];
-    this.hasMorePages = true;
+    this.searchKeyword = '';
+    this.lastLoadedPage = -1;
+    this.fetchApplicationsPage(0);
+  }
 
-    // Use new dashboard endpoint for applications
-    if (this.type === DashboardTypes.APPLICATIONS) {
-      this.commonService
-        .fetchDashboardApplications({ page: this.currentPage, size: this.pageSize })
-        .pipe(
-          finalize(() => {
-            this.loading = false;
-          }),
-          takeUntil(this.destroy$)
-        )
-        .subscribe({
-          next: (res: DashboardItemsResponse) => {
-            this.allItems = res.content;
-            this.hasMorePages = res.content.length === this.pageSize;
-            this.applyKeywordFilter();
-          },
-          error: () => {
-            this.loadError = true;
-            this.allItems = [];
-            this.items = [];
-            this.hasMorePages = false;
-          }
-        });
-    } else {
-      // Use old endpoint for territories (still loads all)
+  loadMoreItems(): void {
+    if (
+      this.loading ||
+      this.loadingMore ||
+      !this.hasMorePages ||
+      this.type !== DashboardTypes.APPLICATIONS
+    ) {
+      return;
+    }
+
+    this.loadingMore = true;
+    const nextPage = this.lastLoadedPage + 1;
+    const keywords = this.getActiveServerKeywords();
+
+    this.commonService
+      .fetchDashboardApplications({
+        page: nextPage,
+        size: this.pageSize,
+        ...(keywords ? { keywords } : {})
+      })
+      .pipe(
+        finalize(() => {
+          this.loadingMore = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (res: DashboardItemsResponse) => {
+          this.mergePageContent(res.content);
+          this.lastLoadedPage = res.page?.number ?? nextPage;
+          this.updateHasMorePages(res);
+          this.syncDisplayedItems();
+        },
+        error: () => {
+          this.loadError = true;
+        }
+      });
+  }
+
+  onKeywordsSearch(keywords: string): void {
+    this.searchKeyword = keywords.trim();
+
+    if (this.type !== DashboardTypes.APPLICATIONS) {
+      this.applyKeywordFilter();
+      return;
+    }
+
+    if (this.searchKeyword.length >= 2) {
+      this.fetchApplicationsPage(0, this.searchKeyword);
+      return;
+    }
+
+    if (this.searchKeyword.length === 0) {
+      this.loadItems();
+      return;
+    }
+
+    this.applyKeywordFilter();
+  }
+
+  protected applyKeywordFilter(): void {
+    this.items = filterDashboardItemsByKeyword(
+      this.allItems,
+      this.searchKeyword
+    );
+  }
+
+  private fetchApplicationsPage(page: number, keywords?: string): void {
+    if (this.type !== DashboardTypes.APPLICATIONS) {
+      this.loading = true;
+      this.loadError = false;
+      this.allItems = [];
+      this.items = [];
+      this.hasMorePages = true;
+
       this.commonService
         .fetchDashboardItems(this.type)
         .pipe(
@@ -107,7 +152,7 @@ export abstract class AbstractDashboardComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (res: DashboardItemsResponse) => {
             this.allItems = res.content;
-            this.hasMorePages = false; // Old endpoint returns all at once
+            this.hasMorePages = false;
             this.applyKeywordFilter();
           },
           error: () => {
@@ -117,47 +162,109 @@ export abstract class AbstractDashboardComponent implements OnInit, OnDestroy {
             this.hasMorePages = false;
           }
         });
-    }
-  }
-
-  loadMoreItems(): void {
-    if (this.loadingMore || !this.hasMorePages || this.type !== DashboardTypes.APPLICATIONS) {
       return;
     }
 
-    this.loadingMore = true;
-    this.currentPage++;
+    const isInitialPage = page === 0;
+    const isSearchRefresh =
+      isInitialPage && keywords != null && keywords.trim().length >= 2;
+    if (isInitialPage) {
+      this.loadError = false;
+      this.allItems = [];
+      this.items = [];
+      this.hasMorePages = true;
+      this.lastLoadedPage = -1;
+      if (isSearchRefresh) {
+        this.loadingMore = true;
+      } else {
+        this.loading = true;
+      }
+    }
 
     this.commonService
-      .fetchDashboardApplications({ page: this.currentPage, size: this.incrementSize })
+      .fetchDashboardApplications({
+        page,
+        size: this.pageSize,
+        ...(keywords ? { keywords } : {})
+      })
       .pipe(
         finalize(() => {
-          this.loadingMore = false;
+          if (isInitialPage && isSearchRefresh) {
+            this.loadingMore = false;
+          } else if (isInitialPage) {
+            this.loading = false;
+          }
         }),
         takeUntil(this.destroy$)
       )
       .subscribe({
         next: (res: DashboardItemsResponse) => {
-          this.allItems = [...this.allItems, ...res.content];
-          this.hasMorePages = res.content.length === this.incrementSize;
-          this.applyKeywordFilter();
+          if (isInitialPage) {
+            this.allItems = this.filterPageContent(res.content);
+          } else {
+            this.mergePageContent(res.content);
+          }
+          this.lastLoadedPage = res.page?.number ?? page;
+          this.updateHasMorePages(res);
+          this.syncDisplayedItems();
         },
         error: () => {
           this.loadError = true;
-          this.hasMorePages = false;
+          if (isInitialPage) {
+            this.allItems = [];
+            this.items = [];
+            this.hasMorePages = false;
+          }
         }
       });
   }
 
-  onKeywordsSearch(keywords: string): void {
-    this.searchKeyword = keywords.trim();
-    this.applyKeywordFilter(); // Filter from accumulated items
+  private syncDisplayedItems(): void {
+    if (this.getActiveServerKeywords()) {
+      this.items = [...this.allItems];
+      return;
+    }
+    this.applyKeywordFilter();
   }
 
-  protected applyKeywordFilter(): void {
-    this.items = filterDashboardItemsByKeyword(
-      this.allItems,
-      this.searchKeyword
-    );
+  private getActiveServerKeywords(): string | undefined {
+    return this.searchKeyword.length >= 2 ? this.searchKeyword : undefined;
+  }
+
+  private updateHasMorePages(res: DashboardItemsResponse): void {
+    if (res.content.length === 0) {
+      this.hasMorePages = false;
+      return;
+    }
+
+    const pageMeta = res.page;
+    const totalPages = pageMeta?.totalPages;
+    const pageNumber = pageMeta?.number;
+    const totalElements = pageMeta?.totalElements ?? res.totalElements;
+
+    if (totalPages != null && pageNumber != null) {
+      this.hasMorePages = pageNumber + 1 < totalPages;
+      return;
+    }
+    if (totalElements != null) {
+      this.hasMorePages = this.lastLoadedPage + 1 < Math.ceil(totalElements / this.pageSize);
+      return;
+    }
+    this.hasMorePages = res.content.length === this.pageSize;
+  }
+
+  /** Keep only dashboard-visible apps; avoids wasting page slots on filtered-out types. */
+  private filterPageContent(content: DashboardItem[]): DashboardItem[] {
+    return this.appConfigService.filterApplicationsByType(
+      content,
+      this.appConfigService.getDashboardConfig()
+    ) as DashboardItem[];
+  }
+
+  private mergePageContent(incoming: DashboardItem[]): void {
+    const visible = this.filterPageContent(incoming);
+    const seen = new Set(this.allItems.map((item) => item.id));
+    const unique = visible.filter((item) => !seen.has(item.id));
+    this.allItems = [...this.allItems, ...unique];
   }
 }

@@ -8,7 +8,7 @@ import {
 } from '@api/api-config';
 import { AppCfg } from '@api/model/app-cfg';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { shareReplay, tap } from 'rxjs/operators';
+import { shareReplay, tap, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 import { AppConfigService } from '../../services/app-config.service';
@@ -36,6 +36,7 @@ export interface DashboardItem {
   updateDate: Date;
   createdDate: Date;
   pointOfContact?: string;
+  responsibleInstitutionName?: string;
   // Dashboard enrichment fields
   territoryCount?: number;
   singleTerritoryId?: number;
@@ -190,6 +191,7 @@ export class CommonService {
     page?: number;
     size?: number;
     sort?: string;
+    keywords?: string;
   }): Observable<DashboardItemsResponse> {
     const path = '/api/config/client/dashboard/applications';
     let url = environment.apiUrl + path;
@@ -204,6 +206,9 @@ export class CommonService {
     if (params?.sort) {
       queryParams.push(`sort=${encodeURIComponent(params.sort)}`);
     }
+    if (params?.keywords) {
+      queryParams.push(`keywords=${encodeURIComponent(params.keywords)}`);
+    }
 
     const lang = this.languageService.getCurrentLanguage()?.trim();
     if (lang) {
@@ -214,7 +219,19 @@ export class CommonService {
       url += '?' + queryParams.join('&');
     }
 
-    return this.http.get<DashboardItemsResponse>(url);
+    return this.http
+      .get<DashboardItemsResponse>(url)
+      .pipe(map((response) => this.normalizeDashboardItemsResponse(response)));
+  }
+
+  private normalizeDashboardItemsResponse(
+    response: DashboardItemsResponse
+  ): DashboardItemsResponse {
+    const pageTotalElements = response.page?.totalElements;
+    if (pageTotalElements == null || response.totalElements != null) {
+      return response;
+    }
+    return { ...response, totalElements: pageTotalElements };
   }
 
   /**

@@ -1,4 +1,4 @@
-<mat-menu #appMenu="matMenu" xPosition="before">
+<mat-menu #appMenu="matMenu" xPosition="before" panelClass="app-menu-panel">
   <!-- Welcome header as disabled menu item -->
   <button mat-menu-item class="menu-header" *ngIf="isConnected">
     <span>
@@ -28,64 +28,7 @@
   </button>
 
   <mat-divider
-    *ngIf="
-      (showDashboardButton || showChangeAppButton) && showSwitchLanguageButton
-    "></mat-divider>
-
-  <!-- Settings Group -->
-  <!-- Language selector as menu item with sub-menu -->
-  <button
-    mat-menu-item
-    #languageMenuTrigger="matMenuTrigger"
-    [matMenuTriggerFor]="languageMenu"
-    (mouseenter)="onLanguageButtonMouseEnter()"
-    *ngIf="showSwitchLanguageButton && languages !== undefined">
-    <!-- Flag icon instead of globe icon -->
-    <span class="current-language-icon" *ngIf="getLanguageIcon(currentLang)">
-      <img
-        *ngIf="isImageIcon(currentLang)"
-        [ngSrc]="getLanguageIcon(currentLang)"
-        [alt]="getCurrentLanguageName()"
-        width="24"
-        height="24"
-        class="flag-image-small" />
-    </span>
-    <span>{{ getCurrentLanguageName() }}</span>
-  </button>
-
-  <mat-menu #languageMenu="matMenu" class="language-submenu">
-    <button
-      mat-menu-item
-      *ngFor="let language of languages"
-      [class.selected]="currentLang === language.shortname"
-      (click)="selectLanguage(language.shortname)">
-      <!-- Language icon/flag - hidden when selected -->
-      <span
-        class="language-icon"
-        *ngIf="
-          getLanguageIcon(language.shortname) &&
-          currentLang !== language.shortname
-        ">
-        <img
-          *ngIf="isImageIcon(language.shortname)"
-          [ngSrc]="getLanguageIcon(language.shortname)"
-          [alt]="language.name"
-          width="24"
-          height="24"
-          class="flag-image" />
-      </span>
-      <span>{{ language.name }}</span>
-      <mat-icon *ngIf="currentLang === language.shortname" class="check-icon">
-        check
-      </mat-icon>
-    </button>
-  </mat-menu>
-
-  <mat-divider
-    *ngIf="
-      showSwitchLanguageButton &&
-      (isConnected || (!isConnected && showLoginButton))
-    "></mat-divider>
+    *ngIf="showDashboardButton || showChangeAppButton"></mat-divider>
 
   <!-- System Info Group -->
   <!-- About button -->

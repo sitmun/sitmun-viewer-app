@@ -1,6 +1,10 @@
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
+import {
+  patchSitnaMapGetMetersPerUnit,
+  type SitnaTcForMetersPerUnitPatch
+} from './app/utils/sitna-meters-per-unit';
 
 async function bootstrap(): Promise<void> {
   // Define SITNA_BASE_URL before importing the API (required by SITNA documentation)
@@ -25,6 +29,11 @@ async function bootstrap(): Promise<void> {
 
   try {
     await import('api-sitna');
+    // api-sitna: WKT metre CRS units ("meter") miss ol.proj.METERS_PER_UNIT ("m")
+    // → legend GetLegendGraphic SCALE=NaN (#152). Remove when upstream is fixed.
+    patchSitnaMapGetMetersPerUnit(
+      (window as { TC?: SitnaTcForMetersPerUnitPatch }).TC
+    );
   } catch (error: unknown) {
     // Use console directly here as this is bootstrap code before Angular services are available
      

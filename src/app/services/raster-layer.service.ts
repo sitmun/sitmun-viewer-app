@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { AppCfg, AppLayer, AppService } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
-import { LanguageService } from './language.service';
 import { inferOgcLinkFormat, LayerInfoService } from './layer-info.service';
 import { isProfileLayerQueryable } from './profile-layer-queryable';
 import {
@@ -27,7 +26,6 @@ export class RasterLayerService {
   private readonly virtualWmsService = inject(VirtualWmsCapabilitiesService);
   private readonly configLookup = inject(ConfigLookupService);
   private readonly layerInfoService = inject(LayerInfoService);
-  private readonly languageService = inject(LanguageService);
 
   /**
    * Check if a layer is a Raster that plans to build a WMTS service.
@@ -397,7 +395,13 @@ export class RasterLayerService {
             }
             this.mergeProfileTitleAbstractOntoLayer(ly, appLayer);
             this.mergeProfileOgcOnlineResourceLinks(ly, appLayer);
-            ly.queryable = isProfileLayerQueryable(appLayer);
+            // SITNA FeatureInfo expands groups via getDisgregatedLayerNames;
+            // apply the profile flag to the match and all descendants so child
+            // names cannot stay queryable when the cartography disables GFI.
+            this.setQueryableOnLayerTree(
+              ly,
+              isProfileLayerQueryable(appLayer)
+            );
             break;
           }
         }
@@ -410,6 +414,18 @@ export class RasterLayerService {
       }
     };
     visit(root);
+  }
+
+  /** Set OGC `queryable` on a WMS capability node and every nested `Layer`. */
+  private setQueryableOnLayerTree(ly: WMSLayer, queryable: boolean): void {
+    ly.queryable = queryable;
+    const children = ly.Layer;
+    if (!Array.isArray(children)) {
+      return;
+    }
+    for (const child of children) {
+      this.setQueryableOnLayerTree(child, queryable);
+    }
   }
 
   /**
@@ -636,53 +652,18 @@ export class RasterLayerService {
   }
 
   /**
-   * Get WMS capabilities from a Raster instance or cache.
-   * Helper to get WMS capabilities from a Raster instance or cache.
+   * Get already-loaded WMS capabilities from the Raster cache.
    *
    * @param realLayerConfig - The real layer configuration
    * @param rasterInstancesCache - Optional cache for Raster instances
-   * @param TCLayer - SITNA layer namespace (for creating Raster instances)
-   * @returns WMS capabilities or null if not available
+   * @returns Cached WMS capabilities or null if not available
    */
   getRasterCapabilities(
     realLayerConfig: RealLayerConfig,
-    rasterInstancesCache?: Map<string, any>,
-    TCLayer?: any
+    rasterInstancesCache?: Map<string, any>
   ): WMSCapabilities | null {
-    try {
-      const serviceKey = `${realLayerConfig.url}|${realLayerConfig.type}`;
-      // Check if we have a cached Raster instance with capabilities
-      const cachedRaster = rasterInstancesCache?.get?.(serviceKey);
-      if (cachedRaster?.capabilities) {
-        return cachedRaster.capabilities;
-      }
-
-      // Try to get capabilities from the real service (only if already loaded)
-      if (TCLayer?.Raster) {
-        try {
-          const tempRaster = new TCLayer.Raster({
-            url: realLayerConfig.url,
-            type: realLayerConfig.type
-          });
-          if (tempRaster.capabilities) {
-            return tempRaster.capabilities;
-          }
-          // If capabilities are not already loaded, we skip them (they would require async loading)
-        } catch (rasterError) {
-          console.error(
-            '[RasterLayerService] Error creating temporary Raster:',
-            rasterError
-          );
-        }
-      }
-    } catch (error) {
-      console.error(
-        '[RasterLayerService] Could not load WMS capabilities:',
-        error
-      );
-    }
-
-    return null;
+    const serviceKey = `${realLayerConfig.url}|${realLayerConfig.type}`;
+    return rasterInstancesCache?.get(serviceKey)?.capabilities ?? null;
   }
 
   /**
@@ -694,22 +675,19 @@ export class RasterLayerService {
    * @param realLayerConfig - The real layer configuration
    * @param wmsCapabilities - Optional WMS capabilities (if already loaded)
    * @param rasterInstancesCache - Optional cache for Raster instances
-   * @param TCLayer - SITNA layer namespace (for creating Raster instances)
    * @returns Enriched info object with title, abstract, metadata, contact info, etc.
    */
   enrichRasterLayerInfo(
     nodeId: string,
     realLayerConfig: RealLayerConfig,
     wmsCapabilities?: WMSCapabilities | null,
-    rasterInstancesCache?: Map<string, any>,
-    TCLayer?: any
+    rasterInstancesCache?: Map<string, any>
   ): any {
     // Get WMS capabilities if not provided
     if (!wmsCapabilities) {
       wmsCapabilities = this.getRasterCapabilities(
         realLayerConfig,
-        rasterInstancesCache,
-        TCLayer
+        rasterInstancesCache
       );
     }
 
@@ -740,13 +718,15 @@ export class RasterLayerService {
     // Initialize enrichedInfo object with app config data first (available synchronously)
     const enrichedInfo: any = {};
 
-    // Set name from real layer config
+    // Set name from real layer config (all WMS ids for composite layers)
     if (realLayerConfig.layerNames && realLayerConfig.layerNames.length > 0) {
-      const realLayerName = realLayerConfig.layerNames[0];
-
-      enrichedInfo.name = realLayerName.includes(':')
-        ? realLayerName.substring(realLayerName.indexOf(':') + 1)
-        : realLayerName;
+      enrichedInfo.name = realLayerConfig.layerNames
+        .map((layerName) =>
+          layerName.includes(':')
+            ? layerName.substring(layerName.indexOf(':') + 1)
+            : layerName
+        )
+        .join(', ');
     } else {
       enrichedInfo.name = nodeId;
     }
@@ -879,12 +859,28 @@ export class RasterLayerService {
       }
     }
 
-    // ParentAbstract: from app config
+    // Profile/app config is authoritative; WMS capabilities are only the backup.
     const tree = this.configLookup.findTreeContainingNode(nodeId);
-    if (tree && (tree as any).abstract) {
-      enrichedInfo.parentAbstract = (tree as any).abstract;
-    } else if (serviceConfig && (serviceConfig as any).abstract) {
-      enrichedInfo.parentAbstract = (serviceConfig as any).abstract;
+    const serviceTitleText = [serviceConfig?.title]
+      .map((candidate) =>
+        this.layerInfoService.extractLanguageAwareText(candidate)
+      )
+      .find((text): text is string => !!text);
+    if (serviceTitleText) {
+      enrichedInfo.parentTitle = serviceTitleText;
+    }
+
+    const serviceDescriptionText = [
+      serviceConfig?.description,
+      serviceConfig?.abstract,
+      tree && (tree as { abstract?: unknown }).abstract
+    ]
+      .map((candidate) =>
+        this.layerInfoService.extractLanguageAwareText(candidate)
+      )
+      .find((text): text is string => !!text);
+    if (serviceDescriptionText) {
+      enrichedInfo.parentAbstract = serviceDescriptionText;
     }
 
     // Merge WMS capabilities data (as fallback, app config takes precedence)
@@ -893,9 +889,6 @@ export class RasterLayerService {
         realLayerConfig.layerNames && realLayerConfig.layerNames.length > 0
           ? realLayerConfig.layerNames[0]
           : null;
-
-      // Get current user language preference
-      const currentLang = this.languageService.getCurrentLanguage();
 
       if (realLayerName) {
         const wmsLayer = this.layerInfoService.findLayerInCapabilities(
@@ -910,8 +903,7 @@ export class RasterLayerService {
 
             // Extract preferred language for display
             const abstractText = this.layerInfoService.extractLanguageAwareText(
-              wmsLayer.Abstract,
-              currentLang
+              wmsLayer.Abstract
             );
             if (abstractText) {
               enrichedInfo.abstract = abstractText;
@@ -940,6 +932,15 @@ export class RasterLayerService {
 
       // Get service-level information from capabilities
       if (wmsCapabilities.Service) {
+        if (!enrichedInfo.parentTitle && wmsCapabilities.Service.Title) {
+          const titleText = this.layerInfoService.extractLanguageAwareText(
+            wmsCapabilities.Service.Title
+          );
+          if (titleText) {
+            enrichedInfo.parentTitle = titleText;
+          }
+        }
+
         // Preserve full language structure and resolve preferred language for display
         if (!enrichedInfo.parentAbstract && wmsCapabilities.Service.Abstract) {
           // Store full language structure (preserve all variants)
@@ -948,8 +949,7 @@ export class RasterLayerService {
           // Extract preferred language for display
           const serviceAbstractText =
             this.layerInfoService.extractLanguageAwareText(
-              wmsCapabilities.Service.Abstract,
-              currentLang
+              wmsCapabilities.Service.Abstract
             );
           if (serviceAbstractText) {
             enrichedInfo.parentAbstract = serviceAbstractText;

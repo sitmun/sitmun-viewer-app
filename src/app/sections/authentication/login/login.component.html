@@ -21,7 +21,7 @@
     </div>
 
     <div class="form-section">
-      <form (submit)="login()">
+      <form (submit)="$event.preventDefault(); login()">
         <app-form-field-input
           [input_type]="'text'"
           [input_title]="'loginPage.usernameText' | translate"

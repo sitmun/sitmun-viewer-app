@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 
 import { CommonService } from '@api/services/common.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 import {
   DashboardSearchboxComponent,
@@ -80,12 +80,46 @@ describe('DashboardSearchboxComponent', () => {
     expect(keywordsSpy).toHaveBeenCalledWith('menorca');
   });
 
-  it('emits debounced keywords while typing so the dashboard list filters', fakeAsync(() => {
+  it('loads suggestions while typing without filtering the dashboard grid', fakeAsync(() => {
     component.searchControl.setValue('fixture');
     tick(300);
 
-    expect(keywordsSpy).toHaveBeenCalledWith('fixture');
+    expect(keywordsSpy).not.toHaveBeenCalled();
     expect(fetchDashboardSuggestions).toHaveBeenCalledWith('fixture');
+  }));
+
+  it('filters the dashboard grid only after submit', fakeAsync(() => {
+    component.searchControl.setValue('fixture');
+    tick(300);
+    keywordsSpy.mockClear();
+
+    component.handleSubmit();
+
+    expect(keywordsSpy).toHaveBeenCalledWith('fixture');
+  }));
+
+  it('clears loading when query shortened below 2 characters after in-flight request', fakeAsync(() => {
+    const pending$ = new Subject<{
+      applications: Array<{ id: number; name: string; title: string }>;
+      territories: [];
+    }>();
+    fetchDashboardSuggestions.mockReturnValue(pending$.asObservable());
+
+    component.searchControl.setValue('fix');
+    tick(300);
+    expect(component.loading).toBe(true);
+
+    component.searchControl.setValue('f');
+    tick(300);
+    expect(component.loading).toBe(false);
+
+    pending$.next({
+      applications: [{ id: 1, name: 'Fixture app', title: 'Fixture app' }],
+      territories: []
+    });
+    pending$.complete();
+    tick();
+    expect(component.loading).toBe(false);
   }));
 
   it('lists territory suggestions before application suggestions', fakeAsync(() => {

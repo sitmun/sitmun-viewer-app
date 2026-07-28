@@ -3,6 +3,13 @@ import { Injectable } from '@angular/core';
 import { AppCfg } from '@api/model/app-cfg';
 import { IndexedDbService } from '@auth/services/indexed-db.service';
 
+import { SitnaApiService } from './sitna-api.service';
+
+interface SitnaProxificationPrototype {
+  _isServiceWorker?: () => boolean;
+  __sitmunPreserveHttpWithServiceWorker?: boolean;
+}
+
 /**
  * Service for managing service worker communication for map middleware.
  *
@@ -23,7 +30,10 @@ export class MapServiceWorkerService {
    */
   private controllerChangeRegistered = false;
 
-  constructor(private readonly indexedDb: IndexedDbService) {}
+  constructor(
+    private readonly indexedDb: IndexedDbService,
+    private readonly sitnaApi: SitnaApiService
+  ) {}
 
   /**
    * Persists the proxy URL to IndexedDB and notifies the active service worker.
@@ -45,12 +55,40 @@ export class MapServiceWorkerService {
     const proxyUrl = config.global.proxy;
     const sw = navigator.serviceWorker;
 
+    this.preserveHttpMiddlewareProtocol(proxyUrl);
     this.registerControllerChangeListener(sw);
 
     const persistMiddlewareUrl = this.persistMiddlewareUrl(proxyUrl);
     const sendProxyUrlToSw = this.sendProxyUrlToSw(sw, proxyUrl);
 
     return Promise.all([persistMiddlewareUrl, sendProxyUrlToSw]).then(() => undefined);
+  }
+
+  /**
+   * SITNA 4.8 treats any controlling service worker as a reason to upgrade
+   * cross-origin HTTP requests to HTTPS. SITMUN's worker only adds proxy
+   * authorization, so an HTTP viewer must retain an explicitly HTTP middleware URL.
+   */
+  private preserveHttpMiddlewareProtocol(proxyUrl: string): void {
+    if (
+      window.location.protocol !== 'http:' ||
+      new URL(proxyUrl, window.location.href).protocol !== 'http:'
+    ) {
+      return;
+    }
+
+    const prototype = this.sitnaApi.getTC()?.tool?.Proxification
+      ?.prototype as SitnaProxificationPrototype | undefined;
+    if (
+      !prototype ||
+      prototype.__sitmunPreserveHttpWithServiceWorker ||
+      typeof prototype._isServiceWorker !== 'function'
+    ) {
+      return;
+    }
+
+    prototype._isServiceWorker = () => false;
+    prototype.__sitmunPreserveHttpWithServiceWorker = true;
   }
 
   /** Persists the proxy URL to IndexedDB. */

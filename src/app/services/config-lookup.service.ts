@@ -174,4 +174,95 @@ export class ConfigLookupService {
     }
     return undefined;
   }
+
+  findParentNodeId(nodeId: string): string | undefined {
+    for (const tree of this.treesCache.values()) {
+      if (!tree.nodes[nodeId]) {
+        continue;
+      }
+      for (const [parentId, parent] of Object.entries(tree.nodes) as [
+        string,
+        AppNodeInfo
+      ][]) {
+        if (parent.children?.includes(nodeId)) {
+          return parentId;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  getDirectChildIds(nodeId: string): string[] {
+    return [...(this.findNode(nodeId)?.children ?? [])];
+  }
+
+  hasLoadData(nodeId: string): boolean {
+    return this.findNode(nodeId)?.loadData === true;
+  }
+
+  /** Folder with loadData (radio or multi); viewer shows a load checkbox on the folder row. */
+  isLoadDataFolder(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    return !!node && node.loadData === true && !node.resource && !node.action;
+  }
+
+  isCheckboxLoadFolder(nodeId: string): boolean {
+    return this.isLoadDataFolder(nodeId) && !this.isRadioFolder(nodeId);
+  }
+
+  /**
+   * Leaf eligible for Capas GFI UI and map-click identify: cartography resource
+   * and tree {@code queryableActive} (consultable). Cartography
+   * {@code queryableFeatureEnabled} still gates GetCapabilities queryable and
+   * is AND-ed at layer add via {@code resolveSitmunGfiEnabled}.
+   */
+  isQueryableLeaf(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    if (!node?.resource || node.action || !this.isTruthyFlag(node.queryableActive)) {
+      return false;
+    }
+    return !!this.findLayer(node.resource);
+  }
+
+  private isTruthyFlag(value: unknown): boolean {
+    return value === true || value === 1 || value === 'true';
+  }
+
+  collectDescendantLeafIds(folderNodeId: string): string[] {
+    const result: string[] = [];
+    const visit = (id: string): void => {
+      const node = this.findNode(id);
+      if (!node) {
+        return;
+      }
+      if (node.resource && !node.action) {
+        result.push(id);
+        return;
+      }
+      for (const childId of this.getDirectChildIds(id)) {
+        visit(childId);
+      }
+    };
+    for (const childId of this.getDirectChildIds(folderNodeId)) {
+      visit(childId);
+    }
+    return result;
+  }
+
+  isRadioFolder(nodeId: string): boolean {
+    const node = this.findNode(nodeId);
+    return !!node?.isRadio && !node.resource && !node.action;
+  }
+
+  getRadioGroupParent(nodeId: string): string | undefined {
+    const parentId = this.findParentNodeId(nodeId);
+    return parentId && this.isRadioFolder(parentId) ? parentId : undefined;
+  }
+
+  getFirstRadioChildId(folderNodeId: string): string | undefined {
+    if (!this.isRadioFolder(folderNodeId)) {
+      return undefined;
+    }
+    return this.getDirectChildIds(folderNodeId)[0];
+  }
 }

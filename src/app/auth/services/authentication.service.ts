@@ -52,6 +52,9 @@ export class AuthenticationService<T> {
   private indexedDbInitialized = false;
   private proxyForbiddenNotified = false;
   private consecutiveProxyErrors = 0;
+  private logoutInProgress = false;
+  private sessionValidationInProgress = false;
+  private sessionValidationWarningShown = false;
 
   constructor(
     private readonly http: HttpClient,
@@ -68,11 +71,15 @@ export class AuthenticationService<T> {
   private setupServiceWorkerListener(): void {
     if ('serviceWorker' in navigator && navigator.serviceWorker) {
       navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'AUTH_ERROR') {
-          console.debug(
-            '[AuthService] Received AUTH_ERROR from SW. Refreshing token...'
-          );
+        const controller = navigator.serviceWorker.controller;
+        if (!controller || event.source !== controller) {
+          return;
+        }
+        const messageType = event.data?.type;
+        if (messageType === 'PROXY_AUTH_REQUIRED') {
           this.refreshProxyToken().subscribe();
+        } else if (messageType === 'PROXY_ACCESS_DENIED') {
+          this.warnProxyForbidden();
         }
       });
     }
@@ -93,7 +100,9 @@ export class AuthenticationService<T> {
 
   login(authenticationRequest: AuthenticationRequest) {
     return this.http
-      .post<void>(environment.apiUrl + URL_AUTH_LOGIN, authenticationRequest)
+      .post<void>(environment.apiUrl + URL_AUTH_LOGIN, authenticationRequest, {
+        context: suppressAuthRedirectContext()
+      })
       .pipe(
         switchMap(() =>
           this.http.get<UserDto>(environment.apiUrl + URL_API_USER_ACCOUNT)
@@ -124,27 +133,74 @@ export class AuthenticationService<T> {
         context: suppressAuthRedirectContext()
       })
       .pipe(
-        switchMap(() => from(this.clearSession())),
+        switchMap(() => from(this.clearClientSession())),
         catchError((error: unknown) =>
-          from(this.clearSession()).pipe(
+          from(this.clearClientSession()).pipe(
             switchMap(() => throwError(() => error))
           )
         )
       );
   }
 
+  explicitLogout(): void {
+    if (this.logoutInProgress) {
+      return;
+    }
+    this.logoutInProgress = true;
+    this.clearAuthentication()
+      .pipe(
+        finalize(() => {
+          this.logoutInProgress = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          void this.router.navigateByUrl(this.config.routes.loginPath);
+        },
+        error: (err: unknown) => {
+          console.error('[Auth] Logout failed:', err);
+          this.translate.get('auth.logoutFailed').subscribe((msg) => {
+            this.notificationService.error(msg);
+          });
+        }
+      });
+  }
+
   logout(): void {
-    this.clearAuthentication().subscribe({
-      next: () => {
-        void this.router.navigateByUrl(this.config.routes.loginPath);
-      },
-      error: (err: unknown) => {
-        console.error('[Auth] Logout failed:', err);
-        this.translate.get('auth.logoutFailed').subscribe((msg) => {
-          this.notificationService.error(msg);
-        });
-      }
-    });
+    this.explicitLogout();
+  }
+
+  /**
+   * Confirms whether a passive resource 401 represents an invalid main session.
+   * Concurrent failures share the same probe and never call the logout endpoint.
+   */
+  validateSessionAfterUnauthorized(): void {
+    if (this.sessionValidationInProgress || !this.isLoggedIn()) {
+      return;
+    }
+
+    this.sessionValidationInProgress = true;
+    this.http
+      .get<UserDto>(environment.apiUrl + URL_API_USER_ACCOUNT, {
+        context: suppressAuthRedirectContext()
+      })
+      .pipe(
+        finalize(() => {
+          this.sessionValidationInProgress = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.sessionValidationWarningShown = false;
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            this.clearExpiredClientSession();
+            return;
+          }
+          this.warnSessionValidationFailed();
+        }
+      });
   }
 
   getAuthMethods() {
@@ -200,7 +256,11 @@ export class AuthenticationService<T> {
   }
 
   private refreshProxyToken(): Observable<void> {
-    if (this.isRefreshingProxyToken()) {
+    if (
+      this.isRefreshingProxyToken() ||
+      this.logoutInProgress ||
+      !this.isLoggedIn()
+    ) {
       return of(undefined);
     }
 
@@ -214,19 +274,10 @@ export class AuthenticationService<T> {
         }),
         catchError((err: HttpErrorResponse) => {
           if (err.status === 401) {
-            this.stopProxyTokenRefresh();
-            this.clearSession().catch((e: unknown) => console.warn('[IDB] Error during session clear on 401:', e));
-            void this.router.navigate([this.config.routes.loginPath], {
-              queryParams: { 'session-expired': 'true' }
-            });
+            this.clearExpiredClientSession();
           } else if (err.status === 403) {
             console.error('[Auth] Proxy token refresh forbidden — check server authorization config');
-            if (!this.proxyForbiddenNotified) {
-              this.proxyForbiddenNotified = true;
-              this.translate.get('auth.proxyForbidden').subscribe((msg) => {
-                this.notificationService.warning(msg, 8000);
-              });
-            }
+            this.warnProxyForbidden();
           } else {
             console.warn('[Auth] Error refreshing proxy token:', err);
             this.consecutiveProxyErrors++;
@@ -259,13 +310,42 @@ export class AuthenticationService<T> {
   // Session utils ------------------------------------------------------------
 
   clearSessionAndRedirectToLogin(): void {
-    this.clearSession();
-    // Remove any floating MIA popups that live on document.body
-    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
-    void this.router.navigateByUrl(this.config.routes.loginPath);
+    void this.clearClientSession().then(() => {
+      // Remove any floating MIA popups that live on document.body
+      document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
+      void this.router.navigateByUrl(this.config.routes.loginPath);
+    });
   }
 
-  private clearSession(): Promise<void> {
+  private clearExpiredClientSession(): void {
+    void this.clearClientSession().then(() => {
+      void this.router.navigate([this.config.routes.loginPath], {
+        queryParams: { 'session-expired': 'true' }
+      });
+    });
+  }
+
+  private warnSessionValidationFailed(): void {
+    if (this.sessionValidationWarningShown) {
+      return;
+    }
+    this.sessionValidationWarningShown = true;
+    this.translate.get('auth.sessionValidationFailed').subscribe((message) => {
+      this.notificationService.warning(message, 8000);
+    });
+  }
+
+  private warnProxyForbidden(): void {
+    if (this.proxyForbiddenNotified) {
+      return;
+    }
+    this.proxyForbiddenNotified = true;
+    this.translate.get('auth.proxyForbidden').subscribe((message) => {
+      this.notificationService.warning(message, 8000);
+    });
+  }
+
+  private clearClientSession(): Promise<void> {
     sessionStorage.removeItem(this.USERNAME_KEY);
     this.stopProxyTokenRefresh();
     return this.indexedDb

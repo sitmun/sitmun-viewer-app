@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 
 import { TranslateService } from '@ngx-translate/core';
 
-import { AppConfigService } from './app-config.service';
+import { LanguageService } from './language.service';
 import {
   WMSLayer,
   WmsOnlineResourceLink
@@ -66,35 +66,25 @@ export function inferOgcLinkFormat(
 })
 export class LayerInfoService {
   private readonly translate = inject(TranslateService);
-  private readonly appConfigService = inject(AppConfigService);
+  private readonly languageService = inject(LanguageService);
 
-  /** Ordered fallback chain: defaultLanguage then all configured shortnames, excluding preferredLang. */
-  private buildFallbackChain(preferredLang: string): string[] {
-    const seen = new Set<string>([preferredLang, preferredLang.split('-')[0]]);
-    const chain: string[] = [];
-    const defaultLang = this.appConfigService.getDefaultLanguage();
-    if (defaultLang && !seen.has(defaultLang)) {
-      chain.push(defaultLang);
-      seen.add(defaultLang);
-    }
-    for (const { shortname } of this.appConfigService.getDefaultLanguages()) {
-      if (shortname && !seen.has(shortname)) {
-        chain.push(shortname);
-        seen.add(shortname);
-      }
-    }
-    return chain;
-  }
   /**
-   * Extract text in preferred language from multi-language fields.
-   * Used for extracting abstracts and titles from WMS capabilities or any multi-language source.
-   * Handles string, object, and array formats with language annotations.
+   * Extract text in the user's selected application language from multi-language fields.
+   * Picks the variant closest to that language; when none match, uses the first variant.
    *
    * @param textField - The text field (can be string, object with lang keys, or array)
-   * @param preferredLang - Preferred language code (e.g., 'es', 'en', 'ca')
+   * @param preferredLang - Optional override; defaults to {@link LanguageService#getCurrentLanguage}
    * @returns The best matching text or null if no text available
    */
   extractLanguageAwareText(
+    textField: any,
+    preferredLang?: string
+  ): string | null {
+    const userLang = preferredLang ?? this.languageService.getCurrentLanguage();
+    return this.extractLanguageAwareTextForLang(textField, userLang);
+  }
+
+  private extractLanguageAwareTextForLang(
     textField: any,
     preferredLang: string
   ): string | null {
@@ -102,96 +92,118 @@ export class LayerInfoService {
       return null;
     }
 
-    // If it's a simple string, return it
     if (typeof textField === 'string') {
       return textField;
     }
 
-    // If it's an object with language keys (e.g., { "en": "English", "es": "Spanish" })
-    // Or object where keys might be language codes
     if (typeof textField === 'object' && !Array.isArray(textField)) {
-      // Try preferred language first (exact match)
-      if (textField[preferredLang]) {
-        return textField[preferredLang];
-      }
-
-      // Try language without region (e.g., 'es-ES' -> 'es')
-      const langBase = preferredLang.split('-')[0];
-      if (langBase !== preferredLang && textField[langBase]) {
-        return textField[langBase];
-      }
-
-      // Try matching any key that starts with the language base
-      const matchingKey = Object.keys(textField).find(
-        (key) =>
-          key === preferredLang ||
-          key === langBase ||
-          key.startsWith(langBase + '-')
-      );
-      if (matchingKey) {
-        return textField[matchingKey];
-      }
-
-      // Try configured fallback chain: defaultLanguage then configured languages
-      const fallbacks = this.buildFallbackChain(preferredLang);
-      for (const fallback of fallbacks) {
-        const fallbackKey = Object.keys(textField).find(
-          (key) => key === fallback || key.startsWith(fallback + '-')
-        );
-        if (fallbackKey) {
-          return textField[fallbackKey];
-        }
-      }
-
-      // Return first available value as last resort
       const keys = Object.keys(textField);
-      if (keys.length > 0) {
-        return textField[keys[0]];
+      if (keys.length === 0) {
+        return null;
       }
+
+      const bestKey = this.pickBestLanguageKey(keys, preferredLang);
+      const selectedKey = bestKey ?? keys[0];
+      return this.resolveTextValue(textField[selectedKey], preferredLang);
     }
 
-    // If it's an array (e.g., [{ xml:lang: "en", _: "English" }, { xml:lang: "es", _: "Spanish" }])
-    // Or array of objects where each object represents a language variant
-    // Or array of strings (when XML parser doesn't preserve language attributes)
     if (Array.isArray(textField)) {
-      // First, try to find items with language attributes (objects) matching preferred language
-      const exactMatch = this.findTextInArray(textField, preferredLang);
-      if (exactMatch) {
-        return exactMatch;
-      }
-
-      // Try language base match (e.g., 'es' if preferred is 'es-ES')
-      const langBase = preferredLang.split('-')[0];
-      if (langBase !== preferredLang) {
-        const baseMatch = this.findTextInArray(textField, langBase);
-        if (baseMatch) {
-          return baseMatch;
+      const candidates: { lang: string; text: string }[] = [];
+      let firstText: string | null = null;
+      for (const item of textField) {
+        if (typeof item === 'string') {
+          firstText ??= item;
+          continue;
+        }
+        if (item && typeof item === 'object') {
+          const lang = this.extractLangFromItem(item);
+          const text = this.extractTextFromItem(item);
+          firstText ??= text;
+          if (lang && text) {
+            candidates.push({ lang, text });
+          }
         }
       }
 
-      // Try configured fallback chain for arrays
-      const fallbacks = this.buildFallbackChain(preferredLang);
-      for (const fallback of fallbacks) {
-        const fallbackMatch = this.findTextInArray(textField, fallback);
-        if (fallbackMatch) {
-          return fallbackMatch;
-        }
+      if (candidates.length > 0) {
+        const langs = candidates.map((candidate) => candidate.lang);
+        const bestLang = this.pickBestLanguageKey(langs, preferredLang);
+        const selectedLang = bestLang ?? langs[0];
+        return candidates.find((candidate) => candidate.lang === selectedLang)!
+          .text;
       }
 
-      // For arrays of strings (when XML parser doesn't preserve language attributes)
-      // Just use the first item if multiple are available
-      if (textField.length > 0) {
-        const first = textField[0];
-        if (typeof first === 'string') {
-          return first;
-        }
-        if (first && typeof first === 'object') {
-          return this.extractTextFromItem(first) || first;
-        }
-      }
+      return firstText;
     }
 
     return null;
+  }
+
+  private resolveTextValue(value: unknown, preferredLang: string): string | null {
+    if (value == null) {
+      return null;
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    const fromItem = this.extractTextFromItem(value);
+    if (fromItem) {
+      return fromItem;
+    }
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      return this.extractLanguageAwareTextForLang(value, preferredLang);
+    }
+    return null;
+  }
+
+  private parseLangTag(tag: string): string[] {
+    return tag.toLowerCase().split('-').filter(Boolean);
+  }
+
+  /** Higher score means closer to the user's selected language. */
+  private languageProximityScore(
+    preferredLang: string,
+    candidateLang: string
+  ): number {
+    const pref = this.parseLangTag(preferredLang);
+    const cand = this.parseLangTag(candidateLang);
+    if (!pref.length || !cand.length) {
+      return -1;
+    }
+
+    if (pref.join('-') === cand.join('-')) {
+      return 10000;
+    }
+
+    if (pref[0] !== cand[0]) {
+      return -1;
+    }
+
+    let score = 1000;
+    for (let i = 1; i < Math.min(pref.length, cand.length); i++) {
+      if (pref[i] === cand[i]) {
+        score += 100;
+      } else {
+        break;
+      }
+    }
+    return score;
+  }
+
+  private pickBestLanguageKey(
+    keys: string[],
+    preferredLang: string
+  ): string | null {
+    let bestKey: string | null = null;
+    let bestScore = -1;
+    for (const key of keys) {
+      const score = this.languageProximityScore(preferredLang, key);
+      if (score > bestScore) {
+        bestScore = score;
+        bestKey = key;
+      }
+    }
+    return bestScore >= 0 ? bestKey : null;
   }
 
   /**
@@ -317,39 +329,5 @@ export class LayerInfoService {
       item?.['$']?._ ||
       null
     );
-  }
-
-  /**
-   * Checks if a language code matches a target language (exact or base match).
-   */
-  private matchesLanguage(
-    lang: string | undefined,
-    targetLang: string
-  ): boolean {
-    if (!lang) {
-      return false;
-    }
-    const targetBase = targetLang.split('-')[0];
-    return (
-      lang === targetLang ||
-      lang === targetBase ||
-      lang.startsWith(targetBase + '-')
-    );
-  }
-
-  /**
-   * Finds text in an array of language-aware items matching a target language.
-   */
-  private findTextInArray(items: any[], targetLang: string): string | null {
-    for (const item of items) {
-      if (item && typeof item === 'object') {
-        const lang = this.extractLangFromItem(item);
-        const text = this.extractTextFromItem(item);
-        if (this.matchesLanguage(lang, targetLang) && text) {
-          return text;
-        }
-      }
-    }
-    return null;
   }
 }

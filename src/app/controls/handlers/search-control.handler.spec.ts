@@ -128,6 +128,32 @@ describe('SearchControlHandler', () => {
     });
   });
 
+  describe('loadPatches()', () => {
+    it('restores Map.trigger and guard marker on cleanup', async () => {
+      const trigger = jest.fn();
+      const mapProto = { trigger } as {
+        trigger: jest.Mock;
+        __sitmunFeaturesAddPatched?: boolean;
+      };
+      const mockTC = {
+        control: { Search: {} },
+        Map: { prototype: mapProto },
+        Consts: { event: { FEATURESADD: 'featuresadd' } }
+      };
+      mockSitnaApi.getTC.mockReturnValue(mockTC as any);
+
+      await handler.loadPatches(_mockAppCfg);
+
+      expect(mapProto.trigger).not.toBe(trigger);
+      expect(mapProto.__sitmunFeaturesAddPatched).toBe(true);
+
+      handler.cleanup();
+
+      expect(mapProto.trigger).toBe(trigger);
+      expect(mapProto.__sitmunFeaturesAddPatched).toBeUndefined();
+    });
+  });
+
   describe('Integration', () => {
     it('should handle full native search workflow', () => {
       const task: AppTasks = {

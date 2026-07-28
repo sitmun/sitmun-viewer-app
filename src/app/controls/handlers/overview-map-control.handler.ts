@@ -6,6 +6,7 @@ import { SitnaBaseLayer } from '@api/model/sitna-cfg';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { UIStateService } from '../../services/ui-state.service';
+import { sortBackgroundsByOrder } from '../../utils/background-order.util';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 
@@ -98,8 +99,7 @@ export class OverviewMapControlHandler extends ControlHandlerBase {
       return null;
     }
 
-    // Get first background
-    const firstBackground = context.backgrounds[0];
+    const firstBackground = sortBackgroundsByOrder(context.backgrounds)[0];
     const group =
       this.configLookup.findGroup(firstBackground.id) ||
       context.groups.find((g) => g.id === firstBackground.id);

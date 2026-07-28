@@ -160,4 +160,56 @@ describe('DashboardItemComponent', () => {
     expect(notificationService.warning).toHaveBeenCalled();
     expect(tagSpy).not.toHaveBeenCalled();
   });
+
+  it('syncs nbTerritory when item input changes after init', () => {
+    component.item = {
+      ...component.item,
+      territoryCount: 1,
+      singleTerritoryId: 10
+    };
+    component.ngOnInit();
+    expect(component.nbTerritory).toBe(1);
+
+    component.item = {
+      ...component.item,
+      id: 2,
+      territoryCount: 3,
+      singleTerritoryId: undefined
+    };
+    component.ngOnChanges({
+      item: {
+        previousValue: { territoryCount: 1 },
+        currentValue: component.item,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+
+    expect(component.nbTerritory).toBe(3);
+    expect(component.listOfTerritories).toEqual([]);
+  });
+
+  it('updates singleTerritoryId list when item changes', () => {
+    component.item = {
+      ...component.item,
+      territoryCount: 1,
+      singleTerritoryId: 10
+    };
+    component.ngOnInit();
+
+    component.item = {
+      ...component.item,
+      singleTerritoryId: 42
+    };
+    component.ngOnChanges({
+      item: {
+        previousValue: { singleTerritoryId: 10 },
+        currentValue: component.item,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+
+    expect(component.listOfTerritories).toEqual([{ id: 42, name: '' }]);
+  });
 });

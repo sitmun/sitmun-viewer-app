@@ -244,9 +244,10 @@ describe('MoreInfoAdvancedService', () => {
     ]);
   });
 
-  it('renders all MIA tasks in one backend request', () => {
+  it('renders all MIA tasks in one backend request with map-session coords and lang', () => {
     let emitted: any;
 
+    service.setMapContext(5, 7);
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
       { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
@@ -259,8 +260,8 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({
       miaTaskIds: [16, 18],
-      applicationId: 7,
-      territoryId: 11,
+      appId: 5,
+      terId: 7,
       parameters: { id: 99 },
       featureBbox: [5, 6, 7, 8]
     });
@@ -272,6 +273,7 @@ describe('MoreInfoAdvancedService', () => {
   it('associates render request errors with every requested MIA task', () => {
     let emitted: any;
 
+    service.setMapContext(7, 11);
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
       { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
@@ -284,8 +286,8 @@ describe('MoreInfoAdvancedService', () => {
 
     const error = 'Http failure response for http://localhost:9000/backend/api/tasks/template/more-info-advanced/render?lang=ca: 500 Boom';
     expect(emitted).toEqual([
-      { taskId: 16, title: '', html: '', error },
-      { taskId: 18, title: '', html: '', error }
+      { taskId: 16, title: 'One', html: '', error },
+      { taskId: 18, title: 'Two', html: '', error }
     ]);
   });
 
@@ -297,6 +299,7 @@ describe('MoreInfoAdvancedService', () => {
     { featureBbox: [5, 2, 3, 4] },
     { featureBbox: [1, 6, 3, 4] }
   ])('omits invalid featureBbox $featureBbox', ({ featureBbox }) => {
+    service.setMapContext(7, 11);
     service.renderMiaTasks([
       { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
     ], {}, { featureBbox: featureBbox as number[], applicationId: 7, territoryId: 11 }).subscribe();
@@ -307,6 +310,7 @@ describe('MoreInfoAdvancedService', () => {
   });
 
   it('sends only referenced fields when child parameter mappings are known', () => {
+    service.setMapContext(7, 11);
     service.renderMiaTasks([
       {
         id: 'task/16',
@@ -334,8 +338,8 @@ describe('MoreInfoAdvancedService', () => {
     const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
     expect(req.request.body).toEqual({
       miaTaskIds: [16],
-      applicationId: 7,
-      territoryId: 11,
+      appId: 7,
+      terId: 11,
       parameters: {
         featureId: 10,
         featureName: 'Road'
@@ -346,6 +350,7 @@ describe('MoreInfoAdvancedService', () => {
   });
 
   it('keeps short feature attributes when MIA child mappings are not available in viewer config', () => {
+    service.setMapContext(5, 7);
     service.renderMiaTasks([
       { id: 'task/32304', name: 'MIA 1', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
     ], {
@@ -361,8 +366,8 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.params.get('lang')).toBe('ca');
     expect(req.request.body).toEqual({
       miaTaskIds: [32304],
-      applicationId: 7,
-      territoryId: 11,
+      appId: 5,
+      terId: 7,
       parameters: { dificultat: 'Mitjana' }
     });
 
@@ -459,6 +464,41 @@ describe('MoreInfoAdvancedService', () => {
           { id: 'task/4', name: 'Query child', order: 3, childType: 'query', parameters: null, childTaskParameters: null }
         ]
       }
+    ]);
+  });
+
+  it('does not POST render without map-session coords', () => {
+    let emitted: any;
+
+    service.renderMiaTasks([
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], { id: 99 }).subscribe((result) => {
+      emitted = result;
+    });
+
+    httpMock.expectNone((request) =>
+      request.url.endsWith('/api/tasks/template/more-info-advanced/render')
+    );
+    expect(emitted[0].error).toContain('appId and terId');
+  });
+
+  it('maps HTTP render failures onto each requested MIA task id', () => {
+    let emitted: any;
+
+    service.setMapContext(5, 7);
+    service.renderMiaTasks([
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
+      { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+    ], { id: 99 }).subscribe((result) => {
+      emitted = result;
+    });
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/more-info-advanced/render'));
+    req.flush({ message: 'boom' }, { status: 500, statusText: 'Server Error' });
+
+    expect(emitted).toEqual([
+      { taskId: 16, title: 'One', html: '', error: expect.stringMatching(/500|Http failure|boom/i) },
+      { taskId: 18, title: 'Two', html: '', error: expect.stringMatching(/500|Http failure|boom/i) }
     ]);
   });
 });

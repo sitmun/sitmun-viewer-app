@@ -1,8 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import { TranslateService } from '@ngx-translate/core';
 import DOMPurify from 'dompurify';
-
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { MoreInfoAdvancedService, MiaExportAction, MiaRenderedTask, MiaTask, MiaViewerContext, TemplateExportResult } from '../../services/more-info-advanced.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
@@ -33,6 +35,8 @@ interface MiaTabsContainer extends HTMLElement {
 const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
   ADD_TAGS: ['iframe'],
   ADD_ATTR: [
+    'allow',
+    'allowfullscreen',
     'frameborder',
     'scrolling',
     'src',
@@ -41,22 +45,129 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'height',
     'data-mia-export-template',
     'data-mia-template-task-id',
-    'data-sitmun-pdf-template-scope'
+    'data-sitmun-pdf-template-scope',
+    'target'
   ],
 };
 
-export function sanitizeMiaRenderedHtml(html: string): string {
+/** Delay so SITNA FeatureInfo can finish its own popup DOM before MIA opens. */
+const MIA_OPEN_DELAY_MS = 350;
+
+const MIA_EMPTY_FALLBACK_HTML = '<div class="sitmun-mia-empty">No data</div>';
+
+export function sanitizeMiaRenderedHtml(
+  html: string,
+  emptyFallbackHtml: string = MIA_EMPTY_FALLBACK_HTML
+): string {
   const sanitized = DOMPurify.sanitize(
-    html || '<div class="sitmun-mia-empty">Sense dades</div>',
+    html || emptyFallbackHtml,
     MIA_HTML_SANITIZE_OPTIONS,
   );
   const document = new DOMParser().parseFromString(sanitized, 'text/html');
   document.querySelectorAll('iframe').forEach((iframe) => {
     iframe.removeAttribute('allow');
     iframe.removeAttribute('allowfullscreen');
+    iframe.removeAttribute('srcdoc');
     iframe.setAttribute('sandbox', '');
   });
   return document.body.innerHTML;
+}
+
+export interface MiaGfiTarget {
+  miaTasks: MiaTask[];
+  featureData: Record<string, unknown>;
+  featureKey: string;
+  features: unknown[];
+  layerName: string;
+}
+
+export interface MiaGfiResolveDeps {
+  getCartographyIdFromLayerName: (layerName: string) => string | null;
+  getTasksForCartography: (cartographyId: string) => MiaTask[];
+}
+
+function featureDataOf(feature: any): Record<string, unknown> {
+  if (!feature) return {};
+  if (typeof feature.getData === 'function') {
+    return feature.getData() || {};
+  }
+  return feature.data || {};
+}
+
+function featureKeyOf(layerName: string, feature: any): string {
+  const data = featureDataOf(feature);
+  try {
+    return `${layerName}::${JSON.stringify(data)}`;
+  } catch {
+    return `${layerName}::${String(data?.['id'] ?? '')}`;
+  }
+}
+
+/**
+ * Pick MIA tasks + feature attrs from a FeatureInfo-shaped GFI payload.
+ * Only layers that map to a cartography with MIA parents are candidates.
+ * Prefer `currentFeature` when it belongs to such a layer; otherwise the first
+ * feature of the first MIA-capable layer (skipping earlier non-MIA layers).
+ */
+export function resolveMiaGfiTarget(
+  options: { services?: any[] } | null | undefined,
+  deps: MiaGfiResolveDeps,
+  currentFeature?: any
+): MiaGfiTarget | null {
+  if (!options?.services || !Array.isArray(options.services)) {
+    return null;
+  }
+
+  type Hit = {
+    layerName: string;
+    miaTasks: MiaTask[];
+    features: any[];
+  };
+  const hits: Hit[] = [];
+
+  for (const service of options.services) {
+    if (!Array.isArray(service?.layers)) continue;
+    for (const layer of service.layers) {
+      if (!Array.isArray(layer?.features) || layer.features.length === 0) continue;
+      const cartographyId = deps.getCartographyIdFromLayerName(layer.name);
+      if (!cartographyId) continue;
+      const miaTasks = deps.getTasksForCartography(cartographyId);
+      if (miaTasks.length === 0) continue;
+      hits.push({
+        layerName: layer.name,
+        miaTasks,
+        features: layer.features
+      });
+    }
+  }
+
+  if (hits.length === 0) {
+    return null;
+  }
+
+  if (currentFeature) {
+    for (const hit of hits) {
+      if (hit.features.includes(currentFeature)) {
+        return {
+          miaTasks: hit.miaTasks,
+          featureData: featureDataOf(currentFeature),
+          featureKey: featureKeyOf(hit.layerName, currentFeature),
+          features: hit.features,
+          layerName: hit.layerName
+        };
+      }
+    }
+  }
+
+  const hit = hits[0];
+  const feature = hit.features[0];
+  return {
+    miaTasks: hit.miaTasks,
+    featureData: featureDataOf(feature),
+    featureKey: featureKeyOf(hit.layerName, feature),
+    features: hit.features,
+    layerName: hit.layerName
+  };
 }
 
 @Injectable({
@@ -68,6 +179,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   readonly requiredPatches = undefined;
 
   private readonly miaService = inject(MoreInfoAdvancedService);
+  private readonly translate = inject(TranslateService);
   private appConfig: AppCfg | null = null;
   private miaOverlayElement: HTMLElement | null = null;
   private floatingZIndex = 10050;
@@ -79,21 +191,65 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       loadingLabel: 'Generant PDF...'
     }
   };
+  private renderGeneration = 0;
+  private openTimer: ReturnType<typeof setTimeout> | null = null;
+  private renderSub: Subscription | null = null;
+  private lastGfiOptions: { services?: any[] } | null = null;
+  private lastOpenedFeatureKey: string | null = null;
+  private readonly mapEventCleanups: Array<() => void> = [];
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
   }
 
-  override cleanup(): void {
+  /** Abort in-flight open timer / render; bumps generation so late fills are ignored. */
+  cancelMiaRender(): void {
+    if (this.openTimer != null) {
+      clearTimeout(this.openTimer);
+      this.openTimer = null;
+    }
+    this.renderSub?.unsubscribe();
+    this.renderSub = null;
+    this.renderGeneration++;
+  }
+
+  /**
+   * Map rebuild / clearMap: abort in-flight work and drop overlay DOM + GFI cache.
+   */
+  clearOverlayForMapRebuild(): void {
+    this.cancelMiaRender();
+    this.lastGfiOptions = null;
     this.removeMiaOverlay();
+  }
+
+  onMapClear(_map?: object): void {
+    this.clearOverlayForMapRebuild();
+  }
+
+  /**
+   * Test hook: open MIA from a FeatureInfo-shaped payload (optional currentFeature).
+   */
+  openMiaFromGfiOptionsForTest(
+    options: { services?: any[] },
+    currentFeature?: any
+  ): void {
+    this.tryOpenMiaPopup(options, currentFeature);
+  }
+
+  override cleanup(): void {
+    this.clearOverlayForMapRebuild();
+    while (this.mapEventCleanups.length > 0) {
+      this.mapEventCleanups.pop()?.();
+    }
     super.cleanup();
   }
 
   private removeMiaOverlay(): void {
     if (this.miaOverlayElement) {
       this.miaOverlayElement.remove();
-      this.miaOverlayElement = null;
     }
+    this.miaOverlayElement = null;
+    this.lastOpenedFeatureKey = null;
   }
 
   override buildConfiguration(_task: AppTasks, context: AppCfg): SitnaControlConfig | null {
@@ -110,14 +266,20 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       if (mapProto && !mapProto.__sitmunMiaZIndex) {
         const bringFloatingPopupToFront = (event: PointerEvent) => {
           const target = event.target as HTMLElement | null;
-          const popup = target?.closest?.('.sitmun-mia-popup-overlay, .tc-ctl-popup') as HTMLElement | null;
+          const popup = target?.closest?.(
+            '.sitmun-mia-popup-overlay, .tc-ctl-popup'
+          ) as HTMLElement | null;
           if (!popup) return;
           popup.style.zIndex = String(++this.floatingZIndex);
         };
         document.addEventListener('pointerdown', bringFloatingPopupToFront, true);
         mapProto.__sitmunMiaZIndex = true;
         this.patchManager.add(() => {
-          document.removeEventListener('pointerdown', bringFloatingPopupToFront, true);
+          document.removeEventListener(
+            'pointerdown',
+            bringFloatingPopupToFront,
+            true
+          );
           delete mapProto.__sitmunMiaZIndex;
         });
       }
@@ -129,10 +291,17 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
           'responseCallback',
           (jp: MeldJoinPoint) => {
             const [options] = jp.args as [MiaFeatureInfoOptions];
+            const control = jp.target as any;
             const result = jp.proceedApply(jp.args);
 
             if (options?.services && this.miaService.hasMiaTasks()) {
-              setTimeout(() => this.tryOpenMiaPopup(options), 350);
+              this.lastGfiOptions = options;
+              this.ensureFeatureSelectionHook(control);
+              this.cancelMiaRender();
+              this.openTimer = setTimeout(() => {
+                this.openTimer = null;
+                this.tryOpenMiaPopup(options);
+              }, MIA_OPEN_DELAY_MS);
             }
 
             return result;
@@ -140,37 +309,207 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMiaResponseCallback = true;
         this.patchManager.add(() => {
-          meld.remove(responseCallbackAdvice);
+          responseCallbackAdvice.remove();
           delete fiProto.__sitmunMiaResponseCallback;
         });
       }
     });
   }
 
+  private ensureFeatureSelectionHook(featureInfoControl: any): void {
+    if (!featureInfoControl || featureInfoControl.__sitmunMiaFiEvents) {
+      return;
+    }
+    const map = featureInfoControl.map;
+    if (!map?.on) {
+      return;
+    }
+
+    const onDisplayRender = (e: any) => {
+      const displayControl = e?.control;
+      if (!displayControl) return;
+
+      const isFromFeatureInfo = displayControl.caller === featureInfoControl;
+      const isHighlightedPopup =
+        displayControl.currentFeature?.showsPopup === true;
+      if (!isFromFeatureInfo && !isHighlightedPopup) {
+        return;
+      }
+
+      const currentFeature = displayControl.currentFeature;
+      if (!currentFeature || !this.lastGfiOptions) {
+        return;
+      }
+
+      this.tryOpenMiaPopup(this.lastGfiOptions, currentFeature);
+    };
+
+    map.on('popup.tc drawtable.tc', onDisplayRender);
+    featureInfoControl.__sitmunMiaFiEvents = { map, onDisplayRender };
+    this.mapEventCleanups.push(() => {
+      map.off?.('popup.tc drawtable.tc', onDisplayRender);
+      delete featureInfoControl.__sitmunMiaFiEvents;
+    });
+  }
+
+  private resolveDeps(): MiaGfiResolveDeps {
+    return {
+      getCartographyIdFromLayerName: (name) =>
+        this.getCartographyIdFromLayerName(name),
+      getTasksForCartography: (id) => this.miaService.getTasksForCartography(id)
+    };
+  }
+
+  private tryOpenMiaPopup(options: any, currentFeature?: any): void {
+    const target = resolveMiaGfiTarget(
+      options,
+      this.resolveDeps(),
+      currentFeature
+    );
+    if (!target) {
+      return;
+    }
+
+    const overlayVisible = !!this.miaOverlayElement?.classList.contains(
+      'sitmun-mia-popup-visible'
+    );
+    if (
+      overlayVisible &&
+      this.lastOpenedFeatureKey === target.featureKey
+    ) {
+      return;
+    }
+
+    this.cancelMiaRender();
+    const viewerContext = this.buildMiaViewerContext({
+      name: target.layerName,
+      features: target.features
+    });
+    this.openMiaPopup(
+      target.miaTasks,
+      target.featureData,
+      target.featureKey,
+      viewerContext
+    );
+  }
+
+  private openMiaPopup(
+    miaTasks: MiaTask[],
+    featureData: Record<string, unknown>,
+    featureKey: string,
+    viewerContext: MiaViewerContext | null
+  ): void {
+    this.renderSub?.unsubscribe();
+    this.renderSub = null;
+
+    const overlay = this.ensureMiaOverlay();
+    if (!overlay) return;
+
+    const popupId = 'mia-popup-' + Date.now();
+    const contentDiv = overlay.querySelector(
+      '.tc-ctl-popup-content'
+    ) as HTMLElement | null;
+    if (!contentDiv) return;
+    contentDiv.innerHTML = this.buildMiasHtml(popupId, miaTasks);
+
+    const position = this.getInitialMiaOverlayPosition(overlay);
+    this.placeMiaOverlayAt(position.left, position.top);
+    overlay.classList.add('sitmun-mia-popup-visible');
+    overlay.style.zIndex = String(++this.floatingZIndex);
+
+    this.wireTopLevelMiaTabs(popupId, contentDiv);
+    this.wireBackendRenderedTabs(contentDiv);
+
+    this.lastOpenedFeatureKey = featureKey;
+    const generation = this.renderGeneration;
+    const exportActions = Array.from(new Map(
+      miaTasks
+        .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
+        .map((action) => [`${action.taskId}:${action.output}`, action])
+    ).values());
+
+    this.renderSub = this.miaService
+      .renderMiaTasks(miaTasks, featureData, viewerContext ?? undefined)
+      .pipe(take(1))
+      .subscribe({
+        next: (renderedTasks) => {
+          if (generation !== this.renderGeneration) return;
+          this.fillRenderedMiaTasks(contentDiv, renderedTasks, exportActions);
+        },
+        error: (error) => {
+          if (generation !== this.renderGeneration) return;
+          this.fillRenderedMiaError(
+            contentDiv,
+            error?.message || 'MIA rendering failed'
+          );
+        }
+      });
+  }
+
   private ensureMiaOverlay(): HTMLElement | null {
     if (this.miaOverlayElement && !this.miaOverlayElement.isConnected) {
       this.miaOverlayElement = null;
     }
-    if (this.miaOverlayElement) return this.miaOverlayElement;
+    if (this.miaOverlayElement) {
+      this.refreshMiaOverlayChrome(this.miaOverlayElement);
+      return this.miaOverlayElement;
+    }
 
     const overlay = document.createElement('div');
     overlay.className = 'sitmun-mia-popup-overlay';
-    overlay.innerHTML = `
-      <div class="sitmun-mia-popup-toolbar">
-        <span class="sitmun-mia-popup-toolbar-title">Informació avançada</span>
-        <button type="button" class="sitmun-mia-popup-close" aria-label="Tancar">×</button>
-      </div>
-      <div class="tc-ctl-popup-content sitmun-mia-popup-content"></div>
-    `;
-    overlay.querySelector('.sitmun-mia-popup-close')?.addEventListener('click', () => {
-      this.hideMiaOverlay();
-    });
+    const toolbar = document.createElement('div');
+    toolbar.className = 'sitmun-mia-popup-toolbar';
+    const title = document.createElement('span');
+    title.className = 'sitmun-mia-popup-toolbar-title';
+    toolbar.appendChild(title);
+    toolbar.appendChild(this.createMiaCloseControl());
+    const content = document.createElement('div');
+    content.className = 'tc-ctl-popup-content sitmun-mia-popup-content';
+    overlay.appendChild(toolbar);
+    overlay.appendChild(content);
+    this.refreshMiaOverlayChrome(overlay);
     this.addMiaOverlayPointerHandlers(overlay);
 
     document.body.appendChild(overlay);
     this.miaOverlayElement = overlay;
 
     return overlay;
+  }
+
+  /**
+   * Match SITNA FeatureInfo popup close: sitna-button.tc-ctl-popup-close with
+   * localized title/label (api-sitna tc-ctl-popup template).
+   */
+  private createMiaCloseControl(): HTMLElement {
+    const useSitnaButton = !!customElements.get('sitna-button');
+    const close = document.createElement(
+      useSitnaButton ? 'sitna-button' : 'button'
+    ) as HTMLElement;
+    if (!useSitnaButton) {
+      (close as HTMLButtonElement).type = 'button';
+    } else {
+      close.setAttribute('variant', 'minimal');
+    }
+    close.className = 'tc-ctl-popup-close sitmun-mia-popup-close';
+    // Match SITNA Popup.js (pointerup). Avoid also binding click (would double-fire).
+    close.addEventListener('pointerup', () => {
+      this.hideMiaOverlay();
+    });
+    return close;
+  }
+
+  private refreshMiaOverlayChrome(overlay: HTMLElement): void {
+    const title = overlay.querySelector('.sitmun-mia-popup-toolbar-title');
+    if (title) {
+      title.textContent = this.translate.instant('mia.popup.title');
+    }
+    const close = overlay.querySelector('.sitmun-mia-popup-close');
+    if (close) {
+      const label = this.translate.instant('mia.popup.close');
+      close.setAttribute('title', label);
+      close.setAttribute('aria-label', label);
+      close.textContent = label;
+    }
   }
 
   private addMiaOverlayPointerHandlers(overlay: HTMLElement): void {
@@ -187,8 +526,12 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
       const target = event.target as HTMLElement | null;
       const isDragHandle = !!target?.closest('.sitmun-mia-popup-toolbar');
-      const isButton = !!target?.closest('button, a, input, select, textarea');
-      if (!isDragHandle || isButton) return;
+      // sitna-button is not a native <button>; excluding it avoids setPointerCapture
+      // stealing pointerup from .sitmun-mia-popup-close (SITNA close uses pointerup).
+      const isInteractive = !!target?.closest(
+        'button, a, input, select, textarea, sitna-button, .sitmun-mia-popup-close, .tc-ctl-popup-close'
+      );
+      if (!isDragHandle || isInteractive) return;
 
       event.preventDefault();
       dragging = true;
@@ -218,72 +561,10 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     };
     overlay.addEventListener('pointerup', stopDrag);
     overlay.addEventListener('pointercancel', stopDrag);
-    overlay.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
-    overlay.addEventListener('click', (event) => event.stopPropagation());
-  }
-
-  private tryOpenMiaPopup(options: MiaFeatureInfoOptions): void {
-    if (!options?.services || !Array.isArray(options.services)) return;
-
-    for (const service of options.services) {
-      if (!Array.isArray(service?.layers)) continue;
-
-      for (const layer of service.layers) {
-        if (!Array.isArray(layer?.features) || layer.features.length === 0) continue;
-
-        const cartographyId = typeof layer.name === 'string'
-          ? this.getCartographyIdFromLayerName(layer.name)
-          : null;
-        if (!cartographyId) continue;
-
-        const miaTasks = this.miaService.getTasksForCartography(cartographyId);
-        if (miaTasks.length === 0) continue;
-
-        const feature = this.asRecord(layer.features[0]);
-        const featureData = this.asRecord(
-          this.callUnknownFunction(feature['getData'], layer.features[0]) ?? feature['data']
-        );
-        const viewerContext = this.buildMiaViewerContext(layer);
-        if (!viewerContext) continue;
-        this.openMiaPopup(miaTasks, featureData, viewerContext);
-        return;
-      }
-    }
-  }
-
-  private openMiaPopup(
-    miaTasks: MiaTask[],
-    featureData: Record<string, unknown>,
-    viewerContext: MiaViewerContext
-  ): void {
-    const overlay = this.ensureMiaOverlay();
-    if (!overlay) return;
-
-    const popupId = 'mia-popup-' + Date.now();
-    const contentDiv = overlay.querySelector('.tc-ctl-popup-content') as HTMLElement | null;
-    if (!contentDiv) return;
-    contentDiv.innerHTML = this.buildMiasHtml(popupId, miaTasks);
-    const exportActions = Array.from(new Map(
-      miaTasks
-        .flatMap((miaTask) => this.miaService.getExportActionsForCartography(miaTask.cartographyId))
-        .map((action) => [`${action.taskId}:${action.output}`, action])
-    ).values());
-
-    const position = this.getInitialMiaOverlayPosition(overlay);
-    this.placeMiaOverlayAt(position.left, position.top);
-    overlay.classList.add('sitmun-mia-popup-visible');
-    overlay.style.zIndex = String(++this.floatingZIndex);
-
-    this.wireTopLevelMiaTabs(popupId, contentDiv);
-    this.wireBackendRenderedTabs(contentDiv);
-
-    this.miaService.renderMiaTasks(miaTasks, featureData, viewerContext).subscribe({
-      next: (renderedTasks) => this.fillRenderedMiaTasks(contentDiv, renderedTasks, exportActions),
-      error: (error: unknown) => this.fillRenderedMiaError(
-        contentDiv,
-        error instanceof Error ? error.message : 'MIA rendering failed'
-      )
+    overlay.addEventListener('wheel', (event) => event.stopPropagation(), {
+      passive: true
     });
+    overlay.addEventListener('click', (event) => event.stopPropagation());
   }
 
   private buildMiaViewerContext(layer: MiaFeatureInfoLayer): MiaViewerContext | null {
@@ -426,15 +707,19 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       ? value as Record<string, unknown>
       : {};
   }
-
   private hideMiaOverlay(): void {
+    this.cancelMiaRender();
     if (!this.miaOverlayElement) return;
     this.miaOverlayElement.classList.remove('sitmun-mia-popup-visible');
     const contentDiv = this.miaOverlayElement.querySelector('.tc-ctl-popup-content');
     if (contentDiv) contentDiv.innerHTML = '';
+    this.lastOpenedFeatureKey = null;
   }
 
-  private getInitialMiaOverlayPosition(overlay: HTMLElement): { left: number; top: number } {
+  private getInitialMiaOverlayPosition(overlay: HTMLElement): {
+    left: number;
+    top: number;
+  } {
     const width = overlay.offsetWidth || 420;
     const height = overlay.offsetHeight || 260;
     const left = Math.round((window.innerWidth - width) / 2);
@@ -493,7 +778,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   }
 
   private buildMiaHtml(miaTask: MiaTask): string {
-    return `<div class="sitmun-mia-body" data-mia-task-id="${this.parseTaskId(miaTask.id)}"><div class="sitmun-mia-loading"><span class="sitmun-mia-spinner"></span> Carregant...</div></div>`;
+    const loading = this.escapeHtml(this.translate.instant('mia.popup.loading'));
+    return `<div class="sitmun-mia-body" data-mia-task-id="${this.parseTaskId(miaTask.id)}"><div class="sitmun-mia-loading"><span class="sitmun-mia-spinner"></span> ${loading}</div></div>`;
   }
 
   private wireTopLevelMiaTabs(popupId: string, contentDiv: HTMLElement): void {
@@ -501,16 +787,21 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     if (!tabsBar) return;
 
     tabsBar.addEventListener('click', (event: Event) => {
-      const btn = (event.target as HTMLElement).closest('[data-mia-main-tab]') as HTMLElement;
+      const btn = (event.target as HTMLElement).closest(
+        '[data-mia-main-tab]'
+      ) as HTMLElement;
       if (!btn) return;
 
       const tabId = btn.getAttribute('data-mia-main-tab');
-      tabsBar.querySelectorAll('.sitmun-mia-main-tab').forEach((tab) => tab.classList.remove('sitmun-mia-main-tab-active'));
+      tabsBar
+        .querySelectorAll('.sitmun-mia-main-tab')
+        .forEach((tab) => tab.classList.remove('sitmun-mia-main-tab-active'));
       btn.classList.add('sitmun-mia-main-tab-active');
 
       contentDiv.querySelectorAll('.sitmun-mia-main-panel').forEach((panel) => {
         const panelElement = panel as HTMLElement;
-        panelElement.style.display = panelElement.getAttribute('data-mia-main-panel') === tabId ? '' : 'none';
+        panelElement.style.display =
+          panelElement.getAttribute('data-mia-main-panel') === tabId ? '' : 'none';
       });
     });
   }
@@ -519,7 +810,9 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     const tabsContainer = contentDiv as MiaTabsContainer;
     if (tabsContainer.__sitmunMiaBackendTabs) return;
     contentDiv.addEventListener('click', (event: Event) => {
-      const btn = (event.target as HTMLElement).closest('[data-mia-tab]') as HTMLElement;
+      const btn = (event.target as HTMLElement).closest(
+        '[data-mia-tab]'
+      ) as HTMLElement;
       if (!btn) return;
 
       const tabId = btn.getAttribute('data-mia-tab');
@@ -527,12 +820,15 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       const container = tabsBar?.parentElement;
       if (!tabsBar || !container) return;
 
-      tabsBar.querySelectorAll('.sitmun-mia-tab').forEach((tab) => tab.classList.remove('sitmun-mia-tab-active'));
+      tabsBar
+        .querySelectorAll('.sitmun-mia-tab')
+        .forEach((tab) => tab.classList.remove('sitmun-mia-tab-active'));
       btn.classList.add('sitmun-mia-tab-active');
 
       container.querySelectorAll('.sitmun-mia-tab-panel').forEach((panel) => {
         const panelElement = panel as HTMLElement;
-        panelElement.style.display = panelElement.getAttribute('data-mia-panel') === tabId ? '' : 'none';
+        panelElement.style.display =
+          panelElement.getAttribute('data-mia-panel') === tabId ? '' : 'none';
       });
     });
     tabsContainer.__sitmunMiaBackendTabs = true;
@@ -541,16 +837,20 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private fillRenderedMiaTasks(
     contentDiv: HTMLElement,
     renderedTasks: MiaRenderedTask[],
-    fallbackExportActions: MiaExportAction[]
+    exportActions: MiaExportAction[]
   ): void {
     renderedTasks.forEach((renderedTask) => {
-      const target = contentDiv.querySelector(`[data-mia-task-id="${renderedTask.taskId}"]`);
+      const target = contentDiv.querySelector(
+        `[data-mia-task-id="${renderedTask.taskId}"]`
+      );
       if (!target) return;
       target.innerHTML = renderedTask.error
         ? `<div class="sitmun-mia-error">${this.escapeHtml(renderedTask.error)}</div>`
-        : sanitizeMiaRenderedHtml(renderedTask.html || '');
-
-      this.injectDownloadButtons(target as HTMLElement, fallbackExportActions);
+        : sanitizeMiaRenderedHtml(
+            renderedTask.html || '',
+            `<div class="sitmun-mia-empty">${this.escapeHtml(this.translate.instant('mia.empty'))}</div>`
+          );
+      this.injectDownloadButtons(target as HTMLElement, exportActions);
     });
   }
 
@@ -716,11 +1016,16 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
 
   private escapeHtml(value: string): string {
     return value
-      .split('&').join('&amp;')
-      .split('<').join('&lt;')
-      .split('>').join('&gt;')
-      .split('"').join('&quot;')
-      .split("'").join('&#39;');
+      .split('&')
+      .join('&amp;')
+      .split('<')
+      .join('&lt;')
+      .split('>')
+      .join('&gt;')
+      .split('"')
+      .join('&quot;')
+      .split("'")
+      .join('&#x27;');
   }
 
   private getCartographyIdFromLayerName(layerName: string): string | null {

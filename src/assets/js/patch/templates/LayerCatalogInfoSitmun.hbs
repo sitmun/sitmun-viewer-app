@@ -55,6 +55,16 @@
             </div>
           </div>
         {{/if}}
+        {{#if parentTitle}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'parentTitle'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>{{{parentTitle}}}</pre>
+            </div>
+          </div>
+        {{/if}}
         {{#if parentAbstract}}
           <div class='tc-ctl-lcat-info-data'>
             <h4 class='tc-ctl-lcat-info-data-title'>

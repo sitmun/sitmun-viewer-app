@@ -93,7 +93,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         mapProto.__sitmunFiAddControl = true;
         this.patchManager.add(() => {
-          meld.remove(addControlAdvice);
+          addControlAdvice.remove();
           delete mapProto.__sitmunFiAddControl;
         });
       }
@@ -150,7 +150,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunFiRegister = true;
         this.patchManager.add(() => {
-          meld.remove(registerAdvice);
+          registerAdvice.remove();
           delete fiProto.__sitmunFiRegister;
           while (this.mapEventCleanups.length > 0) {
             const cleanup = this.mapEventCleanups.pop();
@@ -186,7 +186,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMoreInfo = true;
         this.patchManager.add(() => {
-          meld.remove(responseCallbackAdvice);
+          responseCallbackAdvice.remove();
           delete fiProto.__sitmunMoreInfo;
         });
       }
@@ -208,8 +208,31 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         fiProto.__sitmunMoreInfoDisplayResults = true;
         this.patchManager.add(() => {
-          meld.remove(displayResultsAdvice);
+          displayResultsAdvice.remove();
           delete fiProto.__sitmunMoreInfoDisplayResults;
+        });
+      }
+
+      // --- Capas GFI user toggle: gate queryable via layer.options.sitmunGfiEnabled ---
+      const WrapRasterProto = TC?.wrap?.layer?.Raster?.prototype;
+      if (WrapRasterProto?.getInfo && !WrapRasterProto.__sitmunGfiUserGate) {
+        const getInfoAdvice = meld.around(
+          WrapRasterProto,
+          'getInfo',
+          function (this: {
+            parent?: { options?: { sitmunGfiEnabled?: boolean } };
+          }, jp: MeldJoinPoint): unknown {
+            const result = jp.proceed() as { queryable?: boolean };
+            if (this.parent?.options?.sitmunGfiEnabled === false) {
+              return { ...result, queryable: false };
+            }
+            return result;
+          }
+        );
+        WrapRasterProto.__sitmunGfiUserGate = true;
+        this.patchManager.add(() => {
+          getInfoAdvice.remove();
+          delete WrapRasterProto.__sitmunGfiUserGate;
         });
       }
 
@@ -224,9 +247,25 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         const describeAdvice = meld.around(
           RasterProto,
           'describeLayer',
-          function (this: unknown, jp: MeldJoinPoint): unknown {
+          function (
+            this: { availableNames?: string[]; names?: string[] | string },
+            jp: MeldJoinPoint
+          ): unknown {
             const full = jp.args[0] as boolean | undefined;
-            const fallback = full ? [{ owsType: 'WMS' }] : { owsType: 'WMS' };
+            const names = Array.isArray(this.availableNames)
+              ? this.availableNames
+              : Array.isArray(this.names)
+                ? this.names
+                : typeof this.names === 'string' && this.names
+                  ? [this.names]
+                  : [];
+            // Include layerName so Raster.getLegend's describeLayer.find(...)
+            // does not throw when FeatureInfo's safe wrapper is active (#164).
+            const fallback = full
+              ? names.length
+                ? names.map((layerName) => ({ owsType: 'WMS', layerName }))
+                : [{ owsType: 'WMS', layerName: '' }]
+              : { owsType: 'WMS', layerName: names[0] ?? '' };
             return Promise.resolve(jp.proceed() as Promise<unknown>).catch(
               () => fallback
             );
@@ -234,7 +273,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         RasterProto.__sitmunDescribeLayerSafe = true;
         this.patchManager.add(() => {
-          meld.remove(describeAdvice);
+          describeAdvice.remove();
           delete RasterProto.__sitmunDescribeLayerSafe;
         });
       }
@@ -290,7 +329,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
         );
         ProxProto.__sitmunGfiIsolation = true;
         this.patchManager.add(() => {
-          meld.remove(fetchAdvice);
+          fetchAdvice.remove();
           delete ProxProto.__sitmunGfiIsolation;
         });
       }

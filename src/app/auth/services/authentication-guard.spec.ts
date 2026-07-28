@@ -1,84 +1,86 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, UrlTree } from '@angular/router';
 
-import { AuthenticationService } from '@auth/services/authentication.service';
 import { CustomAuthConfig, NavigationPath } from '@config/app.config';
 
 import { AuthenticationGuard } from './authentication-guard';
+import { AuthenticationService } from './authentication.service';
 
 describe('AuthenticationGuard', () => {
   let guard: AuthenticationGuard;
-  let authService: {
-    getAuthConfig: jest.Mock;
-    isLoggedIn: jest.Mock;
-  };
+  let isLoggedIn: jest.Mock;
   let navigate: jest.Mock;
-  let navigateByUrl: jest.Mock;
+
+  const activate = (url: string) =>
+    guard.canActivate({} as never, { url } as never);
 
   beforeEach(() => {
-    authService = {
-      getAuthConfig: jest.fn().mockReturnValue(CustomAuthConfig),
-      isLoggedIn: jest.fn()
-    };
+    isLoggedIn = jest.fn();
     navigate = jest.fn().mockResolvedValue(true);
-    navigateByUrl = jest.fn().mockResolvedValue(true);
 
     TestBed.configureTestingModule({
       providers: [
         AuthenticationGuard,
-        { provide: AuthenticationService, useValue: authService },
+        {
+          provide: AuthenticationService,
+          useValue: {
+            isLoggedIn,
+            getAuthConfig: () => CustomAuthConfig
+          }
+        },
         {
           provide: Router,
-          useValue: { navigate, navigateByUrl }
+          useValue: {
+            navigate,
+            createUrlTree: (commands: string[]) =>
+              ({ toString: () => commands.join('/') } as UrlTree)
+          }
         }
       ]
     });
+
     guard = TestBed.inject(AuthenticationGuard);
   });
 
-  it('redirects to login with return URL when route is protected and user is not logged in', () => {
-    authService.isLoggedIn.mockReturnValue(false);
-    const state = { url: '/user/dashboard' } as any;
-    const route = {} as any;
+  it('blocks unauthenticated access to private routes and sends user to login', () => {
+    isLoggedIn.mockReturnValue(false);
 
-    const result = guard.canActivate(route, state);
-
-    expect(result).toBe(false);
-    expect(navigate).toHaveBeenCalledWith(
-      [CustomAuthConfig.routes.loginPath],
-      {
-        queryParams: {
-          [CustomAuthConfig.routes.loginQueryParam]: '/user/dashboard'
-        }
+    expect(activate('/user/dashboard')).toBe(false);
+    expect(navigate).toHaveBeenCalledWith([NavigationPath.Auth.Login], {
+      queryParams: {
+        [CustomAuthConfig.routes.loginQueryParam]: '/user/dashboard'
       }
-    );
-    expect(navigateByUrl).not.toHaveBeenCalled();
+    });
   });
 
-  it('allows access when route is public and user is not logged in', () => {
-    authService.isLoggedIn.mockReturnValue(false);
-    const state = { url: '/auth/login' } as any;
+  it('allows unauthenticated access to public routes', () => {
+    isLoggedIn.mockReturnValue(false);
 
-    expect(guard.canActivate({} as any, state)).toBe(true);
+    expect(activate('/public/dashboard')).toBe(true);
     expect(navigate).not.toHaveBeenCalled();
-    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
-  it('navigates to user dashboard when route is public and user is logged in', () => {
-    authService.isLoggedIn.mockReturnValue(true);
-    const state = { url: '/public/dashboard' } as any;
+  it('allows authenticated access to public routes so publicAuthClearGuard can run', () => {
+    isLoggedIn.mockReturnValue(true);
 
-    expect(guard.canActivate({} as any, state)).toBe(true);
-    expect(navigateByUrl).toHaveBeenCalledWith(
-      NavigationPath.Section.User.Dashboard
-    );
+    expect(activate('/public/dashboard')).toBe(true);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('allows access when route is protected and user is logged in', () => {
-    authService.isLoggedIn.mockReturnValue(true);
-    const state = { url: '/user/map/1/2' } as any;
+  it('redirects authenticated users away from auth routes with UrlTree', () => {
+    isLoggedIn.mockReturnValue(true);
 
-    expect(guard.canActivate({} as any, state)).toBe(true);
+    const result = activate('/auth/login');
+
+    expect(result).not.toBe(true);
+    expect(String(result)).toContain(NavigationPath.Section.User.Dashboard);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('allows authenticated access to private user routes', () => {
+    isLoggedIn.mockReturnValue(true);
+
+    expect(activate('/user/dashboard')).toBe(true);
     expect(navigate).not.toHaveBeenCalled();
   });
 });
