@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
+- **Branding**: Replace default Angular favicon with the SITMUN icon (same as admin).
 - **i18n** / **MIA**: When UI language is blank/whitespace, omit `lang` on config/MIA requests and let the backend resolve locale (`RequestLocaleResolutionService`); do not hardcode `en`.
 
 ## [1.2.8] - 2026-07-25
