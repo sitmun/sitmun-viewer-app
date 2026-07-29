@@ -1,10 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
+import { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 import { of, Subject } from 'rxjs';
 
-import { AppCfg } from '@api/model/app-cfg';
 
 import {
   MoreInfoAdvancedControlHandler,

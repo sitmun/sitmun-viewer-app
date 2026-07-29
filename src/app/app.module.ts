@@ -54,13 +54,13 @@ import {
   AppConfigService,
   initializeAppConfig
 } from './services/app-config.service';
-import { LanguageService } from './services/language.service';
 import {
   AppInitializerService,
   initializeApp
 } from './services/app-initializer.service';
 import { ControlRegistryService } from './services/control-registry.service';
 import { GlobalErrorHandler } from './services/global-error-handler';
+import { LanguageService } from './services/language.service';
 import { SitnaLoaderService } from './services/sitna-loader.service';
 import { AboutDialogComponent } from './ui/components/about-dialog/about-dialog.component';
 import { ErrorDetailsSidebarComponent } from './ui/components/error-details-sidebar/error-details-sidebar.component';
