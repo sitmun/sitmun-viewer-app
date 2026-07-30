@@ -4,12 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-### Changed
-
-- **Branding**: Replace default Angular favicon with the SITMUN icon (same as admin).
-- **i18n** / **MIA**: When UI language is blank/whitespace, omit `lang` on config/MIA requests and let the backend resolve locale (`RequestLocaleResolutionService`); do not hardcode `en`.
-
-## [1.2.8] - 2026-07-25
+## [1.2.8] - 2026-07-30
 
 ### Added
 
@@ -21,6 +16,9 @@ All notable changes to this project will be documented in this file. The format 
 - **E2E** / **Tests**: Same-origin `/backend`/`/middleware` serve profile; `viewer-catalog` and `viewer-legend` Playwright projects; Jest for MIA sanitize/lang, dashboard, auth/session, and api-sitna metres-per-unit ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45), [#152](https://github.com/sitmun/sitmun-viewer-app/issues/152), [#164](https://github.com/sitmun/sitmun-viewer-app/issues/164)).
 
 ### Changed
+
+- **Branding**: Replace default Angular favicon with the SITMUN icon (same as admin).
+- **i18n** / **MIA**: When UI language is blank/whitespace, omit `lang` on config/MIA requests and let the backend resolve locale (`RequestLocaleResolutionService`); do not hardcode `en`.
 
 - **Map**: Radio folder title activation requires `loadData=true`; default-layer collection uses profile tree order, resource dedupe, one claim per radio group, and per-map WeakMap idempotency ([#45](https://github.com/sitmun/sitmun-viewer-app/issues/45)).
 - **i18n** / **Dashboard search**: `application.contact` means PoC email; added `application.responsibleInstitution`; autocomplete while typing, card grid filters on Enter (or clear) only.
