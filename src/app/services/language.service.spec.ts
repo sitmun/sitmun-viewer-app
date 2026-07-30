@@ -6,9 +6,9 @@ import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
-import { environment } from '../../environments/environment';
 import { AppConfigService } from './app-config.service';
 import { LanguageService } from './language.service';
+import { environment } from '../../environments/environment';
 
 describe('LanguageService', () => {
   let service: LanguageService;

@@ -201,7 +201,7 @@ export class LanguageService {
     );
   }
 
-  getLanguagesTranslatedSorted(lang: string): Observable<LanguageDTO[]> {
+  getLanguagesTranslatedSorted(_lang: string): Observable<LanguageDTO[]> {
     return this.getLanguagesForSwitcher();
   }
 

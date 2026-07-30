@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { SitnaApiService } from '../../services/sitna-api.service';
-import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { UIStateService } from '../../services/ui-state.service';
+import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
 import { SitnaControlConfig } from '../control-handler.interface';
 

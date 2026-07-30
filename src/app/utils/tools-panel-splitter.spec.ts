@@ -307,7 +307,6 @@ describe('tools-panel-splitter', () => {
       const wlm = document.querySelector('#tc-slot-wlm') as HTMLElement;
       const h2 = wlm.querySelector('h2') as HTMLElement;
       const li = wlm.querySelector('li') as HTMLElement;
-      const input = wlm.querySelector('.tc-ctl-wlm-input') as HTMLElement;
       const info = wlm.querySelector('.tc-ctl-wlm-info') as HTMLElement;
       Object.defineProperty(h2, 'getBoundingClientRect', {
         value: () => ({ height: 40, width: 300, top: 0, left: 0, bottom: 40, right: 300 })
