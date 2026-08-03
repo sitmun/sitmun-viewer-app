@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
+
+import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
-import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 
 import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordance';
 import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
@@ -1419,7 +1420,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     root: ParentNode,
     folderId: string
   ): HTMLElement | null {
-    let folderLi = root.querySelector(
+    const folderLi = root.querySelector(
       `li[data-layer-name="${folderId}"]`
     ) as HTMLElement | null;
     if (folderLi) {

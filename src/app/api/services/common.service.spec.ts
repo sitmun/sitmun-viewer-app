@@ -98,6 +98,22 @@ describe('CommonService', () => {
       );
       req.flush(response);
     });
+
+    it('omits lang when UI language is blank (backend resolves locale)', (done) => {
+      languageService.getCurrentLanguage.mockReturnValue('   ');
+      const response = { content: [], page: { size: 20, number: 0 } };
+
+      service.fetchDashboardApplications({ page: 0, size: 20 }).subscribe(() => {
+        done();
+      });
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url.includes('/api/config/client/dashboard/applications') &&
+          !r.url.includes('lang=')
+      );
+      req.flush(response);
+    });
   });
 
   describe('fetchDashboardSuggestions', () => {

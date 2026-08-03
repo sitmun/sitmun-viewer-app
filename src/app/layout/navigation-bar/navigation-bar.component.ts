@@ -31,11 +31,11 @@ import { ChangeApplicationTerritoryDialogComponent } from '@ui/components/change
 import { MenuComponent } from '@ui/components/menu/menu.component';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { toLanguageIsoCode } from 'src/app/services/language-iso';
 import {
   LanguageDTO,
   LanguageService
 } from 'src/app/services/language.service';
-import { toLanguageIsoCode } from 'src/app/services/language-iso';
 import { resolveUiLanguage } from 'src/app/services/ui-language.resolver';
 
 @Component({

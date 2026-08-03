@@ -8,6 +8,7 @@
   "abstract": "Description de la couche",
   "groupAbstract": "Description du groupe de couches",
   "parentAbstract": "Description du service",
+  "parentTitle": "Titre du service",
   "layerId": "ID de la couche :",
   "groupLayerId": "ID du groupe de couches :",
   "url": "URL du service",

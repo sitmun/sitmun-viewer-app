@@ -13,9 +13,9 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import proj4 from 'proj4';
-import { register } from 'ol/proj/proj4';
 import { get as getProjection, METERS_PER_UNIT } from 'ol/proj';
+import { register } from 'ol/proj/proj4';
+import proj4 from 'proj4';
 
 /** Same formula as SITNA Raster.getOgcScale */
 function sitnaGetOgcScale(
