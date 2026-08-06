@@ -31,6 +31,7 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'width',
     'height',
     'target',
+    'rel',
   ],
 };
 
@@ -43,10 +44,28 @@ export function sanitizeMiaRenderedHtml(
   html: string,
   emptyFallbackHtml: string = MIA_EMPTY_FALLBACK_HTML
 ): string {
-  return DOMPurify.sanitize(
+  const sanitized = DOMPurify.sanitize(
     html || emptyFallbackHtml,
     MIA_HTML_SANITIZE_OPTIONS
   );
+  return forceMiaOutboundLinksNewTab(String(sanitized));
+}
+
+/**
+ * Keep the map viewer in place: navigable anchors open in a new tab with noopener.
+ * Hash / javascript: hrefs are left unchanged.
+ */
+export function forceMiaOutboundLinksNewTab(html: string): string {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  for (const anchor of Array.from(doc.body.querySelectorAll('a[href]'))) {
+    const href = (anchor.getAttribute('href') || '').trim();
+    if (!href || href.startsWith('#') || /^javascript:/i.test(href)) {
+      continue;
+    }
+    anchor.setAttribute('target', '_blank');
+    anchor.setAttribute('rel', 'noopener noreferrer');
+  }
+  return doc.body.innerHTML;
 }
 
 export interface MiaGfiTarget {

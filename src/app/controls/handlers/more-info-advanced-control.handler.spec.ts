@@ -49,6 +49,20 @@ describe('sanitizeMiaRenderedHtml', () => {
     );
     expect(sanitized).toContain('No data');
   });
+
+  it('forces navigable anchors to open in a new tab with noopener', () => {
+    const sanitized = sanitizeMiaRenderedHtml(
+      '<p><a href="https://example.test/photo.jpg">open photo</a></p><p><a href="#local">section</a></p>'
+    );
+    const doc = new DOMParser().parseFromString(sanitized, 'text/html');
+    const photo = doc.querySelector('a[href="https://example.test/photo.jpg"]');
+    const local = doc.querySelector('a[href="#local"]');
+
+    expect(photo?.getAttribute('target')).toBe('_blank');
+    expect(photo?.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(local?.getAttribute('target')).toBeNull();
+    expect(local?.getAttribute('rel')).toBeNull();
+  });
 });
 
 describe('resolveMiaGfiTarget', () => {

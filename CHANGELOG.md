@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- **Map / MIA**: Navigable anchors in rendered Plantilla HTML get `target="_blank"` and `rel="noopener noreferrer"` after sanitize so links (e.g. photos) do not replace the map viewer. Hash / `javascript:` hrefs are left alone.
+
 ## [1.2.8] - 2026-07-30
 
 ### Added
