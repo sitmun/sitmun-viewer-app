@@ -135,6 +135,32 @@ describe('resolveMiaGfiTarget', () => {
     expect(target?.featureData).toEqual({ id: 'b', marker: 'second' });
   });
 
+  it('prefers currentFeature when attrs match a layer feature by value, not object identity', () => {
+    const featureA = { getData: () => ({ id: 'a', marker: 'first' }) };
+    const featureB = { getData: () => ({ id: 'b', marker: 'second' }) };
+    const currentFeatureClone = { getData: () => ({ id: 'b', marker: 'second' }) };
+
+    const target = resolveMiaGfiTarget(
+      {
+        services: [
+          {
+            layers: [
+              {
+                name: '34_TOPO_TX',
+                features: [featureA, featureB]
+              }
+            ]
+          }
+        ]
+      },
+      deps,
+      currentFeatureClone
+    );
+
+    expect(target?.featureData).toEqual({ id: 'b', marker: 'second' });
+    expect(target?.featureData).not.toEqual({ id: 'a', marker: 'first' });
+  });
+
   it('falls back to first MIA-capable feature when currentFeature is on a non-MIA layer', () => {
     const otherFeature = { getData: () => ({ id: 'other' }) };
     const miaFeature = { getData: () => ({ id: 'mia' }) };

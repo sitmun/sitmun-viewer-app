@@ -102,8 +102,8 @@ function featureKeyOf(layerName: string, feature: any): string {
  * Only layers that map to a cartography with MIA parents are candidates.
  * Prefer `currentFeature` when it belongs to such a layer; otherwise the first
  * feature of the first MIA-capable layer (skipping earlier non-MIA layers).
- * Match uses reference equality (`Array.includes`); if SITNA hands a cloned
- * feature object, preference fails and the first MIA hit is used instead.
+ * Match by reference first, then by stable `featureKeyOf` so SITNA clones with
+ * the same attrs still resolve to the selected feature.
  */
 export function resolveMiaGfiTarget(
   options: { services?: any[] } | null | undefined,
@@ -143,11 +143,16 @@ export function resolveMiaGfiTarget(
 
   if (currentFeature) {
     for (const hit of hits) {
-      if (hit.features.includes(currentFeature)) {
+      const matched =
+        hit.features.find((feature) => feature === currentFeature) ??
+        hit.features.find(
+          (feature) => featureKeyOf(hit.layerName, feature) === featureKeyOf(hit.layerName, currentFeature)
+        );
+      if (matched) {
         return {
           miaTasks: hit.miaTasks,
-          featureData: featureDataOf(currentFeature),
-          featureKey: featureKeyOf(hit.layerName, currentFeature),
+          featureData: featureDataOf(matched),
+          featureKey: featureKeyOf(hit.layerName, matched),
           layerName: hit.layerName
         };
       }
