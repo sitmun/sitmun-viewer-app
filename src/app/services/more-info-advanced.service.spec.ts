@@ -127,11 +127,12 @@ describe('MoreInfoAdvancedService', () => {
     req.flush({ tasks: [] });
   });
 
-  it('does not POST render without map-session coords', () => {
+  it('maps missing appId/terId onto each requested MIA task id', () => {
     let emitted: any;
 
     service.renderMiaTasks([
-      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
+      { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
     ], { id: 99 }).subscribe((result) => {
       emitted = result;
     });
@@ -139,7 +140,20 @@ describe('MoreInfoAdvancedService', () => {
     httpMock.expectNone((request) =>
       request.url.endsWith('/api/tasks/template/more-info-advanced/render')
     );
-    expect(emitted[0].error).toContain('appId and terId');
+    expect(emitted).toEqual([
+      {
+        taskId: 16,
+        title: 'One',
+        html: '',
+        error: expect.stringContaining('appId and terId'),
+      },
+      {
+        taskId: 18,
+        title: 'Two',
+        html: '',
+        error: expect.stringContaining('appId and terId'),
+      },
+    ]);
   });
 
   it('maps HTTP render failures onto each requested MIA task id', () => {

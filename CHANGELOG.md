@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - **Map / MIA**: Navigable anchors in rendered Plantilla HTML get `target="_blank"` and `rel="noopener noreferrer"` after sanitize so links (e.g. photos) do not replace the map viewer. Hash / `javascript:` hrefs are left alone.
+- **Map / MIA**: Missing map-session `appId`/`terId` maps one error onto each requested task id (no synthetic `taskId: 0`), so overlay spinners are replaced instead of hanging.
+
+### Follow-ups (confirmed; not in this change)
+
+- Investigate: `resolveMiaGfiTarget` matches `currentFeature` with `Array.includes` (reference identity). Unconfirmed whether SITNA ever clones/replaces that object vs `layer.features`; no fix until runtime evidence.
 
 ## [1.2.8] - 2026-07-30
 
