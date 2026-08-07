@@ -467,11 +467,105 @@ describe('MoreInfoAdvancedService', () => {
     ]);
   });
 
-  it('does not POST render without map-session coords', () => {
+  it('includes taskId and templateTaskId in html export requests when provided', () => {
+    let emitted: any;
+
+    service.exportTemplate({
+      template: '<p>Hola</p>',
+      output: 'pdf',
+      taskId: 201,
+      templateTaskId: 32312,
+      applicationId: 7,
+      territoryId: 11
+    }).subscribe((result) => {
+      emitted = result;
+    });
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/export'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toContain('<output>pdf</output>');
+    expect(req.request.body).toContain('<taskId>201</taskId>');
+    expect(req.request.body).toContain('<templateTaskId>32312</templateTaskId>');
+    expect(req.request.body).toContain('<applicationId>7</applicationId>');
+    expect(req.request.body).toContain('<territoryId>11</territoryId>');
+    expect(req.request.body).toContain('<template><![CDATA[<p>Hola</p>]]></template>');
+    expect(req.request.headers.get('Content-Type')).toBe('application/xml');
+    expect(req.request.responseType).toBe('blob');
+
+    req.flush(new Blob(['pdf']), {
+      headers: new HttpHeaders({ 'Content-Disposition': 'attachment; filename="Plantilla territori.pdf"' })
+    });
+
+    expect(emitted.filename).toBe('Plantilla territori.pdf');
+    expect(emitted.blob).toBeInstanceOf(Blob);
+  });
+
+  it('returns null filename when response has no content disposition header', () => {
+    let emitted: any;
+
+    service.exportTemplate({
+      template: '<p>Hola</p>',
+      output: 'pdf',
+      taskId: 99,
+      applicationId: 7,
+      territoryId: 11
+    }).subscribe((result) => {
+      emitted = result;
+    });
+
+    const req = httpMock.expectOne((request) => request.url.endsWith('/api/tasks/template/export'));
+    req.flush(new Blob(['pdf']));
+
+    expect(emitted.filename).toBeNull();
+    expect(emitted.blob).toBeInstanceOf(Blob);
+  });
+
+  it('parses template and document export child types and defaults visualization mode to tabs', () => {
+    service.initialize({
+      tasks: [
+        {
+          id: 'task/1',
+          typeId: 1,
+          'ui-control': 'sitna.moreInfoAdvanced',
+          parameters: {}
+        },
+        {
+          id: 'task/16',
+          typeId: 16,
+          name: 'MIA parent',
+          cartographyId: '12',
+          parameters: {
+            includedTasks: [
+              { id: 'task/2', name: 'Template child', order: 2, childType: 'template' },
+              { id: 'task/3', name: 'Export child', order: 1, childType: 'documentExport' },
+              { id: 'task/4', name: 'Query child', order: 3, childType: 'unknown' }
+            ]
+          }
+        }
+      ]
+    } as any);
+
+    expect(service.getTasksForCartography('12')).toEqual([
+      {
+        id: 'task/16',
+        name: 'MIA parent',
+        cartographyId: '12',
+        visualizationMode: 'tabs',
+        includedTasks: [
+          { id: 'task/3', name: 'Export child', order: 1, childType: 'documentExport', parameters: null, childTaskParameters: null },
+          { id: 'task/2', name: 'Template child', order: 2, childType: 'template', parameters: null, childTaskParameters: null },
+          { id: 'task/4', name: 'Query child', order: 3, childType: 'query', parameters: null, childTaskParameters: null }
+        ]
+      }
+    ]);
+  });
+
+  it('maps missing appId/terId onto each requested MIA task id', () => {
     let emitted: any;
 
     service.renderMiaTasks([
-      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
+      { id: 'task/16', name: 'One', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] },
+      { id: 'task/18', name: 'Two', cartographyId: '12', visualizationMode: 'tabs', includedTasks: [] }
     ], { id: 99 }).subscribe((result) => {
       emitted = result;
     });
@@ -479,7 +573,20 @@ describe('MoreInfoAdvancedService', () => {
     httpMock.expectNone((request) =>
       request.url.endsWith('/api/tasks/template/more-info-advanced/render')
     );
-    expect(emitted[0].error).toContain('appId and terId');
+    expect(emitted).toEqual([
+      {
+        taskId: 16,
+        title: 'One',
+        html: '',
+        error: expect.stringContaining('appId and terId'),
+      },
+      {
+        taskId: 18,
+        title: 'Two',
+        html: '',
+        error: expect.stringContaining('appId and terId'),
+      },
+    ]);
   });
 
   it('maps HTTP render failures onto each requested MIA task id', () => {

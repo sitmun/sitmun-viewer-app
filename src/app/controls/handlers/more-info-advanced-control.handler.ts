@@ -54,8 +54,12 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'data-mia-export-template',
     'data-mia-template-task-id',
     'data-sitmun-pdf-template-scope',
-    'target'
-  ]
+    'data-mia-export-template',
+    'data-mia-template-task-id',
+    'data-sitmun-pdf-template-scope',
+    'target',
+    'rel',
+  ],
 };
 
 /** Delay so SITNA FeatureInfo can finish its own popup DOM before MIA opens. */
@@ -78,7 +82,23 @@ export function sanitizeMiaRenderedHtml(
     iframe.removeAttribute('srcdoc');
     iframe.setAttribute('sandbox', '');
   });
-  return document.body.innerHTML;
+  return forceMiaOutboundLinksNewTab(document.body.innerHTML);
+
+/**
+ * Keep the map viewer in place: navigable anchors open in a new tab with noopener.
+ * Hash / javascript: hrefs are left unchanged.
+ */
+export function forceMiaOutboundLinksNewTab(html: string): string {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  for (const anchor of Array.from(doc.body.querySelectorAll('a[href]'))) {
+    const href = (anchor.getAttribute('href') || '').trim();
+    if (!href || href.startsWith('#') || /^javascript:/i.test(href)) {
+      continue;
+    }
+    anchor.setAttribute('target', '_blank');
+    anchor.setAttribute('rel', 'noopener noreferrer');
+  }
+  return doc.body.innerHTML;
 }
 
 export interface MiaGfiTarget {
@@ -116,6 +136,8 @@ function featureKeyOf(layerName: string, feature: any): string {
  * Only layers that map to a cartography with MIA parents are candidates.
  * Prefer `currentFeature` when it belongs to such a layer; otherwise the first
  * feature of the first MIA-capable layer (skipping earlier non-MIA layers).
+ * Match by reference first, then by stable `featureKeyOf` so SITNA clones with
+ * the same attrs still resolve to the selected feature.
  */
 export function resolveMiaGfiTarget(
   options: { services?: any[]; coords?: number[] } | null | undefined,
@@ -163,14 +185,19 @@ export function resolveMiaGfiTarget(
 
   if (currentFeature) {
     for (const hit of hits) {
-      if (hit.features.includes(currentFeature)) {
-        if (!selectedFeatures.includes(currentFeature)) {
-          selectedFeatures.push(currentFeature);
+      const matched =
+        hit.features.find((feature) => feature === currentFeature) ??
+        hit.features.find(
+          (feature) => featureKeyOf(hit.layerName, feature) === featureKeyOf(hit.layerName, currentFeature)
+        );
+      if (matched) {
+        if (!selectedFeatures.includes(matched)) {
+          selectedFeatures.push(matched);
         }
         return {
           miaTasks: hit.miaTasks,
-          featureData: featureDataOf(currentFeature),
-          featureKey: featureKeyOf(hit.layerName, currentFeature),
+          featureData: featureDataOf(matched),
+          featureKey: featureKeyOf(hit.layerName, matched),
           selectedFeatures,
           layerName: hit.layerName
         };

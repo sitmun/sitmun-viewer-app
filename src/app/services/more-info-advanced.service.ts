@@ -191,13 +191,16 @@ export class MoreInfoAdvancedService {
     viewerContext?: MiaViewerContext
   ): Observable<MiaRenderedTask[]> {
     // Required for backend authz; omit -> 400 / wrong map-session context.
+    // One error per requested task id so overlay fill can replace each spinner.
     if (this.appId == null || this.terId == null) {
-      return of([{
-        taskId: 0,
-        title: '',
-        html: '',
-        error: 'MIA render requires appId and terId from the map session'
-      }]);
+      return of(
+        miaTasks.map((task) => ({
+          taskId: this.parseTaskId(task.id),
+          title: task.name || '',
+          html: '',
+          error: 'MIA render requires appId and terId from the map session',
+        })),
+      );
     }
 
     const neededFields = this.extractNeededFields(miaTasks);
