@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+
 import { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 import { NEVER, of, Subject } from 'rxjs';
@@ -45,8 +46,9 @@ describe('sanitizeMiaRenderedHtml', () => {
   });
 
   it('keeps MIA export attributes needed for download buttons', () => {
-    const html = '<div data-mia-export-template="true" data-mia-template-task-id="201">'
-      + '<p class="sitmun-pdf-header" data-sitmun-pdf-template-scope="root">Plantilla</p></div>';
+    const html =
+      '<div data-mia-export-template="true" data-mia-template-task-id="201">' +
+      '<p class="sitmun-pdf-header" data-sitmun-pdf-template-scope="root">Plantilla</p></div>';
 
     const sanitized = sanitizeMiaRenderedHtml(html);
 
@@ -66,9 +68,13 @@ describe('sanitizeMiaRenderedHtml', () => {
 
 describe('MoreInfoAdvancedControlHandler export dropdown', () => {
   it('uses export task label as visible button text when provided', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
 
-    expect((handler as any).getExportButtonDescriptor('pdf', 'PDF A3 horitzontal')).toEqual({
+    expect(
+      (handler as any).getExportButtonDescriptor('pdf', 'PDF A3 horitzontal')
+    ).toEqual({
       label: 'PDF A3 horitzontal',
       ariaLabel: 'Exportar plantilla en PDF (PDF A3 horitzontal)',
       icon: 'pdf',
@@ -77,13 +83,18 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
   });
 
   it('renders one dropdown menu with all export actions', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     const triggerSpy = jest.fn();
     (handler as any).triggerMiaExport = triggerSpy;
 
     const container = document.createElement('div');
-    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
-    const wrapper = container.querySelector('[data-mia-export-template]') as HTMLElement;
+    container.innerHTML =
+      '<div data-mia-export-template="true"><p>Plantilla</p></div>';
+    const wrapper = container.querySelector(
+      '[data-mia-export-template]'
+    ) as HTMLElement;
 
     (handler as any).injectDownloadButtons(container, [
       { taskId: 11, output: 'pdf', label: 'PDF A4 vertical' },
@@ -91,10 +102,14 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
     ]);
 
     const menu = wrapper.querySelector('.sitmun-mia-download-menu');
-    const options = wrapper.querySelectorAll('.sitmun-mia-download-options .sitmun-mia-download-btn');
+    const options = wrapper.querySelectorAll(
+      '.sitmun-mia-download-options .sitmun-mia-download-btn'
+    );
 
     expect(menu).not.toBeNull();
-    expect(wrapper.querySelectorAll('.sitmun-mia-download-toggle')).toHaveLength(1);
+    expect(
+      wrapper.querySelectorAll('.sitmun-mia-download-toggle')
+    ).toHaveLength(1);
     expect(options).toHaveLength(2);
     expect(wrapper.textContent).toContain('PDF A4 vertical');
     expect(wrapper.textContent).toContain('PDF A3 horitzontal');
@@ -103,14 +118,22 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
 
     expect(triggerSpy).toHaveBeenCalledTimes(1);
     expect(triggerSpy.mock.calls[0][0]).toBe(wrapper);
-    expect(triggerSpy.mock.calls[0][1]).toEqual({ taskId: 12, output: 'pdf', label: 'PDF A3 horitzontal' });
+    expect(triggerSpy.mock.calls[0][1]).toEqual({
+      taskId: 12,
+      output: 'pdf',
+      label: 'PDF A3 horitzontal'
+    });
   });
 
   it('builds profile viewer context when clicked layer has no geometries', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
 
-    expect((handler as any).buildMiaViewerContext({ name: 'or007tur_estades' })).toEqual({
+    expect(
+      (handler as any).buildMiaViewerContext({ name: 'or007tur_estades' })
+    ).toEqual({
       featureBbox: null,
       applicationId: 7,
       territoryId: 11
@@ -118,26 +141,38 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
   });
 
   it('builds featureBbox from clicked feature geometries', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
 
-    expect((handler as any).buildMiaViewerContext({
-      name: 'or007tur_estades',
-      features: [
-        {
-          geometry: {
-            type: 'Point',
-            coordinates: [10, 20]
+    expect(
+      (handler as any).buildMiaViewerContext({
+        name: 'or007tur_estades',
+        features: [
+          {
+            geometry: {
+              type: 'Point',
+              coordinates: [10, 20]
+            }
+          },
+          {
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [12, 18],
+                  [16, 18],
+                  [16, 24],
+                  [12, 24],
+                  [12, 18]
+                ]
+              ]
+            }
           }
-        },
-        {
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[[12, 18], [16, 18], [16, 24], [12, 24], [12, 18]]]
-          }
-        }
-      ]
-    })).toEqual({
+        ]
+      })
+    ).toEqual({
       featureBbox: [10, 18, 16, 24],
       applicationId: 7,
       territoryId: 11
@@ -145,12 +180,16 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
   });
 
   it('preserves a point feature as a zero-area featureBbox', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
 
-    expect((handler as any).buildMiaViewerContext({
-      features: [{ geometry: { type: 'Point', coordinates: [10, 20] } }]
-    })).toEqual({
+    expect(
+      (handler as any).buildMiaViewerContext({
+        features: [{ geometry: { type: 'Point', coordinates: [10, 20] } }]
+      })
+    ).toEqual({
       featureBbox: [10, 20, 10, 20],
       applicationId: 7,
       territoryId: 11
@@ -158,19 +197,24 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
   });
 
   it('returns no viewer context when profile coordinates are unavailable', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
 
     expect((handler as any).buildMiaViewerContext({})).toBeNull();
   });
 
   it('forwards active profile coordinates to template export', () => {
     const exportTemplate = jest.fn().mockReturnValue(NEVER);
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     (handler as any).miaService = { exportTemplate };
     (handler as any).appConfig = { application: { id: 7, territoryId: 11 } };
     const wrapper = document.createElement('div');
     wrapper.dataset['miaTemplateTaskId'] = '301';
-    wrapper.innerHTML = '<div class="sitmun-mia-download-bar">Actions</div><p>Report</p>';
+    wrapper.innerHTML =
+      '<div class="sitmun-mia-download-bar">Actions</div><p>Report</p>';
     const button = document.createElement('button');
     button.innerHTML = '<span class="sitmun-mia-download-btn-label">PDF</span>';
 
@@ -178,21 +222,26 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
       wrapper,
       { taskId: 201, output: 'pdf', label: 'PDF' },
       button,
-      { label: 'PDF', loadingLabel: 'Generating' },
+      { label: 'PDF', loadingLabel: 'Generating' }
     );
 
-    expect(exportTemplate).toHaveBeenCalledWith(expect.objectContaining({
-      taskId: 201,
-      templateTaskId: 301,
-      applicationId: 7,
-      territoryId: 11,
-    }));
+    expect(exportTemplate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taskId: 201,
+        templateTaskId: 301,
+        applicationId: 7,
+        territoryId: 11
+      })
+    );
   });
 
   it('does not inject duplicate download menus', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     const container = document.createElement('div');
-    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
+    container.innerHTML =
+      '<div data-mia-export-template="true"><p>Plantilla</p></div>';
 
     (handler as any).injectDownloadButtons(container, [
       { taskId: 11, output: 'pdf', label: 'PDF' }
@@ -201,13 +250,18 @@ describe('MoreInfoAdvancedControlHandler export dropdown', () => {
       { taskId: 11, output: 'pdf', label: 'PDF' }
     ]);
 
-    expect(container.querySelectorAll('.sitmun-mia-download-menu')).toHaveLength(1);
+    expect(
+      container.querySelectorAll('.sitmun-mia-download-menu')
+    ).toHaveLength(1);
   });
 
   it('does nothing when there are no export actions', () => {
-    const handler = Object.create(MoreInfoAdvancedControlHandler.prototype) as MoreInfoAdvancedControlHandler;
+    const handler = Object.create(
+      MoreInfoAdvancedControlHandler.prototype
+    ) as MoreInfoAdvancedControlHandler;
     const container = document.createElement('div');
-    container.innerHTML = '<div data-mia-export-template="true"><p>Plantilla</p></div>';
+    container.innerHTML =
+      '<div data-mia-export-template="true"><p>Plantilla</p></div>';
 
     (handler as any).injectDownloadButtons(container, []);
 
@@ -283,6 +337,68 @@ describe('resolveMiaGfiTarget', () => {
     );
 
     expect(target?.featureData).toEqual({ id: 'b', marker: 'second' });
+  });
+
+  it('keeps only features covering the clicked coordinate across layers', () => {
+    const restaurant = {
+      getData: () => ({ id: 'restaurant' }),
+      geometry: { type: 'Point', coordinates: [10, 10] }
+    };
+    const parcel = {
+      getData: () => ({ id: 'parcel' }),
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [20, 0],
+            [20, 20],
+            [0, 20],
+            [0, 0]
+          ]
+        ]
+      }
+    };
+    const nearbyRestaurant = {
+      getData: () => ({ id: 'nearby' }),
+      geometry: { type: 'Point', coordinates: [100, 100] }
+    };
+
+    const target = resolveMiaGfiTarget(
+      {
+        coords: [10, 10],
+        services: [
+          {
+            layers: [
+              { name: '34_TOPO_TX', features: [restaurant, nearbyRestaurant] },
+              { name: 'PARCELS', features: [parcel] }
+            ]
+          }
+        ]
+      },
+      deps,
+      restaurant
+    );
+
+    expect(target?.selectedFeatures).toEqual([restaurant, parcel]);
+    expect(target?.selectedFeatures).not.toContain(nearbyRestaurant);
+  });
+
+  it('uses the active feature when no clicked coordinate is available', () => {
+    const featureA = { getData: () => ({ id: 'a' }) };
+    const featureB = { getData: () => ({ id: 'b' }) };
+
+    const target = resolveMiaGfiTarget(
+      {
+        services: [
+          { layers: [{ name: '34_TOPO_TX', features: [featureA, featureB] }] }
+        ]
+      },
+      deps,
+      featureB
+    );
+
+    expect(target?.selectedFeatures).toEqual([featureB]);
   });
 
   it('falls back to first MIA-capable feature when currentFeature is on a non-MIA layer', () => {
@@ -371,9 +487,9 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
         id === '6' ? miaTasks : []
       ),
       getExportActionsForCartography: jest.fn().mockReturnValue([]),
-      renderMiaTasks: jest.fn().mockReturnValue(
-        of([{ taskId: 42, title: 'MIA', html: '<p>ok</p>' }])
-      )
+      renderMiaTasks: jest
+        .fn()
+        .mockReturnValue(of([{ taskId: 42, title: 'MIA', html: '<p>ok</p>' }]))
     };
 
     TestBed.configureTestingModule({
@@ -392,7 +508,7 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
                 'mia.popup.close': 'Close',
                 'mia.popup.loading': 'Loading...',
                 'mia.empty': 'No data'
-              }[key] ?? key)
+              })[key] ?? key
           }
         },
         {
@@ -408,7 +524,9 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
 
   afterEach(() => {
     handler.cleanup();
-    document.querySelectorAll('.sitmun-mia-popup-overlay').forEach((el) => el.remove());
+    document
+      .querySelectorAll('.sitmun-mia-popup-overlay')
+      .forEach((el) => el.remove());
   });
 
   it('opens MIA with currentFeature attrs when provided', () => {
@@ -419,9 +537,7 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
       {
         services: [
           {
-            layers: [
-              { name: '34_TOPO_TX', features: [featureA, featureB] }
-            ]
+            layers: [{ name: '34_TOPO_TX', features: [featureA, featureB] }]
           }
         ]
       },
@@ -486,7 +602,9 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
       ]
     });
 
-    const overlay = document.querySelector('.sitmun-mia-popup-overlay') as HTMLElement;
+    const overlay = document.querySelector(
+      '.sitmun-mia-popup-overlay'
+    ) as HTMLElement;
     const close = overlay?.querySelector('sitna-button.sitmun-mia-popup-close');
     expect(close).toBeTruthy();
 
@@ -609,6 +727,30 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
     const spy = jest.spyOn(handler, 'clearOverlayForMapRebuild');
     handler.onMapClear();
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads the same feature after layer visibility changes', () => {
+    const listeners: Record<string, () => void> = {};
+    const map = {
+      on: jest.fn((event: string, listener: () => void) => {
+        listeners[event] = listener;
+      }),
+      off: jest.fn()
+    };
+    (handler as any).ensureFeatureSelectionHook({ map });
+
+    const feature = { getData: () => ({ id: 'same-feature' }) };
+    const options = {
+      services: [{ layers: [{ name: '34_TOPO_TX', features: [feature] }] }]
+    };
+
+    handler.openMiaFromGfiOptionsForTest(options, feature);
+    expect(miaService.renderMiaTasks).toHaveBeenCalledTimes(1);
+
+    listeners['layervisibility.tc']();
+    handler.openMiaFromGfiOptionsForTest(options, feature);
+
+    expect(miaService.renderMiaTasks).toHaveBeenCalledTimes(2);
   });
 
   it('clearOverlayForMapRebuild removes overlay DOM and cancels in-flight render', () => {
