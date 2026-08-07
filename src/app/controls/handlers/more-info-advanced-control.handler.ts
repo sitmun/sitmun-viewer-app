@@ -54,9 +54,6 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'data-mia-export-template',
     'data-mia-template-task-id',
     'data-sitmun-pdf-template-scope',
-    'data-mia-export-template',
-    'data-mia-template-task-id',
-    'data-sitmun-pdf-template-scope',
     'target',
     'rel',
   ],
@@ -83,6 +80,7 @@ export function sanitizeMiaRenderedHtml(
     iframe.setAttribute('sandbox', '');
   });
   return forceMiaOutboundLinksNewTab(document.body.innerHTML);
+}
 
 /**
  * Keep the map viewer in place: navigable anchors open in a new tab with noopener.
