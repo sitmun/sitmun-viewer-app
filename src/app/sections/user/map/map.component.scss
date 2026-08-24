@@ -37,7 +37,9 @@
     width: 100%;
     min-height: 0; // Allow flex item to shrink
 
-    #mapa {
+    // Print preview (#160): api-sitna sizes the map to the page while
+    // .tc-ctl-prnmap-printing is set, so this id rule must step aside.
+    #mapa:not(.tc-ctl-prnmap-printing) {
       width: 100%;
       height: 100%;
       position: absolute;
