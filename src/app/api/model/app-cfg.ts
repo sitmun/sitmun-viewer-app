@@ -45,6 +45,7 @@ export interface AppApplication {
   /** OpenLayers zoom level from territory profile; applied after initial extent on map load. */
   defaultZoomLevel?: number;
   pointOfInterest?: { x: number; y: number };
+  territoryId?: number;
   territoryCode?: string;
   territoryName?: string;
   territoryDescription?: string;
@@ -141,6 +142,7 @@ export interface AppTasks {
   typeId?: number;
   name?: string;
   cartographyId?: string;
+  layer?: string;
 }
 
 export interface AppTree {
