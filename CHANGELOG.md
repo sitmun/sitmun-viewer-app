@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+
+- **Tests**: `npm test` no longer collects coverage; `npm run test:coverage` writes `coverage/lcov.info` for CI.
+
 ### Fixed
 
 - **Map / MIA**: Navigable anchors in rendered Plantilla HTML get `target="_blank"` and `rel="noopener noreferrer"` after sanitize so links (e.g. photos) do not replace the map viewer. Hash / `javascript:` hrefs are left alone.

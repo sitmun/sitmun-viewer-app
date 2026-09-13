@@ -259,14 +259,14 @@ The viewer application uses **Jest** as the test runner, aligned with the admin 
 ### Running Tests
 
 ```bash
-# Run all tests once
+# Run all tests once (no coverage)
 npm test
 
 # Run tests in watch mode
-npm test:watch
+npm run test:watch
 
 # Run tests with coverage report
-npm test -- --coverage
+npm run test:coverage
 
 # Run specific test file
 npm test -- path/to/file.spec.ts
