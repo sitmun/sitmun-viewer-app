@@ -7,6 +7,7 @@ import { catchError, map } from 'rxjs/operators';
 
 import { LanguageService } from './language.service';
 import { environment } from '../../environments/environment';
+import { setIgnoreErrors } from '../config/error-handler.interceptor';
 
 /**
  * Represents a child task inside a More Info Advanced (MIA) task.
@@ -68,6 +69,11 @@ export interface MiaViewerContext {
   territoryId: number;
 }
 
+export interface MiaMapSession {
+  applicationId: number;
+  territoryId: number;
+}
+
 interface MiaConfigTask extends AppTasks {
   downloadFormat?: unknown;
   filename?: unknown;
@@ -110,6 +116,13 @@ export class MoreInfoAdvancedService {
   setMapContext(appId: number, terId: number): void {
     this.appId = Number.isFinite(appId) ? appId : null;
     this.terId = Number.isFinite(terId) ? terId : null;
+  }
+
+  getMapSession(): MiaMapSession | null {
+    if (this.appId == null || this.terId == null) {
+      return null;
+    }
+    return { applicationId: this.appId, territoryId: this.terId };
   }
 
   /**
@@ -250,7 +263,7 @@ export class MoreInfoAdvancedService {
         templateTaskId: request.templateTaskId ?? undefined
       }),
       {
-        headers: MoreInfoAdvancedService.TEMPLATE_EXPORT_HEADERS,
+        headers: setIgnoreErrors(MoreInfoAdvancedService.TEMPLATE_EXPORT_HEADERS),
         responseType: 'blob',
         observe: 'response'
       }

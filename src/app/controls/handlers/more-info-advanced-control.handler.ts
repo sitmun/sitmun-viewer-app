@@ -485,20 +485,10 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private appConfig: AppCfg | null = null;
   private miaOverlayElement: HTMLElement | null = null;
   private floatingZIndex = 10050;
-  private static readonly EXPORT_BUTTON_CONFIG: Record<
-    MiaExportAction['output'],
-    { label: string; ariaLabel: string; icon: string; loadingLabel: string }
-  > = {
-    pdf: {
-      label: 'Exportar PDF',
-      ariaLabel: 'Exportar plantilla en PDF',
-      icon: 'pdf',
-      loadingLabel: 'Generant PDF...'
-    }
-  };
   private renderGeneration = 0;
   private openTimer: ReturnType<typeof setTimeout> | null = null;
   private renderSub: Subscription | null = null;
+  private exportSub: Subscription | null = null;
   private lastGfiOptions: { services?: any[]; coords?: number[] } | null = null;
   private lastOpenedFeatureKey: string | null = null;
   private readonly mapEventCleanups: Array<() => void> = [];
@@ -515,6 +505,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     }
     this.renderSub?.unsubscribe();
     this.renderSub = null;
+    this.exportSub?.unsubscribe();
+    this.exportSub = null;
     this.renderGeneration++;
   }
 
@@ -890,15 +882,14 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
   private buildMiaViewerContext(
     layer: MiaFeatureInfoLayer
   ): MiaViewerContext | null {
-    const applicationId = this.appConfig?.application.id;
-    const territoryId = this.appConfig?.application.territoryId;
-    if (applicationId == null || territoryId == null) {
+    const session = this.miaService.getMapSession();
+    if (session == null) {
       return null;
     }
     return {
       featureBbox: this.getFeatureCollectionBbox(layer?.features),
-      applicationId,
-      territoryId
+      applicationId: session.applicationId,
+      territoryId: session.territoryId
     };
   }
 
@@ -1256,9 +1247,11 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       toggle.className =
         'sitmun-mia-download-toggle sitmun-mia-download-btn sitmun-mia-download-btn--generic';
       toggle.setAttribute('role', 'button');
-      toggle.setAttribute('aria-label', "Mostrar opcions d'exportacio");
-      toggle.innerHTML =
-        '<span class="sitmun-mia-download-btn-icon" aria-hidden="true"></span><span class="sitmun-mia-download-btn-label">Exportar</span>';
+      toggle.setAttribute(
+        'aria-label',
+        this.translate.instant('mia.popup.exportOptions')
+      );
+      toggle.innerHTML = `<span class="sitmun-mia-download-btn-icon" aria-hidden="true"></span><span class="sitmun-mia-download-btn-label">${this.escapeHtml(this.translate.instant('mia.popup.export'))}</span>`;
 
       const options = document.createElement('div');
       options.className = 'sitmun-mia-download-options';
@@ -1314,39 +1307,66 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       ? wrapper.innerHTML.replace(downloadBar.outerHTML, '')
       : wrapper.innerHTML;
     const templateTaskId = this.resolveRenderedTemplateTaskId(wrapper);
-    const applicationId = this.appConfig?.application.id;
-    const territoryId = this.appConfig?.application.territoryId;
-    if (applicationId == null || territoryId == null) {
+    const session = this.miaService.getMapSession();
+    if (session == null) {
+      this.showMiaExportError(
+        wrapper,
+        this.translate.instant('mia.popup.exportMissingContext')
+      );
       this.restoreExportButton(btn, btnLabel, descriptor.label);
       return;
     }
-    const export$ = this.miaService.exportTemplate({
-      template: htmlContent,
-      output: action.output,
-      taskId: action.taskId,
-      templateTaskId,
-      applicationId,
-      territoryId
-    });
+    const generation = this.renderGeneration;
+    this.exportSub?.unsubscribe();
+    this.exportSub = this.miaService
+      .exportTemplate({
+        template: htmlContent,
+        output: action.output,
+        taskId: action.taskId,
+        templateTaskId,
+        applicationId: session.applicationId,
+        territoryId: session.territoryId
+      })
+      .subscribe({
+        next: (result: TemplateExportResult) => {
+          if (generation !== this.renderGeneration) {
+            return;
+          }
+          const url = URL.createObjectURL(result.blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = result.filename || `report.${action.output}`;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          URL.revokeObjectURL(url);
 
-    export$.subscribe({
-      next: (result: TemplateExportResult) => {
-        const url = URL.createObjectURL(result.blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = result.filename || `report.${action.output}`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(url);
+          this.restoreExportButton(btn, btnLabel, descriptor.label);
+        },
+        error: (err: unknown) => {
+          if (generation !== this.renderGeneration) {
+            return;
+          }
+          const status =
+            err && typeof err === 'object' && 'status' in err
+              ? Number((err as { status: unknown }).status)
+              : undefined;
+          const message =
+            status === 403
+              ? this.translate.instant('auth.accessDenied')
+              : this.translate.instant('mia.popup.exportFailed');
+          this.showMiaExportError(wrapper, message);
+          this.restoreExportButton(btn, btnLabel, descriptor.label);
+        }
+      });
+  }
 
-        this.restoreExportButton(btn, btnLabel, descriptor.label);
-      },
-      error: (err: unknown) => {
-        console.error('[MIA] Export failed', err);
-        this.restoreExportButton(btn, btnLabel, descriptor.label);
-      }
-    });
+  private showMiaExportError(wrapper: HTMLElement, message: string): void {
+    wrapper.querySelectorAll('.sitmun-mia-error').forEach((node) => node.remove());
+    const error = document.createElement('div');
+    error.className = 'sitmun-mia-error';
+    error.textContent = message;
+    wrapper.appendChild(error);
   }
 
   private restoreExportButton(
@@ -1374,16 +1394,28 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     output: MiaExportAction['output'],
     label?: string | null
   ): { label: string; ariaLabel: string; icon: string; loadingLabel: string } {
-    const defaultDescriptor =
-      MoreInfoAdvancedControlHandler.EXPORT_BUTTON_CONFIG[output];
-    if (!label) {
-      return defaultDescriptor;
+    switch (output) {
+      case 'pdf': {
+        const defaultDescriptor = {
+          label: this.translate.instant('mia.popup.exportPdf'),
+          ariaLabel: this.translate.instant('mia.popup.exportPdfAria'),
+          icon: 'pdf',
+          loadingLabel: this.translate.instant('mia.popup.exportingPdf')
+        };
+        if (!label) {
+          return defaultDescriptor;
+        }
+        return {
+          ...defaultDescriptor,
+          label,
+          ariaLabel: `${defaultDescriptor.ariaLabel} (${label})`
+        };
+      }
+      default: {
+        const unhandled: never = output;
+        throw new Error(`Unhandled MIA export output: ${String(unhandled)}`);
+      }
     }
-    return {
-      ...defaultDescriptor,
-      label,
-      ariaLabel: `${defaultDescriptor.ariaLabel} (${label})`
-    };
   }
 
   private getMiaPanelId(popupId: string, miaIndex: number): string {

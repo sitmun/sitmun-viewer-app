@@ -139,6 +139,32 @@ describe('MoreInfoAdvancedService', () => {
     ]);
   });
 
+  it('indexes a type-17 task that only publishes layer/6', () => {
+    service.initialize({
+      tasks: [
+        {
+          id: 'task/1',
+          typeId: 1,
+          'ui-control': 'sitna.moreInfoAdvanced',
+          parameters: {}
+        },
+        {
+          id: 'task/4017',
+          typeId: 17,
+          name: 'Overlay PDF',
+          layer: 'layer/6',
+          parameters: {
+            downloadFormat: 'pdf'
+          }
+        }
+      ]
+    } as any);
+
+    expect(service.getExportActionsForCartography('6')).toEqual([
+      { taskId: 4017, output: 'pdf', label: 'Overlay PDF' }
+    ]);
+  });
+
   it('merges global and cartography PDF export actions and ignores XML output', () => {
     service.initialize({
       tasks: [
@@ -242,6 +268,15 @@ describe('MoreInfoAdvancedService', () => {
       { taskId: 401, output: 'pdf', label: 'PDF value output' },
       { taskId: 402, output: 'pdf', label: 'Mime output' }
     ]);
+  });
+
+  it('exposes map-session coordinates after setMapContext', () => {
+    expect(service.getMapSession()).toBeNull();
+    service.setMapContext(1, 2);
+    expect(service.getMapSession()).toEqual({
+      applicationId: 1,
+      territoryId: 2
+    });
   });
 
   it('renders all MIA tasks in one backend request with map-session coords and lang', () => {
@@ -397,6 +432,7 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.body).toContain('<territoryId>11</territoryId>');
     expect(req.request.body).toContain('<template><![CDATA[<p>Hola</p>]]></template>');
     expect(req.request.headers.get('Content-Type')).toBe('application/xml');
+    expect(req.request.headers.get('Api-Can-Fail')).toBe('true');
     expect(req.request.responseType).toBe('blob');
 
     req.flush(new Blob(['pdf']), {
@@ -490,6 +526,7 @@ describe('MoreInfoAdvancedService', () => {
     expect(req.request.body).toContain('<territoryId>11</territoryId>');
     expect(req.request.body).toContain('<template><![CDATA[<p>Hola</p>]]></template>');
     expect(req.request.headers.get('Content-Type')).toBe('application/xml');
+    expect(req.request.headers.get('Api-Can-Fail')).toBe('true');
     expect(req.request.responseType).toBe('blob');
 
     req.flush(new Blob(['pdf']), {

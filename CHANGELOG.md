@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- **Map / MIA**: Overlay PDF export posts sanitized HTML to `POST /api/tasks/template/export`, discovers type-17 document-export tasks (including profile `layer/{id}`), and sends map-session `appId`/`terId` plus optional `featureBbox` on render.
+
 ### Changed
 
 - **Tests**: `npm test` no longer collects coverage; `npm run test:coverage` writes `coverage/lcov.info` for CI.
