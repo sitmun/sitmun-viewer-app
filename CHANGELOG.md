@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - **Map / MIA**: Missing map-session `appId`/`terId` maps one error onto each requested task id (no synthetic `taskId: 0`), so overlay spinners are replaced instead of hanging.
 - **Map / MIA**: `resolveMiaGfiTarget` matches `currentFeature` by stable feature key (attrs), not only object identity, so SITNA clones still prefer the selected feature.
 - **Map**: Print preview sizes the map to the selected page format instead of the browser window, so the exported PDF is not stretched ([#160](https://github.com/sitmun/sitmun-viewer-app/issues/160)).
+- **Map / FeatureInfo**: HTML GetFeatureInfo stays in the nested `iframe` when the resource embeds. `window.open` with `noopener,noreferrer` runs only after `load` when the nested document is still `about:blank` (blocked `X-Frame-Options` / `frame-ancestors`). JSON/GML GFI is unchanged ([#169](https://github.com/sitmun/sitmun-viewer-app/issues/169)).
 
 ## [1.2.8] - 2026-07-30
 
