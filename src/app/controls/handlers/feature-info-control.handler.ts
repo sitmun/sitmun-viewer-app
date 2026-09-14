@@ -8,6 +8,7 @@ import { MoreInfoService } from '../../services/more-info.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
+import { settleHtmlGfiIframes } from './html-gfi-embed.util';
 
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
@@ -200,6 +201,11 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           'displayResultsCallback',
           (jp: MeldJoinPoint) => {
             const result = jp.proceedApply(jp.args);
+            const control = jp.target as { div?: ParentNode };
+            void settleHtmlGfiIframes(
+              control.div ?? document,
+              (url, target, features) => window.open(url, target, features)
+            );
             setTimeout(() => {
               this.moreInfoHandler.attachMoreInfoListeners(jp.target);
             }, 50);
