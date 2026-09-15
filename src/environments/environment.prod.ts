@@ -12,5 +12,6 @@ export const environment = {
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: 'assets/logos/barcelona_background.jpg',
-  proxyTokenRefreshIntervalMs: 2 * 60 * 1000
+  proxyTokenRefreshIntervalMs: 2 * 60 * 1000,
+  sessionTokenRefreshIntervalMs: 2 * 60 * 1000
 };

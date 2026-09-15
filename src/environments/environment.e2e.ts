@@ -12,4 +12,5 @@ export const environment = {
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: '',
   proxyTokenRefreshIntervalMs: 10 * 60 * 1000,
+  sessionTokenRefreshIntervalMs: 10 * 60 * 1000,
 };

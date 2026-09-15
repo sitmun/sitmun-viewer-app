@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Auth**: Sliding `POST /api/authenticate/refresh` every 2 minutes from app load, not only after `login()`. A 401 on refresh clears the client session ([sitmun-backend-core#264](https://github.com/sitmun/sitmun-backend-core/issues/264)).
 - **Map / MIA**: Overlay PDF export posts sanitized HTML to `POST /api/tasks/template/export`, discovers type-17 document-export tasks (including profile `layer/{id}`), and sends map-session `appId`/`terId` plus optional `featureBbox` on render.
 
 ### Changed
