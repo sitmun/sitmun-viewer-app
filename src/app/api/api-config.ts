@@ -16,6 +16,7 @@ export const URL_AUTH_LOGIN = BASE_URL + '/authenticate';
 export const URL_AUTH_LOGOUT = BASE_URL + '/authenticate/logout';
 
 export const URL_AUTH_PROXY = BASE_URL + '/authenticate/proxy';
+export const URL_AUTH_REFRESH = BASE_URL + '/authenticate/refresh';
 
 export const URL_API_USER_ACCOUNT = BASE_URL + '/account';
 

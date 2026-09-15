@@ -9,6 +9,7 @@ import {
   URL_AUTH_LOGOUT,
   URL_AUTH_METHODS,
   URL_AUTH_PROXY,
+  URL_AUTH_REFRESH,
   URL_OIDC_AUTH
 } from '@api/api-config';
 import { UserDto } from '@api/model/user';
@@ -48,7 +49,9 @@ export class AuthenticationService<T> {
   private readonly USERNAME_KEY: string;
 
   private proxyRefreshSubscription: Subscription | null = null;
+  private sessionRefreshSubscription: Subscription | null = null;
   private isRefreshingProxyToken = signal(false);
+  private isRefreshingSessionToken = signal(false);
   private indexedDbInitialized = false;
   private proxyForbiddenNotified = false;
   private consecutiveProxyErrors = 0;
@@ -66,6 +69,12 @@ export class AuthenticationService<T> {
   ) {
     this.USERNAME_KEY = this.config.localStoragePrefix + '_username';
     this.setupServiceWorkerListener();
+  }
+
+  resumeSessionKeepAlive(): void {
+    if (this.isLoggedIn()) {
+      this.startSessionKeepAlive();
+    }
   }
 
   private setupServiceWorkerListener(): void {
@@ -109,7 +118,7 @@ export class AuthenticationService<T> {
         ),
         tap((user: UserDto) => {
           sessionStorage.setItem(this.USERNAME_KEY, user.username);
-          this.startProxyTokenRefresh();
+          this.startSessionKeepAlive();
         })
       );
   }
@@ -217,7 +226,7 @@ export class AuthenticationService<T> {
       .pipe(
         tap((user: UserDto) => {
           sessionStorage.setItem(this.USERNAME_KEY, user.username);
-          this.startProxyTokenRefresh();
+          this.startSessionKeepAlive();
         }),
         map(() => undefined)
       );
@@ -237,7 +246,58 @@ export class AuthenticationService<T> {
     return sessionStorage.getItem(this.USERNAME_KEY) ?? '';
   }
 
-  // Proxy token refresh -------------------------------------------------------
+  // Session cookie + proxy token refresh --------------------------------------
+
+  private startSessionKeepAlive(): void {
+    this.startSessionTokenRefresh();
+    this.startProxyTokenRefresh();
+  }
+
+  private startSessionTokenRefresh(): void {
+    if (this.sessionRefreshSubscription) {
+      this.sessionRefreshSubscription.unsubscribe();
+    }
+
+    this.refreshSessionToken().subscribe();
+    this.sessionRefreshSubscription = timer(
+      environment.sessionTokenRefreshIntervalMs,
+      environment.sessionTokenRefreshIntervalMs
+    )
+      .pipe(switchMap(() => this.refreshSessionToken()))
+      .subscribe();
+  }
+
+  private refreshSessionToken(): Observable<void> {
+    if (
+      this.isRefreshingSessionToken() ||
+      this.logoutInProgress ||
+      !this.isLoggedIn()
+    ) {
+      return of(undefined);
+    }
+
+    this.isRefreshingSessionToken.set(true);
+    return this.http
+      .post<void>(environment.apiUrl + URL_AUTH_REFRESH, null, {
+        context: suppressAuthRedirectContext()
+      })
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            this.clearExpiredClientSession();
+          }
+          return of(undefined);
+        }),
+        finalize(() => this.isRefreshingSessionToken.set(false))
+      );
+  }
+
+  private stopSessionTokenRefresh(): void {
+    if (this.sessionRefreshSubscription) {
+      this.sessionRefreshSubscription.unsubscribe();
+      this.sessionRefreshSubscription = null;
+    }
+  }
 
   private startProxyTokenRefresh(): void {
     if (this.proxyRefreshSubscription) {
@@ -247,8 +307,9 @@ export class AuthenticationService<T> {
     this.proxyForbiddenNotified = false;
     this.consecutiveProxyErrors = 0;
 
+    this.refreshProxyToken().subscribe();
     this.proxyRefreshSubscription = timer(
-      0,
+      environment.proxyTokenRefreshIntervalMs,
       environment.proxyTokenRefreshIntervalMs
     )
       .pipe(switchMap(() => this.refreshProxyToken()))
@@ -347,6 +408,7 @@ export class AuthenticationService<T> {
 
   private clearClientSession(): Promise<void> {
     sessionStorage.removeItem(this.USERNAME_KEY);
+    this.stopSessionTokenRefresh();
     this.stopProxyTokenRefresh();
     return this.indexedDb
       .remove('proxy_token')

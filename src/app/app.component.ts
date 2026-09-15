@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authenticationService.resumeSessionKeepAlive();
     this.authenticationService.initializeIndexedDb().catch((err) => {
       console.error('Failed to initialize IndexedDB:', err);
     });

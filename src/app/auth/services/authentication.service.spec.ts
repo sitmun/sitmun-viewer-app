@@ -10,7 +10,8 @@ import {
   URL_API_USER_ACCOUNT,
   URL_AUTH_LOGIN,
   URL_AUTH_LOGOUT,
-  URL_AUTH_PROXY
+  URL_AUTH_PROXY,
+  URL_AUTH_REFRESH
 } from '@api/api-config';
 import { AUTH_CONFIG_DI } from '@auth/authentication.options';
 import { CustomAuthConfig, NavigationPath } from '@config/app.config';
@@ -154,6 +155,56 @@ describe('AuthenticationService (FS-03)', () => {
 
     loginReq.flush(null, { status: 401, statusText: 'Unauthorized' });
   });
+
+  it('starts user JWT and proxy refresh after login', () => {
+    service
+      .login({ username: 'user', password: 'secret' })
+      .subscribe();
+
+    const loginReq = httpMock.expectOne(
+      `${environment.apiUrl}${URL_AUTH_LOGIN}`
+    );
+    loginReq.flush(null);
+    const account = httpMock.expectOne(
+      `${environment.apiUrl}${URL_API_USER_ACCOUNT}`
+    );
+    account.flush({ username: 'tester' });
+
+    httpMock
+      .expectOne(`${environment.apiUrl}${URL_AUTH_REFRESH}`)
+      .flush(null);
+    httpMock
+      .expectOne(`${environment.apiUrl}${URL_AUTH_PROXY}`)
+      .flush({ proxy_token: 'proxy' });
+  });
+
+  it('starts the user JWT timer on app load when already logged in', () => {
+    service.resumeSessionKeepAlive();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}${URL_AUTH_REFRESH}`)
+      .flush(null);
+    httpMock
+      .expectOne(`${environment.apiUrl}${URL_AUTH_PROXY}`)
+      .flush({ proxy_token: 'proxy' });
+  });
+
+  it('clears client state when session refresh returns 401', fakeAsync(() => {
+    indexedDbRemove.mockResolvedValue(undefined);
+    service.resumeSessionKeepAlive();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}${URL_AUTH_REFRESH}`)
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpMock.match(`${environment.apiUrl}${URL_AUTH_PROXY}`);
+    tick();
+
+    expect(service.isLoggedIn()).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(
+      [NavigationPath.Auth.Login],
+      { queryParams: { 'session-expired': 'true' } }
+    );
+  }));
 
   it('coalesces passive 401 validation and preserves a valid session', () => {
     service.validateSessionAfterUnauthorized();
