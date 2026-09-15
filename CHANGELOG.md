@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
+- **Profile**: Territory cargo headers and empty date cells match admin Positions (`Valid from` / `Valid until`, `Not set` / `Active`) ([#177](https://github.com/sitmun/sitmun-viewer-app/issues/177)).
 - **Tests**: `npm test` no longer collects coverage; `npm run test:coverage` writes `coverage/lcov.info` for CI.
 
 ### Fixed
