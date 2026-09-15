@@ -154,18 +154,25 @@
                 <td
                   class="from-col"
                   [ngClass]="{ 'no-type': !position.createdDate }">
-                  <ng-container *ngIf="position.createdDate; else emptyDate">
+                  <ng-container
+                    *ngIf="position.createdDate; else emptyCreatedDate">
                     {{ position.createdDate | date : 'dd/MM/yyyy' }}
                   </ng-container>
-                  <ng-template #emptyDate>-</ng-template>
+                  <ng-template #emptyCreatedDate>
+                    {{ 'profile.validityFrom.placeholder' | translate }}
+                  </ng-template>
                 </td>
 
                 <td
                   class="to-col"
                   [ngClass]="{ 'no-type': !position.expirationDate }">
-                  <ng-container *ngIf="position.expirationDate; else emptyDate">
+                  <ng-container
+                    *ngIf="position.expirationDate; else emptyExpirationDate">
                     {{ position.expirationDate | date : 'dd/MM/yyyy' }}
                   </ng-container>
+                  <ng-template #emptyExpirationDate>
+                    {{ 'profile.validityTo.placeholder' | translate }}
+                  </ng-template>
                 </td>
               </tr>
             </tbody>
