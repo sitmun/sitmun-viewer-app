@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.9] - 2026-09-18
+
 ### Added
 
 - **Auth**: Sliding `POST /api/authenticate/refresh` every 2 minutes from app load, not only after `login()`. A 401 on refresh clears the client session ([sitmun-backend-core#264](https://github.com/sitmun/sitmun-backend-core/issues/264)).
@@ -379,7 +381,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.9...HEAD
+[1.2.9]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...sitmun-viewer-app/1.2.9
 [1.2.8]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...sitmun-viewer-app/1.2.8
 [1.2.7]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...sitmun-viewer-app/1.2.7
 [1.2.6]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...sitmun-viewer-app/1.2.6
