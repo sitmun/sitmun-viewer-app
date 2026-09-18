@@ -6,10 +6,11 @@ export const environment = {
   hideBackgroundImage: true,
   hideDNIEAccess: true,
   apiUrl: '/backend',
-  version: '1.2.8',
+  version: '1.2.9',
   environmentName: 'E2E',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: '',
   proxyTokenRefreshIntervalMs: 10 * 60 * 1000,
+  sessionTokenRefreshIntervalMs: 10 * 60 * 1000,
 };

@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.9] - 2026-09-18
+
+### Added
+
+- **Auth**: Sliding `POST /api/authenticate/refresh` every 2 minutes from app load, not only after `login()`. A 401 on refresh clears the client session ([sitmun-backend-core#264](https://github.com/sitmun/sitmun-backend-core/issues/264)).
+- **Map / MIA**: Overlay PDF export posts sanitized HTML to `POST /api/tasks/template/export`, discovers type-17 document-export tasks (including profile `layer/{id}`), and sends map-session `appId`/`terId` plus optional `featureBbox` on render.
+
+### Changed
+
+- **Profile**: Territory cargo headers and empty date cells match admin Positions (`Valid from` / `Valid until`, `Not set` / `Active`) ([#177](https://github.com/sitmun/sitmun-viewer-app/issues/177)).
+- **Tests**: `npm test` no longer collects coverage; `npm run test:coverage` writes `coverage/lcov.info` for CI.
+
+### Fixed
+
+- **Map / MIA**: Navigable anchors in rendered Plantilla HTML get `target="_blank"` and `rel="noopener noreferrer"` after sanitize so links (e.g. photos) do not replace the map viewer. Hash / `javascript:` hrefs are left alone.
+- **Map / MIA**: Missing map-session `appId`/`terId` maps one error onto each requested task id (no synthetic `taskId: 0`), so overlay spinners are replaced instead of hanging.
+- **Map / MIA**: `resolveMiaGfiTarget` matches `currentFeature` by stable feature key (attrs), not only object identity, so SITNA clones still prefer the selected feature.
+- **Map**: Print preview sizes the map to the selected page format instead of the browser window, so the exported PDF is not stretched ([#160](https://github.com/sitmun/sitmun-viewer-app/issues/160)).
+- **Map / FeatureInfo**: HTML GetFeatureInfo stays in the nested `iframe` when the resource embeds. `window.open` with `noopener,noreferrer` runs only after `load` when the nested document is still `about:blank` (blocked `X-Frame-Options` / `frame-ancestors`). JSON/GML GFI is unchanged ([#169](https://github.com/sitmun/sitmun-viewer-app/issues/169)).
+
 ## [1.2.8] - 2026-07-30
 
 ### Added
@@ -361,7 +381,8 @@ All notable changes to this project will be documented in this file. The format 
 - API integration errors
 - Performance optimization issues
 
-[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...HEAD
+[unreleased]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.9...HEAD
+[1.2.9]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.8...sitmun-viewer-app/1.2.9
 [1.2.8]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.7...sitmun-viewer-app/1.2.8
 [1.2.7]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.6...sitmun-viewer-app/1.2.7
 [1.2.6]: https://github.com/sitmun/sitmun-viewer-app/compare/sitmun-viewer-app/1.2.5...sitmun-viewer-app/1.2.6

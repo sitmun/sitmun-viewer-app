@@ -30,7 +30,7 @@ jobs:
       run: npm run lint
 
     - name: Unit tests
-      run: npm run test -- --watch=false --coverage
+      run: npm run test:coverage
 
     - name: Build for deployment
       run: npm run build -- --configuration=production --base-href=/sitmun-viewer-app/

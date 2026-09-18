@@ -7,10 +7,11 @@ export const environment = {
   hideBackgroundImage: false,
   hideDNIEAccess: true,
   apiUrl: 'http://localhost:9000/backend',
-  version: '1.2.8',
+  version: '1.2.9',
   environmentName: 'Development',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: 'assets/logos/barcelona_background.jpg',
-  proxyTokenRefreshIntervalMs: 2 * 60 * 1000
+  proxyTokenRefreshIntervalMs: 2 * 60 * 1000,
+  sessionTokenRefreshIntervalMs: 2 * 60 * 1000
 };

@@ -1,6 +1,6 @@
 {
   "name": "sitmun-viewer-app",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -10,6 +10,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --watchAll=false",
     "lint": "ng lint",
     "format": "npx prettier --write src",
     "clean": "bash scripts/clean.sh",

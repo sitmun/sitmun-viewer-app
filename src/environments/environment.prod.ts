@@ -7,10 +7,11 @@ export const environment = {
   hideBackgroundImage: false,
   hideDNIEAccess: false,
   apiUrl: '/backend', // Change this when there is a real production environment
-  version: '1.2.8',
+  version: '1.2.9',
   environmentName: 'Production',
   sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: 'assets/logos/barcelona_background.jpg',
-  proxyTokenRefreshIntervalMs: 2 * 60 * 1000
+  proxyTokenRefreshIntervalMs: 2 * 60 * 1000,
+  sessionTokenRefreshIntervalMs: 2 * 60 * 1000
 };

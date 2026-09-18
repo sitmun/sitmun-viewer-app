@@ -28,7 +28,6 @@ describe('LanguageService', () => {
       ]),
       getLanguageIcon: jest.fn().mockReturnValue('')
     };
-
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
