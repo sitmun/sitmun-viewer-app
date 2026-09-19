@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-## [1.2.9] - 2026-09-18
+## [1.2.9] - 2026-09-19
 
 ### Added
 
@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Build**: `npm run build` respects a preset `NODE_OPTIONS` so Docker can cap the webpack heap; the script default of 8192 MiB applies only when `NODE_OPTIONS` is unset.
 - **Map / MIA**: Navigable anchors in rendered Plantilla HTML get `target="_blank"` and `rel="noopener noreferrer"` after sanitize so links (e.g. photos) do not replace the map viewer. Hash / `javascript:` hrefs are left alone.
 - **Map / MIA**: Missing map-session `appId`/`terId` maps one error onto each requested task id (no synthetic `taskId: 0`), so overlay spinners are replaced instead of hanging.
 - **Map / MIA**: `resolveMiaGfiTarget` matches `currentFeature` by stable feature key (attrs), not only object identity, so SITNA clones still prefer the selected feature.
