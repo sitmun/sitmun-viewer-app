@@ -2,10 +2,10 @@ import { Injectable, inject } from '@angular/core';
 
 import { AppCfg } from '@api/model/app-cfg';
 
+import { prototypeWrappers } from './locator-control.logic';
 import { LocatorService } from '../../services/locator.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { CustomControlHandler } from '../custom-control-handler';
-import { prototypeWrappers } from './locator-control.logic';
 import { CustomControlShellConfig } from '../utils/sitna-patch-helpers';
 
 /**

@@ -3,12 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
+import { settleHtmlGfiIframes } from './html-gfi-embed.util';
 import { FeatureInfoMoreInfoHandler } from './more-info.handler';
 import { MoreInfoService } from '../../services/more-info.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { ControlHandlerBase } from '../control-handler-base';
-import { settleHtmlGfiIframes } from './html-gfi-embed.util';
 
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
