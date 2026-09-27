@@ -61,6 +61,16 @@ export interface AppBackground {
   /** Application-background order from admin (`ApplicationBackground.order` / `ABC_ORDER`). */
   order?: number;
 }
+export interface FeatureInfoField {
+  name: string;
+  label: string;
+  format?: string | null;
+  order?: number | null;
+  fractionDigits?: number | null;
+  padFractionDigits?: boolean | null;
+  dateStyle?: string | null;
+}
+
 export interface AppGroup {
   id?: string;
   title?: string;
@@ -113,6 +123,11 @@ export interface AppLayer {
    * Omitted or undefined: legacy profiles behave as queryable (true).
    */
   queryableFeatureEnabled?: boolean;
+  /**
+   * Ordered GetFeatureInfo include list. Omitted when the layer has no INFO rows,
+   * which leaves the service table unchanged.
+   */
+  featureInfoFields?: FeatureInfoField[];
 }
 
 export interface AppService {
