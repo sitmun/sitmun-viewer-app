@@ -1,4 +1,4 @@
-import type { AppLayer } from '@api/model/app-cfg';
+import type { AppLayer, AppNodeInfo, AppTree } from '@api/model/app-cfg';
 
 import {
   buildFeatureInfoRows,
@@ -8,6 +8,7 @@ import {
 
 export interface FeatureInfoOverlayPlan {
   layerName: string;
+  headings: string[];
   features: FeatureInfoDisplayRow[][];
 }
 
@@ -28,7 +29,8 @@ interface ServiceLike {
 export function planFeatureInfoOverlay(
   services: ServiceLike[] | undefined,
   layers: AppLayer[] | undefined,
-  locale: string
+  locale: string,
+  trees?: AppTree[]
 ): FeatureInfoOverlayPlan[] {
   if (!services?.length || !layers?.length) {
     return [];
@@ -39,13 +41,14 @@ export function planFeatureInfoOverlay(
       if (!layer.name) {
         continue;
       }
-      const fields = layers.find((item) => item.layers?.includes(layer.name!))
-        ?.featureInfoFields;
-      if (!fields?.length) {
+      const appLayer = layers.find((item) => item.layers?.includes(layer.name!));
+      const fields = appLayer?.featureInfoFields;
+      if (!appLayer || !fields?.length) {
         continue;
       }
       plans.push({
         layerName: layer.name,
+        headings: overlayHeadings(layer.name, appLayer, trees),
         features: (layer.features ?? []).map((feature) => {
           const data =
             typeof feature.getData === 'function' ? feature.getData() : feature.data;
@@ -61,6 +64,28 @@ export function planFeatureInfoOverlay(
   return plans;
 }
 
+function overlayHeadings(wmsName: string, layer: AppLayer, trees: AppTree[] | undefined): string[] {
+  const headings = new Set<string>();
+  if (wmsName) {
+    headings.add(wmsName);
+  }
+  if (layer.title) {
+    headings.add(layer.title);
+  }
+  for (const tree of trees ?? []) {
+    const nodes = tree.nodes as Record<string, AppNodeInfo | undefined> | undefined;
+    if (!nodes) {
+      continue;
+    }
+    for (const node of Object.values(nodes)) {
+      if (node?.resource === layer.id && node.title) {
+        headings.add(node.title);
+      }
+    }
+  }
+  return [...headings];
+}
+
 export function applyFeatureInfoOverlay(
   root: ParentNode,
   plans: FeatureInfoOverlayPlan[]
@@ -71,7 +96,9 @@ export function applyFeatureInfoOverlay(
   const blocks = root.querySelectorAll('.tc-ctl-finfo-layers > li');
   blocks.forEach((block) => {
     const heading = block.querySelector('h4')?.textContent ?? '';
-    const plan = plans.find((item) => heading.includes(item.layerName));
+    const plan = plans.find((item) =>
+      item.headings.some((label) => heading.includes(label))
+    );
     if (!plan) {
       return;
     }

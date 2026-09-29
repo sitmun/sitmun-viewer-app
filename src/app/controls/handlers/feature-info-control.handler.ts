@@ -192,7 +192,8 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
             this.overlayPlans = planFeatureInfoOverlay(
               options?.services,
               this.appConfig?.layers,
-              this.locale
+              this.locale,
+              this.appConfig?.trees
             );
 
             // Process features BEFORE calling original responseCallback
