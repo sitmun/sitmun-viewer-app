@@ -3,6 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
+import {
+  applyFeatureInfoOverlay,
+  planFeatureInfoOverlay,
+  type FeatureInfoOverlayPlan
+} from './feature-info-field-overlay';
 import { settleHtmlGfiIframes } from './html-gfi-embed.util';
 import { FeatureInfoMoreInfoHandler } from './more-info.handler';
 import { MoreInfoService } from '../../services/more-info.service';
@@ -33,6 +38,8 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   private readonly translateService = inject(TranslateService);
   private readonly mapEventCleanups: Array<() => void> = [];
   private appConfig: AppCfg | null = null;
+  private locale = 'en';
+  private overlayPlans: FeatureInfoOverlayPlan[] = [];
   private readonly moreInfoHandler = new FeatureInfoMoreInfoHandler(
     this.moreInfoService,
     () => this.appConfig,
@@ -41,6 +48,17 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);
+  }
+
+  private applyFieldOverlay(control: { div?: ParentNode } | null | undefined): void {
+    if (!this.overlayPlans.length) {
+      return;
+    }
+    const root = control?.div ?? document;
+    const scoped = root.querySelector?.('.tc-ctl-finfo-layers')
+      ? root
+      : (document.querySelector('.tc-ctl-finfo') ?? root);
+    applyFeatureInfoOverlay(scoped, this.overlayPlans);
   }
 
   private scheduleAttachMoreInfoListeners(displayControl: any): void {
@@ -107,6 +125,9 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           (jp: MeldJoinPoint) => {
             const control = jp.target as any;
             const [map] = jp.args as [any];
+            if (typeof map?.options?.locale === 'string' && map.options.locale) {
+              this.locale = map.options.locale;
+            }
 
             if (
               control.options?.displayElevation === undefined &&
@@ -137,6 +158,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
                 }
 
                 this.scheduleAttachMoreInfoListeners(displayControl);
+                this.applyFieldOverlay(displayControl);
               };
 
               map.on('popup.tc drawtable.tc', onDisplayRender);
@@ -167,6 +189,12 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           'responseCallback',
           (jp: MeldJoinPoint) => {
             const [options] = jp.args as [any];
+            this.overlayPlans = planFeatureInfoOverlay(
+              options?.services,
+              this.appConfig?.layers,
+              this.locale,
+              this.appConfig?.trees
+            );
 
             // Process features BEFORE calling original responseCallback
             if (options?.services && this.moreInfoService.hasMoreInfoTasks()) {
@@ -179,6 +207,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
 
             // After render, attach event listeners
             setTimeout(() => {
+              this.applyFieldOverlay(jp.target as { div?: ParentNode });
               this.moreInfoHandler.attachMoreInfoListeners(jp.target);
             }, 100);
 
@@ -207,6 +236,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
               (url, target, features) => window.open(url, target, features)
             );
             setTimeout(() => {
+              this.applyFieldOverlay(jp.target as { div?: ParentNode });
               this.moreInfoHandler.attachMoreInfoListeners(jp.target);
             }, 50);
             return result;

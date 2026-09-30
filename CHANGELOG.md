@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- **Map**: A layer with GetFeatureInfo fields shows only that include list, in order, with the translated label. `T`, `N`, `F`, `U`, `P`, and `I` format the cell in the map locale. `AUTO` keeps API-SITNA detection. `feature.data` is not rewritten. More-info reads `data-feature-path` and dotted paths such as `address.city` ([sitmun-application-stack#77](https://github.com/sitmun/sitmun-application-stack/issues/77)).
+
 ## [1.2.9] - 2026-09-19
 
 ### Added

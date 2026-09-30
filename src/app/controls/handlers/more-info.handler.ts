@@ -1,6 +1,7 @@
 import type { AppCfg } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
+import { resolveFeaturePath } from './feature-info-fields';
 import { MoreInfoService } from '../../services/more-info.service';
 import { normalizeMoreInfoRows, normalizeXmlRows } from '../utils/more-info-data.utils';
 
@@ -409,11 +410,15 @@ export class FeatureInfoMoreInfoHandler {
       const th = row.querySelector('th');
       const td = row.querySelector('td');
       if (th && td) {
-        const key = th.textContent?.trim();
+        const header = th.textContent?.trim();
+        const path = th.getAttribute('data-feature-path')?.trim();
+        const key = path || header;
         const value = td.textContent?.trim();
         if (key && value && key !== 'Més informació' && !key.includes('ℹ️')) {
           data[key] = value;
-          data[this.normalizeKey(key)] = value;
+          if (!path && header) {
+            data[this.normalizeKey(header)] = value;
+          }
         }
       }
     });
@@ -783,9 +788,13 @@ export class FeatureInfoMoreInfoHandler {
   }
 
   private lookupFeatureValue(currentData: any, fieldNameToLookup: string): any {
-    let value = currentData[fieldNameToLookup];
-    if (value === undefined) {
-      value = currentData[this.normalizeKey(fieldNameToLookup)];
+    const walked = resolveFeaturePath(currentData, fieldNameToLookup);
+    if (walked !== undefined) {
+      return walked;
+    }
+    let value = currentData?.[fieldNameToLookup];
+    if (value === undefined && typeof fieldNameToLookup === 'string') {
+      value = currentData?.[this.normalizeKey(fieldNameToLookup)];
     }
 
     return value;
