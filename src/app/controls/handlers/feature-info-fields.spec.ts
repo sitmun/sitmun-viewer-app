@@ -63,6 +63,22 @@ describe('buildFeatureInfoRows', () => {
     ).toEqual({ kind: 'text', text: 'Girona' });
     expect(data).toEqual({ address: { city: 'Girona' }, items: [{ name: 'A' }] });
   });
+
+  it('renders a blank text cell when a listed name is missing', () => {
+    const rows = buildFeatureInfoRows(
+      { name: 'e2e-gfi-click' },
+      [
+        { name: 'name', label: 'Place', format: 'T', order: 0 },
+        { name: 'missing-attr', label: 'Missing', format: 'T', order: 1 }
+      ],
+      'en'
+    );
+
+    expect(rows).toEqual([
+      { path: 'name', label: 'Place', cell: { kind: 'text', text: 'e2e-gfi-click' } },
+      { path: 'missing-attr', label: 'Missing', cell: { kind: 'text', text: '' } }
+    ]);
+  });
 });
 
 describe('feature info formats', () => {
