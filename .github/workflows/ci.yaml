@@ -1,59 +1,26 @@
 name: CI
 
-on:
+"on":
   push:
-    branches: [ main ]
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Use Node.js 20.19
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.19'
-        cache: 'npm'
-
-    - name: Before install
-      run: npm set //npm.pkg.github.com/:_authToken ${{secrets.TOKEN_FOR_WORKFLOWS}}
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Lint
-      run: npm run lint
-
-    - name: Unit tests
-      run: npm run test:coverage
-
-    - name: Build for deployment
-      run: npm run build -- --configuration=production --base-href=/sitmun-viewer-app/
-      env:
-        NODE_OPTIONS: "--openssl-legacy-provider --max-old-space-size=8192"
-
-    - name: Validate build artifacts
-      run: |
-        if [ ! -d "dist/viewer-app" ]; then
-          echo "ERROR: Build artifacts not found"
-          exit 1
-        fi
-        if [ -z "$(ls -A dist/viewer-app)" ]; then
-          echo "ERROR: Build directory is empty"
-          exit 1
-        fi
-        echo "✓ Build artifacts validated"
-
-    - name: Deploy to GitHub pages
-      env:
-        USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
-        GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
-        GITHUB_WORKSPACE: ${{github.workspace}}
-        CI: true
-      run: ./scripts/deploy.sh
-      shell: bash
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20.19"
+          cache: npm
+      - run: npm set //npm.pkg.github.com/:_authToken ${{ secrets.TOKEN_FOR_WORKFLOWS }}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:coverage
+      - run: npm run build -- --configuration=production --base-href=/sitmun-viewer-app/
+        env:
+          NODE_OPTIONS: "--openssl-legacy-provider --max-old-space-size=8192"
+      - name: Validate build artifacts
+        run: test -d dist/viewer-app && test -n "$(ls -A dist/viewer-app)"
