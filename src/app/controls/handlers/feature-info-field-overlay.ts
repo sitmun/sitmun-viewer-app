@@ -8,7 +8,7 @@ import {
 
 export interface FeatureInfoOverlayPlan {
   layerName: string;
-  headings: string[];
+  profileLayerId: string;
   features: FeatureInfoDisplayRow[][];
 }
 
@@ -22,8 +22,15 @@ interface LayerLike {
   features?: FeatureLike[];
 }
 
+interface MapLayerLike {
+  names?: string[];
+  options?: { nodeId?: string };
+  getDisgregatedLayerNames?: () => string[];
+}
+
 interface ServiceLike {
   layers?: LayerLike[];
+  mapLayers?: MapLayerLike[];
 }
 
 export function planFeatureInfoOverlay(
@@ -41,14 +48,14 @@ export function planFeatureInfoOverlay(
       if (!layer.name) {
         continue;
       }
-      const appLayer = layers.find((item) => item.layers?.includes(layer.name!));
+      const appLayer = resolveAppLayer(layer.name, service, layers, trees);
       const fields = appLayer?.featureInfoFields;
-      if (!appLayer || !fields?.length) {
+      if (!appLayer || !fields?.length || !layer.features?.length) {
         continue;
       }
       plans.push({
         layerName: layer.name,
-        headings: overlayHeadings(layer.name, appLayer, trees),
+        profileLayerId: appLayer.id,
         features: (layer.features ?? []).map((feature) => {
           const data =
             typeof feature.getData === 'function' ? feature.getData() : feature.data;
@@ -64,47 +71,85 @@ export function planFeatureInfoOverlay(
   return plans;
 }
 
-function overlayHeadings(wmsName: string, layer: AppLayer, trees: AppTree[] | undefined): string[] {
-  const headings = new Set<string>();
-  if (wmsName) {
-    headings.add(wmsName);
+function sameLayerName(left: string, right: string): boolean {
+  return left.localeCompare(right, undefined, { sensitivity: 'accent' }) === 0;
+}
+
+function mapLayerNames(mapLayer: MapLayerLike): string[] {
+  const configured = mapLayer.names ?? [];
+  let leaves: string[] = [];
+  try {
+    leaves = mapLayer.getDisgregatedLayerNames?.() ?? [];
+  } catch {
+    leaves = [];
   }
-  if (layer.title) {
-    headings.add(layer.title);
+  return [...configured, ...leaves];
+}
+
+function owningMapLayer(gfiName: string, service: ServiceLike): MapLayerLike | undefined {
+  return (service.mapLayers ?? []).find((mapLayer) =>
+    mapLayerNames(mapLayer).some((name) => sameLayerName(name, gfiName))
+  );
+}
+
+function profileLayerIdForNode(
+  nodeId: string | undefined,
+  trees: AppTree[] | undefined
+): string | undefined {
+  if (!nodeId) {
+    return undefined;
   }
   for (const tree of trees ?? []) {
-    const nodes = tree.nodes as Record<string, AppNodeInfo | undefined> | undefined;
-    if (!nodes) {
-      continue;
-    }
-    for (const node of Object.values(nodes)) {
-      if (node?.resource === layer.id && node.title) {
-        headings.add(node.title);
-      }
+    const node = (tree.nodes as Record<string, AppNodeInfo | undefined> | undefined)?.[nodeId];
+    if (node?.resource?.startsWith('layer/')) {
+      return node.resource;
     }
   }
-  return [...headings];
+  return undefined;
+}
+
+function resolveAppLayer(
+  gfiName: string,
+  service: ServiceLike,
+  layers: AppLayer[],
+  trees: AppTree[] | undefined
+): AppLayer | undefined {
+  const owner = owningMapLayer(gfiName, service);
+  const profileLayerId = profileLayerIdForNode(owner?.options?.nodeId, trees);
+  if (profileLayerId) {
+    const byId = layers.find((item) => item.id === profileLayerId);
+    if (byId) {
+      return byId;
+    }
+  }
+  const parentNames = owner?.names?.length ? owner.names : [gfiName];
+  const matches = layers.filter((item) =>
+    parentNames.some((name) => item.layers?.some((layerName) => sameLayerName(layerName, name)))
+  );
+  return matches.length === 1 ? matches[0] : undefined;
 }
 
 export function applyFeatureInfoOverlay(
   root: ParentNode,
-  plans: FeatureInfoOverlayPlan[]
+  plans: FeatureInfoOverlayPlan[],
+  services?: ServiceLike[]
 ): void {
   if (!plans.length) {
     return;
   }
   const blocks = root.querySelectorAll('.tc-ctl-finfo-layers > li');
-  blocks.forEach((block) => {
-    const heading = block.querySelector('h4')?.textContent ?? '';
-    const plan = plans.find((item) =>
-      item.headings.some((label) => heading.includes(label))
-    );
+  const rendered = (services ?? []).flatMap((service) => service.layers ?? []);
+  blocks.forEach((block, index) => {
+    const layerName = rendered[index]?.name;
+    const plan = layerName
+      ? plans.find((item) => sameLayerName(item.layerName, layerName))
+      : undefined;
     if (!plan) {
       return;
     }
     const tables = block.querySelectorAll('table');
-    tables.forEach((table, index) => {
-      const rows = plan.features[index];
+    tables.forEach((table, tableIndex) => {
+      const rows = plan.features[tableIndex];
       if (rows) {
         rewriteTable(table, rows);
       }

@@ -276,15 +276,16 @@ body {
   display: none;
   flex-direction: column;
   height: min(70vh, calc(100vh - 70px));
-  left: 12px;
+  left: auto;
   max-height: calc(100vh - 70px);
   max-width: min(760px, calc(100vw - 48px));
   min-height: 280px;
   min-width: 360px;
   overflow: hidden;
   pointer-events: auto;
-  position: fixed !important;
+  position: absolute !important;
   resize: both;
+  right: 12px;
   top: 12px;
   user-select: text;
   width: min(540px, calc(100vw - 48px));
@@ -293,6 +294,10 @@ body {
 
 .sitmun-mia-popup-overlay.sitmun-mia-popup-visible {
   display: flex;
+}
+
+#mapa:has(.tc-tools-panel:not(.tc-collapsed-right)) .sitmun-mia-popup-overlay {
+  right: 432px;
 }
 
 .sitmun-mia-popup-toolbar {

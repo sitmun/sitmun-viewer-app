@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { provideHttpClient } from '@angular/common/http';
 import {
   provideHttpClientTesting,
@@ -268,5 +271,21 @@ describe('AppConfigService', () => {
       const attribution = service.getAttribution();
       expect(attribution).toBeNull();
     });
+  });
+
+  it('ships identify controls without persistent highlights', () => {
+    const config = JSON.parse(
+      readFileSync(
+        join(process.cwd(), 'src/assets/config/app-config.json'),
+        'utf8'
+      )
+    );
+
+    expect(config.controlDefaults['sitna.featureInfo'].persistentHighlights).toBe(
+      false
+    );
+    expect(
+      config.controlDefaults['sitna.multiFeatureInfo'].persistentHighlights
+    ).toBe(false);
   });
 });

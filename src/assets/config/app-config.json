@@ -111,7 +111,7 @@
       "displayElevation": {
         "resolution": 100
       },
-      "persistentHighlights": true
+      "persistentHighlights": false
     },
     "sitna.multiFeatureInfo": {
       "div": "tc-slot-multifeatureinfo",
@@ -119,7 +119,7 @@
         "resolution": 100
       },
       "active": true,
-      "persistentHighlights": true,
+      "persistentHighlights": false,
       "share": true,
       "modes": {
         "point": { "active": true },

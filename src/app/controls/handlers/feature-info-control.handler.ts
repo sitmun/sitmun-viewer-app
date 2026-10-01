@@ -10,6 +10,7 @@ import {
 } from './feature-info-field-overlay';
 import { settleHtmlGfiIframes } from './html-gfi-embed.util';
 import { FeatureInfoMoreInfoHandler } from './more-info.handler';
+import { installPopupDragReleasePatch } from './popup-drag-release';
 import { MoreInfoService } from '../../services/more-info.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
@@ -17,6 +18,13 @@ import { ControlHandlerBase } from '../control-handler-base';
 
 declare function require(module: string): unknown;
 const meld = require('meld') as Meld;
+const Draggabilly = require('draggabilly') as {
+  prototype: {
+    _create: () => void;
+    handleEvent?: (event: Event) => void;
+    __sitmunPopupDragRelease?: boolean;
+  };
+};
 
 /**
  * Handler for the native SITNA featureInfo control.
@@ -40,6 +48,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   private appConfig: AppCfg | null = null;
   private locale = 'en';
   private overlayPlans: FeatureInfoOverlayPlan[] = [];
+  private overlayServices: Parameters<typeof applyFeatureInfoOverlay>[2];
   private readonly moreInfoHandler = new FeatureInfoMoreInfoHandler(
     this.moreInfoService,
     () => this.appConfig,
@@ -58,7 +67,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
     const scoped = root.querySelector?.('.tc-ctl-finfo-layers')
       ? root
       : (document.querySelector('.tc-ctl-finfo') ?? root);
-    applyFeatureInfoOverlay(scoped, this.overlayPlans);
+    applyFeatureInfoOverlay(scoped, this.overlayPlans, this.overlayServices);
   }
 
   private scheduleAttachMoreInfoListeners(displayControl: any): void {
@@ -80,6 +89,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
   override async loadPatches(context: AppCfg): Promise<void> {
     this.moreInfoService.initialize(context);
     this.appConfig = context;
+    installPopupDragReleasePatch(Draggabilly);
     await this.withTCAsync(async (TC) => {
       const mapProto = TC?.Map?.prototype;
       if (mapProto?.addControl && !mapProto.__sitmunFiAddControl) {
@@ -189,6 +199,7 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           'responseCallback',
           (jp: MeldJoinPoint) => {
             const [options] = jp.args as [any];
+            this.overlayServices = options?.services;
             this.overlayPlans = planFeatureInfoOverlay(
               options?.services,
               this.appConfig?.layers,
