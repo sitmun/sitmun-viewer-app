@@ -7,6 +7,18 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 
 - **Map**: A layer with GetFeatureInfo fields shows only that include list, in order, with the translated label. `T`, `N`, `F`, `U`, `P`, and `I` format the cell in the map locale. `AUTO` keeps API-SITNA detection. `feature.data` is not rewritten. More-info reads `data-feature-path` and dotted paths such as `address.city` ([sitmun-application-stack#77](https://github.com/sitmun/sitmun-application-stack/issues/77)).
+- **Tests**: Field-list specs cover a tree-title heading and two WMS group children that share a title but use different profile layer ids.
+
+### Changed
+
+- **Map**: The field list is chosen by the profile layer id (`layer/{id}` on the tree node that owns the map layer) and then by the WMS layer name, including a child of a group. The result heading is not the key.
+- **Map**: `sitna.featureInfo` and `sitna.multiFeatureInfo` default `persistentHighlights` to false. A new click replaces the highlight, and closing the popup clears it. A task that sets the flag still overrides the default.
+- **Map**: A visible identify popup is solid white, including the tail. The drag fade still applies while `tc-drag` is set.
+- **Map / MIA**: The report docks to the map frame, 12px from the top and right, and moves left when the layers panel is open. A later identify with no MiaTask layer, or with no features, closes the previous report.
+
+### Fixed
+
+- **Map**: Releasing a drag over a result cell or the coordinate bar ends the drag, so the popup does not stay at 40% opacity.
 
 ## [1.2.9] - 2026-09-19
 

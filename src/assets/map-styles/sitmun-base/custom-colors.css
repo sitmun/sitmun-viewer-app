@@ -31,8 +31,11 @@
   color: #666666;
 }
 
-.tc-ctl-popup {
-  background-color: #ffffffe6;
+.tc-ctl-popup.tc-visible:not(.tc-drag),
+.tc-ctl-popup.tc-visible:not(.tc-drag):after {
+  background-color: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 button.tc-ctl-coords-crs,

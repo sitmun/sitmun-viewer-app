@@ -9,7 +9,8 @@ import { NEVER, of, Subject, throwError } from 'rxjs';
 import {
   MoreInfoAdvancedControlHandler,
   resolveMiaGfiTarget,
-  sanitizeMiaRenderedHtml
+  sanitizeMiaRenderedHtml,
+  splitMiaLayers
 } from './more-info-advanced-control.handler';
 import { AppConfigService } from '../../services/app-config.service';
 import {
@@ -602,6 +603,88 @@ describe('resolveMiaGfiTarget', () => {
   });
 });
 
+describe('splitMiaLayers', () => {
+  const miaTasks: MiaTask[] = [
+    {
+      id: 'task/42',
+      name: 'MIA',
+      cartographyId: '6',
+      visualizationMode: 'tabs',
+      includedTasks: []
+    }
+  ];
+
+  const deps = {
+    getCartographyIdFromLayerName: (name: string) => {
+      if (name === '34_TOPO_TX') return '6';
+      if (name === 'OTHER_LAYER') return '99';
+      return null;
+    },
+    getTasksForCartography: (id: string) => (id === '6' ? miaTasks : [])
+  };
+
+  it('keeps a plain layer in the attribute list and a task layer in the report list', () => {
+    const plain = { getData: () => ({ id: 'plain' }) };
+    const mia = { getData: () => ({ id: 'mia' }) };
+
+    const split = splitMiaLayers(
+      {
+        services: [
+          {
+            layers: [
+              { name: 'OTHER_LAYER', features: [plain] },
+              { name: '34_TOPO_TX', features: [mia] }
+            ]
+          }
+        ]
+      },
+      deps
+    );
+
+    expect(split.attributeServices).toEqual([
+      { layers: [{ name: 'OTHER_LAYER', features: [plain] }] }
+    ]);
+    expect(split.miaServices).toEqual([
+      { layers: [{ name: '34_TOPO_TX', features: [mia] }] }
+    ]);
+    expect(split.featureCount).toBe(1);
+    expect(split.attributeServices[0].layers?.[0].features?.[0]).toBe(plain);
+    expect(split.miaServices[0].layers?.[0].features?.[0]).toBe(mia);
+  });
+
+  it('reports zero attribute features when every layer has a MiaTask', () => {
+    const mia = { getData: () => ({ id: 'mia' }) };
+
+    const split = splitMiaLayers(
+      {
+        services: [
+          { layers: [{ name: '34_TOPO_TX', features: [mia] }] }
+        ]
+      },
+      deps
+    );
+
+    expect(split.attributeServices).toEqual([]);
+    expect(split.featureCount).toBe(0);
+    expect(split.miaServices).toEqual([
+      { layers: [{ name: '34_TOPO_TX', features: [mia] }] }
+    ]);
+  });
+
+  it('leaves a response with no MiaTask unchanged', () => {
+    const plain = { getData: () => ({ id: 'plain' }) };
+    const services = [
+      { layers: [{ name: 'OTHER_LAYER', features: [plain] }] }
+    ];
+
+    const split = splitMiaLayers({ services }, deps);
+
+    expect(split.attributeServices).toEqual(services);
+    expect(split.featureCount).toBe(1);
+    expect(split.miaServices).toEqual([]);
+  });
+});
+
 describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
   let handler: MoreInfoAdvancedControlHandler;
   let miaService: {
@@ -715,6 +798,173 @@ describe('MoreInfoAdvancedControlHandler GFI targeting', () => {
     document
       .querySelectorAll('.sitmun-mia-popup-overlay')
       .forEach((el) => el.remove());
+  });
+
+  it('passes only the plain layer to feature info and still renders the MiaTask layer', async () => {
+    const map = document.createElement('div');
+    map.id = 'mapa';
+    document.body.appendChild(map);
+    const original = mockTC.control.FeatureInfo.prototype.responseCallback;
+    await handler.loadPatches(appCfg);
+    const wrapped = mockTC.control.FeatureInfo.prototype.responseCallback;
+    const plain = { getData: () => ({ id: 'plain' }) };
+    const mia = { getData: () => ({ id: 'mia' }) };
+    const options = {
+      featureCount: 2,
+      coords: [1, 1],
+      services: [
+        {
+          layers: [
+            { name: 'OTHER_LAYER', features: [plain] },
+            { name: '34_TOPO_TX', features: [mia] }
+          ]
+        }
+      ]
+    };
+    const timeout = jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation((fn: TimerHandler) => {
+        if (typeof fn === 'function') fn();
+        return 0 as unknown as ReturnType<typeof setTimeout>;
+      });
+
+    wrapped.call({}, options);
+    timeout.mockRestore();
+
+    expect(options.services).toEqual([
+      { layers: [{ name: 'OTHER_LAYER', features: [plain] }] }
+    ]);
+    expect(options.featureCount).toBe(1);
+    expect(options.coords).toEqual([1, 1]);
+    expect(original).toHaveBeenCalledWith(options);
+    expect(miaService.renderMiaTasks).toHaveBeenCalledWith(
+      miaTasks,
+      { id: 'mia' },
+      { featureBbox: null, applicationId: 7, territoryId: 11 }
+    );
+    const overlay = document.querySelector('.sitmun-mia-popup-overlay');
+    expect(overlay?.parentElement).toBe(map);
+    expect((overlay as HTMLElement).style.left).toBe('');
+    map.remove();
+  });
+
+  it('drops coordinates when every layer has a MiaTask so the attribute popup does not open', async () => {
+    const original = mockTC.control.FeatureInfo.prototype.responseCallback;
+    await handler.loadPatches(appCfg);
+    const wrapped = mockTC.control.FeatureInfo.prototype.responseCallback;
+    const mia = { getData: () => ({ id: 'only-mia' }) };
+    const options = {
+      featureCount: 1,
+      coords: [2, 2],
+      services: [{ layers: [{ name: '34_TOPO_TX', features: [mia] }] }]
+    };
+    const timeout = jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation((fn: TimerHandler) => {
+        if (typeof fn === 'function') fn();
+        return 0 as unknown as ReturnType<typeof setTimeout>;
+      });
+
+    wrapped.call({}, options);
+    timeout.mockRestore();
+
+    expect(options.services).toEqual([]);
+    expect(options.featureCount).toBe(0);
+    expect(options.coords).toBeUndefined();
+    expect(original).toHaveBeenCalledWith(options);
+    expect(miaService.renderMiaTasks).toHaveBeenCalledWith(
+      miaTasks,
+      { id: 'only-mia' },
+      { featureBbox: null, applicationId: 7, territoryId: 11 }
+    );
+  });
+
+  it('hides the previous report when a later identify has no MiaTask layer', async () => {
+    await handler.loadPatches(appCfg);
+    const wrapped = mockTC.control.FeatureInfo.prototype.responseCallback;
+    const listeners: Record<string, (event: unknown) => void> = {};
+    const control = {
+      map: {
+        on: (names: string, fn: (event: unknown) => void) => {
+          listeners[names] = fn;
+        },
+        off: jest.fn()
+      }
+    };
+    const mia = { getData: () => ({ id: 'mia' }) };
+    const plain = { getData: () => ({ id: 'plain' }) };
+    const scheduled: { run: (() => void) | null } = { run: null };
+    const timeout = jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation((fn: TimerHandler) => {
+        scheduled.run = typeof fn === 'function' ? () => fn() : null;
+        return 1 as unknown as ReturnType<typeof setTimeout>;
+      });
+    const clear = jest.spyOn(global, 'clearTimeout').mockImplementation(() => undefined);
+
+    wrapped.call(control, {
+      featureCount: 1,
+      coords: [1, 1],
+      services: [{ layers: [{ name: '34_TOPO_TX', features: [mia] }] }]
+    });
+    const pendingOpen = scheduled.run;
+    wrapped.call(control, {
+      featureCount: 1,
+      coords: [4, 4],
+      services: [{ layers: [{ name: 'OTHER_LAYER', features: [plain] }] }]
+    });
+    pendingOpen?.();
+    expect(document.querySelector('.sitmun-mia-popup-overlay')).toBeNull();
+    expect(miaService.renderMiaTasks).not.toHaveBeenCalled();
+
+    wrapped.call(control, {
+      featureCount: 1,
+      coords: [1, 1],
+      services: [{ layers: [{ name: '34_TOPO_TX', features: [mia] }] }]
+    });
+    scheduled.run?.();
+    const overlay = document.querySelector('.sitmun-mia-popup-overlay');
+    expect(overlay?.classList.contains('sitmun-mia-popup-visible')).toBe(true);
+
+    wrapped.call(control, {
+      featureCount: 1,
+      coords: [5, 5],
+      services: [{ layers: [{ name: 'OTHER_LAYER', features: [plain] }] }]
+    });
+    listeners['popup.tc drawtable.tc']?.({
+      control: { caller: control, currentFeature: plain }
+    });
+
+    expect(overlay?.classList.contains('sitmun-mia-popup-visible')).toBe(false);
+    expect(overlay?.querySelector('.tc-ctl-popup-content')?.innerHTML).toBe('');
+    expect(miaService.renderMiaTasks).toHaveBeenCalledTimes(1);
+    timeout.mockRestore();
+    clear.mockRestore();
+  });
+
+  it('hides the previous report when a later identify has no features', async () => {
+    await handler.loadPatches(appCfg);
+    const wrapped = mockTC.control.FeatureInfo.prototype.responseCallback;
+    const mia = { getData: () => ({ id: 'mia' }) };
+    const timeout = jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation((fn: TimerHandler) => {
+        if (typeof fn === 'function') fn();
+        return 0 as unknown as ReturnType<typeof setTimeout>;
+      });
+
+    wrapped.call({}, {
+      featureCount: 1,
+      coords: [1, 1],
+      services: [{ layers: [{ name: '34_TOPO_TX', features: [mia] }] }]
+    });
+    timeout.mockRestore();
+
+    wrapped.call({}, { featureCount: 0, coords: [8, 8] });
+
+    const overlay = document.querySelector('.sitmun-mia-popup-overlay');
+    expect(overlay?.classList.contains('sitmun-mia-popup-visible')).toBe(false);
+    expect(miaService.renderMiaTasks).toHaveBeenCalledTimes(1);
   });
 
   it('opens MIA with currentFeature attrs when provided', () => {

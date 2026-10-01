@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 
+import { MAP_CONTAINER_ID } from '../../config/sitna.constants';
 import {
   MoreInfoAdvancedService,
   MiaExportAction,
@@ -25,6 +26,7 @@ const meld = require('meld') as Meld;
 interface MiaFeatureInfoOptions {
   services?: MiaFeatureInfoService[];
   coords?: number[];
+  featureCount?: number;
 }
 
 interface MiaFeatureInfoService {
@@ -215,6 +217,56 @@ export function resolveMiaGfiTarget(
     selectedFeatures,
     layerName: hit.layerName
   };
+}
+
+export function splitMiaLayers<T extends { layers?: MiaFeatureInfoLayer[] }>(
+  options: { services?: T[] } | null | undefined,
+  deps: MiaGfiResolveDeps
+): { attributeServices: T[]; featureCount: number; miaServices: T[] } {
+  const services = Array.isArray(options?.services) ? options.services : [];
+  const attributeServices: T[] = [];
+  const miaServices: T[] = [];
+
+  for (const service of services) {
+    const layers = Array.isArray(service?.layers) ? service.layers : [];
+    const attributeLayers: MiaFeatureInfoLayer[] = [];
+    const miaLayers: MiaFeatureInfoLayer[] = [];
+    for (const layer of layers) {
+      const features = layer?.features;
+      const hasFeatures = Array.isArray(features) && features.length > 0;
+      const cartographyId = hasFeatures
+        ? deps.getCartographyIdFromLayerName(layer?.name ?? '')
+        : null;
+      const tasks = cartographyId
+        ? deps.getTasksForCartography(cartographyId)
+        : [];
+      if (tasks.length > 0) {
+        miaLayers.push(layer);
+      } else {
+        attributeLayers.push(layer);
+      }
+    }
+    if (attributeLayers.length > 0) {
+      attributeServices.push({ ...service, layers: attributeLayers });
+    }
+    if (miaLayers.length > 0) {
+      miaServices.push({ ...service, layers: miaLayers });
+    }
+  }
+
+  const featureCount = attributeServices.reduce(
+    (count, service) =>
+      count +
+      (service.layers ?? []).reduce(
+        (layerCount, layer) =>
+          layerCount +
+          (Array.isArray(layer.features) ? layer.features.length : 0),
+        0
+      ),
+    0
+  );
+
+  return { attributeServices, featureCount, miaServices };
 }
 
 function getFeaturesAtCoordinate(
@@ -596,16 +648,38 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
           (jp: MeldJoinPoint) => {
             const [options] = jp.args as [MiaFeatureInfoOptions];
             const control = jp.target as any;
+            let miaOptions: MiaFeatureInfoOptions | null = null;
+            if (options?.services && this.miaService.hasMiaTasks()) {
+              const split = splitMiaLayers(options, this.resolveDeps());
+              if (split.miaServices.length > 0) {
+                miaOptions = {
+                  services: split.miaServices,
+                  coords: Array.isArray(options.coords)
+                    ? [...options.coords]
+                    : undefined
+                };
+                options.services = split.attributeServices;
+                options.featureCount = split.featureCount;
+                if (split.featureCount === 0) {
+                  delete options.coords;
+                }
+              }
+            }
             const result = jp.proceedApply(jp.args);
 
-            if (options?.services && this.miaService.hasMiaTasks()) {
-              this.lastGfiOptions = options;
+            if (miaOptions) {
+              this.lastGfiOptions = miaOptions;
               this.ensureFeatureSelectionHook(control);
               this.cancelMiaRender();
+              const generation = this.renderGeneration;
               this.openTimer = setTimeout(() => {
                 this.openTimer = null;
-                this.tryOpenMiaPopup(options);
+                if (generation !== this.renderGeneration) return;
+                this.tryOpenMiaPopup(miaOptions);
               }, MIA_OPEN_DELAY_MS);
+            } else if (this.miaService.hasMiaTasks()) {
+              this.lastGfiOptions = null;
+              this.hideMiaOverlay();
             }
 
             return result;
@@ -718,8 +792,9 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     if (!contentDiv) return;
     contentDiv.innerHTML = this.buildMiasHtml(popupId, miaTasks);
 
-    const position = this.getInitialMiaOverlayPosition(overlay);
-    this.placeMiaOverlayAt(position.left, position.top);
+    overlay.style.left = '';
+    overlay.style.top = '';
+    overlay.style.right = '';
     overlay.classList.add('sitmun-mia-popup-visible');
     overlay.style.zIndex = String(++this.floatingZIndex);
 
@@ -782,7 +857,8 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     this.refreshMiaOverlayChrome(overlay);
     this.addMiaOverlayPointerHandlers(overlay);
 
-    document.body.appendChild(overlay);
+    const host = document.getElementById(MAP_CONTAINER_ID) ?? document.body;
+    host.appendChild(overlay);
     this.miaOverlayElement = overlay;
 
     return overlay;
@@ -852,6 +928,7 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
       startY = event.clientY;
       startLeft = overlay.offsetLeft;
       startTop = overlay.offsetTop;
+      overlay.style.right = 'auto';
       overlay.setPointerCapture?.(event.pointerId);
     });
 
@@ -1059,17 +1136,6 @@ export class MoreInfoAdvancedControlHandler extends ControlHandlerBase {
     );
     if (contentDiv) contentDiv.innerHTML = '';
     this.lastOpenedFeatureKey = null;
-  }
-
-  private getInitialMiaOverlayPosition(overlay: HTMLElement): {
-    left: number;
-    top: number;
-  } {
-    const width = overlay.offsetWidth || 420;
-    const height = overlay.offsetHeight || 260;
-    const left = Math.round((window.innerWidth - width) / 2);
-    const top = Math.round((window.innerHeight - height) * 0.4);
-    return { left: Math.max(8, left), top: Math.max(8, top) };
   }
 
   private placeMiaOverlayAt(left: number, top: number): void {
