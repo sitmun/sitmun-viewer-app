@@ -1305,4 +1305,11 @@ sitna-hello-world {
   top: 3.2em;
 }
 
+/*
+ * api-sitna pins `.tc-ctl-prnmap-tools` to the viewport origin (`position: fixed; top: 0`).
+ * The map starts under the header, so that bar covers the menu. Keep it on the page.
+ */
+.tc-map.tc-ctl-prnmap-printing .tc-ctl-prnmap-tools {
+  position: absolute;
+}
 
