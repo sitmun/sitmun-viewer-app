@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: A long Available Layers name stays on one line, shortened with an ellipsis, and the metadata button stays visible. A folder's children start on the next line, including a one-letter name ([#186](https://github.com/sitmun/sitmun-viewer-app/issues/186)).
 - **Map**: Releasing a drag over a result cell or the coordinate bar ends the drag, so the popup does not stay at 40% opacity.
 
 ## [1.2.9] - 2026-09-19

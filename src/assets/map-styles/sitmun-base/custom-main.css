@@ -731,19 +731,19 @@ input[type='range']:focus {
 .tc-ctl-lcat li.tc-ctl-lcat-node > .tc-ctl-lcat-node-title,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf > span,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf > .tc-ctl-lcat-node-title {
-  display: inline-flex !important;
-  align-items: center !important;
+  /* Block, not flex: ellipsis applies to the text. A nested flex item paints over the metadata button. */
+  display: block !important;
   align-self: center !important;
   box-sizing: border-box !important;
-  flex: 1 1 auto !important;
+  /* Basis 0 stays on the clipped line. Basis auto is the full name and wraps off it. */
+  flex: 1 1 0% !important;
   min-width: 0 !important;
   height: var(--sitmun-lcat-slot) !important;
   max-height: var(--sitmun-lcat-slot) !important;
   min-height: var(--sitmun-lcat-slot) !important;
   margin: 0 !important;
   padding: 0 !important;
-  line-height: 1 !important;
-  vertical-align: middle !important;
+  line-height: var(--sitmun-lcat-slot) !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
@@ -850,10 +850,16 @@ input[type='range']:focus {
  * parent LI's left edge so only the child's level×icon pad creates the inset
  * (admin-like: one leading-icon step per level, not stacked paddings).
  * --sitmun-lcat-pad-left inherits from the parent LI.
+ *
+ * Line breaking uses the flex base size plus the negative margin. A 100% basis
+ * plus that margin is shorter than the row, so a short title shares the line.
+ * Basis 100% + pad cancels the margin, so the branch always takes the next line,
+ * then shrinks back to the content box.
  */
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul.tc-ctl-lcat-branch,
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul {
-  flex: 1 0 100% !important;
+  flex: 1 1 calc(100% + var(--sitmun-lcat-pad-left)) !important;
+  min-width: 0 !important;
   width: 100% !important;
   margin-left: calc(-1 * var(--sitmun-lcat-pad-left)) !important;
 }
