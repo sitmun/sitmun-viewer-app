@@ -1313,3 +1313,26 @@ sitna-hello-world {
   position: absolute;
 }
 
+/*
+ * The page is taller than a short window, and the shell clips with overflow hidden.
+ * An absolute map does not extend a scrollport. The print masks sit above the frame,
+ * so a bar at the frame edge never receives the pointer. Keep the page size, scroll
+ * the frame, and paint that frame above the masks.
+ */
+.map-container:has(.tc-ctl-prnmap-printing) {
+  overflow: auto;
+  z-index: 100000;
+}
+
+.map-container:has(.tc-ctl-prnmap-printing)::-webkit-scrollbar {
+  width: 12px;
+}
+
+.tc-map.tc-ctl-prnmap-printing {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+

@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: A print preview taller than the window scrolls, so the bottom of a portrait page is reachable ([#181](https://github.com/sitmun/sitmun-viewer-app/issues/181)).
 - **Map**: Print preview buttons sit on the page instead of covering the header menu ([#182](https://github.com/sitmun/sitmun-viewer-app/issues/182)).
 - **Map**: A long Available Layers name stays on one line, shortened with an ellipsis, and the metadata button stays visible. A folder's children start on the next line, including a one-letter name ([#186](https://github.com/sitmun/sitmun-viewer-app/issues/186)).
 - **Map**: Releasing a drag over a result cell or the coordinate bar ends the drag, so the popup does not stay at 40% opacity.
