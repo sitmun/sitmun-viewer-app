@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- **Map**: A folder with a description, a metadata URL, or a dataset URL shows the same information button as a layer. The window shows the folder name, the description, and those links. An empty folder has no button ([#173](https://github.com/sitmun/sitmun-viewer-app/issues/173)).
 - **Map**: A layer with GetFeatureInfo fields shows only that include list, in order, with the translated label. `T`, `N`, `F`, `U`, `P`, and `I` format the cell in the map locale. `AUTO` keeps API-SITNA detection. `feature.data` is not rewritten. More-info reads `data-feature-path` and dotted paths such as `address.city` ([sitmun-application-stack#77](https://github.com/sitmun/sitmun-application-stack/issues/77)).
 - **Tests**: Field-list specs cover a tree-title heading and two WMS group children that share a title but use different profile layer ids.
 

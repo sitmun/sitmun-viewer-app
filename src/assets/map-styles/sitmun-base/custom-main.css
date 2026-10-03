@@ -510,6 +510,7 @@ input[type='range']:focus {
   --sitmun-lcat-control: 14px;
   --sitmun-lcat-hit: var(--sitmun-lcat-slot);
   --sitmun-lcat-row-min: 20px;
+  --sitmun-lcat-pad-right: 2px;
   --sitmun-lcat-gap: 3px;
   --sitmun-lcat-icon-y: calc(
     (var(--sitmun-lcat-row-min) - var(--sitmun-lcat-icon)) / 2
@@ -547,45 +548,103 @@ input[type='range']:focus {
   --sitmun-lcat-btn-radius: calc(var(--sitna-border-radius, 4.8px) / 2);
   --sitmun-lcat-btn-border: #000;
   --sitmun-lcat-btn-bg: #fff;
-  display: flex !important;
-  flex-wrap: wrap !important;
+  /*
+   * One header track for every row. The child list is the second track.
+   * Columns are assigned per row so a missing checkbox or button takes no slot.
+   */
+  display: grid !important;
+  grid-template-rows: var(--sitmun-lcat-row-min) auto !important;
+  grid-template-columns: minmax(0, 1fr) !important;
   align-items: center !important;
-  /* Nested <ul> wraps below; keep the chrome line at the top of the li. */
-  align-content: flex-start !important;
+  align-content: start !important;
   column-gap: var(--sitmun-lcat-gap) !important;
+  row-gap: 0 !important;
   margin: 0 !important;
-  padding: 0 2px 0 var(--sitmun-lcat-pad-left) !important;
+  padding: 0 var(--sitmun-lcat-pad-right) 0 var(--sitmun-lcat-pad-left) !important;
   min-height: var(--sitmun-lcat-row-min) !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
   line-height: var(--sitmun-lcat-slot) !important;
   box-sizing: border-box !important;
 }
 
-/*
- * Zero-width strut: force the first flex line to --sitmun-lcat-row-min so
- * type-icon background-position, select, title, and [ℹ]/[?] share one band.
- * (::before is the zebra paint.)
- */
-.tc-ctl-lcat li.tc-ctl-lcat-node::after,
-.tc-ctl-lcat li.tc-ctl-lcat-leaf::after {
-  content: '';
-  order: -1;
-  flex: 0 0 auto;
-  width: 0;
-  height: var(--sitmun-lcat-row-min);
-  overflow: hidden;
-  visibility: hidden;
-  pointer-events: none;
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label) {
+  grid-template-columns: auto minmax(0, 1fr) !important;
 }
 
-/*
- * Single-line rows: exact chrome height. Sitna’s sitna-toggle min-content
- * (~1.5em) and collapsed padding otherwise make some bands taller than others.
- */
-.tc-ctl-lcat li.tc-ctl-lcat-leaf,
-.tc-ctl-lcat li.tc-ctl-lcat-node.tc-collapsed {
-  height: var(--sitmun-lcat-row-min) !important;
-  max-height: var(--sitmun-lcat-row-min) !important;
-  overflow: hidden !important;
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> sitna-toggle),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> sitna-toggle) {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label):has(> sitna-toggle),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label):has(> sitna-toggle) {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> .sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> .sitmun-lcat-load-failed) {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label):has(> .sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label):has(> .sitmun-lcat-load-failed) {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> sitna-toggle):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> sitna-toggle):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> sitna-toggle):has(> .sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> sitna-toggle):has(> .sitmun-lcat-load-failed) {
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label):has(> sitna-toggle):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label):has(> sitna-toggle):has(> .sitmun-lcat-loading),
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label):has(> sitna-toggle):has(> .sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label):has(> sitna-toggle):has(> .sitmun-lcat-load-failed) {
+  grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node > label,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > label {
+  grid-row: 1 !important;
+  grid-column: 1 !important;
+  justify-self: start !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node > .sitmun-lcat-loading,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > .sitmun-lcat-loading,
+.tc-ctl-lcat li.tc-ctl-lcat-node > .sitmun-lcat-load-failed,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > .sitmun-lcat-load-failed {
+  grid-row: 1 !important;
+  grid-column: -2 / -1 !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> sitna-toggle) > .sitmun-lcat-loading,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> sitna-toggle) > .sitmun-lcat-loading,
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> sitna-toggle) > .sitmun-lcat-load-failed,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> sitna-toggle) > .sitmun-lcat-load-failed {
+  grid-column: -3 / -2 !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node > sitna-toggle,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > sitna-toggle {
+  grid-row: 1 !important;
+  grid-column: -2 / -1 !important;
+  justify-self: end !important;
+}
+
+/* Zebra uses ::before. The old flex strut must not occupy a grid cell. */
+.tc-ctl-lcat li.tc-ctl-lcat-node::after,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf::after {
+  content: none !important;
 }
 
 /* Collapse hit target = type-icon; title toggles via JS. */
@@ -727,16 +786,17 @@ input[type='range']:focus {
 /* Kill SITNA/responsive title margins that push labels off the icon midline.
  * SITNA sets span background to --main-bg-color (opaque) to mask connectors —
  * clear it so zebra shows through the title. */
-.tc-ctl-lcat li.tc-ctl-lcat-node > span,
+.tc-ctl-lcat li.tc-ctl-lcat-node > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed),
 .tc-ctl-lcat li.tc-ctl-lcat-node > .tc-ctl-lcat-node-title,
-.tc-ctl-lcat li.tc-ctl-lcat-leaf > span,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed),
 .tc-ctl-lcat li.tc-ctl-lcat-leaf > .tc-ctl-lcat-node-title {
   /* Block, not flex: ellipsis applies to the text. A nested flex item paints over the metadata button. */
   display: block !important;
+  grid-row: 1 !important;
+  grid-column: 1 !important;
   align-self: center !important;
+  justify-self: stretch !important;
   box-sizing: border-box !important;
-  /* Basis 0 stays on the clipped line. Basis auto is the full name and wraps off it. */
-  flex: 1 1 0% !important;
   min-width: 0 !important;
   height: var(--sitmun-lcat-slot) !important;
   max-height: var(--sitmun-lcat-slot) !important;
@@ -749,6 +809,13 @@ input[type='range']:focus {
   white-space: nowrap !important;
   background-color: transparent !important;
   background-image: none !important;
+}
+
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label) > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-node:has(> label) > .tc-ctl-lcat-node-title,
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label) > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed),
+.tc-ctl-lcat li.tc-ctl-lcat-leaf:has(> label) > .tc-ctl-lcat-node-title {
+  grid-column: 2 !important;
 }
 
 .tc-ctl-lcat li.tc-ctl-lcat-node:not(.tc-ctl-lcat-leaf) > span,
@@ -832,7 +899,7 @@ input[type='range']:focus {
   background-repeat: no-repeat !important;
   background-size: var(--sitmun-lcat-icon) var(--sitmun-lcat-icon) !important;
   background-position: var(--sitmun-lcat-icon-x) var(--sitmun-lcat-icon-y) !important;
-  padding: 0 2px 0 var(--sitmun-lcat-pad-left) !important;
+  padding: 0 var(--sitmun-lcat-pad-right) 0 var(--sitmun-lcat-pad-left) !important;
 }
 
 /* Nest indent is per-li level; root branch stays flush with the tree. */
@@ -851,17 +918,16 @@ input[type='range']:focus {
  * (admin-like: one leading-icon step per level, not stacked paddings).
  * --sitmun-lcat-pad-left inherits from the parent LI.
  *
- * Line breaking uses the flex base size plus the negative margin. A 100% basis
- * plus that margin is shorter than the row, so a short title shares the line.
- * Basis 100% + pad cancels the margin, so the branch always takes the next line,
- * then shrinks back to the content box.
+ * Pull both sides back to the parent LI edge. Indent stays on the child.
+ * The right edge stays the tree edge, so info buttons share one column.
  */
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul.tc-ctl-lcat-branch,
 .tc-ctl-lcat li.tc-ctl-lcat-node > ul {
-  flex: 1 1 calc(100% + var(--sitmun-lcat-pad-left)) !important;
+  grid-row: 2 !important;
+  grid-column: 1 / -1 !important;
   min-width: 0 !important;
-  width: 100% !important;
-  margin-left: calc(-1 * var(--sitmun-lcat-pad-left)) !important;
+  width: auto !important;
+  margin: 0 calc(-1 * var(--sitmun-lcat-pad-right)) 0 calc(-1 * var(--sitmun-lcat-pad-left)) !important;
 }
 
 /* First branch: no top margin/padding/border. */
@@ -928,12 +994,12 @@ input[type='range']:focus {
 }
 
 /* Make all folder nodes bold, but not leaves */
-.tc-ctl-lcat li.tc-ctl-lcat-node > span {
+.tc-ctl-lcat li.tc-ctl-lcat-node > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed) {
   font-weight: bold !important;
 }
 
 /* Ensure leaves are not bold */
-.tc-ctl-lcat li.tc-ctl-lcat-leaf > span {
+.tc-ctl-lcat li.tc-ctl-lcat-leaf > span:not(.sitmun-lcat-loading):not(.sitmun-lcat-load-failed) {
   font-weight: normal !important;
 }
 
@@ -941,6 +1007,11 @@ input[type='range']:focus {
 .tc-ctl-lcat li.tc-ctl-lcat-node,
 .tc-ctl-lcat li.tc-ctl-lcat-leaf {
   border-top: none !important;
+}
+
+/* SITNA draws data-tooltip above a leaf title. The row clips it to a line. */
+.tc-ctl-lcat li.tc-ctl-lcat-node > span.tc-selectable:hover::after {
+  content: none !important;
 }
 
 /* Beat Sitna `.tc-ctl-lcat sitna-toggle.tc-ctl-lcat-btn-info { top:0 }`.

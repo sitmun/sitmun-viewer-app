@@ -185,6 +185,8 @@ export interface AppNodeInfo {
   isRadio: boolean;
   children: string[];
   order: number;
+  /** Folder description from the tree node (client profile). */
+  description?: string;
   /** Optional folder-level metadata URL from tree node (client profile). */
   metadataURL?: string;
   /** Optional folder-level dataset URL from tree node (client profile). */

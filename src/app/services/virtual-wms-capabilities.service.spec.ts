@@ -196,6 +196,75 @@ describe('VirtualWmsCapabilitiesService', () => {
       }
     });
 
+    it('copies folder description and URLs onto the catalog root layer', () => {
+      const cfg: AppCfg = {
+        ...mockAppCfg,
+        trees: mockAppCfg.trees.map((tree) => ({
+          ...tree,
+          nodes: {
+            ...tree.nodes,
+            'node-1': {
+              ...tree.nodes['node-1'],
+              description: 'Carrers del municipi.',
+              metadataURL: 'https://www.icgc.cat/meta.xml',
+              datasetURL: 'https://www.icgc.cat/adreces.zip'
+            }
+          }
+        }))
+      };
+      const rootLayer = service.generateCapabilities('node-1', cfg).Capability.Layer;
+      expect(rootLayer.Name).toBeUndefined();
+      expect(rootLayer.Abstract).toBe('Carrers del municipi.');
+      expect(rootLayer.MetadataURL).toEqual([
+        {
+          Format: 'text/xml',
+          OnlineResource: { 'xlink:href': 'https://www.icgc.cat/meta.xml' }
+        }
+      ]);
+      expect(rootLayer.DataURL).toEqual([
+        {
+          Format: 'application/zip',
+          OnlineResource: { 'xlink:href': 'https://www.icgc.cat/adreces.zip' }
+        }
+      ]);
+    });
+
+    it('copies folder description and URLs onto the group layer', () => {
+      const cfg: AppCfg = {
+        ...mockAppCfg,
+        trees: mockAppCfg.trees.map((tree) => ({
+          ...tree,
+          nodes: {
+            ...tree.nodes,
+            'node-2': {
+              ...tree.nodes['node-2'],
+              description: 'Carrers del municipi.',
+              metadataURL: 'https://www.icgc.cat/meta.xml',
+              datasetURL: 'https://www.icgc.cat/adreces.zip'
+            }
+          }
+        }))
+      };
+      const capabilities = service.generateCapabilities('node-1', cfg);
+      const folder = capabilities.Capability.Layer.Layer?.find(
+        (layer) => layer.Title === 'Folder Node'
+      );
+      expect(folder?.Name).toBeUndefined();
+      expect(folder?.Abstract).toBe('Carrers del municipi.');
+      expect(folder?.MetadataURL).toEqual([
+        {
+          Format: 'text/xml',
+          OnlineResource: { 'xlink:href': 'https://www.icgc.cat/meta.xml' }
+        }
+      ]);
+      expect(folder?.DataURL).toEqual([
+        {
+          Format: 'application/zip',
+          OnlineResource: { 'xlink:href': 'https://www.icgc.cat/adreces.zip' }
+        }
+      ]);
+    });
+
     it('should emit MetadataURL and DataURL on leaf layers from profile', () => {
       const capabilities = service.generateCapabilities('node-1', mockAppCfg);
       const rootLayer = capabilities.Capability.Layer;
