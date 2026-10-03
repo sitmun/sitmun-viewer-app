@@ -10,15 +10,9 @@
       <div class='tc-ctl-lcat-info-content'>
         {{#if abstract}}
           <div class='tc-ctl-lcat-abstract'>
-            {{#if isGroup}}
-              <h4>
-                {{i18n 'groupAbstract'}}
-              </h4>
-            {{else}}
-              <h4>
-                {{i18n 'abstract'}}
-              </h4>
-            {{/if}}
+            <h4>
+              {{i18n 'abstract'}}
+            </h4>
             <div class='tc-ctl-lcat-info-data-content'>
               <pre>{{{abstract}}}</pre>
             </div>
@@ -26,15 +20,9 @@
         {{/if}}
         {{#if name}}
           <div class='tc-ctl-lcat-info-data'>
-            {{#if isGroup}}
-              <h4 class='tc-ctl-lcat-info-data-title'>
-                {{i18n 'groupLayerId'}}
-              </h4>
-            {{else}}
-              <h4 class='tc-ctl-lcat-info-data-title'>
-                {{i18n 'layerId'}}
-              </h4>
-            {{/if}}
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'layerId'}}
+            </h4>
             <div class='tc-ctl-lcat-info-data-content'>
               <pre>{{{name}}}</pre>
             </div>

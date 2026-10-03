@@ -1,0 +1,72 @@
+<div class='tc-modal'>
+  <div class='tc-modal-window'>
+    <div class='tc-modal-header'>
+      <h3>
+        {{title}}
+      </h3>
+      <a class='tc-ctl-lcat-info-close'></a>
+    </div>
+    <div class='tc-modal-body'>
+      <div class='tc-ctl-lcat-info-content'>
+        {{#if abstract}}
+          <div class='tc-ctl-lcat-info-data'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'groupAbstract'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <pre>{{{abstract}}}</pre>
+            </div>
+          </div>
+        {{/if}}
+        {{#if metadata}}
+          <div class='tc-ctl-lcat-info-data tc-ctl-lcat-metadata'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'metadata'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <ul class='tc-ctl-lcat-info-links'>
+                {{#each metadata}}
+                  <li>
+                    <a
+                      href='{{{url}}}'
+                      class='tc-file-link'
+                      type='{{{format}}}'
+                      title='{{{formatDescription}}}'
+                      target='_blank'
+                    >
+                      {{{formatDescription}}}
+                    </a>
+                  </li>
+                {{/each}}
+              </ul>
+            </div>
+          </div>
+        {{/if}}
+        {{#if dataUrl}}
+          <div class='tc-ctl-lcat-info-data tc-ctl-lcat-dataurl'>
+            <h4 class='tc-ctl-lcat-info-data-title'>
+              {{i18n 'descarregadades'}}
+            </h4>
+            <div class='tc-ctl-lcat-info-data-content'>
+              <ul class='tc-ctl-lcat-info-links'>
+                {{#each dataUrl}}
+                  <li>
+                    <a
+                      href='{{{url}}}'
+                      class='tc-file-link'
+                      type='{{{format}}}'
+                      title='{{{formatDescription}}}'
+                      target='_blank'
+                    >
+                      {{{formatDescription}}}
+                    </a>
+                  </li>
+                {{/each}}
+              </ul>
+            </div>
+          </div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>

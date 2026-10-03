@@ -8,6 +8,7 @@ import {
   AppTree
 } from '@api/model/app-cfg';
 
+import { applyFolderCatalogInfo } from './folder-catalog-info';
 import { inferOgcLinkFormat } from './layer-info.service';
 import { isProfileLayerQueryable } from './profile-layer-queryable';
 import {
@@ -485,6 +486,8 @@ export class VirtualWmsCapabilitiesService {
       if (rootLayer.Layer.length > 0) {
         rootLayer.CRS = this.aggregateCRSFromChildren(rootLayer.Layer);
       }
+      // This node is the catalog row. Nested folders are handled in convertNodeToLayer.
+      applyFolderCatalogInfo(rootLayer, node);
     } else if (node.resource) {
       // Leaf node with resource - create a single layer entry
       const layer = this.convertNodeToLayer(
@@ -578,6 +581,7 @@ export class VirtualWmsCapabilitiesService {
 
         // Aggregate CRS from children
         layer.CRS = this.aggregateCRSFromChildren(layer.Layer);
+        applyFolderCatalogInfo(layer, node);
       } else {
         // Tree not found, exclude node
         return null;

@@ -10,11 +10,21 @@ import { CatalogLayerSelectionService } from '../../services/catalog-layer-selec
 import { CatalogSwitchingService } from '../../services/catalog-switching.service';
 import { ConfigLookupService } from '../../services/config-lookup.service';
 import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
+import {
+  CatalogInfoKind,
+  catalogInfoKind
+} from '../../services/catalog-info-kind';
+import {
+  findCapabilitiesLayerByTitle,
+  presentFolderLayerInfo
+} from '../../services/folder-catalog-info';
+import { LayerInfoService } from '../../services/layer-info.service';
 import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
+import { WMSLayer } from '../../types/wms-capabilities';
 import { ControlHandlerBase } from '../control-handler-base';
 import {
   BootstrapEligibilityOptions,
@@ -56,6 +66,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   private readonly catalogSelection = inject(CatalogLayerSelectionService);
   private readonly catalogSwitching = inject(CatalogSwitchingService);
   private readonly rasterService = inject(RasterLayerService);
+  private readonly layerInfoService = inject(LayerInfoService);
   private readonly capabilitiesInterceptor = inject(SitnaCapabilitiesInterceptor);
   private readonly translate = inject(TranslateService);
 
@@ -134,6 +145,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     await this.patchLayerCatalogGetLayerRootNode();
     await this.patchRasterGetPath();
     await this.patchLayerCatalogTemplate();
+    await this.patchFolderLayerInfo();
     await this.patchLayerCatalogCreateSearchAutocomplete();
     await this.patchRasterGetInfo();
     await this.patchLayerCatalogInjectCatalogSwitching();
@@ -2684,9 +2696,111 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
   }
 
   /**
-   * Patch LayerCatalog to use custom info template.
-   * Overrides the template path to use LayerCatalogInfoSitmun.hbs instead of default.
-   * Completely replaces loadTemplates method to customize template loading.
+   * Resolve the profile node SITNA passed to the information window.
+   * A leaf name is the node id. A folder has no name, so the title is used.
+   */
+  private lookupCatalogInfoNode(name: unknown, title: unknown): AppNodeInfo | undefined {
+    if (typeof name === 'string' && name.length > 0) {
+      const byId = this.configLookup.findNode(name);
+      if (byId) {
+        return byId;
+      }
+    }
+    if (typeof title !== 'string' || !this.currentAppCfg) {
+      return undefined;
+    }
+    for (const tree of this.currentAppCfg.trees) {
+      const nodes = tree.nodes as Record<string, AppNodeInfo> | undefined;
+      if (!nodes) {
+        continue;
+      }
+      for (const node of Object.values(nodes)) {
+        if (node?.title === title && catalogInfoKind(node) === CatalogInfoKind.Folder) {
+          return node;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Choose the information template from catalogInfoKind.
+   * A folder has no layer name, so SITNA fills the dialog from capabilities
+   * by title and omits DataURL. Rewrite that payload before the folder template runs.
+   */
+  private async patchFolderLayerInfo(): Promise<void> {
+    const handler = this;
+    await this.withTCAsync(async (TC) => {
+      const ctlProto = TC.control?.LayerCatalog?.prototype as
+        | {
+            showLayerInfo?: (...args: unknown[]) => unknown;
+            __sitmunFolderInfo?: boolean;
+          }
+        | undefined;
+      if (!ctlProto?.showLayerInfo || ctlProto.__sitmunFolderInfo) {
+        return;
+      }
+      const originalShowLayerInfo = ctlProto.showLayerInfo;
+      const describe = (kind: 'metadata' | 'download', format: string): string =>
+        handler.layerInfoService.describeOgcLinkFormat(kind, format);
+      ctlProto.showLayerInfo = function (
+        this: {
+          CLASS: string;
+          getRenderedHtml: (...args: unknown[]) => unknown;
+        },
+        ...args: unknown[]
+      ): unknown {
+        const layer = args[0] as
+          | { capabilities?: { Capability?: { Layer?: unknown } } }
+          | undefined;
+        const name = args[1];
+        const title = args[2];
+        const originalRender = this.getRenderedHtml;
+        const self = this;
+        this.getRenderedHtml = function (
+          templateId: unknown,
+          data: unknown,
+          callback: unknown
+        ): unknown {
+          let nextId = templateId;
+          let next = data;
+          if (
+            templateId === self.CLASS + '-info' &&
+            data &&
+            typeof data === 'object'
+          ) {
+            const kind = catalogInfoKind(handler.lookupCatalogInfoNode(name, title));
+            if (kind === CatalogInfoKind.Folder && typeof title === 'string') {
+              nextId = self.CLASS + '-info-folder';
+              const cap = findCapabilitiesLayerByTitle(
+                layer?.capabilities?.Capability?.Layer as WMSLayer | undefined,
+                title
+              );
+              next = presentFolderLayerInfo(
+                data as Record<string, unknown>,
+                cap,
+                describe
+              );
+            }
+          }
+          return originalRender.call(self, nextId, next, callback);
+        };
+        try {
+          return originalShowLayerInfo.apply(this, args);
+        } finally {
+          this.getRenderedHtml = originalRender;
+        }
+      };
+      ctlProto.__sitmunFolderInfo = true;
+      this.patchManager.add(() => {
+        ctlProto.showLayerInfo = originalShowLayerInfo;
+        delete ctlProto.__sitmunFolderInfo;
+      });
+    });
+  }
+
+  /**
+   * Patch LayerCatalog to use a template per catalog info kind.
    */
   private async patchLayerCatalogTemplate(): Promise<void> {
     await this.withTCAsync(async (TC) => {
@@ -2718,7 +2832,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
 
         // Override the info template with custom SITMUN template
         self.template[self.CLASS + '-info'] =
-          'assets/js/patch/templates/LayerCatalogInfoSitmun.hbs';
+          'assets/js/patch/templates/LayerCatalogInfoLayerSitmun.hbs';
+        self.template[self.CLASS + '-info-folder'] =
+          'assets/js/patch/templates/LayerCatalogInfoFolderSitmun.hbs';
+        // The catalog root row is this branch. SITNA's branch template has no info button.
+        self.template[self.CLASS + '-branch'] =
+          'assets/js/patch/templates/LayerCatalogBranchSitmun.hbs';
 
         // Load projects template for catalog switching
         self.template[self.CLASS + '-proj'] =
