@@ -6,19 +6,19 @@ import { Subscription } from 'rxjs';
 
 
 import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordance';
-import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
-import { CatalogSwitchingService } from '../../services/catalog-switching.service';
-import { ConfigLookupService } from '../../services/config-lookup.service';
-import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
 import {
   CatalogInfoKind,
   catalogInfoKind
 } from '../../services/catalog-info-kind';
+import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
+import { CatalogSwitchingService } from '../../services/catalog-switching.service';
+import { ConfigLookupService } from '../../services/config-lookup.service';
 import {
   findCapabilitiesLayerByTitle,
   presentFolderLayerInfo
 } from '../../services/folder-catalog-info';
 import { LayerInfoService } from '../../services/layer-info.service';
+import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
 import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
@@ -536,6 +536,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.layerNames = layerName;
           }
 
+          if (resource) {
+            layerOptions['profileLayerId'] = resource;
+          }
           const appLayer = resource
             ? appCfgAdd.layers.find((l) => l.id === resource)
             : undefined;
@@ -2729,7 +2732,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * by title and omits DataURL. Rewrite that payload before the folder template runs.
    */
   private async patchFolderLayerInfo(): Promise<void> {
-    const handler = this;
+    const lookupCatalogInfoNode = (name: unknown, title: unknown) =>
+      this.lookupCatalogInfoNode(name, title);
+    const describe = (kind: 'metadata' | 'download', format: string): string =>
+      this.layerInfoService.describeOgcLinkFormat(kind, format);
     await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control?.LayerCatalog?.prototype as
         | {
@@ -2741,8 +2747,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return;
       }
       const originalShowLayerInfo = ctlProto.showLayerInfo;
-      const describe = (kind: 'metadata' | 'download', format: string): string =>
-        handler.layerInfoService.describeOgcLinkFormat(kind, format);
       ctlProto.showLayerInfo = function (
         this: {
           CLASS: string;
@@ -2756,6 +2760,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         const name = args[1];
         const title = args[2];
         const originalRender = this.getRenderedHtml;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         this.getRenderedHtml = function (
           templateId: unknown,
@@ -2769,7 +2774,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             data &&
             typeof data === 'object'
           ) {
-            const kind = catalogInfoKind(handler.lookupCatalogInfoNode(name, title));
+            const kind = catalogInfoKind(lookupCatalogInfoNode(name, title));
             if (kind === CatalogInfoKind.Folder && typeof title === 'string') {
               nextId = self.CLASS + '-info-folder';
               const cap = findCapabilitiesLayerByTitle(
@@ -3275,5 +3280,66 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       applied.add(loadId);
       this.defaultLoadApplied.set(map, applied);
     });
+  }
+
+  async addProfileLayers(
+    map: { getControlsByClass?: (type: unknown) => unknown[] },
+    context: AppCfg | null | undefined,
+    profileLayerIds: string[]
+  ): Promise<void> {
+    if (!context || profileLayerIds.length === 0) {
+      return;
+    }
+    const nodes = this.nodesForProfileLayers(context, profileLayerIds);
+    if (nodes.length === 0) {
+      return;
+    }
+    await this.withTCAsync(async (TC) => {
+      const catalogs =
+        typeof map.getControlsByClass === 'function'
+          ? (map.getControlsByClass(TC.control.LayerCatalog) as Array<{
+              addLayerToMap?: (
+                layer: { title: string; options: Record<string, unknown> },
+                nodeId: string
+              ) => Promise<unknown>;
+              map?: object;
+            }>)
+          : [];
+      const catalog = catalogs[0];
+      if (!catalog?.addLayerToMap) {
+        return;
+      }
+      this.attachMapEventBridge(catalog.map ?? map, TC);
+      for (const { nodeId, title } of nodes) {
+        const configuredLayer = this.findConfiguredCatalogLayer(
+          catalog,
+          context,
+          nodeId
+        );
+        await catalog.addLayerToMap(
+          configuredLayer ?? { title, options: {} },
+          nodeId
+        );
+      }
+    });
+  }
+
+  private nodesForProfileLayers(
+    context: AppCfg,
+    profileLayerIds: string[]
+  ): Array<{ nodeId: string; title: string }> {
+    const wanted = new Set(profileLayerIds);
+    const found: Array<{ nodeId: string; title: string }> = [];
+    for (const tree of context.trees ?? []) {
+      for (const [nodeId, raw] of Object.entries(tree.nodes ?? {})) {
+        const node = raw as AppNodeInfo;
+        if (!node?.resource || node.action || !wanted.has(node.resource)) {
+          continue;
+        }
+        found.push({ nodeId, title: node.title });
+        wanted.delete(node.resource);
+      }
+    }
+    return found;
   }
 }

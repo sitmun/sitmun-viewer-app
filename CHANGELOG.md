@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: A share link keeps the current map route and stores the view in `mapState`. Opening that link restores the extent, a non-default background, catalog layers that were turned on, reordered, or changed (including their opacity, sublayers, stacking order, and the selected layer of a radio group), drawings, an imported file, a shared feature, and the 3D camera. A missing background, layer, drawing, or file does not stop the rest of the restore. The browser posts the link to `POST /api/config/client/short-url` and does not call tinyurl.com. A failed shorten shows `shortUrlRejected`, `shortUrlForbidden`, or `shortUrlFailed` from the map theme, and does not show the backend detail ([#189](https://github.com/sitmun/sitmun-viewer-app/issues/189), [#190](https://github.com/sitmun/sitmun-viewer-app/issues/190), [#191](https://github.com/sitmun/sitmun-viewer-app/issues/191)).
 - **Map**: A print preview taller than the window scrolls, so the bottom of a portrait page is reachable ([#181](https://github.com/sitmun/sitmun-viewer-app/issues/181)).
 - **Map**: Print preview buttons sit on the page instead of covering the header menu ([#182](https://github.com/sitmun/sitmun-viewer-app/issues/182)).
 - **Map**: A long Available Layers name stays on one line, shortened with an ellipsis, and the metadata button stays visible. A folder's children start on the next line, including a one-letter name ([#186](https://github.com/sitmun/sitmun-viewer-app/issues/186)).

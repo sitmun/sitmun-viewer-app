@@ -38,5 +38,8 @@
   "locator.selectLocator": "Select a locator...",
   "locator.searchPlaceholder": "Enter search text...",
   "locator.noResults": "No results found.",
-  "locator.loading": "Searching..."
+  "locator.loading": "Searching...",
+  "shortUrlRejected": "This address is not a map on this site.",
+  "shortUrlForbidden": "You cannot share this map.",
+  "shortUrlFailed": "The map link could not be shortened."
 }

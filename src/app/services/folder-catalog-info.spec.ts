@@ -1,8 +1,8 @@
-import { WMSLayer } from '../types/wms-capabilities';
 import {
   applyFolderCatalogInfo,
   presentFolderLayerInfo
 } from './folder-catalog-info';
+import { WMSLayer } from '../types/wms-capabilities';
 
 const formatLabel = (kind: 'metadata' | 'download', format: string): string =>
   format || kind;
