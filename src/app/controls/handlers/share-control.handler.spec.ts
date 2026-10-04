@@ -4,8 +4,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { AppCfg, AppTasks } from '@api/model/app-cfg';
 
-import { decodeMapState, encodeMapState } from '../../map/map-view-snapshot';
 import { ShareControlHandler } from './share-control.handler';
+import { decodeMapState, encodeMapState } from '../../map/map-view-snapshot';
 import { AppConfigService } from '../../services/app-config.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 

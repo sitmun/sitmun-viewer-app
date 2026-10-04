@@ -50,11 +50,11 @@ export class ShareControlHandler extends ControlHandlerBase {
       return;
     }
     proto.__sitmunMapStateLink = true;
-    const handler = this;
+    const capture = (mapInfo: SitnaMapInfo) => this.capture(mapInfo);
     const errorType = TC?.Consts?.msgType?.ERROR;
 
     proto.generateLink = async function generateLink(this: SitnaMapInfo) {
-      const snapshot = handler.capture(this);
+      const snapshot = capture(this);
       const url = buildMapStateUrl(
         window.location.href,
         encodeMapState(snapshot)

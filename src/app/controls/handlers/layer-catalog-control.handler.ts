@@ -6,19 +6,19 @@ import { Subscription } from 'rxjs';
 
 
 import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordance';
-import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
-import { CatalogSwitchingService } from '../../services/catalog-switching.service';
-import { ConfigLookupService } from '../../services/config-lookup.service';
-import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
 import {
   CatalogInfoKind,
   catalogInfoKind
 } from '../../services/catalog-info-kind';
+import { CatalogLayerSelectionService } from '../../services/catalog-layer-selection.service';
+import { CatalogSwitchingService } from '../../services/catalog-switching.service';
+import { ConfigLookupService } from '../../services/config-lookup.service';
 import {
   findCapabilitiesLayerByTitle,
   presentFolderLayerInfo
 } from '../../services/folder-catalog-info';
 import { LayerInfoService } from '../../services/layer-info.service';
+import { resolveSitmunGfiEnabled } from '../../services/profile-layer-queryable';
 import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
@@ -2732,7 +2732,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * by title and omits DataURL. Rewrite that payload before the folder template runs.
    */
   private async patchFolderLayerInfo(): Promise<void> {
-    const handler = this;
+    const lookupCatalogInfoNode = (name: unknown, title: unknown) =>
+      this.lookupCatalogInfoNode(name, title);
+    const describe = (kind: 'metadata' | 'download', format: string): string =>
+      this.layerInfoService.describeOgcLinkFormat(kind, format);
     await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control?.LayerCatalog?.prototype as
         | {
@@ -2744,8 +2747,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return;
       }
       const originalShowLayerInfo = ctlProto.showLayerInfo;
-      const describe = (kind: 'metadata' | 'download', format: string): string =>
-        handler.layerInfoService.describeOgcLinkFormat(kind, format);
       ctlProto.showLayerInfo = function (
         this: {
           CLASS: string;
@@ -2759,6 +2760,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         const name = args[1];
         const title = args[2];
         const originalRender = this.getRenderedHtml;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         this.getRenderedHtml = function (
           templateId: unknown,
@@ -2772,7 +2774,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             data &&
             typeof data === 'object'
           ) {
-            const kind = catalogInfoKind(handler.lookupCatalogInfoNode(name, title));
+            const kind = catalogInfoKind(lookupCatalogInfoNode(name, title));
             if (kind === CatalogInfoKind.Folder && typeof title === 'string') {
               nextId = self.CLASS + '-info-folder';
               const cap = findCapabilitiesLayerByTitle(
