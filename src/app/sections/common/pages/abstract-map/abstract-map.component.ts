@@ -28,6 +28,7 @@ import {
 } from 'rxjs/operators';
 import { MAP_CONTAINER_ID } from 'src/app/config/sitna.constants';
 import { LayerCatalogControlHandler } from 'src/app/controls/handlers/layer-catalog-control.handler';
+import { ShareControlHandler } from 'src/app/controls/handlers/share-control.handler';
 import { AppConfigService } from 'src/app/services/app-config.service';
 import { ConfigLookupService } from 'src/app/services/config-lookup.service';
 import { ControlRegistryService } from 'src/app/services/control-registry.service';
@@ -59,6 +60,7 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   private activeRequestId = 0;
   private loadId = 0;
   private readonly layerCatalogHandler = inject(LayerCatalogControlHandler);
+  private readonly shareControlHandler = inject(ShareControlHandler);
   private readonly toolsPanelSplitter = inject(ToolsPanelSplitterService);
   private readonly moreInfoAdvancedService = inject(MoreInfoAdvancedService);
   applicationId!: number;
@@ -523,7 +525,10 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
           return;
         }
         this.mapInterface.updateInterface();
-        this.applyInitialViewAfterLoad(cfg);
+        const mapState = this.route.snapshot.queryParamMap.get('mapState');
+        if (!mapState) {
+          this.applyInitialViewAfterLoad(cfg);
+        }
         try {
           await this.layerCatalogHandler.applyDefaultWorkingLayers(
             this.map,
@@ -534,6 +539,22 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
           console.error(
             '[AbstractMapComponent] applyDefaultWorkingLayers failed',
             error
+          );
+        }
+        if (
+          mapState &&
+          thisLoadId === this.loadId &&
+          !this.componentDestroyed.closed
+        ) {
+          await this.shareControlHandler.restore(
+            this.map,
+            mapState,
+            (profileLayerIds) =>
+              this.layerCatalogHandler.addProfileLayers(
+                this.map,
+                this.currentAppCfg,
+                profileLayerIds
+              )
           );
         }
         this.toolsPanelSplitter.mount(this.document);

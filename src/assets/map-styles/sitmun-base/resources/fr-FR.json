@@ -38,5 +38,8 @@
   "locator.selectLocator": "Sélectionnez un localisateur...",
   "locator.searchPlaceholder": "Saisissez le texte de recherche...",
   "locator.noResults": "Aucun résultat trouvé.",
-  "locator.loading": "Recherche en cours..."
+  "locator.loading": "Recherche en cours...",
+  "shortUrlRejected": "Cette adresse n'est pas une carte de ce site.",
+  "shortUrlForbidden": "Vous ne pouvez pas partager cette carte.",
+  "shortUrlFailed": "Le lien vers la carte n'a pas pu être raccourci."
 }

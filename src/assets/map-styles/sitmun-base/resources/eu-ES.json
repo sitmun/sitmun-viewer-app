@@ -38,5 +38,8 @@
   "locator.selectLocator": "Hautatu kokatzaile bat...",
   "locator.searchPlaceholder": "Idatzi bilaketa testua...",
   "locator.noResults": "Ez da emaitzarik aurkitu.",
-  "locator.loading": "Bilatzen..."
+  "locator.loading": "Bilatzen...",
+  "shortUrlRejected": "Helbide hau ez da gune honetako mapa bat.",
+  "shortUrlForbidden": "Ezin duzu mapa hau partekatu.",
+  "shortUrlFailed": "Ezin izan da maparen esteka laburtu."
 }

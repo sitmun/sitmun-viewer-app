@@ -128,7 +128,7 @@ The application supports three build configurations:
 | Configuration | Use Case | API URL | Source Maps | Production |
 |---------------|----------|---------|-------------|------------|
 | **development** | Local `ng serve` | `http://localhost:9000/backend` | Yes | false |
-| **docker-dev** | Docker debugging | Template-based (`${PUBLIC_BASE_PATH}backend`) | Yes | false |
+| **docker-dev** | Docker debugging | `http://localhost:9000/backend` (`environment.ts`) | Yes | false |
 | **production** | Docker production | Template-based (`${PUBLIC_BASE_PATH}backend`) | No | true |
 
 #### Environment Files
@@ -136,10 +136,10 @@ The application supports three build configurations:
 ```
 src/environments/
 ├── environment.ts        # Local development (default)
-└── environment.prod.ts   # Production/Docker builds
+└── environment.prod.ts   # Production file replacement
 ```
 
-The `docker-dev` and `production` configurations both use `environment.prod.ts`, which is generated from `environment.prod.ts.template` during Docker builds via `envsubst`.
+`angular.json` gives `fileReplacements` to `production` (`environment.prod.ts`) and `e2e` (`environment.e2e.ts`). `development` and `docker-dev` have none, so both compile `environment.ts`. `front/Dockerfile` writes `environment.prod.ts` from `environment.prod.ts.template` with `envsubst`, then runs `--configuration=docker-dev` when `ENVIRONMENT=development` and `--configuration=production` otherwise. Only the production configuration compiles that generated file.
 
 ### Environment Variables
 
@@ -164,7 +164,7 @@ npm start
 # Or explicitly:
 npm run build -- --configuration=development
 
-# Docker debugging (uses environment.prod.ts, with source maps)
+# Docker debugging (compiles environment.ts, with source maps)
 npm run build -- --configuration=docker-dev
 
 # Production build (uses environment.prod.ts, optimized)
@@ -189,7 +189,7 @@ ENVIRONMENT=development docker compose build front
 The build process automatically handles:
 
 - **OpenSSL Legacy Provider**: Sets `NODE_OPTIONS=--openssl-legacy-provider` for compatibility
-- **Environment Replacement**: Automatically replaces environment files based on configuration
+- **Environment Replacement**: `production` replaces `environment.ts` with `environment.prod.ts`. `e2e` replaces it with `environment.e2e.ts`. `development` and `docker-dev` do not replace it.
 - **Asset Optimization**: Optimizes and hashes assets for production builds
 - **Bundle Splitting**: Creates vendor chunks for better caching
 - **Source Maps**: Generates source maps for development builds

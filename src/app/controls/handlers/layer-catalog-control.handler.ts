@@ -536,6 +536,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             layerOptions.layerNames = layerName;
           }
 
+          if (resource) {
+            layerOptions['profileLayerId'] = resource;
+          }
           const appLayer = resource
             ? appCfgAdd.layers.find((l) => l.id === resource)
             : undefined;
@@ -3275,5 +3278,66 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       applied.add(loadId);
       this.defaultLoadApplied.set(map, applied);
     });
+  }
+
+  async addProfileLayers(
+    map: { getControlsByClass?: (type: unknown) => unknown[] },
+    context: AppCfg | null | undefined,
+    profileLayerIds: string[]
+  ): Promise<void> {
+    if (!context || profileLayerIds.length === 0) {
+      return;
+    }
+    const nodes = this.nodesForProfileLayers(context, profileLayerIds);
+    if (nodes.length === 0) {
+      return;
+    }
+    await this.withTCAsync(async (TC) => {
+      const catalogs =
+        typeof map.getControlsByClass === 'function'
+          ? (map.getControlsByClass(TC.control.LayerCatalog) as Array<{
+              addLayerToMap?: (
+                layer: { title: string; options: Record<string, unknown> },
+                nodeId: string
+              ) => Promise<unknown>;
+              map?: object;
+            }>)
+          : [];
+      const catalog = catalogs[0];
+      if (!catalog?.addLayerToMap) {
+        return;
+      }
+      this.attachMapEventBridge(catalog.map ?? map, TC);
+      for (const { nodeId, title } of nodes) {
+        const configuredLayer = this.findConfiguredCatalogLayer(
+          catalog,
+          context,
+          nodeId
+        );
+        await catalog.addLayerToMap(
+          configuredLayer ?? { title, options: {} },
+          nodeId
+        );
+      }
+    });
+  }
+
+  private nodesForProfileLayers(
+    context: AppCfg,
+    profileLayerIds: string[]
+  ): Array<{ nodeId: string; title: string }> {
+    const wanted = new Set(profileLayerIds);
+    const found: Array<{ nodeId: string; title: string }> = [];
+    for (const tree of context.trees ?? []) {
+      for (const [nodeId, raw] of Object.entries(tree.nodes ?? {})) {
+        const node = raw as AppNodeInfo;
+        if (!node?.resource || node.action || !wanted.has(node.resource)) {
+          continue;
+        }
+        found.push({ nodeId, title: node.title });
+        wanted.delete(node.resource);
+      }
+    }
+    return found;
   }
 }
