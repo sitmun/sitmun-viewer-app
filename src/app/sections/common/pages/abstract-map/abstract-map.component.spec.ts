@@ -154,7 +154,8 @@ describe('AbstractMapComponent lifecycle', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            params: of({ applicationId: '1', territoryId: '2' })
+            params: of({ applicationId: '1', territoryId: '2' }),
+            snapshot: { queryParamMap: { get: () => null } }
           }
         },
         { provide: Router, useValue: {} },
