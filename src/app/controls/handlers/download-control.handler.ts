@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class DownloadControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.download';
   readonly sitnaConfigKey = 'download';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

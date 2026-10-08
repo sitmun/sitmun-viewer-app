@@ -17,7 +17,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 export class ScaleControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.scale';
   readonly sitnaConfigKey = 'scale';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

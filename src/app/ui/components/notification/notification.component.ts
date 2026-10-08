@@ -48,19 +48,16 @@ export class NotificationComponent implements OnInit, OnDestroy {
   }
 
   private render(notification: INotification) {
-    // Notification box
     const notificationBox = this.renderer.createElement('div');
     const boxColorClass = this.classMap.get(notification.type);
 
     const classesToAdd = ['message-box', boxColorClass];
     classesToAdd.forEach((className) => {
       if (className) {
-        // If the class is not undefined
         this.renderer.addClass(notificationBox, className);
       }
     });
 
-    // Set style
     this.renderer.setStyle(
       notificationBox,
       'transition',
@@ -68,19 +65,16 @@ export class NotificationComponent implements OnInit, OnDestroy {
     );
     this.renderer.setStyle(notificationBox, 'opacity', '1');
 
-    // Header
     const header = this.renderer.createElement('b');
     const headerText = this.renderer.createText(
       NotificationType[notification.type]
     );
     this.renderer.appendChild(header, headerText);
 
-    // Content
     const content = this.renderer.createElement('div');
     const text = this.renderer.createText(notification.message);
     this.renderer.appendChild(content, text);
 
-    // Append child
     this.renderer.appendChild(this.container.nativeElement, notificationBox);
     this.renderer.appendChild(notificationBox, header);
     this.renderer.appendChild(notificationBox, content);
