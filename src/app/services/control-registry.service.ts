@@ -202,17 +202,13 @@ export class ControlRegistryService {
         this.controlTimings.set(bid, { buildConfigMs });
 
         if (config !== null) {
-          let controlKey: string;
-          if (typeof (handler as any).getSitnaConfigKey === 'function') {
-            controlKey = (handler as any).getSitnaConfigKey(task);
-          } else if (handler.sitnaConfigKey) {
-            controlKey = handler.sitnaConfigKey;
-          } else {
+          if (!handler.sitnaConfigKey) {
             console.error(
               `[ControlRegistry] Handler for '${task['ui-control']}' missing sitnaConfigKey`
             );
             continue;
           }
+          const controlKey = handler.sitnaConfigKey;
           (sitnaControls as any)[controlKey] = config;
 
         }
@@ -252,14 +248,10 @@ export class ControlRegistryService {
     // This ensures disabledControls takes precedence over everything
     for (const [controlIdentifier, handler] of this.handlers.entries()) {
       if (this.appConfigService.isDisabled(controlIdentifier)) {
-        let controlKey: string;
-        if (typeof (handler as any).getSitnaConfigKey === 'function') {
-          controlKey = (handler as any).getSitnaConfigKey();
-        } else if (handler.sitnaConfigKey) {
-          controlKey = handler.sitnaConfigKey;
-        } else {
+        if (!handler.sitnaConfigKey) {
           continue;
         }
+        const controlKey = handler.sitnaConfigKey;
 
         // Remove disabled control from configuration
         if (sitnaControls[controlKey as keyof SitnaControls] !== undefined) {
@@ -303,15 +295,10 @@ export class ControlRegistryService {
     // Iterate through all registered handlers
     for (const [controlIdentifier, handler] of this.handlers.entries()) {
       // Get the SITNA config key for this handler
-      let controlKey: string;
-      if (typeof (handler as any).getSitnaConfigKey === 'function') {
-        controlKey = (handler as any).getSitnaConfigKey();
-      } else if (handler.sitnaConfigKey) {
-        controlKey = handler.sitnaConfigKey;
-      } else {
-        // Skip handlers without a config key
+      if (!handler.sitnaConfigKey) {
         continue;
       }
+      const controlKey = handler.sitnaConfigKey;
 
       // Only process if control is not already configured by backend
       // Note: undefined = not configured by backend (we can enable it)
@@ -390,14 +377,10 @@ export class ControlRegistryService {
           const depHandler = this.getHandler(depIdentifier);
           if (depHandler) {
             // Get the SITNA config key for the dependency
-            let depConfigKey: string;
-            if (typeof (depHandler as any).getSitnaConfigKey === 'function') {
-              depConfigKey = (depHandler as any).getSitnaConfigKey();
-            } else if (depHandler.sitnaConfigKey) {
-              depConfigKey = depHandler.sitnaConfigKey;
-            } else {
+            if (!depHandler.sitnaConfigKey) {
               continue;
             }
+            const depConfigKey = depHandler.sitnaConfigKey;
 
             // Check if dependency is already configured
             const currentValue =
