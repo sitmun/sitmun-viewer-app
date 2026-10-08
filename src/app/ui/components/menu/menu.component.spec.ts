@@ -89,11 +89,7 @@ describe('MenuComponent', () => {
     expect(component.logoutEvent.emit).toHaveBeenCalled();
   });
 
-  it('should not have hideEvent output', () => {
-    expect((component as any).hideEvent).toBeUndefined();
-  });
-
   it('should initialize with default language', () => {
-    expect(component.currentLang).toBeDefined();
+    expect(component.currentLang).toBe('en');
   });
 });

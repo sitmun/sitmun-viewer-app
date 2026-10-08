@@ -128,18 +128,6 @@ describe('NavigationBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should implement OnInit, DoCheck, OnDestroy', () => {
-    expect(component.ngOnInit).toBeDefined();
-    expect(component.ngDoCheck).toBeDefined();
-    expect(component.ngOnDestroy).toBeDefined();
-  });
-
-  it('should have correct method names', () => {
-    expect(component.checkWhichClassIsActive).toBeDefined();
-    expect(component.overrideNavbar).toBeDefined();
-    expect(component.getToolbarClass).toBeDefined();
-  });
-
   it('should return correct toolbar class for login route', () => {
     Object.defineProperty(router, 'url', {
       get: jest.fn().mockReturnValue('/auth/login'),

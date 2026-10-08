@@ -154,9 +154,7 @@ describe('MeasureControlHandler', () => {
 
   describe('loadPatches()', () => {
     it('should resolve successfully with context', async () => {
-      await handler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
     it('should resolve immediately', async () => {
