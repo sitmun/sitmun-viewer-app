@@ -28,7 +28,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class WFSQueryControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.WFSQuery';
   readonly sitnaConfigKey = 'WFSQuery';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

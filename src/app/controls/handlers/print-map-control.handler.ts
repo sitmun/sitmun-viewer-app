@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class PrintMapControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.printMap';
   readonly sitnaConfigKey = 'printMap';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

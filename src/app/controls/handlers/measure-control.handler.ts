@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class MeasureControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.measure';
   readonly sitnaConfigKey = 'measure';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

@@ -25,7 +25,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class AttributionControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.attribution';
   readonly sitnaConfigKey = 'attribution';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

@@ -213,7 +213,6 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
               this.moreInfoHandler.executeSqlTasksForFeatures(options);
             }
 
-            // Call original responseCallback
             const result = jp.proceedApply(jp.args);
 
             // After render, attach event listeners

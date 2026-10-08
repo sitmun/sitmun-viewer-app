@@ -44,17 +44,14 @@ export class SitnaLoaderService {
    * @throws Error if SITNA.Map is not available within timeout
    */
   async waitForSITNAMap(timeout: number = this.defaultTimeout): Promise<void> {
-    // If already ready, return immediately
     if (this.readySubject.value) {
       return Promise.resolve();
     }
 
-    // Start polling if not already started
     if (!this.pollingStarted) {
       this.startPolling();
     }
 
-    // Wait for ready$ to emit true
     try {
       await firstValueFrom(
         this.ready$.pipe(
@@ -111,15 +108,12 @@ export class SitnaLoaderService {
       try {
         const sitna = this.sitnaApi.getSITNA();
         if (sitna && sitna.Map) {
-          // SITNA.Map is available
           this.readySubject.next(true);
           this.stopPolling();
         } else {
-          // Not ready yet, try again
           this.pollTimer = setTimeout(checkSITNA, this.pollInterval);
         }
       } catch {
-        // SITNA not available yet, try again
         this.pollTimer = setTimeout(checkSITNA, this.pollInterval);
       }
     };

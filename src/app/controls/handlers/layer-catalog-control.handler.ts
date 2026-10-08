@@ -126,10 +126,8 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * @param context - Full application configuration context (required, must not be null)
    */
   override async loadPatches(context: AppCfg): Promise<void> {
-    // Store AppCfg immediately (needed for patches even if already applied)
     this.currentAppCfg = context;
 
-    // Ensure context is initialized in lookup service
     this.configLookup.initialize(context);
 
     // Guard: Don't reapply patches on map reload
@@ -162,7 +160,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       this.langChangeSub = undefined;
     });
 
-    // Mark patches as applied
     this.patchesApplied = true;
   }
 
@@ -227,41 +224,30 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     task: AppTasks,
     context: AppCfg
   ): SitnaControlConfig | null {
-    // Ensure context is initialized in lookup service
     this.configLookup.initialize(context);
 
-    // Store AppCfg and task for use in patches
     this.currentAppCfg = context;
 
-    // Get all root tree nodes first (for setting up global state)
     const allRootNodeIds = this.getAllRootNodeIds(context);
 
-    // Filter out empty trees before setting up global state
-    // This ensures empty trees are not offered in the modal
     const nonEmptyRootNodeIds = this.filterEmptyTrees(allRootNodeIds, context);
 
-    // If all trees are empty, disable the control
     if (nonEmptyRootNodeIds.length === 0) {
       return null;
     }
 
-    // Setup global state for catalog switching BEFORE building configuration
     // Always setup global state, even for single tree (ensures consistent behavior)
-    // Use filtered list so empty trees are not shown in modal
     this.catalogSwitching.setupGlobalState(
       nonEmptyRootNodeIds,
       this.configLookup
     );
 
-    // Get root tree nodes from parameters (these are the actual root nodes of trees)
-    // This will respect catalog selection if switching is enabled
     const rootNodeIds = this.getRootNodeIds(context);
 
     if (rootNodeIds.length === 0) {
       return null;
     }
 
-    // Build WMS configuration for each direct child of the root nodes
     // Each child of the root node becomes a separate virtual WMS service
     const wmsLayers: Array<{
       id: string;
@@ -283,7 +269,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         continue;
       }
 
-      // Get direct children of the root node
       if (!rootNode.children || rootNode.children.length === 0) {
         continue;
       }
@@ -295,14 +280,12 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return orderA - orderB;
       });
 
-      // Create a virtual service for each child of the root node
       for (const childId of sortedChildren) {
         const childNode = this.configLookup.findNode(childId);
         if (!childNode) {
           continue;
         }
 
-        // Check if the node can generate valid capabilities before registering it
         if (!this.virtualWmsService.canGenerateCapabilities(childId, context)) {
           continue;
         }
@@ -328,7 +311,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       return null;
     }
 
-    // Get default configuration using controlIdentifier
     const defaultConfig = this.getDefaultConfig();
 
     const baseConfig: SitnaControlConfig = {
@@ -336,7 +318,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       layers: wmsLayers
     };
 
-    // Merge with task parameters (allows backend to override div or add other options)
     return this.mergeWithParameters(baseConfig, task.parameters);
   }
 
@@ -359,12 +340,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         continue;
       }
 
-      // Check if root node has children
       if (!rootNode.children || rootNode.children.length === 0) {
         continue;
       }
 
-      // Check if at least one child can generate valid capabilities
       let hasValidChild = false;
       for (const childId of rootNode.children) {
         if (this.virtualWmsService.canGenerateCapabilities(childId, context)) {
@@ -377,7 +356,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         continue;
       }
 
-      // Tree is not empty, include it
       nonEmptyRootNodeIds.push(rootNodeId);
     }
 
@@ -399,28 +377,23 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    * Empty trees are always filtered out.
    */
   private getRootNodeIds(context: AppCfg): string[] {
-    // Check if catalog global state is setup with a selected tree
     const selectedRootNode =
       this.catalogSwitching.getSelectedTreeRootNode(context);
     if (selectedRootNode) {
-      // Verify the selected tree is not empty
       const filtered = this.filterEmptyTrees([selectedRootNode], context);
-      if (filtered.length === 0) {
-        // Fall through to default behavior
-      } else {
+      if (filtered.length > 0) {
         return [selectedRootNode];
       }
     }
 
-    // Default: use the first non-empty tree root node
     const allRootNodeIds = this.getAllRootNodeIds(context);
     const nonEmptyRootNodeIds = this.filterEmptyTrees(allRootNodeIds, context);
 
     if (nonEmptyRootNodeIds.length > 0) {
-      return [nonEmptyRootNodeIds[0]]; // Return only the first non-empty tree
+      return [nonEmptyRootNodeIds[0]];
     }
 
-    return []; // No non-empty trees available
+    return [];
   }
 
   // ============================================================================

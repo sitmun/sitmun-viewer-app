@@ -25,7 +25,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class ClickControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.click';
   readonly sitnaConfigKey = 'click';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

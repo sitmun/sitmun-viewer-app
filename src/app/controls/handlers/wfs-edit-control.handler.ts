@@ -25,7 +25,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 export class WFSEditControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.WFSEdit';
   readonly sitnaConfigKey = 'WFSEdit';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

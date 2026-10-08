@@ -20,7 +20,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class LoadingIndicatorControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.loadingIndicator';
   readonly sitnaConfigKey = 'loadingIndicator';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

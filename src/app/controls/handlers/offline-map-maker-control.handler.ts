@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class OfflineMapMakerControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.offlineMapMaker';
   readonly sitnaConfigKey = 'offlineMapMaker';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

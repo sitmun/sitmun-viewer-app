@@ -181,11 +181,9 @@ export function initializeSitnaLoader(
   loader: SitnaLoaderService
 ): () => Promise<void> {
   return () => {
-    // Start polling in background, don't block bootstrap
     loader.waitForSITNAMap().catch((err) => {
       console.error('[Bootstrap] SITNA failed to load:', err);
     });
-    // Return resolved promise to not block bootstrap
     return Promise.resolve();
   };
 }

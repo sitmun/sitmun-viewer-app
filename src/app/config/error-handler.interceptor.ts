@@ -42,11 +42,9 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
     req: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    // Check if errors should be ignored for this request
     const shouldIgnoreErrors = req.headers.has(HTTP_HEADER_API_CAN_FAIL);
 
-    // Skip interceptor for asset requests (e.g., config files, translations)
-    // to avoid circular dependency during APP_INITIALIZER
+    // Skip asset and non-API requests so APP_INITIALIZER does not create a circular dependency.
     if (!isSitmunBackendApiUrl(req.url) || req.url.includes('/assets/')) {
       return next.handle(req);
     } else {
@@ -58,13 +56,11 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
               this.injector.get(ErrorTrackingService);
             const messageBoxService = this.injector.get(MessageBoxService);
 
-            // Track HTTP error in ErrorTrackingService
             const errorMessage =
               error?.error?.message || error?.message || 'HTTP request failed';
             const httpStatus = error?.status;
             const url = error?.url || req.url;
 
-            // Extract stack trace if available
             const stackTrace = error?.stack || undefined;
 
             errorTrackingService.addError(errorMessage, 'http', {
@@ -76,7 +72,6 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
 
             const presentation = errorPresentationForStatus(httpStatus);
 
-            // Only present errors when they are not explicitly ignored.
             if (!shouldIgnoreErrors) {
               if (presentation === 'authorization-warning') {
                 const notificationService =
@@ -127,7 +122,6 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
             console.error('Original HTTP error:', error);
           }
 
-          // Re-throw the error so it can be handled by the caller
           return throwError(() => error);
         })
       );

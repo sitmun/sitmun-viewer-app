@@ -17,7 +17,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 export class FullScreenControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.fullScreen';
   readonly sitnaConfigKey = 'fullScreen';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

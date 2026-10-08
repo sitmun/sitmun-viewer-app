@@ -10,7 +10,6 @@
  */
 export function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Check if script already loaded
     const existingScript = document.querySelector(`script[src="${src}"]`);
     if (existingScript) {
       resolve();
