@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class DataLoaderControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.dataLoader';
   readonly sitnaConfigKey = 'dataLoader';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

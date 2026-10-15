@@ -79,7 +79,6 @@ export class LoginComponent implements OnInit {
     }
     this.displayDNIEButton = !((environment as any).hideDNIEAccess ?? true);
     this.backgroundImageUrl = (environment as any).loginBackgroundImageUrl;
-    // If loginBackgroundImageUrl is null or undefined, hide the background image
     if (!this.backgroundImageUrl) {
       this.displayBackgroundImage = false;
     } else {

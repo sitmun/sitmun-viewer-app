@@ -27,15 +27,12 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to sidebar manager to initialize when sidebar becomes active
     this.sidebarSubscription = this.sidebarManager.activeSidebar$.subscribe(
       (active) => {
         if (active === 'error') {
-          // Initialize if not already initialized
           if (!this.errorsSubscription) {
             this.initializeSidebar();
           } else {
-            // Already initialized, just refresh errors
             this.errors = this.errorTrackingService.getErrors();
           }
         }
@@ -48,51 +45,33 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     this.sidebarSubscription?.unsubscribe();
   }
 
-  /**
-   * Initialize the sidebar when it's first opened
-   */
   private initializeSidebar(): void {
     if (this.errorsSubscription) {
-      // Already initialized, but refresh errors in case new ones were added
       this.errors = this.errorTrackingService.getErrors();
       return;
     }
 
-    // Subscribe to errors
     this.errorsSubscription = this.errorTrackingService.errors$.subscribe(
       (errors) => {
         this.errors = [...errors]; // Create new array reference to trigger change detection
       }
     );
 
-    // Load initial errors
     this.errors = this.errorTrackingService.getErrors();
   }
 
-  /**
-   * Open the sidebar
-   */
   open(): void {
     this.sidebarManager.openSidebar('error');
   }
 
-  /**
-   * Close the sidebar
-   */
   close(): void {
     this.sidebarManager.closeSidebar();
   }
 
-  /**
-   * Check if sidebar is open
-   */
   isOpen(): boolean {
     return this.sidebarManager.getActiveSidebar() === 'error';
   }
 
-  /**
-   * Handle ESC key to close sidebar
-   */
   @HostListener('document:keydown.escape', ['$event'])
   handleEscape(_event: Event): void {
     if (this.isOpen()) {
@@ -100,35 +79,20 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Clear all errors
-   */
   clearAll(): void {
     this.errorTrackingService.clearErrors();
   }
 
-  /**
-   * Copy error details to clipboard
-   */
   copyError(error: ErrorEntry): void {
     const errorText = this.formatErrorForCopy(error);
-    navigator.clipboard
-      .writeText(errorText)
-      .then(() => {
-        // Could show a snackbar here
-      })
-      .catch((err) => {
-        console.error('Failed to copy error:', err);
-      });
+    navigator.clipboard.writeText(errorText).catch((err) => {
+      console.error('Failed to copy error:', err);
+    });
   }
 
-  /**
-   * Format error for copying
-   */
   private formatErrorForCopy(error: ErrorEntry): string {
     let text = `Error Type: ${error.type}\n`;
 
-    // Safely format timestamp
     try {
       if (error.timestamp && !isNaN(error.timestamp.getTime())) {
         text += `Timestamp: ${error.timestamp.toISOString()}\n`;
@@ -160,18 +124,12 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     return text;
   }
 
-  /**
-   * Get error type badge label
-   */
   getErrorTypeLabel(type: string): string {
     const key = `systemInfo.errorType.${type}`;
     const translated = this.translateService.instant(key);
     return translated !== key ? translated : type;
   }
 
-  /**
-   * Format timestamp as relative time
-   */
   getRelativeTime(timestamp: Date): string {
     if (!timestamp || isNaN(timestamp.getTime())) {
       return 'Unknown time';
@@ -194,9 +152,6 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Format full timestamp
-   */
   getFullTimestamp(timestamp: Date): string {
     if (!timestamp || isNaN(timestamp.getTime())) {
       return 'Invalid timestamp';
@@ -208,9 +163,6 @@ export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Check if error has a meaningful message
-   */
   hasMessage(error: ErrorEntry): boolean {
     return !!(error.message && error.message.trim().length > 0);
   }

@@ -131,7 +131,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
         }
         this.checkWhichClassIsActive();
         this.overrideNavbar(this.router.url);
-        // Update visibility flags on navigation
         this.updateButtonVisibility();
         // Dismiss menu overlays so nested submenus cannot orphan on route change
         this.closeToolbarMenu();
@@ -144,7 +143,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
         this.overrideNavbar(this.router.url);
         this.updateButtonVisibility();
       });
-    // Initial update
     this.updateButtonVisibility();
   }
 
@@ -178,7 +176,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
 
   overrideNavbar(url: string) {
     if (url.startsWith('/public/map') || url.startsWith('/user/map')) {
-      // We get the application headers params of the app selected in the map
       this.commonService
         .fetchDashboardItems(DashboardTypes.APPLICATIONS)
         .subscribe({
@@ -208,7 +205,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
                 visible: obj?.visible ?? false
               });
 
-              // We overide the left side
               const headerLeftSection = headerParams.headerLeftSection;
               for (const key of leftBaseKeys) {
                 if (headerLeftSection[key])
@@ -221,7 +217,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
                   ); // Future logo in header in the left section
               }
 
-              // We look each button on the right side and dot not show if visible param is false
               const headerRightSection = headerParams.headerRightSection;
               for (const key of rightBaseKeys) {
                 if (headerRightSection[key])
@@ -255,9 +250,7 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   private closeToolbarMenu(): void {
-    // Close nested submenus first (e.g., language menu)
     this.menuComponent?.closeAllMenus();
-    // Then close the root menu
     this.toolbarMenuTrigger?.closeMenu();
   }
 
@@ -367,15 +360,12 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   shouldShowDashboardButton(): boolean {
-    // Don't show on dashboard pages
     if (this.router.url.includes('/dashboard')) {
       return false;
     }
-    // Don't show on login/auth pages
     if (this.isInAuthLoginSection()) {
       return false;
     }
-    // Show on all other pages (map, profile, territory, application, etc.)
     return true;
   }
 
@@ -413,7 +403,6 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
     );
 
     dialogRef.afterClosed().subscribe(() => {
-      // Dialog closed
     });
   }
 }

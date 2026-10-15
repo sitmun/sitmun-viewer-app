@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class GeolocationControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.geolocation';
   readonly sitnaConfigKey = 'geolocation';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

@@ -36,7 +36,6 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   public publicItems: DashboardItem[] = [];
   public allItems: DashboardItem[] = [];
 
-  // Infinite scroll properties
   private observers: IntersectionObserver[] = [];
   private readonly LOAD_MORE_THRESHOLD = 0;
   private readonly LOAD_MORE_ROOT_MARGIN = '120px';
@@ -155,7 +154,6 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   }
 
   private detectGridColumns(): void {
-    // Detect current number of columns based on window width
     const updateColumns = () => {
       const width = window.innerWidth;
       if (width > 1500) {
@@ -169,18 +167,14 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
 
     updateColumns();
 
-    // Store original ngOnDestroy
     const originalDestroy = this.ngOnDestroy.bind(this);
     
-    // Listen for resize events
     const resizeHandler = () => {
       updateColumns();
-      // Re-check incomplete rows on resize
       setTimeout(() => this.checkIncompleteRows(), 50);
     };
     window.addEventListener('resize', resizeHandler);
     
-    // Override ngOnDestroy to clean up
     this.ngOnDestroy = () => {
       window.removeEventListener('resize', resizeHandler);
       originalDestroy();
@@ -192,19 +186,15 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
       return;
     }
 
-    // Determine which items array to check based on route
     let itemCount: number;
     if (this.isPublic()) {
       itemCount = this.allItems.length;
     } else {
-      // For authenticated routes with tabs, check the larger section
       itemCount = Math.max(this.publicItems.length, this.privateItems.length);
     }
 
-    // Check if we have an incomplete row
     const remainder = itemCount % this.currentColumns;
     if (remainder !== 0 && itemCount > 0) {
-      // Incomplete row detected, automatically fetch more data
       this.loadMore.emit();
     }
   }
@@ -239,7 +229,6 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
   private onSentinelVisible(): void {
     if (this.loadingMore || !this.hasMorePages) return;
     
-    // Emit event to parent to load more items
     this.loadMore.emit();
   }
 

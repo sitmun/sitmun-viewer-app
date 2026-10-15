@@ -150,7 +150,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
               this.commonService.updateMessage(appCfg.application.theme);
             }
           } else {
-            // Handle null/undefined config from backend
             this.loadingState = 'error';
             console.error(
               '[AbstractMapComponent] Received null/undefined config'
@@ -253,16 +252,13 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Signal all subscriptions to complete
     this.componentDestroyed.next();
     this.componentDestroyed.complete();
 
     this.toolsPanelSplitter.unmount();
 
-    // Fully cleanup all control handlers (removes DOM artifacts, restores patches)
     this.controlRegistry.cleanupAll();
 
-    // Clear map resources
     this.clearMap();
   }
 
@@ -300,10 +296,8 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
         this.translate.currentLang || undefined
       );
 
-      // Initialize lookup service for efficient entity lookups
       this.configLookup.initialize(appCfg);
 
-      // Process controls using handler system
       const controls = await this.controlRegistry.processControls(
         appCfg.tasks,
         appCfg
@@ -433,7 +427,6 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.sitnaApi.setGlobal('abstractMapObject', undefined);
     this.sitnaApi.setGlobal('layerCatalogsForModal', undefined);
     this.sitnaApi.setGlobal('currentAppCfg', undefined);
-    // Map container
     const mapFather = this.el.nativeElement.querySelector('.map-container');
     const overview = this.el.nativeElement.querySelector(
       '.tc-ctl-sv-view.tc-hidden'
@@ -451,16 +444,12 @@ export abstract class AbstractMapComponent implements OnInit, OnDestroy {
     this.renderer.setAttribute(div, 'id', MAP_CONTAINER_ID);
 
     if (oldMapDiv) {
-      // Insert new div in the exact same position as the old one
       this.renderer.insertBefore(mapFather, div, oldMapDiv);
-      // Remove the old div
       this.renderer.removeChild(mapFather, oldMapDiv);
     } else {
-      // If no old div exists, just append
       this.renderer.appendChild(mapFather, div);
     }
 
-    // Body
     this.removeSitnaDivs();
     this.removeEmptyDivs();
   }

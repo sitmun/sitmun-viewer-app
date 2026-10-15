@@ -1,5 +1,3 @@
-// TODO with specific details
-
 import { InjectionToken } from '@angular/core';
 
 export const AUTH_CONFIG_DI = new InjectionToken<AuthConfig<unknown>>(

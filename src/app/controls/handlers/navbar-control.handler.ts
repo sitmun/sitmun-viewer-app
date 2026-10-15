@@ -17,7 +17,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 export class NavBarControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.navBar';
   readonly sitnaConfigKey = 'navBar';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

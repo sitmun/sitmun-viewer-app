@@ -17,7 +17,7 @@ import { ControlHandlerBase } from '../control-handler-base';
 export class StreetViewControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.streetView';
   readonly sitnaConfigKey = 'streetView';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

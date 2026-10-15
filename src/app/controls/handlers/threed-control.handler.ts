@@ -27,7 +27,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class ThreeDControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.threed';
   readonly sitnaConfigKey = 'threeD'; // Explicit SITNA name
-  readonly requiredPatches = undefined; // No patches required - native SITNA control
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

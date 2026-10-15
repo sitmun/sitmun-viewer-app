@@ -23,7 +23,6 @@ export class GlobalErrorHandler implements ErrorHandler {
   }
 
   handleError(error: any): void {
-    // Ensure service is loaded
     if (!this.errorTrackingService) {
       try {
         this.errorTrackingService = this.injector.get(ErrorTrackingService);
@@ -32,14 +31,11 @@ export class GlobalErrorHandler implements ErrorHandler {
       }
     }
 
-    // Extract error message
     const message = error?.message || error?.toString() || 'Unknown error';
     const stackTrace = error?.stack || undefined;
 
-    // Log to console for development
     console.error('GlobalErrorHandler caught:', error);
 
-    // Track in ErrorTrackingService if available
     if (this.errorTrackingService) {
       this.errorTrackingService.addError(message, 'uncaught', {
         details: error,

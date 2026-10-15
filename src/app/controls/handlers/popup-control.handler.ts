@@ -20,7 +20,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class PopupControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.popup';
   readonly sitnaConfigKey = 'popup';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(sitnaApi: SitnaApiService) {
     super(sitnaApi);

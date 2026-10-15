@@ -6,7 +6,6 @@ export enum UserRoles {
 
 export type Roles = UserRoles;
 
-// Validación de rol incluido
 export function hasRole(
   expectedRoles: Roles | Roles[],
   userRoles: Roles[]

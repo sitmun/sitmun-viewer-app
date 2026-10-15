@@ -21,7 +21,7 @@ import { SitnaControlConfig } from '../control-handler.interface';
 export class MultiFeatureInfoControlHandler extends ControlHandlerBase {
   readonly controlIdentifier = 'sitna.multiFeatureInfo';
   readonly sitnaConfigKey = 'multiFeatureInfo';
-  readonly requiredPatches = undefined; // No patches needed
+  readonly requiredPatches = undefined;
 
   constructor(
     sitnaApi: SitnaApiService,

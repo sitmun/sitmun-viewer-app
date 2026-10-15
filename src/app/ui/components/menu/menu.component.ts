@@ -78,7 +78,6 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.currentLang = this.languageService.getCurrentLanguage();
     this.updateErrorCount();
 
-    // Subscribe to error changes
     this.errorsSubscription = this.errorTrackingService.errors$.subscribe(
       () => {
         this.updateErrorCount();
@@ -137,7 +136,6 @@ export class MenuComponent implements OnInit, OnDestroy {
   selectLanguage(languageShortname: string) {
     this.currentLang = languageShortname;
     this.languageService.setLanguage(languageShortname).subscribe(() => {
-      // Reload languages with names in the new language
       this.loadLanguages();
       this.languageEvent.emit(languageShortname);
     });
@@ -172,7 +170,6 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   openAboutDialog(): void {
-    // Get translated application name
     const applicationName = this.translateService.instant(
       'systemInfo.applicationName'
     );
