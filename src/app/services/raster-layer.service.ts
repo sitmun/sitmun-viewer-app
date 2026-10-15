@@ -28,14 +28,6 @@ export class RasterLayerService {
   private readonly layerInfoService = inject(LayerInfoService);
 
   /**
-   * Check if a layer is a Raster that plans to build a WMTS service.
-   *
-   * @param layer - The layer instance to check
-   * @param capabilitiesUrl - Optional capabilities URL (for virtual service detection)
-   * @param appCfg - Optional app configuration (for virtual service detection)
-   * @returns true if the layer is a Raster that will build a WMTS, false otherwise
-   */
-  /**
    * Check if layer instance is a Raster type (WMS, WMTS, or Raster constructor).
    */
   private isRasterLayer(layer: { [key: string]: unknown }): boolean {

@@ -9,10 +9,6 @@ import {
 } from '../../../services/error-tracking.service';
 import { SidebarManagerService } from '../../../services/sidebar-manager.service';
 
-/**
- * Component for displaying error details in a sidebar.
- * TODO: Add unit tests (error-details-sidebar.component.spec.ts)
- */
 @Component({
   standalone: false,
   selector: 'app-error-details-sidebar',
