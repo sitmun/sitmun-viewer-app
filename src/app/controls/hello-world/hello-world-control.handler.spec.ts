@@ -182,10 +182,7 @@ describe('HelloWorldControlHandler', () => {
     it('should be idempotent (safe to call multiple times)', async () => {
       await handler.loadPatches(mockAppCfg);
       await handler.loadPatches(mockAppCfg);
-      await handler.loadPatches(mockAppCfg);
-
-      // Should not throw
-      expect(true).toBe(true);
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 
@@ -231,10 +228,7 @@ describe('HelloWorldControlHandler', () => {
     it('should skip registration when SITNA not available', async () => {
       delete (window as any).SITNA;
 
-      await handler.loadPatches(mockAppCfg);
-
-      // Should not throw, should handle gracefully
-      expect(true).toBe(true);
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
     it('should skip registration when already registered', async () => {
@@ -242,10 +236,7 @@ describe('HelloWorldControlHandler', () => {
       class HelloWorld {}
       mockTC.control.HelloWorld = HelloWorld;
 
-      await handler.loadPatches(mockAppCfg);
-
-      // Should not throw and should recognize it's already registered
-      expect(true).toBe(true);
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 });

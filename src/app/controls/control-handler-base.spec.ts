@@ -111,19 +111,14 @@ describe('ControlHandlerBase', () => {
 
   describe('loadPatches()', () => {
     it('should resolve successfully with context', async () => {
-      await handler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+      await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
     it('should handle no patches gracefully', async () => {
-      await noPatchHandler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+      await expect(noPatchHandler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
-    it('should require context parameter', async () => {
-      // TypeScript will catch this, but we test runtime behavior
+    it('resolves undefined from the default loadPatches', async () => {
       await expect(handler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
 
@@ -139,9 +134,7 @@ describe('ControlHandlerBase', () => {
       const multiHandler = TestBed.runInInjectionContext(
         () => new MultiPatchHandler(mockSitnaApi)
       );
-      await multiHandler.loadPatches(mockAppCfg);
-      // Default implementation does nothing, just resolves
-      expect(true).toBe(true);
+      await expect(multiHandler.loadPatches(mockAppCfg)).resolves.toBeUndefined();
     });
   });
 

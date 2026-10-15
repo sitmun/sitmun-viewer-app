@@ -328,6 +328,24 @@ describe('DashboardItemsComponent', () => {
     });
 
     it('should setup observers after view init', () => {
+      jest.useFakeTimers();
+      const constructed: IntersectionObserver[] = [];
+      const MockObserver = global.IntersectionObserver;
+      global.IntersectionObserver = class extends MockObserver {
+        constructor(
+          callback: IntersectionObserverCallback,
+          options?: IntersectionObserverInit
+        ) {
+          super(callback, options);
+          constructed.push(this);
+        }
+      } as typeof IntersectionObserver;
+
+      const sentinel = document.createElement('div');
+      sentinel.className = 'loading-sentinel';
+      sentinel.dataset['section'] = 'all';
+      document.body.appendChild(sentinel);
+
       Object.defineProperty(mockRouter, 'url', {
         get: () => '/public/dashboard'
       });
@@ -336,11 +354,14 @@ describe('DashboardItemsComponent', () => {
       );
       component.hasMorePages = true;
       component.ngOnInit();
-      
       component.ngAfterViewInit();
-      
-      expect(component['observers']).toBeDefined();
-      expect(Array.isArray(component['observers'])).toBe(true);
+      jest.advanceTimersByTime(100);
+
+      expect(constructed).toHaveLength(1);
+
+      sentinel.remove();
+      global.IntersectionObserver = MockObserver;
+      jest.useRealTimers();
     });
 
     it('rebinds intersection observers when items arrive after init', () => {

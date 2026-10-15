@@ -89,7 +89,6 @@ describe('LoginComponent', () => {
     const authService = TestBed.inject(AuthenticationService) as jest.Mocked<AuthenticationService<unknown>>;
     component.publicDashboard();
     expect(authService.login).not.toHaveBeenCalled();
-    expect((authService as any).clearAuthentication).toBeUndefined();
   });
 
   it('shows a session-expired notification when session-expired=true is in query params', async () => {

@@ -186,14 +186,9 @@ describe('VirtualWmsCapabilitiesService', () => {
       const capabilities = service.generateCapabilities('node-1', mockAppCfg);
       const rootLayer = capabilities.Capability.Layer;
 
-      // Root should not have Name
       expect(rootLayer.Name).toBeUndefined();
-
-      // Find leaf node (has Name property)
-      const leafNode = rootLayer.Layer?.find((l) => l.Name);
-      if (leafNode) {
-        expect(leafNode.Name).toBeDefined();
-      }
+      const leaf = rootLayer.Layer?.find((layer) => layer.Title === 'Leaf Node 1');
+      expect(leaf?.Name).toBe('node-3');
     });
 
     it('copies folder description and URLs onto the catalog root layer', () => {

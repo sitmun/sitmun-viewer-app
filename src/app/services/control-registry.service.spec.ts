@@ -555,9 +555,13 @@ describe('ControlRegistryService', () => {
     it('skips handlers without onMapClear', () => {
       const handler = new MockHandler('sitna.test');
       delete (handler as { onMapClear?: unknown }).onMapClear;
+      const recorded = new MockHandler('sitna.recorded');
       service.register(handler);
+      service.register(recorded);
 
-      expect(() => service.clearMapArtifacts()).not.toThrow();
+      service.clearMapArtifacts();
+
+      expect(recorded.onMapClearCalled).toBe(true);
     });
   });
 
