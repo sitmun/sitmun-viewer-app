@@ -2981,10 +2981,9 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
           const originalInfo = joinPoint.proceed();
 
           // Get WMS capabilities using service
-          const rasterInstancesCache = (handler as any).rasterInstancesCache;
           const wmsCapabilities = handler.rasterService.getRasterCapabilities(
             realLayerConfig,
-            rasterInstancesCache
+            undefined
           );
 
           // Enrich layer info using service
@@ -2992,7 +2991,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             nodeId,
             realLayerConfig,
             wmsCapabilities,
-            rasterInstancesCache
+            undefined
           );
 
           // Merge original result with enriched data (enriched overrides original)

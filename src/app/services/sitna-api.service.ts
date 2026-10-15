@@ -83,7 +83,7 @@ export class SitnaApiService {
    * @throws Error if TC is not available (indicates bootstrap failure)
    */
   getTC(): any {
-    const TC = (window as any).TC;
+    const TC = (window as { TC?: unknown }).TC;
     if (!TC) {
       throw new Error(
         'TC namespace not available. Ensure import("api-sitna") succeeded.'
@@ -148,6 +148,6 @@ export class SitnaApiService {
    * @returns true if TC (and thus SITNA) is available, false otherwise
    */
   isReady(): boolean {
-    return !!(window as any).TC;
+    return !!(window as { TC?: unknown }).TC;
   }
 }

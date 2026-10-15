@@ -124,7 +124,7 @@ describe('ClickControlHandler', () => {
   describe('getDefaultValueWhenMissing()', () => {
     it('should return false via base class when control is not requested', () => {
       // Base class returns false by default
-      const defaultValue = (handler as any).getDefaultValueWhenMissing();
+      const defaultValue = handler.getDefaultValueWhenMissing();
       expect(defaultValue).toBe(false);
     });
   });
