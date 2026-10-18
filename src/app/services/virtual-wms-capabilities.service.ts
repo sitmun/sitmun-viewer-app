@@ -244,9 +244,9 @@ export class VirtualWmsCapabilitiesService {
         continue;
       }
 
-      // Use type guard to ensure url and type are strings (they might be objects at runtime)
+      const layerUrl = ensureString(layer.url);
       return {
-        url: ensureString(service.url),
+        url: layerUrl || ensureString(service.url),
         type: ensureString(service.type),
         layerNames: layer.layers, // Array of WMS layer names from the layer
         serviceId: service.id,
@@ -291,18 +291,14 @@ export class VirtualWmsCapabilitiesService {
     // Use type guard to ensure service.url and service.type are strings for comparison
     const normalizedUrl = ensureString(url);
     const normalizedType = ensureString(type);
-    const service = apiConfig.services.find(
-      (s) =>
-        ensureString(s.url) === normalizedUrl &&
-        ensureString(s.type) === normalizedType
-    );
-
-    if (!service) {
-      return null;
-    }
 
     const layer = apiConfig.layers.find((l) => {
-      if (l.service !== service.id) {
+      const service = apiConfig.services.find((s) => s.id === l.service);
+      if (!service || ensureString(service.type) !== normalizedType) {
+        return false;
+      }
+      const effectiveUrl = ensureString(l.url) || ensureString(service.url);
+      if (effectiveUrl !== normalizedUrl) {
         return false;
       }
 

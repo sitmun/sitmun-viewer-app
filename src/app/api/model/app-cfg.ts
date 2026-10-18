@@ -92,6 +92,13 @@ export interface AppLayer {
   description?: string;
   layers: string[];
   service: string;
+  /**
+   * Per-cartography proxy URL. Present when the owning service is proxied.
+   * Requests for this layer use this URL so the proxy can apply the layer's parameters.
+   */
+  url?: string;
+  /** Fixed parameters for this layer, applied by the proxy. Omitted when unset. */
+  parameters?: Record<string, string>;
   /** Profile JSON key; omitted when unset (merged onto GetCapabilities in RasterLayerService). */
   minScaleDenominator?: number;
   /** Profile JSON key; omitted when unset (merged onto GetCapabilities in RasterLayerService). */

@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
+- **Map**: A proxied layer is requested through `layer.url` when the profile sets it. The catalog still resolves that address back to the tree node ([sitmun-application-stack#90](https://github.com/sitmun/sitmun-application-stack/issues/90)).
 - **Map**: The field list is chosen by the profile layer id (`layer/{id}` on the tree node that owns the map layer) and then by the WMS layer name, including a child of a group. The result heading is not the key.
 - **Map**: `sitna.featureInfo` and `sitna.multiFeatureInfo` default `persistentHighlights` to false. A new click replaces the highlight, and closing the popup clears it. A task that sets the flag still overrides the default.
 - **Map**: A visible identify popup is solid white, including the tail. The drag fade still applies while `tc-drag` is set.

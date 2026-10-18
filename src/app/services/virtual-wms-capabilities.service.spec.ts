@@ -711,9 +711,74 @@ describe('VirtualWmsCapabilitiesService', () => {
       );
       expect(config).toBeNull();
     });
+
+    it('should prefer the layer proxy url over the service url', () => {
+      const proxied: AppCfg = {
+        ...mockAppCfg,
+        layers: mockAppCfg.layers.map((layer) =>
+          layer.id === 'layer-1'
+            ? { ...layer, url: 'http://proxy.example/proxy/1/1/WMS/1/1' }
+            : layer
+        )
+      };
+
+      const config = service.findRealLayerConfig('node-3', proxied);
+
+      expect(config?.url).toBe('http://proxy.example/proxy/1/1/WMS/1/1');
+    });
+
+    it('omits format and matrixSet and keeps every layer name for WMTS', () => {
+      const configWithTileOptions: AppCfg = {
+        ...mockAppCfg,
+        layers: mockAppCfg.layers.map((layer) =>
+          layer.id === 'layer-1'
+            ? {
+                ...layer,
+                layers: ['wmts-a', 'wmts-b'],
+                parameters: { format: 'image/jpeg', matrixSet: 'EPSG:4326' }
+              }
+            : layer
+        ),
+        services: mockAppCfg.services.map((svc) =>
+          svc.id === 'service-1'
+            ? {
+                ...svc,
+                type: 'WMTS',
+                parameters: { format: 'image/png', matrixSet: 'EPSG:25831' }
+              }
+            : svc
+        )
+      };
+
+      const config = service.findRealLayerConfig('node-3', configWithTileOptions);
+      expect(config?.type).toBe('WMTS');
+      expect(config?.layerNames).toEqual(['wmts-a', 'wmts-b']);
+      expect(config).not.toHaveProperty('format');
+      expect(config).not.toHaveProperty('matrixSet');
+    });
   });
 
   describe('findNodeIdFromLayerProperties', () => {
+    it('should find nodeId from a per-layer proxy url', () => {
+      const proxied: AppCfg = {
+        ...mockAppCfg,
+        layers: mockAppCfg.layers.map((layer) =>
+          layer.id === 'layer-1'
+            ? { ...layer, url: 'http://proxy.example/proxy/1/1/WMS/1/1' }
+            : layer
+        )
+      };
+
+      const nodeId = service.findNodeIdFromLayerProperties(
+        'http://proxy.example/proxy/1/1/WMS/1/1',
+        'WMS',
+        ['wms-layer-1'],
+        proxied
+      );
+
+      expect(nodeId).toBe('node-3');
+    });
+
     it('should find nodeId from layer properties with array layerNames', () => {
       const nodeId = service.findNodeIdFromLayerProperties(
         'http://example.com/wms',
@@ -908,6 +973,30 @@ describe('VirtualWmsCapabilitiesService', () => {
       const rootLayer = capabilities.Capability.Layer;
 
       expect(rootLayer.CRS).toContain('EPSG:25831');
+    });
+
+    it('ignores a layer SRS parameter and a service VERSION', () => {
+      const config: AppCfg = {
+        ...mockAppCfg,
+        layers: mockAppCfg.layers.map((layer) =>
+          layer.id === 'layer-1'
+            ? { ...layer, parameters: { SRS: 'EPSG:4326' } }
+            : layer
+        ),
+        services: mockAppCfg.services.map((svc) =>
+          svc.id === 'service-1'
+            ? {
+                ...svc,
+                parameters: { SRS: 'EPSG:25831', VERSION: '1.1.1' }
+              }
+            : svc
+        )
+      };
+
+      const capabilities = service.generateCapabilities('node-3', config);
+      expect(capabilities.Capability.Layer.CRS).toContain('EPSG:25831');
+      expect(capabilities.Capability.Layer.CRS).not.toContain('EPSG:4326');
+      expect(JSON.stringify(capabilities)).not.toContain('1.1.1');
     });
 
     it('should fall back to application SRS', () => {
