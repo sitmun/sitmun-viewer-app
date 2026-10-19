@@ -157,12 +157,26 @@ const server = http.createServer((req, res) => {
 });
 
 // Bind dual-stack so Playwright's localhost (::1 first on macOS) hits this process.
+server.on('error', (error) => {
+  fail(`listen failed: ${error.message}`);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(`[serve-e2e] uncaughtException: ${error.stack || error}`);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error(`[serve-e2e] unhandledRejection: ${reason}`);
+  process.exit(1);
+});
+
 server.listen(port, () => {
   console.error(`[serve-e2e] Serving ${distRoot} on http://localhost:${port}`);
 });
 
 for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
   process.on(signal, () => {
+    console.error(`[serve-e2e] Shutting down (${signal})...`);
     server.close(() => process.exit(0));
   });
 }
