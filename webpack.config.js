@@ -6,8 +6,10 @@ const apiSitnaSource = 'node_modules/api-sitna';
 const apiSitnaDestiny = 'assets/js/api-sitna';
 
 // Angular 22 always passes supportedBrowsers into its Babel loader, so matched
-// dependencies are transformed. jszip.min.js crashes that path under webpack.
-const skipAngularBabel = /[\\/]node_modules[\\/](?:jszip|util)[\\/]/;
+// dependencies are transformed. jszip/util crash that path under optimize, and
+// webpack-dev-server's client logger crashes the same path under ng serve.
+const skipAngularBabel =
+  /[\\/]node_modules[\\/](?:jszip|util|webpack-dev-server)[\\/]/;
 
 function ruleUsesAngularBabel(rule) {
   const entries = [];
