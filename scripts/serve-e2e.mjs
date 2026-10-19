@@ -106,7 +106,11 @@ function safeJoin(root, urlPath) {
 
 function sendFile(res, filePath) {
   const type = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': type });
+  const headers = { 'Content-Type': type };
+  if (extname(filePath).toLowerCase() === '.html') {
+    headers['Cache-Control'] = 'no-store';
+  }
+  res.writeHead(200, headers);
   createReadStream(filePath).pipe(res);
 }
 
