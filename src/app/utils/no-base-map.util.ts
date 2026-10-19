@@ -1,4 +1,4 @@
-import { SitnaBaseLayer } from '@api/model/sitna-cfg';
+import type { SitnaBaseLayer } from '@api/model/sitna-cfg';
 
 export const NO_BASE_MAP_LAYER_ID = 'sitmun-no-base-map';
 

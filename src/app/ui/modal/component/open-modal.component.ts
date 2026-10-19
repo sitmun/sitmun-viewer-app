@@ -5,7 +5,8 @@ import {
   ComponentRef,
   OnDestroy,
   Type,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 import { InsertionDirective } from '@ui/modal/insertion-directive';
@@ -13,6 +14,7 @@ import { Subject } from 'rxjs';
 
 @Component({
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '<div><ng-template appInsertion></ng-template></div>'
 })
 export class OpenModalComponent implements AfterViewInit, OnDestroy {

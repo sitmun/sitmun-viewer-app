@@ -15,8 +15,7 @@
           [button_text]="'loginPage.publicDashboardButton' | translate"
           [mat_icon]="'public'"
           (click)="publicDashboard()"
-          (keydown)="publicDashboard()"
-        />
+          (keydown)="publicDashboard()" />
       </div>
     </div>
 
@@ -48,22 +47,24 @@
           [button_text]="'loginPage.submit' | translate"
           [mat_icon]="'login'" />
       </form>
-      <app-secondary-button
-        [button_text]="'loginPage.DNIE' | translate"
-        *ngIf="displayDNIEButton" />
+      @if (displayDNIEButton) {
+        <app-secondary-button [button_text]="'loginPage.DNIE' | translate" />
+      }
     </div>
 
-    <div class="alternative-login-section" *ngIf="alternativeLoginMethods.length > 0">
-      <p>{{ 'loginPage.alternativeLoginMethods' | translate }}</p>
-      <div class="buttons">
-        <app-secondary-button
-          *ngFor="let authProvider of alternativeLoginMethods"
-          [button_text]="authProvider.displayName"
-          [button_img_url]="authProvider.imagePath"
-          (click)="initAuth(authProvider.providerName)"
-          (keydown)="initAuth(authProvider.providerName)"
-        />
+    @if (alternativeLoginMethods.length > 0) {
+      <div class="alternative-login-section">
+        <p>{{ 'loginPage.alternativeLoginMethods' | translate }}</p>
+        <div class="buttons">
+          @for (authProvider of alternativeLoginMethods; track authProvider) {
+            <app-secondary-button
+              [button_text]="authProvider.displayName"
+              [button_img_url]="authProvider.imagePath"
+              (click)="initAuth(authProvider.providerName)"
+              (keydown)="initAuth(authProvider.providerName)" />
+          }
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>

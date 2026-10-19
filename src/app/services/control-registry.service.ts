@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
-import { SitnaControls } from '@api/model/sitna-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { SitnaControls } from '@api/model/sitna-cfg';
 
 import { AppConfigService } from './app-config.service';
 import { SitnaApiService } from './sitna-api.service';

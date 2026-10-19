@@ -1,4 +1,4 @@
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 /**
  * Options passed to needsBootstrap so handlers can decide eligibility without depending on app config.

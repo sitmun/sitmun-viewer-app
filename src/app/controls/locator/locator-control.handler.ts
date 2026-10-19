@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 
 import { prototypeWrappers } from './locator-control.logic';
 import { LocatorService } from '../../services/locator.service';

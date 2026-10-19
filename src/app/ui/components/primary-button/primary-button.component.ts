@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   standalone: false,
   selector: 'app-primary-button',
   templateUrl: './primary-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./primary-button.component.scss']
 })
 export class PrimaryButtonComponent {

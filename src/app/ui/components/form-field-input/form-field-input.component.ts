@@ -1,9 +1,16 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ChangeDetectionStrategy
+} from '@angular/core';
 
 @Component({
   standalone: false,
   selector: 'app-form-field-input',
   templateUrl: './form-field-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./form-field-input.component.scss']
 })
 export class FormFieldInputComponent {

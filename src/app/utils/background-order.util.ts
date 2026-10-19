@@ -1,5 +1,5 @@
-import { AppBackground } from '@api/model/app-cfg';
-import { SitnaBaseLayer } from '@api/model/sitna-cfg';
+import type { AppBackground } from '@api/model/app-cfg';
+import type { SitnaBaseLayer } from '@api/model/sitna-cfg';
 
 import { NO_BASE_MAP_LAYER_ID } from './no-base-map.util';
 

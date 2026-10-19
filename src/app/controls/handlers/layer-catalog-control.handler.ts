@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
+import type { AppCfg, AppNodeInfo, AppTasks, AppTree } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 

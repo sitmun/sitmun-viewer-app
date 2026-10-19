@@ -1,4 +1,4 @@
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { ControlHandlerBase } from './control-handler-base';
 import type { BootstrapEligibilityOptions } from './control-handler.interface';

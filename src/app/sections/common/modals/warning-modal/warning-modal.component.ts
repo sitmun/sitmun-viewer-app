@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { BaseModal } from '@ui/modal/component/base-modal';
 import { OpenModalRef } from '@ui/modal/service/open-modal-ref';
@@ -8,6 +8,7 @@ import { OpenModalConfig } from '@ui/modal/service/open-modal.config';
   standalone: false,
   selector: 'app-warning-modal',
   templateUrl: './warning-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: [
     './warning-modal.component.scss',
     '../../../../ui/modal/style/open-modal.component.scss'

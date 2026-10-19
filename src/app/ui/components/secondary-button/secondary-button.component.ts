@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   standalone: false,
   selector: 'app-secondary-button',
   templateUrl: './secondary-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./secondary-button.component.scss']
 })
 export class SecondaryButtonComponent {

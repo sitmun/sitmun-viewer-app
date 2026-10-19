@@ -1,23 +1,7 @@
-import 'zone.js';
-import 'zone.js/testing';
-import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
-} from '@angular/platform-browser-dynamic/testing';
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
 
-// Initialize TestBed for all tests
-try {
-  getTestBed().resetTestEnvironment();
-  getTestBed().initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting()
-  );
-} catch (e) {
-  console.log('TestBed already initialized, skipping initialization');
-}
+setupZoneTestEnv();
 
-// Global mocks for jsdom
 const mock = () => {
   let storage: { [key: string]: string } = {};
   return {
@@ -34,10 +18,8 @@ Object.defineProperty(window, 'getComputedStyle', {
   value: () => ['-webkit-appearance']
 });
 
-// Only define transform property if it doesn't already exist
 if (!document.body.style.transform) {
   try {
-    // Use Object.defineProperty carefully to avoid redefining issues
     Object.defineProperty(document.body.style, 'transform', {
       configurable: true,
       enumerable: true,
@@ -54,7 +36,6 @@ if (!document.body.style.transform) {
   }
 }
 
-// Angular material mocks
 Object.defineProperty(window, 'matchMedia', {
   value: (query: string) => ({
     matches: false,
@@ -68,21 +49,19 @@ Object.defineProperty(window, 'matchMedia', {
   })
 });
 
-// Polyfill structuredClone for older Node.js versions
 if (typeof global.structuredClone === 'undefined') {
-  global.structuredClone = (obj: any) => {
+  global.structuredClone = (obj: unknown) => {
     return JSON.parse(JSON.stringify(obj));
   };
 }
 
-// Mock IntersectionObserver
 class MockIntersectionObserver {
   readonly root: Element | Document | null;
   readonly rootMargin: string;
   readonly thresholds: ReadonlyArray<number>;
 
   constructor(
-    callback: IntersectionObserverCallback,
+    _callback: IntersectionObserverCallback,
     options?: IntersectionObserverInit
   ) {
     this.root = options?.root || null;
@@ -98,33 +77,24 @@ class MockIntersectionObserver {
     }
   }
 
-  observe(target: Element): void {
-    // Mock implementation - do nothing
-  }
+  observe(_target: Element): void {}
 
-  unobserve(target: Element): void {
-    // Mock implementation - do nothing
-  }
+  unobserve(_target: Element): void {}
 
-  disconnect(): void {
-    // Mock implementation - do nothing
-  }
+  disconnect(): void {}
 
   takeRecords(): IntersectionObserverEntry[] {
     return [];
   }
 }
 
-// Add to global
-global.IntersectionObserver = MockIntersectionObserver as any;
+global.IntersectionObserver = MockIntersectionObserver as typeof IntersectionObserver;
 
-// Mock SITNA_BASE_URL for api-sitna library
 (globalThis as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
   '/assets/js/api-sitna/';
 (window as { SITNA_BASE_URL?: string }).SITNA_BASE_URL =
   '/assets/js/api-sitna/';
 
-// Mock WebGL and Canvas APIs that may be required by api-sitna
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: function (contextType: string) {
     if (

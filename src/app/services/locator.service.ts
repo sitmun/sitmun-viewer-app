@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 
 /**
  * Represents a single locator task (ui-control = 'sitmun.locator').

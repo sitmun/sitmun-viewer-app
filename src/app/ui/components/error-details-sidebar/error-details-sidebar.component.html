@@ -1,4 +1,4 @@
-<ng-container *ngIf="isOpen()">
+@if (isOpen()) {
   <div
     class="error-sidebar-overlay"
     (click)="close()"
@@ -9,7 +9,9 @@
     [attr.aria-label]="'systemInfo.closeErrorPanel' | translate"></div>
   <div class="error-sidebar open" role="dialog" aria-modal="true">
     <div class="sidebar-header">
-      <h3 id="error-sidebar-title">{{ 'systemInfo.recentErrors' | translate }}</h3>
+      <h3 id="error-sidebar-title">
+        {{ 'systemInfo.recentErrors' | translate }}
+      </h3>
       <button
         mat-icon-button
         (click)="close()"
@@ -17,81 +19,89 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
-
     <div class="sidebar-content">
-      <div *ngIf="errors.length === 0" class="no-errors">
-        <mat-icon>check_circle</mat-icon>
-        <p>{{ 'systemInfo.noErrors' | translate }}</p>
-      </div>
-
-      <div *ngIf="errors.length > 0" class="errors-list">
-        <mat-accordion>
-          <mat-expansion-panel *ngFor="let error of errors" class="error-panel">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <div class="error-header">
-                  <span class="error-type-badge" [attr.data-type]="error.type">
-                    {{ getErrorTypeLabel(error.type) }}
-                  </span>
-                  <span class="error-time">
-                    {{ getRelativeTime(error.timestamp) }}
-                  </span>
+      @if (errors.length === 0) {
+        <div class="no-errors">
+          <mat-icon>check_circle</mat-icon>
+          <p>{{ 'systemInfo.noErrors' | translate }}</p>
+        </div>
+      }
+      @if (errors.length > 0) {
+        <div class="errors-list">
+          <mat-accordion>
+            @for (error of errors; track error) {
+              <mat-expansion-panel class="error-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <div class="error-header">
+                      <span
+                        class="error-type-badge"
+                        [attr.data-type]="error.type">
+                        {{ getErrorTypeLabel(error.type) }}
+                      </span>
+                      <span class="error-time">
+                        {{ getRelativeTime(error.timestamp) }}
+                      </span>
+                    </div>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="error-details">
+                  @if (error.stackTrace) {
+                    <div class="error-detail-row">
+                      <strong>Stack Trace:</strong>
+                      <pre class="stack-trace">{{ error.stackTrace }}</pre>
+                    </div>
+                  }
+                  <div class="error-detail-row">
+                    <strong>
+                      {{ 'systemInfo.errorDetails' | translate }}:
+                    </strong>
+                    @if (hasMessage(error)) {
+                      <p class="error-message">
+                        {{ error.message }}
+                      </p>
+                    } @else {
+                      <p class="error-message no-message">
+                        <em>No error message available</em>
+                      </p>
+                    }
+                  </div>
+                  @if (error.httpStatus) {
+                    <div class="error-detail-row">
+                      <strong>HTTP Status:</strong>
+                      <span>{{ error.httpStatus }}</span>
+                    </div>
+                  }
+                  @if (error.url) {
+                    <div class="error-detail-row">
+                      <strong>URL:</strong>
+                      <code>{{ error.url }}</code>
+                    </div>
+                  }
+                  <div class="error-detail-row">
+                    <strong>Timestamp:</strong>
+                    <span>{{ getFullTimestamp(error.timestamp) }}</span>
+                  </div>
+                  @if (error.details) {
+                    <div class="error-detail-row">
+                      <strong>Details:</strong>
+                      <pre class="error-details-json">{{
+                        stringifyErrorDetails(error.details)
+                      }}</pre>
+                    </div>
+                  }
+                  <div class="error-actions">
+                    <button mat-button (click)="copyError(error)">
+                      <mat-icon>content_copy</mat-icon>
+                      <span>{{ 'systemInfo.copyError' | translate }}</span>
+                    </button>
+                  </div>
                 </div>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-
-            <div class="error-details">
-              <div class="error-detail-row" *ngIf="error.stackTrace">
-                <strong>Stack Trace:</strong>
-                <pre class="stack-trace">{{ error.stackTrace }}</pre>
-              </div>
-
-              <div class="error-detail-row">
-                <strong>{{ 'systemInfo.errorDetails' | translate }}:</strong>
-                <p
-                  class="error-message"
-                  *ngIf="hasMessage(error); else noMessage">
-                  {{ error.message }}
-                </p>
-                <ng-template #noMessage>
-                  <p class="error-message no-message">
-                    <em>No error message available</em>
-                  </p>
-                </ng-template>
-              </div>
-
-              <div class="error-detail-row" *ngIf="error.httpStatus">
-                <strong>HTTP Status:</strong>
-                <span>{{ error.httpStatus }}</span>
-              </div>
-
-              <div class="error-detail-row" *ngIf="error.url">
-                <strong>URL:</strong>
-                <code>{{ error.url }}</code>
-              </div>
-
-              <div class="error-detail-row">
-                <strong>Timestamp:</strong>
-                <span>{{ getFullTimestamp(error.timestamp) }}</span>
-              </div>
-
-              <div class="error-detail-row" *ngIf="error.details">
-                <strong>Details:</strong>
-                <pre class="error-details-json">{{
-                  stringifyErrorDetails(error.details)
-                }}</pre>
-              </div>
-
-              <div class="error-actions">
-                <button mat-button (click)="copyError(error)">
-                  <mat-icon>content_copy</mat-icon>
-                  <span>{{ 'systemInfo.copyError' | translate }}</span>
-                </button>
-              </div>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </div>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        </div>
+      }
     </div>
   </div>
-</ng-container>
+}

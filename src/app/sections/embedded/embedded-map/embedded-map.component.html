@@ -1,15 +1,27 @@
 <div class="embedded-map">
   <div class="map-container">
-    <div *ngIf="loadingState === 'loading-config' || loadingState === 'processing-config' || loadingState === 'creating-map'" class="map-loading-overlay">
-      <div class="map-loading-spinner"></div>
-      <div class="map-loading-text">
-        <ng-container [ngSwitch]="loadingState">
-          <span *ngSwitchCase="'loading-config'">{{ 'map.loading.config' | translate }}</span>
-          <span *ngSwitchCase="'processing-config'">{{ 'map.loading.processing' | translate }}</span>
-          <span *ngSwitchDefault>{{ 'map.loading.creating' | translate }}</span>
-        </ng-container>
+    @if (
+      loadingState === 'loading-config' ||
+      loadingState === 'processing-config' ||
+      loadingState === 'creating-map'
+    ) {
+      <div class="map-loading-overlay">
+        <div class="map-loading-spinner"></div>
+        <div class="map-loading-text">
+          @switch (loadingState) {
+            @case ('loading-config') {
+              <span>{{ 'map.loading.config' | translate }}</span>
+            }
+            @case ('processing-config') {
+              <span>{{ 'map.loading.processing' | translate }}</span>
+            }
+            @default {
+              <span>{{ 'map.loading.creating' | translate }}</span>
+            }
+          }
+        </div>
       </div>
-    </div>
+    }
     <div id="mapa" class="mapa-div"></div>
   </div>
 </div>

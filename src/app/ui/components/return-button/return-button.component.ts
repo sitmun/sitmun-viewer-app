@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { TranslateService } from '@ngx-translate/core';
   standalone: false,
   selector: 'app-return-button',
   templateUrl: './return-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./return-button.component.scss']
 })
 export class ReturnButtonComponent {

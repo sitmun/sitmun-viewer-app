@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  ChangeDetectionStrategy
+} from '@angular/core';
 
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -13,6 +19,7 @@ import { SidebarManagerService } from '../../../services/sidebar-manager.service
   standalone: false,
   selector: 'app-error-details-sidebar',
   templateUrl: './error-details-sidebar.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./error-details-sidebar.component.scss']
 })
 export class ErrorDetailsSidebarComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { AppLayer } from '@api/model/app-cfg';
+import type { AppLayer } from '@api/model/app-cfg';
 
 import {
   isProfileLayerQueryable,

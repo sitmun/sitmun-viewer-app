@@ -1,60 +1,155 @@
 const webpack = require('webpack');
-const path = require("path");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const apiSitnaSource = 'node_modules/api-sitna';
 const apiSitnaDestiny = 'assets/js/api-sitna';
 
-module.exports = {
-  output: {
-    publicPath: '/'
-  },
+// Angular 22 always passes supportedBrowsers into its Babel loader, so matched
+// dependencies are transformed. jszip/util crash that path under optimize.
+const skipAngularBabel = /[\\/]node_modules[\\/](?:jszip|util)[\\/]/;
 
-  devServer: {
-    proxy: [
-      {
-        context: ['/catastro-inspire'],
-        target: 'https://ovc.catastro.meh.es',
-        changeOrigin: true,
-        pathRewrite: { '^/catastro-inspire': '/INSPIRE' },
-        secure: false
+function ruleUsesAngularBabel(rule) {
+  const entries = [];
+  if (typeof rule.loader === 'string') {
+    entries.push(rule.loader);
+  }
+  if (Array.isArray(rule.use)) {
+    for (const use of rule.use) {
+      if (typeof use === 'string') {
+        entries.push(use);
+      } else if (use && typeof use.loader === 'string') {
+        entries.push(use.loader);
       }
-    ]
-  },
-  
-  resolve: {
-    // Evita errores del tipo "Module not found" durante el empaquetamiento
+    }
+  }
+  return entries.some(
+    (loader) =>
+      loader.includes(`${path.sep}babel${path.sep}webpack-loader`) ||
+      loader.includes('@angular-devkit/build-angular/src/tools/babel')
+  );
+}
+
+function appendExclude(rule, excludeRe) {
+  const existing = rule.exclude;
+  if (!existing) {
+    rule.exclude = [excludeRe];
+    return;
+  }
+  if (Array.isArray(existing)) {
+    if (!existing.includes(excludeRe)) {
+      rule.exclude = [...existing, excludeRe];
+    }
+    return;
+  }
+  rule.exclude = [existing, excludeRe];
+}
+
+function excludeFromAngularBabel(rule) {
+  if (!rule || typeof rule !== 'object') {
+    return;
+  }
+  if (Array.isArray(rule.oneOf)) {
+    rule.oneOf.forEach(excludeFromAngularBabel);
+  }
+  if (Array.isArray(rule.rules)) {
+    rule.rules.forEach(excludeFromAngularBabel);
+  }
+  if (ruleUsesAngularBabel(rule)) {
+    appendExclude(rule, skipAngularBabel);
+  }
+}
+
+module.exports = (config) => {
+  config.output = {
+    ...config.output,
+    publicPath: '/'
+  };
+
+  const existingProxy = config.devServer && config.devServer.proxy;
+  const proxyEntries = Array.isArray(existingProxy)
+    ? [...existingProxy]
+    : existingProxy
+      ? Object.entries(existingProxy).map(([context, options]) => ({
+          context: [context],
+          ...options
+        }))
+      : [];
+  proxyEntries.push({
+    context: ['/catastro-inspire'],
+    target: 'https://ovc.catastro.meh.es',
+    changeOrigin: true,
+    pathRewrite: { '^/catastro-inspire': '/INSPIRE' },
+    secure: false
+  });
+  // Angular 22 Babel + webpack-dev-server client leaves bare `import hotEmitter`
+  // in polyfills and whitescreens the app. E2E and local serve do not need HMR.
+  config.devServer = {
+    ...config.devServer,
+    hot: false,
+    liveReload: false,
+    client: false,
+    proxy: proxyEntries
+  };
+
+  config.resolve = {
+    ...config.resolve,
     fallback: {
+      ...(config.resolve && config.resolve.fallback),
       assert: false,
       util: false,
       process: require.resolve('process/browser')
+    },
+    alias: {
+      ...(config.resolve && config.resolve.alias),
+      // Cesium Gaussian-splat loader is ESM that breaks the Angular 22 script
+      // optimizer when pulled through custom-webpack. SITMUN maps do not need it.
+      '@spz-loader/core': path.resolve(__dirname, 'src/shims/empty-spz-loader.js')
     }
-  },
+  };
 
-  // Tell webpack to not parse .js files in assets folder
-  // Angular's asset pipeline handles these files, not webpack
-  module: {
+  const assetsPath = path.resolve(__dirname, 'src/assets');
+  const previousNoParse = config.module && config.module.noParse;
+  config.module = {
+    ...config.module,
     noParse: (filePath) => {
-      const assetsPath = path.resolve(__dirname, 'src/assets');
-      return filePath.includes(assetsPath) && filePath.endsWith('.js');
+      if (skipAngularBabel.test(filePath)) {
+        return true;
+      }
+      if (filePath.includes(assetsPath) && filePath.endsWith('.js')) {
+        return true;
+      }
+      if (typeof previousNoParse === 'function') {
+        return previousNoParse(filePath);
+      }
+      if (Array.isArray(previousNoParse)) {
+        return previousNoParse.some((re) =>
+          re instanceof RegExp ? re.test(filePath) : false
+        );
+      }
+      if (previousNoParse instanceof RegExp) {
+        return previousNoParse.test(filePath);
+      }
+      return false;
     }
-  },
+  };
 
-  plugins: [
-    // Procesado de polyfill
+  if (Array.isArray(config.module.rules)) {
+    config.module.rules.forEach(excludeFromAngularBabel);
+  }
+
+  config.plugins = [
+    ...(config.plugins || []),
     new webpack.ProvidePlugin({
       process: 'process/browser'
     }),
-
-    // Copy api-sitna runtime files into the build output
     new CopyWebpackPlugin({
-      patterns: [
-        { from: apiSitnaSource, to: apiSitnaDestiny },
-      ],
+      patterns: [{ from: apiSitnaSource, to: apiSitnaDestiny }]
     }),
-    // Define la ruta base de la API SITNA para la carga de recursos
     new webpack.DefinePlugin({
-      SITNA_BASE_URL: JSON.stringify("/" + apiSitnaDestiny + "/")
+      SITNA_BASE_URL: JSON.stringify('/' + apiSitnaDestiny + '/')
     })
-  ],
+  ];
+
+  return config;
 };

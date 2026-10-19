@@ -1,4 +1,9 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
@@ -14,6 +19,7 @@ export interface DashboardTerritorySelectionDialogData {
   standalone: false,
   selector: 'app-dashboard-territory-selection-dialog',
   templateUrl: './dashboard-territory-selection-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-territory-selection-dialog.component.scss']
 })
 export class DashboardTerritorySelectionDialogComponent implements OnInit {

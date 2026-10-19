@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { AppConfigService } from './app-config.service';
 import { ControlRegistryService } from './control-registry.service';

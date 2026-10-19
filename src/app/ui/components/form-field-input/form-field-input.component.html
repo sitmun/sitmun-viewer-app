@@ -8,8 +8,10 @@
       [value]="input_model"
       (input)="onInputChange($event)"
       [attr.maxlength]="input_length" />
-    <button *ngIf="input_image" type="button" (click)="onButtonClicked()">
-      <img [ngSrc]="input_image" [alt]="input_title" width="25" height="25" />
-    </button>
+    @if (input_image) {
+      <button type="button" (click)="onButtonClicked()">
+        <img [ngSrc]="input_image" [alt]="input_title" width="25" height="25" />
+      </button>
+    }
   </div>
 </div>

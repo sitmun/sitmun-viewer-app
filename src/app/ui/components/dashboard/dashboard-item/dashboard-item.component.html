@@ -31,20 +31,20 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content [class.maintenance-content]="item.isUnavailable">
-      <ng-container *ngIf="item.isUnavailable; else showDescription">
+      @if (item.isUnavailable) {
         {{ item.maintenanceInformation }}
-      </ng-container>
-      <ng-template #showDescription>{{ item.description }}</ng-template>
+      } @else {
+        {{ item.description }}
+      }
     </mat-card-content>
     <div class="spacer"></div>
     <mat-card-actions align="start">
-      <ng-container *ngIf="item.isUnavailable; else normalActions">
+      @if (item.isUnavailable) {
         <div class="maintenance-tag">
           <mat-icon>handyman</mat-icon>
           <span>{{ 'dashboardPage.maintenance' | translate }}</span>
         </div>
-      </ng-container>
-      <ng-template #normalActions>
+      } @else {
         <button
           mat-flat-button
           class="primary-button"
@@ -63,7 +63,7 @@
           (click)="navigateToApplicationDetails(item.id)">
           <mat-icon>info</mat-icon>
         </button>
-      </ng-template>
+      }
     </mat-card-actions>
   </div>
 </mat-card>

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { DashboardItem } from '@api/services/common.service';
 
@@ -6,6 +6,7 @@ import { DashboardItem } from '@api/services/common.service';
   standalone: false,
   selector: 'app-application-details',
   templateUrl: './application-details.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./application-details.component.scss']
 })
 export class ApplicationDetailsComponent {
@@ -16,7 +17,6 @@ export class ApplicationDetailsComponent {
   }
 
   displayLastUpdate(): Date {
-    return (this.application.lastUpdate ??
-      this.application.updateDate) as Date;
+    return (this.application.lastUpdate ?? this.application.updateDate) as Date;
   }
 }

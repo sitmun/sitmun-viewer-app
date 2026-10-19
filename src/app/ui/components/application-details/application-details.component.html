@@ -1,52 +1,61 @@
-<div id="application-details" *ngIf="application">
-  <div id="application-informations">
-    <div id="application-information-logo">
-      <img
-        [ngSrc]="
-          application.logo ? application.logo : 'assets/img/card-no-image.svg'
-        "
-        [alt]="application.title || application.name"
-        width="150"
-        height="150" />
+@if (application) {
+  <div id="application-details">
+    <div id="application-informations">
+      <div id="application-information-logo">
+        <img
+          [ngSrc]="
+            application.logo ? application.logo : 'assets/img/card-no-image.svg'
+          "
+          [alt]="application.title || application.name"
+          width="150"
+          height="150" />
+      </div>
+      <div id="application-information-details">
+        <p [ngClass]="{ 'value-missing': !hasLastUpdate() }">
+          <span>{{ 'application.lastUpdateDate' | translate }} :</span>
+          {{
+            hasLastUpdate()
+              ? (displayLastUpdate() | date: 'dd/MM/yyyy')
+              : ('application.valueMissing' | translate)
+          }}
+        </p>
+        @if (application.createdDate) {
+          <p>
+            <span>{{ 'application.creationDate' | translate }} :</span>
+            {{ application.createdDate | date: 'dd/MM/yyyy' }}
+          </p>
+        } @else {
+          <p aria-hidden="true">&nbsp;</p>
+        }
+        @if (application.responsibleInstitutionName) {
+          <p id="application-responsible-institution">
+            <span>
+              {{ 'application.responsibleInstitution' | translate }} :
+            </span>
+            {{ application.responsibleInstitutionName }}
+          </p>
+        }
+        @if (application.pointOfContact) {
+          <p id="application-point-of-contact">
+            <span>{{ 'application.contact' | translate }} :</span>
+            {{ application.pointOfContact }}
+          </p>
+        }
+      </div>
     </div>
-    <div id="application-information-details">
-      <p [ngClass]="{ 'value-missing': !hasLastUpdate() }">
-        <span>{{ 'application.lastUpdateDate' | translate }} :</span>
-        {{
-          hasLastUpdate()
-            ? (displayLastUpdate() | date : 'dd/MM/yyyy')
-            : ('application.valueMissing' | translate)
-        }}
-      </p>
-      <p *ngIf="application.createdDate; else emptyRow">
-        <span>{{ 'application.creationDate' | translate }} :</span>
-        {{ application.createdDate | date : 'dd/MM/yyyy' }}
+    <div id="application-description">
+      <p id="application-description-title">
+        {{ 'application.description' | translate }}
       </p>
       <p
-        id="application-responsible-institution"
-        *ngIf="application.responsibleInstitutionName">
-        <span>{{ 'application.responsibleInstitution' | translate }} :</span>
-        {{ application.responsibleInstitutionName }}
+        id="application-description-content"
+        [ngClass]="{ 'value-missing': !application.description }">
+        {{
+          application.description
+            ? application.description
+            : ('application.descriptionMissing' | translate)
+        }}
       </p>
-      <p id="application-point-of-contact" *ngIf="application.pointOfContact">
-        <span>{{ 'application.contact' | translate }} :</span>
-        {{ application.pointOfContact }}
-      </p>
-      <ng-template #emptyRow><p aria-hidden="true">&nbsp;</p></ng-template>
     </div>
   </div>
-  <div id="application-description">
-    <p id="application-description-title">
-      {{ 'application.description' | translate }}
-    </p>
-    <p
-      id="application-description-content"
-      [ngClass]="{ 'value-missing': !application.description }">
-      {{
-        application.description
-          ? application.description
-          : ('application.descriptionMissing' | translate)
-      }}
-    </p>
-  </div>
-</div>
+}

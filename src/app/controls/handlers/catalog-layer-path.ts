@@ -1,4 +1,4 @@
-import { AppCfg, AppNodeInfo } from '@api/model/app-cfg';
+import type { AppCfg, AppNodeInfo } from '@api/model/app-cfg';
 
 export function catalogLayerPathTitles(
   nodeId: string,

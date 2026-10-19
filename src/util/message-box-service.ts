@@ -1,4 +1,9 @@
-import { Component, Inject, Injectable } from '@angular/core';
+import {
+  Component,
+  Inject,
+  Injectable,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 
 import { Observable } from 'rxjs';
@@ -39,6 +44,7 @@ export enum MessageBoxType {
 
 @Component({
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './message-box-dialog-component.html'
 })
 export class MessageBoxDialogComponent {

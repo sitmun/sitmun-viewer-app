@@ -11,7 +11,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { AppCfg, GeneralCfg } from '@api/model/app-cfg';
+import type { AppCfg, GeneralCfg } from '@api/model/app-cfg';
 import { CommonService } from '@api/services/common.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorModalComponent } from '@sections/common/modals/error-modal/error-modal.component';

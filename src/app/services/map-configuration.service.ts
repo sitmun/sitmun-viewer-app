@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { AppBackground, AppCfg, AppGroup } from '@api/model/app-cfg';
-import { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
+import type { AppBackground, AppCfg, AppGroup } from '@api/model/app-cfg';
+import type { SitnaBaseLayer, SitnaViews } from '@api/model/sitna-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AppConfigService } from './app-config.service';

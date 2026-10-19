@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
-import DOMPurify from 'dompurify';
+import DOMPurify, { type Config as DomPurifyConfig } from 'dompurify';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -42,7 +42,7 @@ interface MiaTabsContainer extends HTMLElement {
   __sitmunMiaBackendTabs?: boolean;
 }
 
-const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
+const MIA_HTML_SANITIZE_OPTIONS: DomPurifyConfig = {
   ADD_TAGS: ['iframe'],
   ADD_ATTR: [
     'allow',
@@ -59,6 +59,7 @@ const MIA_HTML_SANITIZE_OPTIONS: DOMPurify.Config = {
     'target',
     'rel',
   ],
+  RETURN_TRUSTED_TYPE: false,
 };
 
 /** Delay so SITNA FeatureInfo can finish its own popup DOM before MIA opens. */
@@ -70,9 +71,8 @@ export function sanitizeMiaRenderedHtml(
   html: string,
   emptyFallbackHtml: string = MIA_EMPTY_FALLBACK_HTML
 ): string {
-  const sanitized = DOMPurify.sanitize(
-    html || emptyFallbackHtml,
-    MIA_HTML_SANITIZE_OPTIONS
+  const sanitized = String(
+    DOMPurify.sanitize(html || emptyFallbackHtml, MIA_HTML_SANITIZE_OPTIONS)
   );
   const document = new DOMParser().parseFromString(sanitized, 'text/html');
   document.querySelectorAll('iframe').forEach((iframe) => {

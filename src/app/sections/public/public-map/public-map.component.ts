@@ -1,10 +1,12 @@
-import { DOCUMENT, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import {
   Component,
   ElementRef,
   Inject,
   Injector,
-  Renderer2
+  Renderer2,
+  DOCUMENT,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,6 +27,7 @@ import { SitnaApiService } from 'src/app/services/sitna-api.service';
   standalone: false,
   selector: 'app-public-map',
   templateUrl: './public-map.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./public-map.component.scss']
 })
 export class PublicMapComponent extends AbstractMapComponent {
