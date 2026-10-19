@@ -6,10 +6,8 @@ const apiSitnaSource = 'node_modules/api-sitna';
 const apiSitnaDestiny = 'assets/js/api-sitna';
 
 // Angular 22 always passes supportedBrowsers into its Babel loader, so matched
-// dependencies are transformed. jszip/util crash that path under optimize, and
-// webpack-dev-server's client logger crashes the same path under ng serve.
-const skipAngularBabel =
-  /[\\/]node_modules[\\/](?:jszip|util|webpack-dev-server)[\\/]/;
+// dependencies are transformed. jszip/util crash that path under optimize.
+const skipAngularBabel = /[\\/]node_modules[\\/](?:jszip|util)[\\/]/;
 
 function ruleUsesAngularBabel(rule) {
   const entries = [];
@@ -84,8 +82,13 @@ module.exports = (config) => {
     pathRewrite: { '^/catastro-inspire': '/INSPIRE' },
     secure: false
   });
+  // Angular 22 Babel + webpack-dev-server client leaves bare `import hotEmitter`
+  // in polyfills and whitescreens the app. E2E and local serve do not need HMR.
   config.devServer = {
     ...config.devServer,
+    hot: false,
+    liveReload: false,
+    client: false,
     proxy: proxyEntries
   };
 
