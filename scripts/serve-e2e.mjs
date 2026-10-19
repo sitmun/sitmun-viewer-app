@@ -1,0 +1,168 @@
+#!/usr/bin/env node
+/**
+ * Static e2e host for dist/viewer-app with the same /backend and /middleware
+ * proxies as proxy.conf.e2e.json. Avoids webpack-dev-server under Playwright load.
+ */
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
+import { dirname, extname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const appRoot = resolve(__dirname, '..');
+const distRoot = join(appRoot, 'dist', 'viewer-app');
+
+const MIME = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.ico': 'image/x-icon',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.txt': 'text/plain; charset=utf-8',
+  '.wasm': 'application/wasm',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+};
+
+function parsePort(argv) {
+  const flag = argv.indexOf('--port');
+  if (flag >= 0 && argv[flag + 1]) {
+    return Number(argv[flag + 1]);
+  }
+  const eq = argv.find((arg) => arg.startsWith('--port='));
+  if (eq) {
+    return Number(eq.slice('--port='.length));
+  }
+  return Number(process.env.PORT || 4400);
+}
+
+function proxyDefs(port) {
+  const forwardedHost = `localhost:${port}`;
+  return [
+    {
+      prefix: '/backend',
+      target: 'http://localhost:18080',
+      headers: {
+        'X-Forwarded-Host': forwardedHost,
+        'X-Forwarded-Proto': 'http',
+        'X-Forwarded-Prefix': '/backend',
+      },
+    },
+    {
+      prefix: '/middleware',
+      target: 'http://localhost:18082',
+      headers: {
+        'X-Forwarded-Host': forwardedHost,
+        'X-Forwarded-Proto': 'http',
+        'X-Forwarded-Prefix': '/middleware',
+      },
+    },
+  ];
+}
+
+function fail(message) {
+  console.error(`[serve-e2e] ${message}`);
+  process.exit(1);
+}
+
+function proxyRequest(clientReq, clientRes, proxy) {
+  const inbound = new URL(clientReq.url || '/', 'http://localhost');
+  const stripped = inbound.pathname.slice(proxy.prefix.length) || '/';
+  const upstreamUrl = new URL(stripped + inbound.search, proxy.target);
+
+  const headers = { ...clientReq.headers, ...proxy.headers, host: upstreamUrl.host };
+  delete headers.connection;
+
+  const lib = upstreamUrl.protocol === 'https:' ? https : http;
+  const upstream = lib.request(
+    upstreamUrl,
+    { method: clientReq.method, headers },
+    (upstreamRes) => {
+      clientRes.writeHead(upstreamRes.statusCode || 502, upstreamRes.headers);
+      upstreamRes.pipe(clientRes);
+    }
+  );
+  upstream.on('error', (error) => {
+    if (!clientRes.headersSent) {
+      clientRes.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+    clientRes.end(`Bad gateway: ${error.message}`);
+  });
+  clientReq.pipe(upstream);
+}
+
+function safeJoin(root, urlPath) {
+  const decoded = decodeURIComponent(urlPath.split('?')[0]);
+  const candidate = resolve(root, `.${decoded}`);
+  if (!candidate.startsWith(root)) {
+    return null;
+  }
+  return candidate;
+}
+
+function sendFile(res, filePath) {
+  const type = MIME[extname(filePath).toLowerCase()] || 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': type });
+  createReadStream(filePath).pipe(res);
+}
+
+function serveStatic(req, res) {
+  const urlPath = req.url || '/';
+  let filePath = safeJoin(distRoot, urlPath === '/' ? '/index.html' : urlPath);
+  if (!filePath) {
+    res.writeHead(400).end('Bad path');
+    return;
+  }
+  if (existsSync(filePath) && statSync(filePath).isDirectory()) {
+    filePath = join(filePath, 'index.html');
+  }
+  if (existsSync(filePath) && statSync(filePath).isFile()) {
+    sendFile(res, filePath);
+    return;
+  }
+  // SPA fallback for Angular PathLocationStrategy routes.
+  const indexHtml = join(distRoot, 'index.html');
+  if (existsSync(indexHtml)) {
+    sendFile(res, indexHtml);
+    return;
+  }
+  res.writeHead(404).end('Not found');
+}
+
+if (!existsSync(join(distRoot, 'index.html'))) {
+  fail(`Missing ${join(distRoot, 'index.html')}. Run: npm run build:e2e`);
+}
+
+const port = parsePort(process.argv.slice(2));
+if (!Number.isFinite(port) || port <= 0) {
+  fail(`Invalid port: ${port}`);
+}
+
+const proxies = proxyDefs(port);
+
+const server = http.createServer((req, res) => {
+  const pathname = (req.url || '/').split('?')[0];
+  const proxy = proxies.find(
+    (entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`)
+  );
+  if (proxy) {
+    proxyRequest(req, res, proxy);
+    return;
+  }
+  serveStatic(req, res);
+});
+
+// Bind dual-stack so Playwright's localhost (::1 first on macOS) hits this process.
+server.listen(port, () => {
+  console.error(`[serve-e2e] Serving ${distRoot} on http://localhost:${port}`);
+});
+
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(signal, () => {
+    server.close(() => process.exit(0));
+  });
+}
