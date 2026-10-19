@@ -69,18 +69,48 @@ function fail(message) {
   process.exit(1);
 }
 
-function proxyRequest(clientReq, clientRes, proxy) {
-  const inbound = new URL(clientReq.url || '/', 'http://localhost');
-  const stripped = inbound.pathname.slice(proxy.prefix.length) || '/';
-  const upstreamUrl = new URL(stripped + inbound.search, proxy.target);
+function proxyPath(prefix, rawUrl) {
+  const inbound = new URL(rawUrl || '/', 'http://localhost');
+  // Use the URL-normalized pathname so `/prefix/../other` cannot keep the prefix match.
+  const normalized = inbound.pathname;
+  if (normalized !== prefix && !normalized.startsWith(`${prefix}/`)) {
+    return null;
+  }
+  let path = normalized.slice(prefix.length) || '/';
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  // Collapse leading slashes so a relative URL constructor cannot treat the path as host.
+  path = path.replace(/^\/+/, '/');
+  if (path.includes('\\') || path.includes('\0')) {
+    return null;
+  }
+  return path + inbound.search;
+}
 
-  const headers = { ...clientReq.headers, ...proxy.headers, host: upstreamUrl.host };
+function proxyRequest(clientReq, clientRes, proxy) {
+  const target = new URL(proxy.target);
+  const path = proxyPath(proxy.prefix, clientReq.url);
+  if (path === null) {
+    clientRes.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    clientRes.end('Bad path');
+    return;
+  }
+
+  const headers = { ...clientReq.headers, ...proxy.headers, host: target.host };
   delete headers.connection;
 
-  const lib = upstreamUrl.protocol === 'https:' ? https : http;
+  // Hostname/port come only from the fixed proxy target allow-list.
+  const lib = target.protocol === 'https:' ? https : http;
   const upstream = lib.request(
-    upstreamUrl,
-    { method: clientReq.method, headers },
+    {
+      protocol: target.protocol,
+      hostname: target.hostname,
+      port: target.port || (target.protocol === 'https:' ? 443 : 80),
+      path,
+      method: clientReq.method,
+      headers,
+    },
     (upstreamRes) => {
       clientRes.writeHead(upstreamRes.statusCode || 502, upstreamRes.headers);
       upstreamRes.pipe(clientRes);
@@ -149,7 +179,7 @@ if (!Number.isFinite(port) || port <= 0) {
 const proxies = proxyDefs(port);
 
 const server = http.createServer((req, res) => {
-  const pathname = (req.url || '/').split('?')[0];
+  const pathname = new URL(req.url || '/', 'http://localhost').pathname;
   const proxy = proxies.find(
     (entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`)
   );
