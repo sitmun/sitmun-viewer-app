@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
@@ -19,6 +25,7 @@ import { AppConfigService } from 'src/app/services/app-config.service';
   standalone: false,
   selector: 'app-change-application-territory-dialog',
   templateUrl: './change-application-territory-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./change-application-territory-dialog.component.scss']
 })
 export class ChangeApplicationTerritoryDialogComponent
@@ -285,7 +292,11 @@ export class ChangeApplicationTerritoryDialogComponent
     const app = this.listApplications?.find(
       (a) => String(a.id) === String(appSelectedId)
     );
-    if (!app || !this.isApplicationAllowedInSwitcher(app) || app.isUnavailable) {
+    if (
+      !app ||
+      !this.isApplicationAllowedInSwitcher(app) ||
+      app.isUnavailable
+    ) {
       return;
     }
 

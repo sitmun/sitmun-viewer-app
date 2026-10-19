@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
@@ -18,6 +24,7 @@ import { AppConfigService } from 'src/app/services/app-config.service';
   standalone: false,
   selector: 'app-application',
   templateUrl: './application.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./application.component.scss']
 })
 export class ApplicationComponent implements OnInit, OnDestroy {

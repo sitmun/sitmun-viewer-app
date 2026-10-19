@@ -4,7 +4,8 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 import { takeWhile } from 'rxjs';
@@ -16,6 +17,7 @@ import { NotificationService } from 'src/app/notifications/services/Notification
   standalone: false,
   selector: 'app-notification',
   templateUrl: './notification.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./notification.component.scss']
 })
 export class NotificationComponent implements OnInit, OnDestroy {

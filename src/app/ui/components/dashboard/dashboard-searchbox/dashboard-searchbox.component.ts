@@ -5,13 +5,17 @@ import {
   OnInit,
   OnDestroy,
   ViewChild,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { Router } from '@angular/router';
 
-import { CommonService, DashboardSuggestion } from '@api/services/common.service';
+import {
+  CommonService,
+  DashboardSuggestion
+} from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 import { Subject, of } from 'rxjs';
 import {
@@ -35,11 +39,13 @@ export interface SuggestionOption {
   standalone: false,
   selector: 'app-dashboard-searchbox',
   templateUrl: './dashboard-searchbox.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-searchbox.component.scss']
 })
 export class DashboardSearchboxComponent implements OnInit, OnDestroy {
   @Output() keywords = new EventEmitter<string>();
-  @ViewChild(MatAutocompleteTrigger) autocompleteTrigger?: MatAutocompleteTrigger;
+  @ViewChild(MatAutocompleteTrigger)
+  autocompleteTrigger?: MatAutocompleteTrigger;
 
   searchControl = new FormControl('');
   suggestions: SuggestionOption[] = [];
@@ -73,22 +79,31 @@ export class DashboardSearchboxComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result: DashboardSuggestion) => {
           const applicationSuggestions =
-            result.applications?.map((app) => ({
-              type: 'application',
-              id: app.id,
-              name: app.title || app.name,
-              logo: app.logo,
-              isPrivate: app.appPrivate
-            }) satisfies SuggestionOption) ?? [];
+            result.applications?.map(
+              (app) =>
+                ({
+                  type: 'application',
+                  id: app.id,
+                  name: app.title || app.name,
+                  logo: app.logo,
+                  isPrivate: app.appPrivate
+                }) satisfies SuggestionOption
+            ) ?? [];
           const territorySuggestions =
-            result.territories?.map((terr) => ({
-              type: 'territory',
-              id: terr.id,
-              name: terr.name,
-              logo: terr.territorialAuthorityLogo
-            }) satisfies SuggestionOption) ?? [];
+            result.territories?.map(
+              (terr) =>
+                ({
+                  type: 'territory',
+                  id: terr.id,
+                  name: terr.name,
+                  logo: terr.territorialAuthorityLogo
+                }) satisfies SuggestionOption
+            ) ?? [];
 
-          this.suggestions = [...territorySuggestions, ...applicationSuggestions];
+          this.suggestions = [
+            ...territorySuggestions,
+            ...applicationSuggestions
+          ];
           this.loading = false;
         },
         error: () => {

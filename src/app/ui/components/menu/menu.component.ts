@@ -6,7 +6,8 @@ import {
   Output,
   EventEmitter,
   ViewChild,
-  VERSION
+  VERSION,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
@@ -33,6 +34,7 @@ import {
   standalone: false,
   selector: 'app-menu',
   templateUrl: './menu.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit, OnDestroy {

@@ -6,7 +6,7 @@ import {
   URL_API_MAP_CONFIG,
   URL_API_TERRITORIES
 } from '@api/api-config';
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { shareReplay, tap, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';

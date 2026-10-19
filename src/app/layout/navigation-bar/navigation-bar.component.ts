@@ -12,7 +12,8 @@ import {
   OnInit,
   DoCheck,
   OnDestroy,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -43,6 +44,7 @@ import { resolveUiLanguage } from 'src/app/services/ui-language.resolver';
   selector: 'app-navigation-bar',
   templateUrl: './navigation-bar.component.html',
   styleUrls: ['./navigation-bar.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   animations: [
     trigger('toolbarCollapse', [
       state(
@@ -117,7 +119,8 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((languages) => this.applyLanguages(languages));
     if (this.languageService.getAvailableLanguages().length === 0) {
-      this.languageService.refreshLanguagesToUse()
+      this.languageService
+        .refreshLanguagesToUse()
         .pipe(takeUntil(this.destroy$))
         .subscribe();
     }
@@ -148,7 +151,8 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
 
   /** Re-fetch enabled/order when the user opens the language menu. */
   onLanguageMenuOpened(): void {
-    this.languageService.refreshLanguagesToUse()
+    this.languageService
+      .refreshLanguagesToUse()
       .pipe(takeUntil(this.destroy$))
       .subscribe();
   }
@@ -402,8 +406,7 @@ export class NavigationBarComponent implements OnInit, DoCheck, OnDestroy {
       }
     );
 
-    dialogRef.afterClosed().subscribe(() => {
-    });
+    dialogRef.afterClosed().subscribe(() => {});
   }
 }
 

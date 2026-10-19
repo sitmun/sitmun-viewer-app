@@ -59,8 +59,8 @@ This frontend integrates with the [SITMUN Backend Core](https://github.com/sitmu
 
 ### Prerequisites
 
-- **Node.js**: Version 20.19.0 or higher ([Download](https://nodejs.org/))
-- **npm**: Version 8.x or higher (comes with Node.js)
+- **Node.js**: Version 24.22.0 or higher (`^24.22.0 || ^26.0.0`) ([Download](https://nodejs.org/))
+- **npm**: Version 11.x or higher (comes with Node.js)
 - **SITMUN Backend Core**: Running instance ([Setup Guide](https://github.com/sitmun/sitmun-backend-core))
 
 ### Quick Setup
@@ -117,9 +117,9 @@ npm test
 
 ## Configuration
 
-### OpenSSL Legacy Provider Requirement
+### Build memory
 
-Builds require the legacy OpenSSL provider because api-sitna bundles libraries that depend on legacy OpenSSL APIs. The `build` script sets `NODE_OPTIONS=--openssl-legacy-provider --max-old-space-size=8192` automatically.
+The `build` script sets `NODE_OPTIONS=--max-old-space-size=8192` when unset. Node.js 24 no longer needs `--openssl-legacy-provider` for this app.
 
 ### Environment Configuration
 
@@ -188,7 +188,7 @@ ENVIRONMENT=development docker compose build front
 
 The build process automatically handles:
 
-- **OpenSSL Legacy Provider**: Sets `NODE_OPTIONS=--openssl-legacy-provider` for compatibility
+- **Node memory**: Sets `NODE_OPTIONS=--max-old-space-size=8192` when unset
 - **Environment Replacement**: `production` replaces `environment.ts` with `environment.prod.ts`. `e2e` replaces it with `environment.e2e.ts`. `development` and `docker-dev` do not replace it.
 - **Asset Optimization**: Optimizes and hashes assets for production builds
 - **Bundle Splitting**: Creates vendor chunks for better caching
@@ -638,7 +638,7 @@ git commit -m "style(formatting): apply prettier formatting"
 
 #### Build Errors
 
-- **OpenSSL Errors**: Ensure Node.js 20+ is used, the build script handles legacy provider automatically
+- **Node version**: Use Node.js 24.22.0 or later (`^24.22.0 || ^26.0.0`)
 - **Memory Issues**: Large SITNA library may require increased Node.js memory limits
 - **Dependency Conflicts**: Use `npm ci` for clean installs
 

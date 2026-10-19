@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export interface ErrorModalData {
@@ -8,6 +8,7 @@ export interface ErrorModalData {
 @Component({
   standalone: false,
   selector: 'app-error-modal',
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './error-modal.component.html'
 })
 export class ErrorModalComponent {

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { FullScreenControlHandler } from './full-screen-control.handler';
 import { AppConfigService } from '../../services/app-config.service';

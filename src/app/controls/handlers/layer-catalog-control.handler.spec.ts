@@ -6,7 +6,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 
-import { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks, AppTree, AppNodeInfo } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 

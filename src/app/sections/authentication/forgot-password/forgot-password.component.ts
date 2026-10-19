@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import {
@@ -16,6 +16,7 @@ import { AuthenticationService } from './../../../auth/services/authentication.s
   standalone: false,
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent {
@@ -63,7 +64,6 @@ export class ForgotPasswordComponent {
       this.resetPasswordService
         .requestNewPassword(this.recoveryRequest)
         .subscribe({
-           
           next: () => {}
         });
       this.codeReceived = true;

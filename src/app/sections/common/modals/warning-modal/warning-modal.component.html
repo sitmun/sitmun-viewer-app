@@ -17,7 +17,9 @@
           <b>{{ listTitle | translate }}:</b>
         </span>
         <ul>
-          <li *ngFor="let catalog of catalogs">{{ catalog }}</li>
+          @for (catalog of catalogs; track catalog) {
+            <li>{{ catalog }}</li>
+          }
         </ul>
       </div>
     </div>

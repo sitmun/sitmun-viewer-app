@@ -1,3 +1,4 @@
+import { provideZoneChangeDetection } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
@@ -23,7 +24,7 @@ async function bootstrap(): Promise<void> {
     (globalThis as { d3?: unknown }).d3 = d3;
   } else {
     // Use console directly here as this is bootstrap code before Angular services are available
-     
+
     console.warn('d3 global is missing; charts may not work');
   }
 
@@ -36,22 +37,24 @@ async function bootstrap(): Promise<void> {
     );
   } catch (error: unknown) {
     // Use console directly here as this is bootstrap code before Angular services are available
-     
+
     console.error('Failed to load SITNA library', error);
     throw error;
   }
 
   platformBrowserDynamic()
-    .bootstrapModule(AppModule)
+    .bootstrapModule(AppModule, {
+      applicationProviders: [provideZoneChangeDetection()]
+    })
     .catch((err: unknown) => {
       // Use console directly here as this is bootstrap code before Angular services are available
-       
+
       console.error('Angular bootstrap failed', err);
     });
 }
 
 bootstrap().catch((err: unknown) => {
   // Use console directly here as this is bootstrap code before Angular services are available
-   
+
   console.error('Angular bootstrap failed', err);
 });

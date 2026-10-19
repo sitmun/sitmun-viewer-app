@@ -1,4 +1,9 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  ChangeDetectionStrategy
+} from '@angular/core';
 
 import { PositionDTO } from '@api/model/position';
 import { TerritoryDTO } from '@api/model/territories';
@@ -13,6 +18,7 @@ import { NotificationService } from 'src/app/notifications/services/Notification
   standalone: false,
   selector: 'app-profile',
   templateUrl: './profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit {

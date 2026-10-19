@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
 

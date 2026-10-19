@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 import { IndexedDbService } from '@auth/services/indexed-db.service';
 
 import { SitnaApiService } from './sitna-api.service';

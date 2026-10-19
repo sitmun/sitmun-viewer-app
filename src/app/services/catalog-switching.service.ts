@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppTree } from '@api/model/app-cfg';
+import type { AppCfg, AppTree } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
 import { SitnaApiService } from './sitna-api.service';

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
 import { RasterLayerService } from './raster-layer.service';

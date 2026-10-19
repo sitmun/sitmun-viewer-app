@@ -6,11 +6,16 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { CommonService, DashboardItem, ItemDto } from '@api/services/common.service';
+import {
+  CommonService,
+  DashboardItem,
+  ItemDto
+} from '@api/services/common.service';
 import { NavigationPath } from '@config/app.config';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from 'src/app/notifications/services/NotificationService';
@@ -25,6 +30,7 @@ export interface DashboardTerritoryTagPayload {
   standalone: false,
   selector: 'app-dashboard-item',
   templateUrl: './dashboard-item.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-item.component.scss']
 })
 export class DashboardItemComponent implements OnInit, OnChanges {
@@ -40,7 +46,10 @@ export class DashboardItemComponent implements OnInit, OnChanges {
   private readonly notificationService = inject(NotificationService);
   private readonly translateService = inject(TranslateService);
 
-  constructor(private commonService: CommonService, private router: Router) {}
+  constructor(
+    private commonService: CommonService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.syncFromItem();
@@ -166,7 +175,10 @@ export class DashboardItemComponent implements OnInit, OnChanges {
     if (this.isExternalLink()) {
       return !this.item.externalUrl;
     }
-    return this.territoriesLoading || (this.nbTerritory === 0 && !this.territoriesLoaded);
+    return (
+      this.territoriesLoading ||
+      (this.nbTerritory === 0 && !this.territoriesLoaded)
+    );
   }
 
   primaryActionAriaLabel(): string {

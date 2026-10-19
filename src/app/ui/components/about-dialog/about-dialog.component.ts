@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export interface AboutDialogData {
@@ -18,6 +18,7 @@ export interface AboutDialogData {
   standalone: false,
   selector: 'app-about-dialog',
   templateUrl: './about-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./about-dialog.component.scss']
 })
 export class AboutDialogComponent {

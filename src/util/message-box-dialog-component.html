@@ -3,14 +3,13 @@
   <div [innerHTML]="message"></div>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <ng-container *ngIf="type === types.CONFIRM">
-    <button mat-button [mat-dialog-close]="false">
-      <mat-icon>undo</mat-icon>
-      Cancelar
-    </button>
-    <button mat-button [mat-dialog-close]="true">Continuar</button>
-  </ng-container>
-  <ng-container *ngIf="type === types.ALERT">
-    <button mat-button [mat-dialog-close]="true">Cerrar</button>
-  </ng-container>
+  @if (type === types.CONFIRM) {
+  <button mat-button [mat-dialog-close]="false">
+    <mat-icon>undo</mat-icon>
+    Cancelar
+  </button>
+  <button mat-button [mat-dialog-close]="true">Continuar</button>
+  } @if (type === types.ALERT) {
+  <button mat-button [mat-dialog-close]="true">Cerrar</button>
+  }
 </mat-dialog-actions>

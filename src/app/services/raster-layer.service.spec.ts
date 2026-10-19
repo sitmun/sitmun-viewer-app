@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg, AppLayer } from '@api/model/app-cfg';
+import type { AppCfg, AppLayer } from '@api/model/app-cfg';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AppConfigService } from './app-config.service';

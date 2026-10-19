@@ -1,112 +1,135 @@
 <div id="content">
   <!-- Public territory: dashboard shell with full-width cards -->
-  <div class="dashboard-container" *ngIf="isPublic()">
-    <header class="page-header">
-      <h1 *ngIf="territory && !loading && !loadError && !notFound">{{ territory.name }}</h1>
-      <app-return-button labelKey="territory.back" [fallbackUrl]="fallbackUrl"></app-return-button>
-    </header>
-
-    <p *ngIf="loading" class="page-status" role="status">
-      {{ 'territory.loading' | translate }}
-    </p>
-
-    <p *ngIf="loadError && !loading" class="page-status page-status--error" role="alert">
-      {{ 'territory.loadError' | translate }}
-    </p>
-
-    <p *ngIf="notFound && !loading && !loadError" class="page-status" role="status">
-      {{ 'territory.notFound' | translate }}
-    </p>
-
-    <div id="research" *ngIf="!loading && !loadError && !notFound && allApplications.length > 0">
-      <app-dashboard-searchbox
-        (keywords)="onKeywordsSearch($event)" />
-    </div>
-
-    <p
-      *ngIf="!loading && !loadError && !notFound && allApplications.length === 0"
-      class="page-status"
-      role="status">
-      {{ 'territory.noApplications' | translate }}
-    </p>
-
-    <p
-      *ngIf="!loading && !loadError && !notFound && allApplications.length > 0 && applications.length === 0"
-      class="page-status"
-      role="status">
-      {{ 'territory.noSearchResults' | translate }}
-    </p>
-
-    <app-dashboard-items
-      *ngIf="!loading && !loadError && !notFound && applications.length > 0"
-      [items]="applications"
-      [hasMorePages]="false"
-      [loadingMore]="false"
-      (loadMore)="loadMoreItems()" />
-  </div>
-
-  <!-- User territory: keep sidebar layout -->
-  <div id="territory" *ngIf="!isPublic()">
-    <header class="page-header">
-      <h1 class="territory-name" *ngIf="territory && !loading && !loadError && !notFound">{{ territory.name }}</h1>
-      <app-return-button labelKey="territory.back" [fallbackUrl]="fallbackUrl"></app-return-button>
-    </header>
-
-    <p *ngIf="loading" class="page-status" role="status">
-      {{ 'territory.loading' | translate }}
-    </p>
-
-    <p *ngIf="loadError && !loading" class="page-status page-status--error" role="alert">
-      {{ 'territory.loadError' | translate }}
-    </p>
-
-    <p *ngIf="notFound && !loading && !loadError" class="page-status" role="status">
-      {{ 'territory.notFound' | translate }}
-    </p>
-
-    <div id="territory-details" *ngIf="!loading && !loadError && !notFound && territory">
-      <div
-        id="left-side"
-        [class.left-side--full]="!showTerritoryInformationPanel">
-        <div id="research" *ngIf="allApplications.length > 0">
-          <app-dashboard-searchbox
-            (keywords)="onKeywordsSearch($event)" />
+  @if (isPublic()) {
+    <div class="dashboard-container">
+      <header class="page-header">
+        @if (territory && !loading && !loadError && !notFound) {
+          <h1>{{ territory.name }}</h1>
+        }
+        <app-return-button
+          labelKey="territory.back"
+          [fallbackUrl]="fallbackUrl"></app-return-button>
+      </header>
+      @if (loading) {
+        <p class="page-status" role="status">
+          {{ 'territory.loading' | translate }}
+        </p>
+      }
+      @if (loadError && !loading) {
+        <p class="page-status page-status--error" role="alert">
+          {{ 'territory.loadError' | translate }}
+        </p>
+      }
+      @if (notFound && !loading && !loadError) {
+        <p class="page-status" role="status">
+          {{ 'territory.notFound' | translate }}
+        </p>
+      }
+      @if (!loading && !loadError && !notFound && allApplications.length > 0) {
+        <div id="research">
+          <app-dashboard-searchbox (keywords)="onKeywordsSearch($event)" />
         </div>
-
-        <p
-          *ngIf="allApplications.length === 0"
-          class="page-status"
-          role="status">
+      }
+      @if (
+        !loading && !loadError && !notFound && allApplications.length === 0
+      ) {
+        <p class="page-status" role="status">
           {{ 'territory.noApplications' | translate }}
         </p>
-
-        <p
-          *ngIf="allApplications.length > 0 && applications.length === 0"
-          class="page-status"
-          role="status">
+      }
+      @if (
+        !loading &&
+        !loadError &&
+        !notFound &&
+        allApplications.length > 0 &&
+        applications.length === 0
+      ) {
+        <p class="page-status" role="status">
           {{ 'territory.noSearchResults' | translate }}
         </p>
-
+      }
+      @if (!loading && !loadError && !notFound && applications.length > 0) {
         <app-dashboard-items
-          *ngIf="applications.length > 0"
           [items]="applications"
           [hasMorePages]="false"
           [loadingMore]="false"
           (loadMore)="loadMoreItems()" />
-      </div>
-      <div id="right-side" *ngIf="showTerritoryInformationPanel">
-        <div id="territory-information">
-          <h2>{{ 'territory.information' | translate }}</h2>
-          <p class="territory-app-count">
-            {{
-              'territory.applicationCount'
-                | translate: { count: applicationCount }
-            }}
-          </p>
-          <h3>{{ 'territory.description' | translate }}</h3>
-          <p>{{ territory.description }}</p>
-        </div>
-      </div>
+      }
     </div>
-  </div>
+  }
+
+  <!-- User territory: keep sidebar layout -->
+  @if (!isPublic()) {
+    <div id="territory">
+      <header class="page-header">
+        @if (territory && !loading && !loadError && !notFound) {
+          <h1 class="territory-name">{{ territory.name }}</h1>
+        }
+        <app-return-button
+          labelKey="territory.back"
+          [fallbackUrl]="fallbackUrl"></app-return-button>
+      </header>
+      @if (loading) {
+        <p class="page-status" role="status">
+          {{ 'territory.loading' | translate }}
+        </p>
+      }
+      @if (loadError && !loading) {
+        <p class="page-status page-status--error" role="alert">
+          {{ 'territory.loadError' | translate }}
+        </p>
+      }
+      @if (notFound && !loading && !loadError) {
+        <p class="page-status" role="status">
+          {{ 'territory.notFound' | translate }}
+        </p>
+      }
+      @if (!loading && !loadError && !notFound && territory) {
+        <div id="territory-details">
+          <div
+            id="left-side"
+            [class.left-side--full]="!showTerritoryInformationPanel">
+            @if (allApplications.length > 0) {
+              <div id="research">
+                <app-dashboard-searchbox
+                  (keywords)="onKeywordsSearch($event)" />
+              </div>
+            }
+            @if (allApplications.length === 0) {
+              <p class="page-status" role="status">
+                {{ 'territory.noApplications' | translate }}
+              </p>
+            }
+            @if (allApplications.length > 0 && applications.length === 0) {
+              <p class="page-status" role="status">
+                {{ 'territory.noSearchResults' | translate }}
+              </p>
+            }
+            @if (applications.length > 0) {
+              <app-dashboard-items
+                [items]="applications"
+                [hasMorePages]="false"
+                [loadingMore]="false"
+                (loadMore)="loadMoreItems()" />
+            }
+          </div>
+          @if (showTerritoryInformationPanel) {
+            <div id="right-side">
+              <div id="territory-information">
+                <h2>{{ 'territory.information' | translate }}</h2>
+                <p class="territory-app-count">
+                  {{
+                    'territory.applicationCount'
+                      | translate: { count: applicationCount }
+                  }}
+                </p>
+                <h3>{{ 'territory.description' | translate }}</h3>
+                <p>{{ territory.description }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 </div>

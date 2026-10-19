@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AppCfg, AppNodeInfo } from '@api/model/app-cfg';
+import type { AppCfg, AppNodeInfo } from '@api/model/app-cfg';
 
 import { environment } from '../../../environments/environment';
 import {

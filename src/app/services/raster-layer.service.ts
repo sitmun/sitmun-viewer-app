@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
-import { AppCfg, AppLayer, AppService } from '@api/model/app-cfg';
+import type { AppCfg, AppLayer, AppService } from '@api/model/app-cfg';
 
 import { ConfigLookupService } from './config-lookup.service';
 import { inferOgcLinkFormat, LayerInfoService } from './layer-info.service';

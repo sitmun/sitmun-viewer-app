@@ -1,7 +1,9 @@
 <div id="searchbox">
   <form (submit)="handleSubmit(); $event.preventDefault()">
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>{{ 'dashboardDialog.inputPlaceholder' | translate }}</mat-label>
+      <mat-label>
+        {{ 'dashboardDialog.inputPlaceholder' | translate }}
+      </mat-label>
       <input
         type="text"
         matInput
@@ -9,37 +11,44 @@
         [matAutocomplete]="auto"
         [attr.aria-label]="'dashboardDialog.inputPlaceholder' | translate"
         autocomplete="off" />
-      <button
-        *ngIf="searchControl.value"
-        matSuffix
-        mat-icon-button
-        type="button"
-        (click)="clearSearch()"
-        [attr.aria-label]="'dashboardPage.searchClear' | translate">
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (searchControl.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          type="button"
+          (click)="clearSearch()"
+          [attr.aria-label]="'dashboardPage.searchClear' | translate">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
       <mat-icon matPrefix>search</mat-icon>
       <mat-autocomplete
         #auto="matAutocomplete"
         [displayWith]="displayFn"
         (optionSelected)="onOptionSelected($event.option.value)">
-        <mat-option
-          *ngFor="let option of suggestions"
-          [value]="option"
-          [attr.aria-label]="option.type + ': ' + option.name">
-          <div class="suggestion-option">
-            <mat-icon class="suggestion-icon">{{ getOptionIcon(option) }}</mat-icon>
-            <span class="suggestion-name">{{ option.name }}</span>
-            <img
-              *ngIf="option.logo"
-              [src]="option.logo"
-              [alt]="option.name"
-              class="suggestion-logo" />
-          </div>
-        </mat-option>
-        <mat-option *ngIf="loading" disabled>
-          <mat-spinner diameter="24"></mat-spinner>
-        </mat-option>
+        @for (option of suggestions; track option) {
+          <mat-option
+            [value]="option"
+            [attr.aria-label]="option.type + ': ' + option.name">
+            <div class="suggestion-option">
+              <mat-icon class="suggestion-icon">
+                {{ getOptionIcon(option) }}
+              </mat-icon>
+              <span class="suggestion-name">{{ option.name }}</span>
+              @if (option.logo) {
+                <img
+                  [src]="option.logo"
+                  [alt]="option.name"
+                  class="suggestion-logo" />
+              }
+            </div>
+          </mat-option>
+        }
+        @if (loading) {
+          <mat-option disabled>
+            <mat-spinner diameter="24"></mat-spinner>
+          </mat-option>
+        }
       </mat-autocomplete>
     </mat-form-field>
   </form>

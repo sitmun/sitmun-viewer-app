@@ -1,34 +1,37 @@
 <mat-menu #appMenu="matMenu" xPosition="before" panelClass="app-menu-panel">
   <!-- Welcome header as disabled menu item -->
-  <button mat-menu-item class="menu-header" *ngIf="isConnected">
-    <span>
-      {{ 'menu.greeting' | translate : { username: username } }}
-    </span>
-  </button>
+  @if (isConnected) {
+    <button mat-menu-item class="menu-header">
+      <span>
+        {{ 'menu.greeting' | translate: { username: username } }}
+      </span>
+    </button>
+  }
 
-  <mat-divider *ngIf="isConnected"></mat-divider>
+  @if (isConnected) {
+    <mat-divider></mat-divider>
+  }
 
   <!-- Navigation Group -->
   <!-- Dashboard button -->
-  <button
-    mat-menu-item
-    *ngIf="showDashboardButton"
-    (click)="sendDashboardEvent()">
-    <mat-icon>dashboard</mat-icon>
-    <span>{{ 'menu.dashboard' | translate }}</span>
-  </button>
+  @if (showDashboardButton) {
+    <button mat-menu-item (click)="sendDashboardEvent()">
+      <mat-icon>dashboard</mat-icon>
+      <span>{{ 'menu.dashboard' | translate }}</span>
+    </button>
+  }
 
   <!-- Change app/territory button -->
-  <button
-    mat-menu-item
-    *ngIf="showChangeAppButton"
-    (click)="sendChangeAppEvent()">
-    <mat-icon>swap_horiz</mat-icon>
-    <span>{{ 'menu.changeAppOrTerritory' | translate }}</span>
-  </button>
+  @if (showChangeAppButton) {
+    <button mat-menu-item (click)="sendChangeAppEvent()">
+      <mat-icon>swap_horiz</mat-icon>
+      <span>{{ 'menu.changeAppOrTerritory' | translate }}</span>
+    </button>
+  }
 
-  <mat-divider
-    *ngIf="showDashboardButton || showChangeAppButton"></mat-divider>
+  @if (showDashboardButton || showChangeAppButton) {
+    <mat-divider></mat-divider>
+  }
 
   <!-- System Info Group -->
   <!-- About button -->
@@ -38,45 +41,44 @@
   </button>
 
   <!-- Recent Errors button (only in non-production) -->
-  <button
-    mat-menu-item
-    *ngIf="!environment.production"
-    (click)="openErrorSidebar()">
-    <mat-icon>bug_report</mat-icon>
-    <span>{{ 'systemInfo.recentErrors' | translate }}</span>
-    <span class="badge" *ngIf="unreviewedErrorCount > 0">
-      {{ unreviewedErrorCount }}
-    </span>
-  </button>
+  @if (!environment.production) {
+    <button mat-menu-item (click)="openErrorSidebar()">
+      <mat-icon>bug_report</mat-icon>
+      <span>{{ 'systemInfo.recentErrors' | translate }}</span>
+      @if (unreviewedErrorCount > 0) {
+        <span class="badge">
+          {{ unreviewedErrorCount }}
+        </span>
+      }
+    </button>
+  }
 
-  <mat-divider
-    *ngIf="
-      (!isConnected && showLoginButton) ||
-      (isConnected && (showProfileButton || showLogoutButton))
-    "></mat-divider>
+  @if (
+    (!isConnected && showLoginButton) ||
+    (isConnected && (showProfileButton || showLogoutButton))
+  ) {
+    <mat-divider></mat-divider>
+  }
 
   <!-- Account Group -->
-  <button
-    mat-menu-item
-    *ngIf="!isConnected && showLoginButton"
-    (click)="sendLoginEvent()">
-    <mat-icon>login</mat-icon>
-    <span>{{ 'menu.login' | translate }}</span>
-  </button>
+  @if (!isConnected && showLoginButton) {
+    <button mat-menu-item (click)="sendLoginEvent()">
+      <mat-icon>login</mat-icon>
+      <span>{{ 'menu.login' | translate }}</span>
+    </button>
+  }
 
-  <button
-    mat-menu-item
-    *ngIf="isConnected && showProfileButton"
-    (click)="sendProfileEvent()">
-    <mat-icon>person</mat-icon>
-    <span>{{ 'profile.myAccount' | translate }}</span>
-  </button>
+  @if (isConnected && showProfileButton) {
+    <button mat-menu-item (click)="sendProfileEvent()">
+      <mat-icon>person</mat-icon>
+      <span>{{ 'profile.myAccount' | translate }}</span>
+    </button>
+  }
 
-  <button
-    mat-menu-item
-    *ngIf="isConnected && showLogoutButton"
-    (click)="sendLogoutEvent()">
-    <mat-icon>logout</mat-icon>
-    <span>{{ 'loginPage.logoutText' | translate }}</span>
-  </button>
+  @if (isConnected && showLogoutButton) {
+    <button mat-menu-item (click)="sendLogoutEvent()">
+      <mat-icon>logout</mat-icon>
+      <span>{{ 'loginPage.logoutText' | translate }}</span>
+    </button>
+  }
 </mat-menu>

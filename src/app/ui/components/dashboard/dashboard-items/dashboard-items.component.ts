@@ -8,7 +8,8 @@ import {
   AfterViewInit,
   OnDestroy,
   SimpleChanges,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -23,9 +24,12 @@ import { DashboardTerritorySelectionDialogComponent } from '../dashboard-territo
   standalone: false,
   selector: 'app-dashboard-items',
   templateUrl: './dashboard-items.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-items.component.scss']
 })
-export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class DashboardItemsComponent
+  implements OnInit, OnChanges, AfterViewInit, OnDestroy
+{
   @Input() items: DashboardItem[] = [];
   @Input() hasMorePages = false;
   @Input() loadingMore = false;
@@ -45,7 +49,10 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
 
   private readonly appConfigService = inject(AppConfigService);
 
-  constructor(private router: Router, private dialog: MatDialog) {}
+  constructor(
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] && this.items) {
@@ -168,13 +175,13 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
     updateColumns();
 
     const originalDestroy = this.ngOnDestroy.bind(this);
-    
+
     const resizeHandler = () => {
       updateColumns();
       setTimeout(() => this.checkIncompleteRows(), 50);
     };
     window.addEventListener('resize', resizeHandler);
-    
+
     this.ngOnDestroy = () => {
       window.removeEventListener('resize', resizeHandler);
       originalDestroy();
@@ -201,7 +208,7 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
 
   private setupIntersectionObservers(): void {
     this.cleanupObservers();
-    
+
     const options: IntersectionObserverInit = {
       root: null,
       rootMargin: this.LOAD_MORE_ROOT_MARGIN,
@@ -209,10 +216,16 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
     };
 
     const createObserver = (section: 'public' | 'private' | 'all') => {
-      const sentinel = document.querySelector(`.loading-sentinel[data-section="${section}"]`);
+      const sentinel = document.querySelector(
+        `.loading-sentinel[data-section="${section}"]`
+      );
       if (sentinel && this.hasMorePages) {
         const observer = new IntersectionObserver((entries) => {
-          if (entries[0].isIntersecting && this.hasMorePages && !this.loadingMore) {
+          if (
+            entries[0].isIntersecting &&
+            this.hasMorePages &&
+            !this.loadingMore
+          ) {
             this.onSentinelVisible();
           }
         }, options);
@@ -228,12 +241,12 @@ export class DashboardItemsComponent implements OnInit, OnChanges, AfterViewInit
 
   private onSentinelVisible(): void {
     if (this.loadingMore || !this.hasMorePages) return;
-    
+
     this.loadMore.emit();
   }
 
   private cleanupObservers(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 }

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg, AppTasks } from '@api/model/app-cfg';
+import type { AppCfg, AppTasks } from '@api/model/app-cfg';
 
 import { ShareControlHandler } from './share-control.handler';
 import { decodeMapState, encodeMapState } from '../../map/map-view-snapshot';

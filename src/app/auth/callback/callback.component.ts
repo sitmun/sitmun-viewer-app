@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthenticationService } from '@auth/services/authentication.service';
@@ -10,6 +10,7 @@ import { NotificationService } from '../../notifications/services/NotificationSe
   selector: 'app-callback',
   imports: [TranslateModule],
   templateUrl: './callback.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './callback.component.scss'
 })
 export class CallbackComponent implements OnInit {

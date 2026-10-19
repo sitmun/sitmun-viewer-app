@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthenticationRequest } from '@auth/authentication.options';
@@ -13,6 +13,7 @@ import { NotificationService } from '../../../../notifications/services/Notifica
   standalone: false,
   selector: 'app-login-modal',
   templateUrl: './login-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: [
     './login-modal.component.scss',
     '../../../../ui/modal/style/open-modal.component.scss'
@@ -56,9 +57,11 @@ export class LoginModalComponent extends BaseModal {
         error: (error) => {
           if (error.status && error.status === 401) {
             this.authenticationRequest.password = '';
-            this.translate.get('loginPage.incorrectLogin').subscribe((message) => {
-              this.notificationService.error(message);
-            });
+            this.translate
+              .get('loginPage.incorrectLogin')
+              .subscribe((message) => {
+                this.notificationService.error(message);
+              });
           }
         }
       });

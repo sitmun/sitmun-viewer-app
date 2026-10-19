@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AppTree } from '@api/model/app-cfg';
+import type { AppTree } from '@api/model/app-cfg';
 
 import { CatalogSwitchingService } from './catalog-switching.service';
 import { ConfigLookupService } from './config-lookup.service';

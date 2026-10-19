@@ -1,4 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
@@ -15,6 +20,7 @@ import { filterDashboardItemsByKeyword } from 'src/app/utils/dashboard-filter.ut
   standalone: false,
   selector: 'app-territory',
   templateUrl: './territory.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./territory.component.scss']
 })
 export class TerritoryComponent implements OnInit, OnDestroy {
@@ -93,8 +99,12 @@ export class TerritoryComponent implements OnInit, OnDestroy {
     this.territoryId = Number(terrId);
 
     forkJoin({
-      territories: this.commonService.fetchDashboardItems(DashboardTypes.TERRITORIES),
-      applications: this.commonService.fetchApplicationsByTerritory(this.territoryId)
+      territories: this.commonService.fetchDashboardItems(
+        DashboardTypes.TERRITORIES
+      ),
+      applications: this.commonService.fetchApplicationsByTerritory(
+        this.territoryId
+      )
     })
       .pipe(
         takeUntil(this.destroy$),

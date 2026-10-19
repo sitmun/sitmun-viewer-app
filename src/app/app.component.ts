@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { AuthenticationService } from './auth/services/authentication.service';
 import { LanguageService } from './services/language.service';
@@ -7,6 +7,7 @@ import { LanguageService } from './services/language.service';
   standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {

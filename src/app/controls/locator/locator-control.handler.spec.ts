@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { AppCfg } from '@api/model/app-cfg';
+import type { AppCfg } from '@api/model/app-cfg';
 
 import { LocatorControlHandler } from './locator-control.handler';
 import { prototypeWrappers } from './locator-control.logic';

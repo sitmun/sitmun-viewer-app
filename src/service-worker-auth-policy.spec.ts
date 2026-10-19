@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import './service-worker-auth-policy.js';
 
 interface SitmunProxyAuthPolicy {
@@ -7,7 +7,6 @@ interface SitmunProxyAuthPolicy {
 
 type PolicyHost = typeof globalThis & {
   SitmunProxyAuthPolicy?: SitmunProxyAuthPolicy;
-  location: { origin: string };
 };
 
 const host = globalThis as PolicyHost;
@@ -90,12 +89,8 @@ const cases: MiddlewareCase[] = [
 ];
 
 describe('SitmunProxyAuthPolicy.isMiddlewareRequest', () => {
-  beforeAll(() => {
-    Object.defineProperty(host, 'location', {
-      configurable: true,
-      value: { origin: 'http://localhost:9000' }
-    });
-  });
+  // Cases use absolute URLs. jsdom 30 makes location non-configurable, so do not
+  // redefine it. URL(absolute, base) ignores the base origin.
 
   it.each(cases)(
     '%s',
