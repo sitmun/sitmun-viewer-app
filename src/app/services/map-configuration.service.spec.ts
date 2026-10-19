@@ -579,6 +579,57 @@ describe('MapConfigurationService', () => {
       expect(layer).not.toHaveProperty('version');
     });
 
+    it('emits WFS featureType and resolution bounds and points the overview at a non-WFS layer', () => {
+      const cfg: AppCfg = {
+        ...mockAppCfg,
+        backgrounds: [
+          { id: 'bg-wfs', title: 'WFS background', thumbnail: '' },
+          { id: 'bg-1', title: 'Background 1', thumbnail: 'thumb.png' }
+        ],
+        groups: [
+          { id: 'bg-wfs', title: 'WFS group', layers: ['layer-wfs'] },
+          { id: 'bg-1', title: 'Group 1', layers: ['layer-1'] }
+        ],
+        layers: [
+          ...mockAppCfg.layers,
+          {
+            id: 'layer-wfs',
+            title: 'WFS Layer',
+            layers: ['wfs-a', 'wfs-b'],
+            service: 'service-wfs',
+            minScaleDenominator: 1000,
+            maxScaleDenominator: 500000
+          }
+        ],
+        services: [
+          ...mockAppCfg.services,
+          {
+            id: 'service-wfs',
+            url: 'http://example.com/wfs',
+            type: 'WFS',
+            parameters: { format: 'text/xml' }
+          }
+        ]
+      };
+      configLookup.initialize(cfg);
+
+      const layers = service.toBaseLayers(cfg);
+      const wfs = layers.find((item) => item.title === 'WFS Layer') as
+        | (typeof layers)[number] & {
+            featureType?: string;
+            minResolution?: number;
+            maxResolution?: number;
+            overviewMapLayer?: string;
+          };
+      const wms = layers.find((item) => item.title === 'Base Layer 1');
+
+      expect(wfs?.featureType).toBe('wfs-a');
+      expect(wfs?.minResolution).toBeCloseTo((1000 * 0.00028) / 1);
+      expect(wfs?.maxResolution).toBeCloseTo((500000 * 0.00028) / 1);
+      expect(wfs?.overviewMapLayer).toBe(wms?.id);
+      expect(wfs?.overviewMapLayer).not.toBe(wfs?.id);
+    });
+
     it('should use thumbnail from background if available', () => {
       const result = service.toBaseLayers(mockAppCfg);
       // Check that thumbnails are used when available

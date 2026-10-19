@@ -6,7 +6,7 @@ export type FeatureInfoCell =
   | { kind: 'auto'; value: unknown }
   | { kind: 'text'; text: string }
   | { kind: 'link'; href: string; text: string }
-  | { kind: 'image'; src: string };
+  | { kind: 'image'; src: string; maxWidth?: number; maxHeight?: number };
 
 export interface FeatureInfoDisplayRow {
   path: string;
@@ -44,12 +44,24 @@ export function resolveFeaturePath(data: unknown, path: string): unknown {
       current = current[token];
       continue;
     }
-    if (!Object.prototype.hasOwnProperty.call(current, token)) {
+    const record = current as Record<string, unknown>;
+    if (Object.prototype.hasOwnProperty.call(record, token)) {
+      current = record[token];
+      continue;
+    }
+    const wanted = localName(token);
+    const matches = Object.keys(record).filter((key) => localName(key) === wanted);
+    if (matches.length !== 1) {
       return undefined;
     }
-    current = (current as Record<string, unknown>)[token];
+    current = record[matches[0]];
   }
   return current;
+}
+
+export function localName(name: string): string {
+  const separator = name.lastIndexOf(':');
+  return separator === -1 ? name : name.slice(separator + 1);
 }
 
 export function buildFeatureInfoRows(
@@ -149,7 +161,7 @@ function formatCell(
     case 'U':
       return { kind: 'link', href: asText(value), text: asText(value) };
     case 'I':
-      return { kind: 'image', src: asText(value) };
+      return imageCell(value, field);
     default: {
       const unreachable: never = format;
       return unreachable;
@@ -187,6 +199,24 @@ function asNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+function imageCell(value: unknown, field: FeatureInfoField): FeatureInfoCell {
+  const maxWidth = imageLimit(field.maxWidth);
+  const maxHeight = imageLimit(field.maxHeight);
+  return {
+    kind: 'image',
+    src: asText(value),
+    ...(maxWidth == null ? {} : { maxWidth }),
+    ...(maxHeight == null ? {} : { maxHeight })
+  };
+}
+
+function imageLimit(value: number | null | undefined): number | undefined {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+  return undefined;
 }
 
 function fractionDigits(field: FeatureInfoField): number {

@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import path from 'path';
+
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -405,6 +408,184 @@ describe('FeatureInfoControlHandler', () => {
       expect(TC.tool.Proxification.prototype.__sitmunGfiIsolation).toBeUndefined();
     });
 
+    it('replaces the WFS popup table when featureInfoFields is non-empty', async () => {
+      class Feature {
+        data: Record<string, unknown> = { name: 'A', gid: 1 };
+        layer: unknown;
+        infoControl?: { getContainerElement: () => HTMLElement };
+        async showInfo(): Promise<void> {
+          const table = document.createElement('table');
+          const body = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          const th = document.createElement('th');
+          th.textContent = 'gid';
+          const td = document.createElement('td');
+          td.textContent = '1';
+          tr.append(th, td);
+          body.append(tr);
+          table.append(body);
+          const div = document.createElement('div');
+          div.append(table);
+          this.infoControl = { getContainerElement: () => div };
+        }
+      }
+      TC.feature = { Feature };
+      await handler.loadPatches({
+        layers: [
+          {
+            id: 'layer/1',
+            title: 'Parcels',
+            layers: ['parcels'],
+            service: 'service/1',
+            featureInfoFields: [
+              { name: 'name', label: 'Name', format: 'T', order: 0 }
+            ]
+          }
+        ],
+        trees: [
+          {
+            id: 'tree/1',
+            title: 'Tree',
+            image: null,
+            rootNode: 'n',
+            nodes: {
+              n: { title: 'Parcels', resource: 'layer/1', children: [] }
+            }
+          }
+        ]
+      } as AppCfg);
+
+      const feature = new Feature();
+      feature.layer = {
+        type: 'WFS',
+        featureType: 'parcels',
+        options: { type: 'WFS', nodeId: 'n' }
+      };
+      const original = { ...feature.data };
+      await feature.showInfo();
+
+      const headers = Array.from(
+        feature.infoControl!.getContainerElement().querySelectorAll('th')
+      ).map((cell) => cell.textContent);
+      expect(headers).toEqual(['Name']);
+      expect(feature.data).toEqual(original);
+    });
+
+    it('leaves the SITNA table when featureInfoFields is empty', async () => {
+      class Feature {
+        data: Record<string, unknown> = { name: 'A', gid: 1 };
+        layer: unknown;
+        infoControl?: { getContainerElement: () => HTMLElement };
+        async showInfo(): Promise<void> {
+          const table = document.createElement('table');
+          const body = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          const th = document.createElement('th');
+          th.textContent = 'gid';
+          const td = document.createElement('td');
+          td.textContent = '1';
+          tr.append(th, td);
+          body.append(tr);
+          table.append(body);
+          const div = document.createElement('div');
+          div.append(table);
+          this.infoControl = { getContainerElement: () => div };
+        }
+      }
+      TC.feature = { Feature };
+      await handler.loadPatches({
+        layers: [
+          {
+            id: 'layer/1',
+            title: 'Parcels',
+            layers: ['parcels'],
+            service: 'service/1',
+            featureInfoFields: []
+          }
+        ],
+        trees: [
+          {
+            id: 'tree/1',
+            title: 'Tree',
+            image: null,
+            rootNode: 'n',
+            nodes: {
+              n: { title: 'Parcels', resource: 'layer/1', children: [] }
+            }
+          }
+        ]
+      } as unknown as AppCfg);
+
+      const feature = new Feature();
+      feature.layer = {
+        type: 'WFS',
+        featureType: 'parcels',
+        options: { type: 'WFS', nodeId: 'n' }
+      };
+      await feature.showInfo();
+
+      const headers = Array.from(
+        feature.infoControl!.getContainerElement().querySelectorAll('th')
+      ).map((cell) => cell.textContent);
+      expect(headers).toEqual(['gid']);
+    });
+
+    it('sets showsPopup on FEATURESADD so Click._trigger skips GetFeatureInfo', async () => {
+      const listeners: Record<string, Array<(event: unknown) => void>> = {};
+      TC.Consts = {
+        event: { FEATURESADD: 'featuresadd.tc', CLICK: 'click.tc' },
+        view: { PRINTING: 2 }
+      };
+      TC.control.FeatureInfo.prototype.register = function () {
+        return undefined;
+      };
+      await handler.loadPatches({} as AppCfg);
+
+      const feature = { showsPopup: false };
+      const layer = {
+        type: 'WFS',
+        options: { sitmunGfiEnabled: true },
+        features: [feature]
+      };
+      const gfi = jest.fn();
+      const map = {
+        view: 0,
+        on: (event: string, fn: (event: unknown) => void) => {
+          (listeners[event] ??= []).push(fn);
+        },
+        off: jest.fn(),
+        options: {},
+        trigger: jest.fn(),
+        wrap: {
+          map: {
+            forEachFeatureAtPixel: (
+              _pixel: unknown,
+              callback: (olFeature: unknown, olLayer: unknown) => void
+            ) => {
+              callback({ _wrap: { parent: feature } }, null);
+            }
+          }
+        }
+      };
+      const control = Object.create(TC.control.FeatureInfo.prototype) as {
+        register: (map: unknown) => void;
+      };
+      control.register(map);
+      expect(listeners['featuresadd.tc']?.length).toBeGreaterThan(0);
+      listeners['featuresadd.tc'][0]({ layer, features: [feature] });
+      expect(feature.showsPopup).toBe(true);
+
+      const click = {
+        parent: {
+          map,
+          callback: gfi
+        }
+      };
+      const trigger = sitnaClickTrigger(click, map);
+      expect(trigger({ pixel: [1, 1], coordinate: [0, 0] })).toBe(false);
+      expect(gfi).not.toHaveBeenCalled();
+    });
+
     it('should be idempotent when loadPatches is called twice', async () => {
       // Arrange
       TC.layer.Raster.prototype.describeLayer.mockRejectedValue(
@@ -421,3 +602,43 @@ describe('FeatureInfoControlHandler', () => {
     });
   });
 });
+
+function sitnaClickTrigger(
+  self: {
+    parent: {
+      map: { trigger: (name: string, payload: unknown) => void };
+      callback: (coordinate: unknown, pixel: unknown) => void;
+    };
+  },
+  map: unknown
+): (event: { pixel: unknown; coordinate: unknown }) => boolean {
+  const source = readFileSync(
+    path.join(process.cwd(), 'node_modules/api-sitna/TC/ol/ol.js'),
+    'utf8'
+  );
+  const assign = source.indexOf(
+    'TC.wrap.control.Click.prototype.register = function (map) {'
+  );
+  const triggerAssign = source.indexOf('self._trigger = function (e) {', assign);
+  const ret = source.indexOf('return featureCount === 0;', triggerAssign);
+  const close = source.indexOf('};', ret);
+  const body = source.slice(triggerAssign, close + 2);
+  const factory = new Function(
+    'self',
+    'map',
+    'Consts',
+    'hitTolerance',
+    `${body}\nreturn self._trigger;`
+  ) as (
+    self: unknown,
+    map: unknown,
+    consts: { view: { PRINTING: number }; event: { CLICK: string } },
+    hitTolerance: number
+  ) => (event: { pixel: unknown; coordinate: unknown }) => boolean;
+  return factory(
+    self,
+    map,
+    { view: { PRINTING: 2 }, event: { CLICK: 'click.tc' } },
+    0
+  );
+}

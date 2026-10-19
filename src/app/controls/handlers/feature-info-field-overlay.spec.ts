@@ -2,8 +2,10 @@ import type { AppLayer, AppTree } from '@api/model/app-cfg';
 
 import {
   applyFeatureInfoOverlay,
-  planFeatureInfoOverlay
+  planFeatureInfoOverlay,
+  rewriteFeatureInfoTable
 } from './feature-info-field-overlay';
+import { buildFeatureInfoRows } from './feature-info-fields';
 
 const layer = {
   id: 'layer/1304',
@@ -129,5 +131,196 @@ describe('feature info overlay headings', () => {
     const headers = Array.from(root.querySelectorAll('th')).map((cell) => cell.textContent);
     expect(headers).toEqual(['Soil class', 'Revision layer']);
     expect(plans.map((plan) => plan.profileLayerId)).toEqual(['layer/4658', 'layer/4659']);
+  });
+
+  it('builds the same rows for a WFS feature record and a WMS feature record', () => {
+    const record = { nomruta: 'Cala Tirant', gid: 105 };
+    const wmsPlans = planFeatureInfoOverlay(
+      [
+        {
+          layers: [
+            {
+              name: 'tu007rts_ccavalls',
+              features: [{ data: record }]
+            }
+          ]
+        }
+      ],
+      [layer],
+      'ca',
+      trees
+    );
+    const wfsLayer = {
+      ...layer,
+      id: 'layer/wfs',
+      layers: ['app:parcels']
+    } as AppLayer;
+    const wfsTrees = [
+      {
+        ...trees[0],
+        nodes: {
+          root: { title: 'Rutes turístiques', children: ['wfs-leaf'] },
+          'wfs-leaf': {
+            title: 'Trams del camí de cavalls',
+            resource: 'layer/wfs',
+            children: []
+          }
+        }
+      }
+    ] as AppTree[];
+    const wfsPlans = planFeatureInfoOverlay(
+      [
+        {
+          mapLayers: [
+            {
+              names: ['app:parcels'],
+              options: { nodeId: 'wfs-leaf' }
+            }
+          ],
+          layers: [
+            {
+              name: 'app:parcels',
+              features: [{ getData: () => record }]
+            }
+          ]
+        }
+      ],
+      [wfsLayer],
+      'ca',
+      wfsTrees
+    );
+
+    expect(wfsPlans[0]?.features).toEqual(wmsPlans[0]?.features);
+    expect(wfsPlans[0]?.features[0]).toEqual([
+      {
+        path: 'nomruta',
+        label: 'Route',
+        cell: { kind: 'text', text: 'Cala Tirant' }
+      }
+    ]);
+  });
+
+  it('keeps the SITNA link for Automatic when the drawn header still has a namespace', () => {
+    const table = document.createElement('table');
+    table.innerHTML =
+      '<tbody><tr><th>turisme:lnkweb</th><td><a href="http://farsdebalears.com/es/faro-de-artrutx" target="_blank">open</a></td></tr></tbody>';
+
+    rewriteFeatureInfoTable(table, [
+      {
+        path: 'lnkweb',
+        label: 'lnkweb',
+        cell: { kind: 'auto', value: 'http://farsdebalears.com/es/faro-de-artrutx' }
+      }
+    ]);
+
+    expect(table.querySelector('a')?.getAttribute('href')).toBe(
+      'http://farsdebalears.com/es/faro-de-artrutx'
+    );
+  });
+
+  it('turns an Automatic URL into a link when the drawn cell is plain text', () => {
+    const table = document.createElement('table');
+    table.innerHTML =
+      '<tbody><tr><th>lnkweb</th><td>http://farsdebalears.com/es/faro-de-artrutx</td></tr></tbody>';
+
+    rewriteFeatureInfoTable(table, [
+      {
+        path: 'lnkweb',
+        label: 'lnkweb',
+        cell: { kind: 'auto', value: 'http://farsdebalears.com/es/faro-de-artrutx' }
+      }
+    ]);
+
+    expect(table.querySelector('td')?.textContent).toBe(
+      'http://farsdebalears.com/es/faro-de-artrutx'
+    );
+    expect(table.querySelector('a')?.getAttribute('href')).toBe(
+      'http://farsdebalears.com/es/faro-de-artrutx'
+    );
+  });
+
+  it('keeps a SITNA image when Automatic already drew one', () => {
+    const table = document.createElement('table');
+    table.innerHTML =
+      '<tbody><tr><th>turisme:lnkimatge</th><td><img src="http://example.test/faro.jpg" class="tc-img-attr" style="width:auto;height:auto;" /></td></tr></tbody>';
+
+    rewriteFeatureInfoTable(table, [
+      {
+        path: 'lnkimatge',
+        label: 'lnkimatge',
+        cell: { kind: 'auto', value: 'image__http://example.test/faro.jpg' }
+      }
+    ]);
+
+    const img = table.querySelector('img');
+    expect(img?.getAttribute('src')).toBe('http://example.test/faro.jpg');
+    expect(img?.classList.contains('tc-img-attr')).toBe(true);
+    expect(img?.getAttribute('style')).toBe('width:auto;height:auto;');
+    expect(table.querySelector('a')).toBeNull();
+  });
+
+  it('leaves an Automatic picture URL as a link', () => {
+    const table = document.createElement('table');
+    table.innerHTML =
+      '<tbody><tr><th>lnkimatge</th><td>http://example.test/faro.jpg</td></tr></tbody>';
+
+    rewriteFeatureInfoTable(table, [
+      {
+        path: 'lnkimatge',
+        label: 'lnkimatge',
+        cell: { kind: 'auto', value: 'http://example.test/faro.jpg' }
+      }
+    ]);
+
+    expect(table.querySelector('img')).toBeNull();
+    expect(table.querySelector('a')?.getAttribute('href')).toBe('http://example.test/faro.jpg');
+  });
+
+  it('constrains an Image cell the way SITNA constrains an automatic image', () => {
+    const table = document.createElement('table');
+    table.innerHTML =
+      '<tbody><tr><th>lnkimatge</th><td>http://example.test/faro.jpg</td></tr></tbody>';
+
+    rewriteFeatureInfoTable(table, [
+      {
+        path: 'lnkimatge',
+        label: 'lnkimatge',
+        cell: { kind: 'image', src: 'http://example.test/faro.jpg' }
+      }
+    ]);
+
+    const img = table.querySelector('img');
+    expect(img?.getAttribute('src')).toBe('http://example.test/faro.jpg');
+    expect(img?.classList.contains('tc-img-attr')).toBe(true);
+    expect(img?.getAttribute('style')).toBe('width:auto;height:auto;');
+    expect(table.querySelector('td')?.classList.contains('tc-ctl-finfo-val')).toBe(true);
+    expect(table.querySelector('td')?.classList.contains('tc-img-attr')).toBe(true);
+  });
+
+  it('applies Image max width and max height from field options and keeps the original address', () => {
+    const url = 'http://menorca.es/Documents/Imatges/3314imgpub.jpg';
+    const rows = buildFeatureInfoRows(
+      { lnkimatge: url },
+      [
+        {
+          name: 'lnkimatge',
+          label: 'lnkimatge',
+          format: 'I',
+          maxWidth: 240,
+          maxHeight: 160
+        }
+      ],
+      'ca'
+    );
+    const table = document.createElement('table');
+    table.innerHTML = '<tbody></tbody>';
+    rewriteFeatureInfoTable(table, rows);
+
+    const img = table.querySelector('img');
+    expect(img?.getAttribute('src')).toBe(url);
+    expect(img?.classList.contains('tc-img-attr')).toBe(true);
+    expect(img?.getAttribute('style')).toBe(
+      'width:auto;height:auto;max-width:240px;max-height:160px;'
+    );
   });
 });

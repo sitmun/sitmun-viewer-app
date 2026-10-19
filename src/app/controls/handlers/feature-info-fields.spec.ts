@@ -64,6 +64,32 @@ describe('buildFeatureInfoRows', () => {
     expect(data).toEqual({ address: { city: 'Girona' }, items: [{ name: 'A' }] });
   });
 
+  it('reads a property by its local name when the feature key keeps a namespace prefix', () => {
+    const rows = buildFeatureInfoRows(
+      {
+        'turisme:nom': "Far de Cap d'Artrutx (Ciutadella de Menorca)",
+        'turisme:dstipus': 'Far',
+        'turisme:gid': '329'
+      },
+      [
+        { name: 'nom', label: 'Nombre', format: 'T', order: 0 },
+        { name: 'dstipus', label: 'Tipo', format: 'T', order: 1 },
+        { name: 'gid', label: 'gid', format: 'AUTO', order: 2 }
+      ],
+      'es'
+    );
+
+    expect(rows).toEqual([
+      {
+        path: 'nom',
+        label: 'Nombre',
+        cell: { kind: 'text', text: "Far de Cap d'Artrutx (Ciutadella de Menorca)" }
+      },
+      { path: 'dstipus', label: 'Tipo', cell: { kind: 'text', text: 'Far' } },
+      { path: 'gid', label: 'gid', cell: { kind: 'auto', value: '329' } }
+    ]);
+  });
+
   it('renders a blank text cell when a listed name is missing', () => {
     const rows = buildFeatureInfoRows(
       { name: 'e2e-gfi-click' },

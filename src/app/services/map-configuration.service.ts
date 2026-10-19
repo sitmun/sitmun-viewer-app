@@ -12,6 +12,7 @@ import {
   toDefaultBaseLayer
 } from '../utils/background-order.util';
 import { createNoBaseMapLayer } from '../utils/no-base-map.util';
+import { resolutionFromScaleDenominator } from '../utils/scale-resolution';
 
 /**
  * Service for converting AppCfg to SITNA map-level configuration.
@@ -138,6 +139,26 @@ export class MapConfigurationService {
             if (service.type == 'WMTS') {
               a.layerNames = layer.layers[0];
             }
+            if (service.type === 'WFS') {
+              const featureType = layer.layers?.[0];
+              if (featureType) {
+                a.featureType = featureType;
+              }
+              const minResolution = resolutionFromScaleDenominator(
+                layer.minScaleDenominator,
+                1
+              );
+              const maxResolution = resolutionFromScaleDenominator(
+                layer.maxScaleDenominator,
+                1
+              );
+              if (minResolution != null) {
+                a.minResolution = minResolution;
+              }
+              if (maxResolution != null) {
+                a.maxResolution = maxResolution;
+              }
+            }
             baseLayers.push(a);
           }
         }
@@ -147,6 +168,14 @@ export class MapConfigurationService {
       baseLayers.push(
         createNoBaseMapLayer(this.translate.instant('map.basemap.none'))
       );
+    }
+    const overviewId = baseLayers.find((item) => item.type !== 'WFS')?.id;
+    if (overviewId) {
+      for (const item of baseLayers) {
+        if (item.type === 'WFS' && item.id !== overviewId) {
+          item.overviewMapLayer = overviewId;
+        }
+      }
     }
     return baseLayers;
   }

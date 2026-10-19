@@ -41,5 +41,6 @@
   "locator.loading": "Searching...",
   "shortUrlRejected": "This address is not a map on this site.",
   "shortUrlForbidden": "You cannot share this map.",
-  "shortUrlFailed": "The map link could not be shortened."
+  "shortUrlFailed": "The map link could not be shortened.",
+  "query.msgTooManyResults": "This query exceeds the limit of {limit} features imposed by the server"
 }

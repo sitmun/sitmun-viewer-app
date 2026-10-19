@@ -31,7 +31,9 @@ describe('WorkLayerManagerControlHandler', () => {
   let handler: WorkLayerManagerControlHandler;
   let mockSitnaApi: jest.Mocked<SitnaApiService>;
   let mockAppConfig: jest.Mocked<AppConfigService>;
-  let mockConfigLookup: jest.Mocked<Pick<ConfigLookupService, 'isQueryableLeaf'>>;
+  let mockConfigLookup: jest.Mocked<
+    Pick<ConfigLookupService, 'isQueryableLeaf' | 'findNode'>
+  >;
   let langChange$: Subject<{ lang: string }>;
 
   beforeEach(() => {
@@ -51,6 +53,7 @@ describe('WorkLayerManagerControlHandler', () => {
       getTC: jest.fn().mockReturnValue(mockTC as any),
       getSITNA: jest.fn().mockReturnValue({} as any),
       getTCProperty: jest.fn(),
+      getGlobal: jest.fn().mockReturnValue(undefined),
       isReady: jest.fn().mockReturnValue(true)
     } as Partial<jest.Mocked<SitnaApiService>> as jest.Mocked<SitnaApiService>;
     mockAppConfig = {
@@ -61,7 +64,8 @@ describe('WorkLayerManagerControlHandler', () => {
       jest.Mocked<AppConfigService>
     > as jest.Mocked<AppConfigService>;
     mockConfigLookup = {
-      isQueryableLeaf: jest.fn().mockReturnValue(false)
+      isQueryableLeaf: jest.fn().mockReturnValue(false),
+      findNode: jest.fn().mockReturnValue(undefined)
     };
 
     TestBed.configureTestingModule({
@@ -517,6 +521,348 @@ describe('WorkLayerManagerControlHandler', () => {
 
       handler.cleanup();
       expect(li.querySelector('.sitmun-wlm-gfi')).toBeNull();
+    });
+
+    it('change updates feature.showsPopup from sitmunGfiEnabled', () => {
+      mockConfigLookup.isQueryableLeaf.mockReturnValue(true);
+      const div = document.createElement('div');
+      const li = createWlmRow('layer-q');
+      div.appendChild(li);
+      const feature = { showsPopup: true };
+      const layer = {
+        type: 'WFS',
+        options: {
+          nodeId: 'node/queryable',
+          sitmunGfiEnabled: true
+        } as { nodeId: string; sitmunGfiEnabled?: boolean },
+        features: [feature],
+        getVisibility: () => true
+      };
+      const wlm = {
+        div,
+        map: {
+          getLayer: jest.fn().mockReturnValue(layer)
+        }
+      };
+
+      (handler as any).decorateGfiIndicators(wlm);
+      const gfi = li.querySelector('.sitmun-wlm-gfi') as HTMLElement;
+      gfi.removeAttribute('checked');
+      gfi.dispatchEvent(new Event('change', { bubbles: true }));
+
+      expect(layer.options.sitmunGfiEnabled).toBe(false);
+      expect(feature.showsPopup).toBe(false);
+    });
+  });
+
+  describe('WFS scale row', () => {
+    it('toggles elm-notvisible for a nameless WFS layer from its resolution bounds', async () => {
+      const TC = mockSitnaApi.getTC();
+      const wlmProto = TC.control.WorkLayerManager.prototype as {
+        updateScale?: (this: {
+          CLASS: string;
+          map: {
+            getLayer: (id: string) => unknown;
+            getResolution: () => number;
+          };
+          getLayerUIElements: () => HTMLElement[];
+        }) => void;
+        CLASS?: string;
+      };
+      wlmProto.CLASS = 'tc-ctl-wlm';
+      wlmProto.updateScale = function () {
+        this.getLayerUIElements().forEach((li) => {
+          const layer = this.map.getLayer(li.dataset['layerId'] ?? '') as
+            | { names?: string[] }
+            | undefined;
+          if (layer?.names) {
+            li.classList.toggle(this.CLASS + '-elm-notvisible', false);
+          }
+        });
+      };
+
+      await handler.loadPatches({} as AppCfg);
+
+      const li = document.createElement('li');
+      li.className = 'tc-ctl-wlm-elm';
+      li.dataset['layerId'] = 'wfs-1';
+      const layer = {
+        type: 'WFS',
+        options: { minResolution: 0.28, maxResolution: 140 }
+      };
+      let resolution = 0.01;
+      const control = Object.create(wlmProto) as {
+        CLASS: string;
+        updateScale: () => void;
+        map: {
+          getLayer: () => typeof layer;
+          getResolution: () => number;
+        };
+        getLayerUIElements: () => HTMLElement[];
+      };
+      control.CLASS = 'tc-ctl-wlm';
+      control.map = {
+        getLayer: () => layer,
+        getResolution: () => resolution
+      };
+      control.getLayerUIElements = () => [li];
+
+      control.updateScale();
+      expect(li.classList.contains('tc-ctl-wlm-elm-notvisible')).toBe(true);
+
+      resolution = 1;
+      control.updateScale();
+      expect(li.classList.contains('tc-ctl-wlm-elm-notvisible')).toBe(false);
+
+      resolution = 200;
+      control.updateScale();
+      expect(li.classList.contains('tc-ctl-wlm-elm-notvisible')).toBe(true);
+    });
+  });
+
+  describe('WFS catalog leaf row', () => {
+    it('shows the root folder heading, the folder path, and the leaf title', () => {
+      mockConfigLookup.findNode.mockImplementation((id: string) =>
+        id === 'node/9401' ? ({ title: 'Fars' } as never) : undefined
+      );
+      mockSitnaApi.getGlobal.mockImplementation((key: string) =>
+        key === 'currentAppCfg'
+          ? ({
+              trees: [
+                {
+                  id: 'tree',
+                  title: 'Tree',
+                  image: null,
+                  rootNode: 'root',
+                  nodes: {
+                    root: {
+                      title: 'Root',
+                      children: ['folder-turisme']
+                    },
+                    'folder-turisme': {
+                      title: 'Turisme i patrimoni',
+                      children: ['folder-rutes']
+                    },
+                    'folder-rutes': {
+                      title: 'Rutes turístiques',
+                      children: ['node/9401']
+                    },
+                    'node/9401': {
+                      title: 'Fars',
+                      children: []
+                    }
+                  }
+                }
+              ]
+            } as never)
+          : undefined
+      );
+      const div = document.createElement('div');
+      const li = document.createElement('li');
+      li.className = 'tc-ctl-wlm-elm';
+      li.dataset['layerId'] = 'wfs-fars';
+      li.innerHTML = `
+        <div class="tc-ctl-wlm-lyr" title="Fars">Fars</div>
+        <div class="tc-ctl-wlm-path" title="Turisme i patrimoni">Turisme i patrimoni</div>
+        <div class="tc-ctl-wlm-input">
+          <div class="tc-ctl-wlm-tools">
+            <sitna-toggle class="sitmun-wlm-gfi"></sitna-toggle>
+            <sitna-toggle class="tc-ctl-wlm-cb-info"></sitna-toggle>
+            <sitna-toggle class="tc-ctl-wlm-cb-visibility"></sitna-toggle>
+            <sitna-button class="tc-ctl-wlm-btn-zoom"></sitna-button>
+            <sitna-button></sitna-button>
+            <sitna-button class="tc-ctl-wlm-btn-del tc-item-tool-last"></sitna-button>
+            <sitna-button class="tc-ctl-wlm-btn-more"></sitna-button>
+          </div>
+        </div>
+      `;
+      div.append(li);
+      document.body.append(div);
+      const layer = {
+        id: 'wfs-fars',
+        type: 'WFS',
+        title: 'Turisme i patrimoni',
+        tree: { title: 'Turisme i patrimoni' },
+        options: { type: 'WFS', nodeId: 'node/9401' },
+        getVisibility: () => true
+      };
+      try {
+        (handler as any).decorateGfiIndicators({
+          div,
+          map: { getLayer: () => layer }
+        });
+
+        const lyr = li.querySelector('.tc-ctl-wlm-lyr');
+        expect(lyr?.textContent).toBe('Turisme i patrimoni');
+        expect(lyr?.getAttribute('title')).toBe('Turisme i patrimoni');
+        expect(li.querySelector('.tc-ctl-wlm-path')?.textContent).toBe(
+          'Rutes turístiques › Fars'
+        );
+        expect(li.querySelector('.tc-ctl-wlm-path')?.getAttribute('title')).toBe(
+          'Rutes turístiques › Fars'
+        );
+        expect(layer.title).toBe('Fars');
+        expect(layer.tree).toBeNull();
+        const tools = li.querySelector('.tc-ctl-wlm-tools');
+        expect(tools?.querySelector('.tc-ctl-wlm-btn-dl')).toBeTruthy();
+      } finally {
+        div.remove();
+      }
+    });
+  });
+
+  describe('WFS legend hierarchy', () => {
+    const farsTree = {
+      trees: [
+        {
+          id: 'tree',
+          title: 'Tree',
+          image: null,
+          rootNode: 'root',
+          nodes: {
+            root: {
+              title: 'Root',
+              children: ['folder-turisme']
+            },
+            'folder-turisme': {
+              title: 'Turisme i patrimoni',
+              children: ['folder-rutes']
+            },
+            'folder-rutes': {
+              title: 'Rutes turístiques',
+              children: ['node/9401']
+            },
+            'node/9401': {
+              title: 'Fars',
+              children: []
+            }
+          }
+        }
+      ]
+    };
+
+    function legendTitles(node: {
+      title?: string;
+      children?: Array<{ title?: string; children?: unknown[] }>;
+    } | null): string[] {
+      if (!node) {
+        return [];
+      }
+      const titles = node.title ? [node.title] : [];
+      for (const child of node.children ?? []) {
+        titles.push(
+          ...legendTitles(
+            child as {
+              title?: string;
+              children?: Array<{ title?: string; children?: unknown[] }>;
+            }
+          )
+        );
+      }
+      return titles;
+    }
+
+    it('nests ancestor folders above the WFS leaf and keeps the point swatch', async () => {
+      const TC = mockSitnaApi.getTC() as {
+        layer?: {
+          Vector: { prototype: { getTree: () => unknown } };
+        };
+      };
+      function Vector(this: { title?: string; tree?: unknown }) {
+        this.tree = undefined;
+      }
+      Vector.prototype.getTree = function (this: {
+        title?: string;
+        tree?: {
+          title?: string;
+          children: unknown[];
+          legend: Array<{ src: string }>;
+        } | null;
+      }) {
+        if (this.tree) {
+          return this.tree;
+        }
+        this.tree = {
+          title: this.title,
+          children: [],
+          legend: [{ src: 'data:image/png;base64,fars-point' }]
+        };
+        return this.tree;
+      };
+      TC.layer = { Vector: Vector as unknown as { prototype: { getTree: () => unknown } } };
+
+      mockSitnaApi.getGlobal.mockImplementation((key: string) =>
+        key === 'currentAppCfg' ? (farsTree as never) : undefined
+      );
+
+      await handler.loadPatches({} as AppCfg);
+
+      const layer = Object.create(TC.layer!.Vector.prototype) as {
+        title: string;
+        type: string;
+        options: { type: string; nodeId: string };
+        tree: unknown;
+        getTree: () => {
+          title?: string;
+          legend?: unknown;
+          children?: Array<{
+            title?: string;
+            legend?: unknown;
+            children?: Array<{ title?: string; legend?: unknown; children?: unknown[] }>;
+          }>;
+        };
+      };
+      layer.title = 'Fars';
+      layer.type = 'WFS';
+      layer.options = { type: 'WFS', nodeId: 'node/9401' };
+      layer.tree = null;
+
+      const tree = layer.getTree();
+      expect(legendTitles(tree)).toEqual([
+        'Turisme i patrimoni',
+        'Rutes turístiques',
+        'Fars'
+      ]);
+      expect(tree.legend).toBeUndefined();
+      expect(tree.children?.[0]?.children?.[0]?.legend).toEqual([
+        { src: 'data:image/png;base64,fars-point' }
+      ]);
+      expect(tree.children?.[0]?.children?.[0]?.children).toEqual([]);
+    });
+  });
+
+  describe('WFS legend swatch', () => {
+    it('paints a WFS legend swatch when features arrive after the Capas row', async () => {
+      const TC = mockSitnaApi.getTC();
+      const wlmProto = TC.control.WorkLayerManager.prototype as {
+        updateLayerTree?: () => void;
+      };
+      wlmProto.updateLayerTree = function () {
+        return undefined;
+      };
+
+      await handler.loadPatches({} as AppCfg);
+
+      const li = document.createElement('li');
+      li.className = 'tc-ctl-wlm-elm';
+      li.dataset['layerId'] = 'wfs-1';
+      const src = 'data:image/png;base64,e2e-wfs-swatch';
+      const layer = {
+        type: 'WFS',
+        getTree: () => ({ legend: [{ src }] })
+      };
+      const control = Object.create(wlmProto) as {
+        updateLayerTree: () => void;
+        map: { getLayer: () => typeof layer };
+        getLayerUIElements: () => HTMLElement[];
+      };
+      control.map = { getLayer: () => layer };
+      control.getLayerUIElements = () => [li];
+
+      control.updateLayerTree();
+
+      const img = li.querySelector('.tc-ctl-wlm-legend img');
+      expect(img?.getAttribute('data-img')).toBe(src);
     });
   });
 });

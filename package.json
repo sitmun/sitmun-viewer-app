@@ -16,7 +16,7 @@
     "clean": "bash scripts/clean.sh",
     "clean:force": "bash scripts/clean.sh --force",
     "clean:build": "bash scripts/clean.sh --build-only",
-    "postinstall": "node scripts/patch-printmap-logo.js"
+    "postinstall": "node scripts/patch-printmap-logo.js && node scripts/patch-wfs-110-parser.js"
   },
   "private": true,
   "engines": {

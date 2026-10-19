@@ -2,6 +2,7 @@ import type { AppLayer, AppNodeInfo, AppTree } from '@api/model/app-cfg';
 
 import {
   buildFeatureInfoRows,
+  localName,
   type FeatureInfoCell,
   type FeatureInfoDisplayRow
 } from './feature-info-fields';
@@ -151,13 +152,16 @@ export function applyFeatureInfoOverlay(
     tables.forEach((table, tableIndex) => {
       const rows = plan.features[tableIndex];
       if (rows) {
-        rewriteTable(table, rows);
+        rewriteFeatureInfoTable(table, rows);
       }
     });
   });
 }
 
-function rewriteTable(table: HTMLTableElement, rows: FeatureInfoDisplayRow[]): void {
+export function rewriteFeatureInfoTable(
+  table: HTMLTableElement,
+  rows: FeatureInfoDisplayRow[]
+): void {
   const body = table.tBodies[0] ?? table;
   const previous = new Map<string, string>();
   const preserved: HTMLTableRowElement[] = [];
@@ -182,6 +186,9 @@ function rewriteTable(table: HTMLTableElement, rows: FeatureInfoDisplayRow[]): v
     th.setAttribute('data-feature-path', row.path);
     const td = document.createElement('td');
     td.innerHTML = cellHtml(row, previous);
+    if (td.querySelector('img.tc-img-attr')) {
+      td.classList.add('tc-ctl-finfo-val', 'tc-img-attr');
+    }
     tr.append(th, td);
     body.append(tr);
   });
@@ -190,9 +197,31 @@ function rewriteTable(table: HTMLTableElement, rows: FeatureInfoDisplayRow[]): v
 
 function cellHtml(row: FeatureInfoDisplayRow, previous: Map<string, string>): string {
   if (row.cell.kind === 'auto') {
-    return previous.get(row.path) ?? escapeText(fallbackText(row.cell.value));
+    const stored = storedCell(previous, row.path);
+    if (stored !== undefined && (/<a\b/i.test(stored) || /<img\b/i.test(stored))) {
+      return stored;
+    }
+    return renderAutoValue(row.cell.value);
   }
   return renderExplicit(row.cell);
+}
+
+function renderAutoValue(value: unknown): string {
+  const text = fallbackText(value);
+  if (/^(https?|ftp):\/\//i.test(text) || /^mailto:/i.test(text)) {
+    return `<a href="${escapeText(text)}" target="_blank" rel="noopener noreferrer">${escapeText(text)}</a>`;
+  }
+  return escapeText(text);
+}
+
+function storedCell(previous: Map<string, string>, path: string): string | undefined {
+  const exact = previous.get(path);
+  if (exact !== undefined) {
+    return exact;
+  }
+  const wanted = localName(path);
+  const matches = [...previous.keys()].filter((key) => localName(key) === wanted);
+  return matches.length === 1 ? previous.get(matches[0]) : undefined;
 }
 
 function renderExplicit(cell: Exclude<FeatureInfoCell, { kind: 'auto' }>): string {
@@ -202,12 +231,36 @@ function renderExplicit(cell: Exclude<FeatureInfoCell, { kind: 'auto' }>): strin
     case 'link':
       return `<a href="${escapeText(cell.href)}" target="_blank" rel="noopener noreferrer">${escapeText(cell.text)}</a>`;
     case 'image':
-      return `<img src="${escapeText(cell.src)}" alt="">`;
+      return renderSitnaImage(cell.src, cell.maxWidth, cell.maxHeight);
     default: {
       const unreachable: never = cell;
       return unreachable;
     }
   }
+}
+
+function renderSitnaImage(
+  src: string,
+  maxWidth: number | undefined,
+  maxHeight: number | undefined
+): string {
+  const style = ['width:auto', 'height:auto'];
+  const width = imagePixels(maxWidth);
+  const height = imagePixels(maxHeight);
+  if (width) {
+    style.push(`max-width:${width}`);
+  }
+  if (height) {
+    style.push(`max-height:${height}`);
+  }
+  return `<img src="${escapeText(src)}" class="tc-img-attr" style="${style.join(';')};" />`;
+}
+
+function imagePixels(value: number | undefined): string | null {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return `${value}px`;
+  }
+  return null;
 }
 
 function fallbackText(value: unknown): string {

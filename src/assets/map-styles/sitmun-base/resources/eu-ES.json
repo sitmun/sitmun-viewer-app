@@ -41,5 +41,6 @@
   "locator.loading": "Bilatzen...",
   "shortUrlRejected": "Helbide hau ez da gune honetako mapa bat.",
   "shortUrlForbidden": "Ezin duzu mapa hau partekatu.",
-  "shortUrlFailed": "Ezin izan da maparen esteka laburtu."
+  "shortUrlFailed": "Ezin izan da maparen esteka laburtu.",
+  "query.msgTooManyResults": "Kontsulta honek zerbitzariak ezarritako {limit} elementuen muga gainditzen du"
 }

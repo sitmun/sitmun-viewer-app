@@ -69,6 +69,8 @@ export interface FeatureInfoField {
   fractionDigits?: number | null;
   padFractionDigits?: boolean | null;
   dateStyle?: string | null;
+  maxWidth?: number | null;
+  maxHeight?: number | null;
 }
 
 export interface AppGroup {

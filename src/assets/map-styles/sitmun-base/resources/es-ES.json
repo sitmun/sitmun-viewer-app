@@ -41,5 +41,6 @@
   "locator.loading": "Buscando...",
   "shortUrlRejected": "Esta dirección no es un mapa de este sitio.",
   "shortUrlForbidden": "No puedes compartir este mapa.",
-  "shortUrlFailed": "No se ha podido acortar el enlace al mapa."
+  "shortUrlFailed": "No se ha podido acortar el enlace al mapa.",
+  "query.msgTooManyResults": "Esta consulta supera el límite de {limit} entidades impuesto por el servidor"
 }

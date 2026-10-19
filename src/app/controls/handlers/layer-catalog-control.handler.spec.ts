@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -985,6 +988,102 @@ describe('LayerCatalogControlHandler', () => {
 
     it('uses zIndex 0 without realLayerConfig', async () => {
       await expectZIndexOnAddLayer(null, 0);
+    });
+
+    it('adds a WFS leaf with featureType and resolution bounds and does not construct Raster', async () => {
+      const addedLayer: any = {};
+      const { TC, newLayerInstance } = buildMockTC(addedLayer);
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      mockVirtualCapabilities.findRealLayerConfig = jest.fn().mockReturnValue({
+        url: 'https://proxy.example/wfs',
+        type: 'WFS',
+        layerNames: ['app:parcels', 'ignored'],
+        serviceId: 'service/9',
+        transparency: 50,
+        order: 4
+      });
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const addLayer = jest.fn().mockResolvedValue(addedLayer);
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map: {
+            crs: 'EPSG:25831',
+            getMetersPerUnit: () => 1,
+            addLayer
+          },
+          getUID: () => 'uid-wfs',
+          showProjectionChangeDialog: jest.fn()
+        },
+        {
+          title: 'Parcels',
+          url: 'virtual://stale',
+          type: 'WMS',
+          options: { url: 'virtual://stale', type: 'WMS' },
+          getLayerNodeByName: () => ({
+            MinScaleDenominator: 1000,
+            MaxScaleDenominator: 500000
+          })
+        },
+        'node/wfs'
+      );
+
+      expect(TC.layer.Raster).not.toHaveBeenCalled();
+      expect(newLayerInstance.getCapabilitiesPromise).not.toHaveBeenCalled();
+      expect(newLayerInstance.isCompatible).not.toHaveBeenCalled();
+      expect(addLayer).toHaveBeenCalledTimes(1);
+      expect(addLayer.mock.calls[0][0]).toMatchObject({
+        type: 'WFS',
+        featureType: 'app:parcels',
+        url: 'https://proxy.example/wfs',
+        nodeId: 'node/wfs',
+        serviceId: 'service/9',
+        hideTree: true,
+        zIndex: 4,
+        opacity: 0.5,
+        minResolution: (1000 * 0.00028) / 1,
+        maxResolution: (500000 * 0.00028) / 1
+      });
+    });
+
+    it('names a WFS leaf with the node title, not the catalog folder title', async () => {
+      const addedLayer: any = {};
+      const { TC } = buildMockTC(addedLayer);
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      mockVirtualCapabilities.findRealLayerConfig = jest.fn().mockReturnValue({
+        url: 'https://proxy.example/wfs',
+        type: 'WFS',
+        layerNames: ['turisme:tu007poi_fars'],
+        serviceId: 'service/wfs'
+      });
+      mockConfigLookup.findNode.mockReturnValue({
+        title: 'Fars'
+      } as AppNodeInfo);
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const addLayer = jest.fn().mockResolvedValue(addedLayer);
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map: {
+            crs: 'EPSG:25831',
+            getMetersPerUnit: () => 1,
+            addLayer
+          },
+          getUID: () => 'uid-fars',
+          showProjectionChangeDialog: jest.fn()
+        },
+        {
+          title: 'Turisme i patrimoni',
+          url: 'virtual://stale',
+          type: 'WMS',
+          options: { url: 'virtual://stale', type: 'WMS' }
+        },
+        'node/9401'
+      );
+
+      expect(addLayer.mock.calls[0][0].title).toBe('Fars');
     });
   });
 
@@ -2563,6 +2662,117 @@ describe('LayerCatalogControlHandler', () => {
       expect(workLayers).toHaveLength(0);
     });
 
+    it('toasts NumMaxFeatures and still rolls the catalog leaf back', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      (
+        TC.Consts as { WFSErrors?: { MAX_NUM_FEATURES: string } }
+      ).WFSErrors = { MAX_NUM_FEATURES: 'NumMaxFeatures' };
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layererror: [],
+        layerremove: []
+      };
+      const failingLayer = { id: 'fail-wfs', options: { nodeId: 'node/a' } };
+      const workLayers: Array<{ id: string; options: { nodeId: string } }> = [];
+      const removeLayer = jest.fn().mockImplementation(async (layer: any) => {
+        const idx = workLayers.indexOf(layer);
+        if (idx >= 0) {
+          workLayers.splice(idx, 1);
+        }
+      });
+      const toast = jest.fn();
+      const getLocaleString = jest.fn().mockReturnValue('too many features');
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          workLayers.push(failingLayer);
+          listeners['layererror'].forEach((fn) =>
+            fn({
+              layer: failingLayer,
+              message: 'NumMaxFeatures',
+              data: { limit: 1000 }
+            })
+          );
+          return failingLayer;
+        }),
+        removeLayer,
+        toast,
+        getLocaleString,
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        get workLayers() {
+          return workLayers;
+        }
+      };
+
+      const result = await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map,
+          getUID: () => 'uid-1',
+          showProjectionChangeDialog: () => undefined
+        },
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(getLocaleString).toHaveBeenCalledWith('query.msgTooManyResults', {
+        limit: 1000
+      });
+      expect(toast).toHaveBeenCalledWith('too many features', { limit: 1000 });
+      expect(result).toBeUndefined();
+      expect(selection.isNodeSelected(map, 'node/a')).toBe(false);
+      expect(removeLayer).toHaveBeenCalledWith(failingLayer);
+    });
+
+    it('does not toast other LAYERERROR values', async () => {
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const { TC } = buildPatchedHandler();
+      (
+        TC.Consts as { WFSErrors?: { MAX_NUM_FEATURES: string } }
+      ).WFSErrors = { MAX_NUM_FEATURES: 'NumMaxFeatures' };
+      await patchWithTc(TC);
+      const listeners: Record<string, Array<(layer: any) => void>> = {
+        layererror: []
+      };
+      const failingLayer = { id: 'fail-other', options: { nodeId: 'node/a' } };
+      const toast = jest.fn();
+      const map = {
+        crs: 'EPSG:25831',
+        addLayer: jest.fn().mockImplementation(async () => {
+          listeners['layererror'].forEach((fn) =>
+            fn({ layer: failingLayer, message: 'layerSrsNotCompatible' })
+          );
+          return failingLayer;
+        }),
+        removeLayer: jest.fn().mockResolvedValue(undefined),
+        toast,
+        getLocaleString: jest.fn(),
+        on: jest.fn((event: string, fn: (layer: any) => void) => {
+          listeners[event]?.push(fn);
+        }),
+        off: jest.fn(),
+        workLayers: []
+      };
+
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map,
+          getUID: () => 'uid-1',
+          showProjectionChangeDialog: () => undefined
+        },
+        { title: 'A', options: {} },
+        'node/a'
+      );
+      await selection.runExclusive(map, async () => undefined);
+
+      expect(toast).not.toHaveBeenCalled();
+      expect(map.getLocaleString).not.toHaveBeenCalled();
+    });
+
     it('TILELOADERROR 401 after add removes the Capas row for the catalog node', async () => {
       const selection = TestBed.inject(CatalogLayerSelectionService);
       const { TC } = buildPatchedHandler();
@@ -3362,6 +3572,177 @@ describe('LayerCatalogControlHandler', () => {
       expect(selection.isLoadFailed(map, 'node/a')).toBe(false);
       expect(leaf.querySelector('.sitmun-lcat-load-failed')).toBeNull();
       expect(title?.nextElementSibling).toBe(meta);
+    });
+
+    it('uses feature-type loading copy and a WFS GetCapabilities link for a WFS leaf', async () => {
+      const template = readFileSync(
+        join(
+          __dirname,
+          '../../../assets/js/patch/templates/LayerCatalogInfoLayerSitmun.hbs'
+        ),
+        'utf8'
+      );
+      expect(template).toContain('{{capabilitiesQuery}}');
+      expect(template).not.toContain('service=wms');
+
+      const wfsContext = {
+        application: {
+          id: 1,
+          title: 't',
+          type: 'x',
+          theme: 'd',
+          srs: 'EPSG:25831',
+          initialExtent: [0, 0, 1, 1]
+        },
+        backgrounds: [],
+        groups: [],
+        layers: [
+          { id: 'layer/wfs', title: 'FT', layers: ['ft'], service: 'service/wfs' },
+          { id: 'layer/wms', title: 'L', layers: ['l'], service: 'service/wms' }
+        ],
+        services: [
+          { id: 'service/wfs', type: 'WFS', url: 'https://example.test/wfs' },
+          { id: 'service/wms', type: 'WMS', url: 'https://example.test/wms' }
+        ],
+        tasks: [],
+        trees: [
+          {
+            id: 'tree/1',
+            title: 'Catalog',
+            image: null,
+            rootNode: 'node/root',
+            nodes: {
+              'node/root': {
+                title: 'Root',
+                isRadio: false,
+                children: ['node/wfs', 'node/wms'],
+                order: 0
+              },
+              'node/wfs': {
+                title: '',
+                resource: 'layer/wfs',
+                isRadio: false,
+                children: [],
+                order: 1
+              },
+              'node/wms': {
+                title: '',
+                resource: 'layer/wms',
+                isRadio: false,
+                children: [],
+                order: 2
+              }
+            }
+          }
+        ]
+      } as unknown as AppCfg;
+      const realLookup = new ConfigLookupService();
+      realLookup.initialize(wfsContext);
+      (handler as any).configLookup = realLookup;
+      (handler as any).currentAppCfg = wfsContext;
+      mockVirtualCapabilities.findRealLayerConfig.mockImplementation(
+        (nodeId: string) =>
+          nodeId === 'node/wfs'
+            ? { type: 'WFS', url: 'https://example.test/wfs', layerNames: ['ft'], serviceId: 'service/wfs' }
+            : { type: 'WMS', url: 'https://example.test/wms', layerNames: ['l'], serviceId: 'service/wms' }
+      );
+
+      const selection = TestBed.inject(CatalogLayerSelectionService);
+      const LayerCatalog: any = function () {};
+      const catalog = new LayerCatalog();
+      catalog.map = { workLayers: [] };
+      catalog.div = document.createElement('div');
+      catalog.div.innerHTML = `
+        <ul>
+          <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/wfs">
+            <span class="tc-ctl-lcat-node-title"></span>
+            <sitna-toggle class="tc-ctl-lcat-btn-info"></sitna-toggle>
+          </li>
+          <li class="tc-ctl-lcat-node tc-ctl-lcat-leaf" data-layer-name="node/wms">
+            <span class="tc-ctl-lcat-node-title"></span>
+            <sitna-toggle class="tc-ctl-lcat-btn-info"></sitna-toggle>
+          </li>
+        </ul>`;
+      (handler as any).decorateRadioControls(catalog);
+
+      const wfsLeaf = catalog.div.querySelector(
+        'li[data-layer-name="node/wfs"]'
+      ) as HTMLElement;
+      const wmsLeaf = catalog.div.querySelector(
+        'li[data-layer-name="node/wms"]'
+      ) as HTMLElement;
+      expect(
+        wfsLeaf.querySelector('.tc-ctl-lcat-btn-info')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.featureTypeInformation');
+      expect(
+        wmsLeaf.querySelector('.tc-ctl-lcat-btn-info')?.getAttribute('aria-label')
+      ).toBe('Layer information');
+      expect(
+        wfsLeaf.querySelector('.sitmun-lcat-leaf-load')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.loadFeatureType');
+      expect(
+        wmsLeaf.querySelector('.sitmun-lcat-leaf-load')?.getAttribute('aria-label')
+      ).toBe('Load layer node/wms');
+
+      selection.prepareSelection(catalog.map, 'node/wfs', 'layer/wfs', realLookup);
+      selection.prepareSelection(catalog.map, 'node/wms', 'layer/wms', realLookup);
+      (handler as any).syncRadioCheckedState(catalog);
+      expect(
+        wfsLeaf.querySelector('.sitmun-lcat-loading')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.loading.wfs');
+      expect(
+        wmsLeaf.querySelector('.sitmun-lcat-loading')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.loading');
+
+      selection.markLoadFailed(catalog.map, 'node/wfs');
+      selection.markLoadFailed(catalog.map, 'node/wms');
+      (handler as any).syncLoadFailedWarnings(catalog);
+      expect(
+        wfsLeaf.querySelector('.sitmun-lcat-load-failed')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.loadFailed.wfs');
+      expect(
+        wmsLeaf.querySelector('.sitmun-lcat-load-failed')?.getAttribute('aria-label')
+      ).toBe('layerCatalog.loadFailed');
+
+      class InfoLayerCatalog {
+        CLASS = 'tc-ctl-lcat';
+        showLayerInfo(
+          this: {
+            CLASS: string;
+            getRenderedHtml: (...args: unknown[]) => unknown;
+          },
+          _layer: unknown,
+          name: unknown
+        ): unknown {
+          return this.getRenderedHtml(this.CLASS + '-info', {
+            url: 'https://example.test/ogc',
+            name
+          });
+        }
+        getRenderedHtml = jest.fn();
+      }
+      const TC = mockSitnaApi.getTC();
+      TC.control.LayerCatalog = InfoLayerCatalog;
+      await (handler as any).patchFolderLayerInfo();
+      const info = new InfoLayerCatalog();
+      info.showLayerInfo({}, 'node/wfs');
+      info.showLayerInfo({}, 'node/wms');
+      expect(info.getRenderedHtml).toHaveBeenNthCalledWith(
+        1,
+        'tc-ctl-lcat-info',
+        expect.objectContaining({
+          capabilitiesQuery: 'service=WFS&request=GetCapabilities'
+        }),
+        undefined
+      );
+      expect(info.getRenderedHtml).toHaveBeenNthCalledWith(
+        2,
+        'tc-ctl-lcat-info',
+        expect.objectContaining({
+          capabilitiesQuery: 'service=wms&request=getcapabilities'
+        }),
+        undefined
+      );
     });
 
     it('does not inject sitmun-lcat-radio on a nested loadData folder under a radio folder', async () => {

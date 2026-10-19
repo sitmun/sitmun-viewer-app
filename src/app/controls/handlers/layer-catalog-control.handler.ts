@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 
+import { catalogLayerPathTitles } from './catalog-layer-path';
 import { ensureLayerCatalogInfoAffordance } from './layer-catalog-info-affordance';
 import {
   CatalogInfoKind,
@@ -25,6 +26,7 @@ import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { WMSLayer } from '../../types/wms-capabilities';
+import { resolutionFromScaleDenominator } from '../../utils/scale-resolution';
 import { ControlHandlerBase } from '../control-handler-base';
 import {
   BootstrapEligibilityOptions,
@@ -32,8 +34,18 @@ import {
 } from '../control-handler.interface';
 
 const LCAT_LOADING_I18N = 'layerCatalog.loading';
+const LCAT_LOADING_WFS_I18N = 'layerCatalog.loading.wfs';
 const LCAT_LOAD_FAILED_I18N = 'layerCatalog.loadFailed';
+const LCAT_LOAD_FAILED_WFS_I18N = 'layerCatalog.loadFailed.wfs';
+const LCAT_FEATURE_TYPE_INFO_I18N = 'layerCatalog.featureTypeInformation';
+const LCAT_LOAD_FEATURE_TYPE_I18N = 'layerCatalog.loadFeatureType';
+const WMS_CAPABILITIES_QUERY = 'service=wms&request=getcapabilities';
+const WFS_CAPABILITIES_QUERY = 'service=WFS&request=GetCapabilities';
 const MATERIAL_ICON_WARNING = 'warning';
+
+function catalogCapabilitiesQuery(serviceType: string | undefined): string {
+  return serviceType === 'WFS' ? WFS_CAPABILITIES_QUERY : WMS_CAPABILITIES_QUERY;
+}
 
 // Declare require for CommonJS module import
 declare function require(module: string): any;
@@ -482,6 +494,10 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             nodeId?: string;
             serviceId?: string;
             sitmunGfiEnabled?: boolean;
+            featureType?: string;
+            opacity?: number;
+            minResolution?: number;
+            maxResolution?: number;
             [key: string]: unknown;
           };
 
@@ -573,6 +589,94 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
               );
               if (!prepared.needsPhysicalAdd || alreadyOnMap) {
                 return commitClaimOnly();
+              }
+
+              if (realLayerConfig?.type === 'WFS') {
+                const leafTitle = catalogNode?.title?.trim();
+                if (leafTitle) {
+                  layerOptions.title = leafTitle;
+                }
+                const featureType = realLayerConfig.layerNames[0];
+                layerOptions.type = 'WFS';
+                if (featureType) {
+                  layerOptions.featureType = featureType;
+                }
+                layerOptions['zIndex'] = realLayerConfig.order ?? 0;
+                const wfsOpacity =
+                  typeof transparency === 'number' && transparency > 0
+                    ? (100 - transparency) / 100
+                    : undefined;
+                if (wfsOpacity != null) {
+                  layerOptions.opacity = wfsOpacity;
+                }
+                const leaf =
+                  typeof layerObj.getLayerNodeByName === 'function'
+                    ? layerObj.getLayerNodeByName(layerName)
+                    : undefined;
+                const metersPerUnit =
+                  typeof self.map.getMetersPerUnit === 'function'
+                    ? self.map.getMetersPerUnit()
+                    : 1;
+                const minResolution = resolutionFromScaleDenominator(
+                  leaf?.MinScaleDenominator,
+                  metersPerUnit
+                );
+                const maxResolution = resolutionFromScaleDenominator(
+                  leaf?.MaxScaleDenominator,
+                  metersPerUnit
+                );
+                if (minResolution != null) {
+                  layerOptions.minResolution = minResolution;
+                }
+                if (maxResolution != null) {
+                  layerOptions.maxResolution = maxResolution;
+                }
+
+                const addedWfs = await handler.catalogSelection.runWithSelfCommit(
+                  self.map,
+                  () => self.map.addLayer(layerOptions)
+                );
+                if (handler.consumeCatalogAddFailure(self.map, layerName)) {
+                  await handler.removePhysicalLayersByNodeIds(
+                    self.map,
+                    [layerName],
+                    self
+                  );
+                  handler.catalogSelection.commitSelection(
+                    self.map,
+                    layerName,
+                    resource,
+                    false
+                  );
+                  handler.syncRadioCheckedState(self);
+                  return undefined;
+                }
+                if (
+                  addedWfs != null &&
+                  wfsOpacity != null &&
+                  typeof addedWfs.setOpacity === 'function'
+                ) {
+                  await addedWfs.setOpacity(wfsOpacity);
+                }
+                const removedWfs = handler.catalogSelection.commitSelection(
+                  self.map,
+                  layerName,
+                  resource,
+                  true
+                );
+                await handler.catalogSelection.runWithSelfCommit(
+                  self.map,
+                  async () => {
+                    await handler.removePhysicalResources(
+                      self.map,
+                      removedWfs.removeResources,
+                      self,
+                      layerName
+                    );
+                  }
+                );
+                handler.afterCatalogClaimCommitted(self.map, self);
+                return addedWfs;
               }
 
               const newLayer = new Raster(layerOptions);
@@ -860,6 +964,18 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         return;
       }
       this.markCatalogAddFailure(map, nodeId);
+      const maxNumFeatures =
+        TC?.Consts?.WFSErrors?.MAX_NUM_FEATURES ?? 'NumMaxFeatures';
+      if (
+        eventOrLayer?.message === maxNumFeatures &&
+        typeof map.toast === 'function' &&
+        typeof map.getLocaleString === 'function'
+      ) {
+        const limit = eventOrLayer?.data?.limit;
+        map.toast(map.getLocaleString('query.msgTooManyResults', { limit }), {
+          limit
+        });
+      }
       void this.rollbackFailedCatalogLayer(map, nodeId, TC);
     };
 
@@ -1230,6 +1346,26 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     }
   }
 
+  private isWfsCatalogLeaf(nodeId: string | undefined): boolean {
+    if (!nodeId || !this.currentAppCfg) {
+      return false;
+    }
+    return (
+      this.virtualWmsService.findRealLayerConfig(nodeId, this.currentAppCfg)
+        ?.type === 'WFS'
+    );
+  }
+
+  private catalogStatusLabel(
+    nodeId: string | undefined,
+    wmsKey: string,
+    wfsKey: string
+  ): string {
+    return this.translate.instant(
+      this.isWfsCatalogLeaf(nodeId) ? wfsKey : wmsKey
+    );
+  }
+
   /** Mark SITNA info toggles as the trailing metadata affordance. */
   private stampMetadataControls(root: ParentNode): void {
     root
@@ -1241,7 +1377,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
         element.setAttribute('checked-icon-text', 'article');
         element.setAttribute('unchecked-icon-text', 'article');
         if (!element.getAttribute('aria-label')) {
-          element.setAttribute('aria-label', 'Layer information');
+          const row = element.closest('li[data-layer-name]') as HTMLElement | null;
+          element.setAttribute(
+            'aria-label',
+            this.isWfsCatalogLeaf(row?.dataset['layerName'])
+              ? this.translate.instant(LCAT_FEATURE_TYPE_INFO_I18N)
+              : 'Layer information'
+          );
         }
         this.placeMetadataControl(element);
       });
@@ -1603,7 +1745,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       input.setAttribute('aria-checked', 'false');
       input.setAttribute(
         'aria-label',
-        leafNode?.title ? `Load ${leafNode.title}` : `Load layer ${nodeId}`
+        leafNode?.title
+          ? `Load ${leafNode.title}`
+          : this.isWfsCatalogLeaf(nodeId)
+            ? this.translate.instant(LCAT_LOAD_FEATURE_TYPE_I18N, { nodeId })
+            : `Load layer ${nodeId}`
       );
       const label = document.createElement('label');
       label.className = 'sitmun-lcat-leaf-load-label';
@@ -1913,10 +2059,14 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     if (!div || !map) {
       return;
     }
-    const label = this.translate.instant(LCAT_LOADING_I18N);
     div.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
       const li = node as HTMLElement;
       const nodeId = li.dataset['layerName'];
+      const label = this.catalogStatusLabel(
+        nodeId,
+        LCAT_LOADING_I18N,
+        LCAT_LOADING_WFS_I18N
+      );
       const pending =
         !!nodeId && this.catalogSelection.isCatalogLoadPending(map, nodeId);
       let spinner = Array.from(li.children).find((child) =>
@@ -1957,10 +2107,14 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
     if (!div || !map) {
       return;
     }
-    const label = this.translate.instant(LCAT_LOAD_FAILED_I18N);
     div.querySelectorAll('li[data-layer-name]').forEach((node: Element) => {
       const li = node as HTMLElement;
       const nodeId = li.dataset['layerName'];
+      const label = this.catalogStatusLabel(
+        nodeId,
+        LCAT_LOAD_FAILED_I18N,
+        LCAT_LOAD_FAILED_WFS_I18N
+      );
       const failed =
         !!nodeId && this.catalogSelection.isLoadFailed(map, nodeId);
       let warning = Array.from(li.children).find((child) =>
@@ -2526,10 +2680,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
             handler.sitnaApi.getGlobal('currentAppCfg') ??
             handler.currentAppCfg;
           if (nodeId && appCfgPath) {
-            const parentTitles = handler.getParentNodeTitles(
-              nodeId,
-              appCfgPath
-            );
+            const parentTitles = catalogLayerPathTitles(nodeId, appCfgPath);
             if (parentTitles.length > 0) {
               return parentTitles;
             }
@@ -2574,77 +2725,6 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
    */
   private getRasterPrototype(TC: any): any {
     return TC?.layer?.Raster?.prototype || TC?.wrap?.layer?.Raster?.prototype;
-  }
-
-  /**
-   * Get parent node titles from SITMUN configuration for a given nodeId.
-   */
-  private getParentNodeTitles(nodeId: string, apiConfig: AppCfg): string[] {
-    if (!apiConfig?.trees) {
-      return [];
-    }
-
-    for (const tree of apiConfig.trees) {
-      if (!tree.nodes || !tree.rootNode) {
-        continue;
-      }
-
-      const node = tree.nodes[nodeId];
-      if (!node) {
-        continue;
-      }
-
-      const rootNode = tree.nodes[tree.rootNode];
-      if (!rootNode) {
-        continue;
-      }
-
-      const parentTitles: string[] = [];
-      let currentNodeId: string | null = nodeId;
-      const visited = new Set<string>();
-
-      while (currentNodeId) {
-        if (visited.has(currentNodeId)) {
-          break;
-        }
-        visited.add(currentNodeId);
-
-        // Stop if current node is a direct child of rootNode
-        if (rootNode.children?.includes(currentNodeId)) {
-          break;
-        }
-
-        // Find parent
-        let parentId: string | null = null;
-        for (const [parentNodeId, parentNode] of Object.entries(tree.nodes)) {
-          const node = parentNode as AppNodeInfo;
-          if (node.children?.includes(currentNodeId)) {
-            parentId = parentNodeId;
-            break;
-          }
-        }
-
-        if (!parentId || parentId === tree.rootNode) {
-          break;
-        }
-
-        const parentNode = tree.nodes[parentId] as AppNodeInfo;
-        if (parentNode?.title) {
-          parentTitles.unshift(parentNode.title);
-        }
-
-        currentNodeId = parentId;
-      }
-
-      // Add the leaf node's title
-      if (node.title) {
-        parentTitles.push(node.title);
-      }
-
-      return parentTitles;
-    }
-
-    return [];
   }
 
   /**
@@ -2709,6 +2789,19 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
       this.lookupCatalogInfoNode(name, title);
     const describe = (kind: 'metadata' | 'download', format: string): string =>
       this.layerInfoService.describeOgcLinkFormat(kind, format);
+    const capabilitiesQueryForName = (leafName: unknown): string => {
+      if (
+        typeof leafName !== 'string' ||
+        leafName.length === 0 ||
+        !this.currentAppCfg
+      ) {
+        return catalogCapabilitiesQuery(undefined);
+      }
+      return catalogCapabilitiesQuery(
+        this.virtualWmsService.findRealLayerConfig(leafName, this.currentAppCfg)
+          ?.type
+      );
+    };
     await this.withTCAsync(async (TC) => {
       const ctlProto = TC.control?.LayerCatalog?.prototype as
         | {
@@ -2759,6 +2852,11 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                 cap,
                 describe
               );
+            } else {
+              next = {
+                ...(data as Record<string, unknown>),
+                capabilitiesQuery: capabilitiesQueryForName(name)
+              };
             }
           }
           return originalRender.call(self, nextId, next, callback);

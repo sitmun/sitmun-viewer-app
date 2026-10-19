@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import {
   applyFeatureInfoOverlay,
   planFeatureInfoOverlay,
+  rewriteFeatureInfoTable,
   type FeatureInfoOverlayPlan
 } from './feature-info-field-overlay';
 import { settleHtmlGfiIframes } from './html-gfi-embed.util';
@@ -176,6 +177,37 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
                 map.off('popup.tc drawtable.tc', onDisplayRender);
               });
               control.__sitmunMoreInfoMapEvents = { map, onDisplayRender };
+            }
+
+            if (map?.on && !control.__sitmunWfsFeaturesAdd) {
+              const onFeaturesAdd = (event: {
+                layer?: {
+                  type?: string;
+                  options?: { type?: string; sitmunGfiEnabled?: boolean };
+                  features?: Array<{ showsPopup?: boolean }>;
+                };
+                features?: Array<{ showsPopup?: boolean }>;
+              }) => {
+                const layer = event?.layer;
+                if (
+                  !layer ||
+                  (layer.type !== 'WFS' && layer.options?.type !== 'WFS')
+                ) {
+                  return;
+                }
+                const enabled = layer.options?.sitmunGfiEnabled !== false;
+                const features = event.features ?? layer.features ?? [];
+                for (const feature of features) {
+                  feature.showsPopup = enabled;
+                }
+              };
+              const featuresAdd =
+                TC?.Consts?.event?.FEATURESADD ?? 'featuresadd.tc';
+              map.on(featuresAdd, onFeaturesAdd);
+              this.mapEventCleanups.push(() => {
+                map.off?.(featuresAdd, onFeaturesAdd);
+              });
+              control.__sitmunWfsFeaturesAdd = true;
             }
 
             return result;
@@ -379,6 +411,145 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
           delete ProxProto.__sitmunGfiIsolation;
         });
       }
+
+      const FeatureCtor = TC?.feature?.Feature;
+      if (
+        FeatureCtor?.prototype?.showInfo &&
+        !FeatureCtor.prototype.__sitmunWfsShowInfo
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const featureInfoHandler = this;
+        const showInfoAdvice = meld.around(
+          FeatureCtor.prototype,
+          'showInfo',
+          function (
+            this: {
+              layer?: {
+                type?: string;
+                featureType?: string | string[];
+                options?: {
+                  type?: string;
+                  featureType?: string | string[];
+                  nodeId?: string;
+                };
+              };
+              infoControl?: {
+                getContainerElement?: () => ParentNode;
+                div?: ParentNode;
+              };
+            },
+            jp: MeldJoinPoint
+          ) {
+            featureInfoHandler.prepareWfsPopup(this);
+            return Promise.resolve(jp.proceed()).then((result) => {
+              featureInfoHandler.replaceWfsPopupTable(this);
+              return result;
+            });
+          }
+        );
+        FeatureCtor.prototype.__sitmunWfsShowInfo = true;
+        this.patchManager.add(() => {
+          showInfoAdvice.remove();
+          delete FeatureCtor.prototype.__sitmunWfsShowInfo;
+        });
+      }
     });
+  }
+
+  private wfsOverlayServices(feature: {
+    layer?: {
+      type?: string;
+      featureType?: string | string[];
+      options?: {
+        type?: string;
+        featureType?: string | string[];
+        nodeId?: string;
+      };
+    };
+  }): Parameters<typeof planFeatureInfoOverlay>[0] | undefined {
+    const layer = feature.layer;
+    if (!layer || (layer.type !== 'WFS' && layer.options?.type !== 'WFS')) {
+      return undefined;
+    }
+    const featureType = layer.featureType ?? layer.options?.featureType;
+    const name = Array.isArray(featureType) ? featureType[0] : featureType;
+    if (!name) {
+      return undefined;
+    }
+    return [
+      {
+        layers: [
+          {
+            name,
+            features: [feature as { data?: unknown; getData?: () => unknown }]
+          }
+        ],
+        mapLayers: [
+          {
+            names: [name],
+            options: { nodeId: layer.options?.nodeId }
+          }
+        ]
+      }
+    ];
+  }
+
+  private prepareWfsPopup(feature: {
+    layer?: {
+      type?: string;
+      featureType?: string | string[];
+      options?: {
+        type?: string;
+        featureType?: string | string[];
+        nodeId?: string;
+      };
+    };
+  }): void {
+    if (!this.moreInfoService.hasMoreInfoTasks()) {
+      return;
+    }
+    const services = this.wfsOverlayServices(feature);
+    if (!services) {
+      return;
+    }
+    this.moreInfoHandler.injectMoreInfoFields({ services });
+  }
+
+  private replaceWfsPopupTable(feature: {
+    layer?: {
+      type?: string;
+      featureType?: string | string[];
+      options?: {
+        type?: string;
+        featureType?: string | string[];
+        nodeId?: string;
+      };
+    };
+    infoControl?: {
+      getContainerElement?: () => ParentNode;
+      div?: ParentNode;
+    };
+  }): void {
+    const services = this.wfsOverlayServices(feature);
+    if (!services) {
+      return;
+    }
+    const plans = planFeatureInfoOverlay(
+      services,
+      this.appConfig?.layers,
+      this.locale,
+      this.appConfig?.trees
+    );
+    const rows = plans[0]?.features[0];
+    if (!rows?.length) {
+      return;
+    }
+    const container =
+      feature.infoControl?.getContainerElement?.() ?? feature.infoControl?.div;
+    const table = container?.querySelector?.('table');
+    if (!(table instanceof HTMLTableElement)) {
+      return;
+    }
+    rewriteFeatureInfoTable(table, rows);
   }
 }

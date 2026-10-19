@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 
+import { catalogLayerPathTitles } from './catalog-layer-path';
 import {
   collapseCatalogCompositeWorkLayerPath,
   removeOrphanWorkLayerElements
@@ -24,6 +25,87 @@ const WLM_GFI_CLASS = 'sitmun-wlm-gfi';
 const SITNA_ICON_INFO = '\ue923';
 /** Material Icons ligature for layer metadata (not Sitna “i” / GFI). */
 const MATERIAL_ICON_ARTICLE = 'article';
+
+type CatalogLegendNode = {
+  title?: string;
+  name?: string;
+  uid?: unknown;
+  children?: CatalogLegendNode[];
+  legend?: unknown;
+};
+
+function nestCatalogLegendTree(
+  leaf: CatalogLegendNode | null | undefined,
+  titles: string[]
+): CatalogLegendNode | null | undefined {
+  if (!leaf || titles.length <= 1) {
+    return leaf;
+  }
+  const leafTitle = titles[titles.length - 1];
+  let node: CatalogLegendNode = {
+    ...leaf,
+    title: leafTitle,
+    name: typeof leaf.name === 'string' ? leaf.name : leafTitle,
+    children: Array.isArray(leaf.children) ? leaf.children.slice() : []
+  };
+  for (let index = titles.length - 2; index >= 0; index -= 1) {
+    const isRoot = index === 0;
+    node = {
+      title: titles[index],
+      name: titles[index],
+      uid: isRoot ? leaf.uid : undefined,
+      children: [node]
+    };
+  }
+  return node;
+}
+
+function wfsLegendSources(legend: unknown): string[] {
+  const sources: string[] = [];
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (!value || typeof value !== 'object') {
+      return;
+    }
+    const record = value as { src?: unknown; symbols?: unknown };
+    if (typeof record.src === 'string' && record.src.length > 0) {
+      sources.push(record.src);
+    }
+    if (record.symbols) {
+      walk(record.symbols);
+    }
+  };
+  walk(legend);
+  return sources;
+}
+
+function wfsTreeLegendSources(tree: unknown): string[] {
+  if (!tree || typeof tree !== 'object') {
+    return [];
+  }
+  const record = tree as { legend?: unknown; children?: unknown };
+  const sources = wfsLegendSources(record.legend);
+  if (Array.isArray(record.children)) {
+    for (const child of record.children) {
+      sources.push(...wfsTreeLegendSources(child));
+    }
+  }
+  return sources;
+}
+
+function setFeatureShowsPopup(
+  layer: { features?: Array<{ showsPopup?: boolean }> },
+  enabled: boolean
+): void {
+  for (const feature of layer.features ?? []) {
+    feature.showsPopup = enabled;
+  }
+}
+
+const WLM_PATH_SEPARATOR = ' \u203A ';
 
 const GFI_I18N = {
   label: 'workLayerManager.gfi.label',
@@ -53,6 +135,7 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
   private readonly wlmGfiVisibilityHooks = new WeakSet<object>();
   private readonly wlmGfiTracked = new WeakSet<object>();
   private readonly wlmGfiChangeHooks = new WeakSet<object>();
+  private wlmDecorating = false;
   private readonly wlmGfiRoots = new Set<ParentNode>();
   private readonly wlmGfiControls = new Set<object>();
   private langChangeSub?: Subscription;
@@ -67,6 +150,8 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
     }
 
     await this.patchCatalogCompositeDisplayPath();
+    await this.patchWfsScaleRow();
+    await this.patchWfsLegendTree();
     await this.patchWlmGfiDecoration();
     this.langChangeSub = this.translate.onLangChange.subscribe(() => {
       for (const control of this.wlmGfiControls) {
@@ -168,6 +253,145 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
     });
   }
 
+  private async patchWfsScaleRow(): Promise<void> {
+    await this.withTCAsync(async (TC) => {
+      const wlmProto = TC?.control?.WorkLayerManager?.prototype;
+      if (!wlmProto || typeof wlmProto.updateScale !== 'function') {
+        return;
+      }
+      if (wlmProto.__sitmunWfsScale) {
+        return;
+      }
+
+      const advice = meld.around(
+        wlmProto,
+        'updateScale',
+        function (this: {
+          CLASS: string;
+          map?: {
+            getLayer?: (id: string) =>
+              | {
+                  type?: string;
+                  minResolution?: number;
+                  maxResolution?: number;
+                  options?: {
+                    type?: string;
+                    minResolution?: number;
+                    maxResolution?: number;
+                  };
+                }
+              | undefined;
+            getResolution?: () => number;
+          };
+          getLayerUIElements?: () => HTMLElement[];
+        }, joinPoint: MeldJoinPoint): unknown {
+          const result = joinPoint.proceed();
+          const resolution = this.map?.getResolution?.();
+          const rows = this.getLayerUIElements?.() ?? [];
+          for (const li of rows) {
+            const layer = this.map?.getLayer?.(li.dataset['layerId'] ?? '');
+            if (
+              !layer ||
+              (layer.type !== 'WFS' && layer.options?.type !== 'WFS')
+            ) {
+              continue;
+            }
+            const min = layer.options?.minResolution ?? layer.minResolution;
+            const max = layer.options?.maxResolution ?? layer.maxResolution;
+            let visible = true;
+            if (typeof resolution === 'number') {
+              if (typeof min === 'number' && resolution < min) {
+                visible = false;
+              }
+              if (typeof max === 'number' && resolution > max) {
+                visible = false;
+              }
+            }
+            li.classList.toggle(this.CLASS + '-elm-notvisible', !visible);
+          }
+          return result;
+        }
+      );
+      wlmProto.__sitmunWfsScale = true;
+      this.patchManager.add(() => {
+        advice.remove();
+        delete wlmProto.__sitmunWfsScale;
+      });
+    });
+  }
+
+  private async patchWfsLegendTree(): Promise<void> {
+    await this.withTCAsync(async (TC) => {
+      const vectorProto = TC?.layer?.Vector?.prototype as
+        | {
+            getTree?: () => unknown;
+            __sitmunWfsLegendTree?: boolean;
+          }
+        | undefined;
+      if (
+        !vectorProto ||
+        typeof vectorProto.getTree !== 'function' ||
+        vectorProto.__sitmunWfsLegendTree
+      ) {
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const handler = this;
+      const advice = meld.around(
+        vectorProto,
+        'getTree',
+        function (
+          this: {
+            type?: string;
+            options?: { type?: string; nodeId?: string };
+            __sitmunNestedLegend?: {
+              source: CatalogLegendNode;
+              key: string;
+              tree: CatalogLegendNode;
+            };
+          },
+          joinPoint: MeldJoinPoint
+        ): unknown {
+          const tree = joinPoint.proceed() as
+            | CatalogLegendNode
+            | null
+            | undefined;
+          if (this.type !== 'WFS' && this.options?.type !== 'WFS') {
+            return tree;
+          }
+          const nodeId = this.options?.nodeId;
+          if (!nodeId || !tree) {
+            return tree;
+          }
+          const appCfg = handler.sitnaApi.getGlobal('currentAppCfg');
+          if (!appCfg) {
+            return tree;
+          }
+          const titles = catalogLayerPathTitles(nodeId, appCfg);
+          if (titles.length <= 1) {
+            return tree;
+          }
+          const key = titles.join('\0');
+          const cached = this.__sitmunNestedLegend;
+          if (cached && cached.source === tree && cached.key === key) {
+            return cached.tree;
+          }
+          const nested = nestCatalogLegendTree(tree, titles);
+          if (nested && nested !== tree) {
+            this.__sitmunNestedLegend = { source: tree, key, tree: nested };
+          }
+          return nested;
+        }
+      );
+      vectorProto.__sitmunWfsLegendTree = true;
+      this.patchManager.add(() => {
+        advice.remove();
+        delete vectorProto.__sitmunWfsLegendTree;
+      });
+    });
+  }
+
   private async patchWlmGfiDecoration(): Promise<void> {
     await this.withTCAsync(async (TC) => {
       const wlmProto = TC?.control?.WorkLayerManager?.prototype;
@@ -183,6 +407,7 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         function (this: any, joinPoint: MeldJoinPoint): unknown {
           handler.ensureWlmGfiObserver(this);
           const result = joinPoint.proceed();
+          handler.paintMissingWfsLegends(this);
           queueMicrotask(() => {
             handler.scrubOrphanWorkLayerRows(this);
             handler.decorateGfiIndicators(this);
@@ -195,6 +420,42 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         advice.remove();
       });
     });
+  }
+
+  private paintMissingWfsLegends(wlmControl: {
+    map?: {
+      getLayer?: (id: string) =>
+        | {
+            type?: string;
+            options?: { type?: string };
+            getTree?: () => { legend?: unknown };
+          }
+        | undefined;
+    };
+    getLayerUIElements?: () => HTMLElement[];
+  }): void {
+    const rows = wlmControl.getLayerUIElements?.() ?? [];
+    for (const li of rows) {
+      if (li.querySelector('.tc-ctl-wlm-legend img, .tc-ctl-wlm-custom-legend img')) {
+        continue;
+      }
+      const layer = wlmControl.map?.getLayer?.(li.dataset['layerId'] ?? '');
+      if (!layer || (layer.type !== 'WFS' && layer.options?.type !== 'WFS')) {
+        continue;
+      }
+      const sources = wfsTreeLegendSources(layer.getTree?.());
+      if (!sources.length) {
+        continue;
+      }
+      const box = document.createElement('div');
+      box.className = 'tc-ctl-wlm-legend';
+      for (const src of sources) {
+        const img = document.createElement('img');
+        img.setAttribute('data-img', src);
+        box.append(img);
+      }
+      li.append(box);
+    }
   }
 
   private ensureWlmGfiObserver(wlmControl: any): void {
@@ -210,16 +471,26 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
     }
 
     if (!this.wlmGfiObservers.has(wlmControl)) {
+      const observe = (): void => {
+        observer.observe(div, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class']
+        });
+      };
       const observer = new MutationObserver(() => {
-        this.scrubOrphanWorkLayerRows(wlmControl);
-        this.decorateGfiIndicators(wlmControl);
+        // Decorating writes the same subtree. Disconnect so those writes
+        // cannot schedule another pass.
+        observer.disconnect();
+        try {
+          this.scrubOrphanWorkLayerRows(wlmControl);
+          this.decorateGfiIndicators(wlmControl);
+        } finally {
+          observe();
+        }
       });
-      observer.observe(div, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class']
-      });
+      observe();
       this.wlmGfiObservers.set(wlmControl, observer);
       this.patchManager.add(() => {
         observer.disconnect();
@@ -269,6 +540,7 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
         }
         const checked = target.hasAttribute('checked');
         layer.options.sitmunGfiEnabled = checked;
+        setFeatureShowsPopup(layer, checked);
         target.setAttribute(
           'data-sitmun-wlm-gfi',
           checked ? 'enabled' : 'off'
@@ -296,6 +568,20 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
 
   /** Inject / sync Capas GFI toggles for queryable catalog leaves. */
   private decorateGfiIndicators(wlmControl: any): void {
+    if (this.wlmDecorating) {
+      return;
+    }
+    this.wlmDecorating = true;
+    try {
+      this.decorateGfiIndicatorsNow(wlmControl);
+    } finally {
+      queueMicrotask(() => {
+        this.wlmDecorating = false;
+      });
+    }
+  }
+
+  private decorateGfiIndicatorsNow(wlmControl: any): void {
     const div = wlmControl?.div as ParentNode | undefined;
     const map = wlmControl?.map;
     if (!div || !map || typeof map.getLayer !== 'function') {
@@ -325,11 +611,13 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
       if (!tools || !nodeId) {
         return;
       }
+      this.syncWfsWorkLayerRow(li, layer);
       if (!this.configLookup.isQueryableLeaf(nodeId)) {
         // Consultable off on the tree node: hide Capas GFI and block identify.
         li.querySelector(`:scope .${WLM_GFI_CLASS}`)?.remove();
         if (layer?.options) {
           layer.options.sitmunGfiEnabled = false;
+          setFeatureShowsPopup(layer, false);
         }
         return;
       }
@@ -379,5 +667,85 @@ export class WorkLayerManagerControlHandler extends ControlHandlerBase {
       gfi.setAttribute('aria-label', this.gfiLabel());
       gfi.title = this.gfiTitle(blocked, userOn);
     });
+  }
+
+  private syncWfsWorkLayerRow(
+    li: HTMLElement,
+    layer: {
+      id?: string;
+      type?: string;
+      title?: string;
+      tree?: unknown;
+      options?: { type?: string; nodeId?: string };
+    }
+  ): void {
+    if (layer.type !== 'WFS' && layer.options?.type !== 'WFS') {
+      return;
+    }
+    const nodeId = layer.options?.nodeId;
+    const leafTitle = nodeId
+      ? this.configLookup.findNode(nodeId)?.title?.trim()
+      : undefined;
+    if (leafTitle) {
+      const heading = this.wfsWorkLayerHeading(nodeId);
+      const titleEl = li.querySelector('.tc-ctl-wlm-lyr') as HTMLElement | null;
+      if (titleEl && heading) {
+        if (titleEl.textContent !== heading) {
+          titleEl.textContent = heading;
+        }
+        if (titleEl.title !== heading) {
+          titleEl.title = heading;
+        }
+      }
+      const description = this.wfsWorkLayerDescription(nodeId);
+      const pathEl = li.querySelector('.tc-ctl-wlm-path') as HTMLElement | null;
+      if (pathEl && description) {
+        if (pathEl.textContent !== description) {
+          pathEl.textContent = description;
+        }
+        if (pathEl.title !== description) {
+          pathEl.title = description;
+        }
+      }
+      if (layer.title !== leafTitle) {
+        layer.title = leafTitle;
+        layer.tree = null;
+      }
+    }
+
+    const tools = li.querySelector('.tc-ctl-wlm-tools');
+    if (!tools) {
+      return;
+    }
+    tools.querySelectorAll(':scope > sitna-button').forEach((button) => {
+      if (
+        button.classList.contains('tc-ctl-wlm-btn-zoom') ||
+        button.classList.contains('tc-ctl-wlm-btn-del') ||
+        button.classList.contains('tc-ctl-wlm-btn-more')
+      ) {
+        return;
+      }
+      button.classList.add('tc-ctl-wlm-btn-dl');
+    });
+  }
+
+  private wfsWorkLayerHeading(nodeId: string | undefined): string {
+    const titles = this.catalogPathTitles(nodeId);
+    return titles.length > 1 ? titles[0] : '';
+  }
+
+  private wfsWorkLayerDescription(nodeId: string | undefined): string {
+    return this.catalogPathTitles(nodeId).slice(1).join(WLM_PATH_SEPARATOR);
+  }
+
+  private catalogPathTitles(nodeId: string | undefined): string[] {
+    if (!nodeId) {
+      return [];
+    }
+    const appCfg = this.sitnaApi.getGlobal('currentAppCfg');
+    if (!appCfg) {
+      return [];
+    }
+    return catalogLayerPathTitles(nodeId, appCfg);
   }
 }

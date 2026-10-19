@@ -9,6 +9,10 @@ export interface SitnaBaseLayer {
   title?: string;
   type?: string;
   isBase?: boolean;
+  featureType?: string;
+  minResolution?: number;
+  maxResolution?: number;
+  overviewMapLayer?: string;
 }
 
 //WorkLayers
@@ -31,6 +35,10 @@ export interface SitnaLayerOptions {
   title?: string;
   type?: string;
   url?: string;
+  featureType?: string;
+  minResolution?: number;
+  maxResolution?: number;
+  opacity?: number;
   /**
    * SITNA buffer order; default 0. Higher renders above lower; raster layers are kept below
    * vector layers regardless of `zIndex`.

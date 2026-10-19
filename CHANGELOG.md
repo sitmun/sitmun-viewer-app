@@ -20,6 +20,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: A WFS row in Loaded Layers uses the root folder as its heading, the same folder path as a WMS row, and the leaf name as its title. The toolbar overflow control shows › when the extra tools are hidden and ‹ when they are open, on every Loaded Layers row that has that control.
+- **Map**: A WFS entry in the legend lists the root folder and each intermediate folder above the layer, the same way a WMS legend does. The point swatch stays on the layer.
+- **Map**: An identify field with format Image keeps the original address and SITNA's `img.tc-img-attr`. `maxWidth` and `maxHeight` on the field set those limits. A field without them stays `width:auto;height:auto`.
+- **Map**: An identify field matches a WFS property by its local name. A namespace prefix on the feature key, such as `turisme:nom`, still fills the configured cell.
+- **Map**: Automatic identify cells keep a SITNA link, and a bare `http`, `https`, `ftp`, or `mailto` value becomes a link when that cell was plain text.
 - **Map**: A share link keeps the current map route and stores the view in `mapState`. Opening that link restores the extent, a non-default background, catalog layers that were turned on, reordered, or changed (including their opacity, sublayers, stacking order, and the selected layer of a radio group), drawings, an imported file, a shared feature, and the 3D camera. A missing background, layer, drawing, or file does not stop the rest of the restore. The browser posts the link to `POST /api/config/client/short-url` and does not call tinyurl.com. A failed shorten shows `shortUrlRejected`, `shortUrlForbidden`, or `shortUrlFailed` from the map theme, and does not show the backend detail ([#189](https://github.com/sitmun/sitmun-viewer-app/issues/189), [#190](https://github.com/sitmun/sitmun-viewer-app/issues/190), [#191](https://github.com/sitmun/sitmun-viewer-app/issues/191)).
 - **Map**: A print preview taller than the window scrolls, so the bottom of a portrait page is reachable ([#181](https://github.com/sitmun/sitmun-viewer-app/issues/181)).
 - **Map**: Print preview buttons sit on the page instead of covering the header menu ([#182](https://github.com/sitmun/sitmun-viewer-app/issues/182)).
