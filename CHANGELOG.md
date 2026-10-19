@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
-- **Tooling**: Node.js is `24.22.0` (`engines` `^24.22.0 || ^26.0.0`) and Angular is `22.2.3`, with TypeScript `6.0.x`. Production builds no longer set `--openssl-legacy-provider`. Custom webpack skips Angular Babel on `jszip`, `util`, and `webpack-dev-server` so production optimize and `ng serve` stay green.
+- **Tooling**: Node.js is `24.22.0` (`engines` `^24.22.0 || ^26.0.0`) and Angular is `22.2.3`, with TypeScript `6.0.x`. Production builds no longer set `--openssl-legacy-provider`. Custom webpack skips Angular Babel on `jszip`, `util`, and `webpack-dev-server` so production optimize and `ng serve` stay green, and appends the catastro proxy without dropping the e2e `/backend` and `/middleware` proxies.
 - **Map**: A proxied layer is requested through `layer.url` when the profile sets it. The catalog still resolves that address back to the tree node ([sitmun-application-stack#90](https://github.com/sitmun/sitmun-application-stack/issues/90)).
 - **Map**: The field list is chosen by the profile layer id (`layer/{id}` on the tree node that owns the map layer) and then by the WMS layer name, including a child of a group. The result heading is not the key.
 - **Map**: `sitna.featureInfo` and `sitna.multiFeatureInfo` default `persistentHighlights` to false. A new click replaces the highlight, and closing the popup clears it. A task that sets the flag still overrides the default.

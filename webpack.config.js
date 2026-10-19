@@ -68,17 +68,25 @@ module.exports = (config) => {
     publicPath: '/'
   };
 
+  const existingProxy = config.devServer && config.devServer.proxy;
+  const proxyEntries = Array.isArray(existingProxy)
+    ? [...existingProxy]
+    : existingProxy
+      ? Object.entries(existingProxy).map(([context, options]) => ({
+          context: [context],
+          ...options
+        }))
+      : [];
+  proxyEntries.push({
+    context: ['/catastro-inspire'],
+    target: 'https://ovc.catastro.meh.es',
+    changeOrigin: true,
+    pathRewrite: { '^/catastro-inspire': '/INSPIRE' },
+    secure: false
+  });
   config.devServer = {
     ...config.devServer,
-    proxy: [
-      {
-        context: ['/catastro-inspire'],
-        target: 'https://ovc.catastro.meh.es',
-        changeOrigin: true,
-        pathRewrite: { '^/catastro-inspire': '/INSPIRE' },
-        secure: false
-      }
-    ]
+    proxy: proxyEntries
   };
 
   config.resolve = {
