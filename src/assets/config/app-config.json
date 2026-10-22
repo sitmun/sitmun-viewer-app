@@ -43,6 +43,12 @@
       "shortname": "oc-aranes",
       "locale": "oc-aranes-ES",
       "icon": "assets/flags/val-aran.svg"
+    },
+    {
+      "name": "Português",
+      "shortname": "pt-PT",
+      "locale": "pt-PT",
+      "icon": "assets/flags/portugal.svg"
     }
   ],
   "enabledByDefault": [
