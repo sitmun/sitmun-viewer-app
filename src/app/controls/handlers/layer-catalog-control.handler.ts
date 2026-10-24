@@ -24,6 +24,7 @@ import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
+import { wfsLayerGeometryOptions } from '../../services/wfs-layer-geometry';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { WMSLayer } from '../../types/wms-capabilities';
 import { resolutionFromScaleDenominator } from '../../utils/scale-resolution';
@@ -601,6 +602,7 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                 if (featureType) {
                   layerOptions.featureType = featureType;
                 }
+                Object.assign(layerOptions, wfsLayerGeometryOptions(realLayerConfig));
                 layerOptions['zIndex'] = realLayerConfig.order ?? 0;
                 const wfsOpacity =
                   typeof transparency === 'number' && transparency > 0

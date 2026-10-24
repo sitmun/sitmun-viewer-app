@@ -137,6 +137,16 @@ export interface AppLayer {
    * which leaves the service table unchanged.
    */
   featureInfoFields?: FeatureInfoField[];
+  /**
+   * DescribeFeatureType property SITNA should use as the layer geometry.
+   * Omitted when unset, so SITNA keeps the last geometry property.
+   */
+  geometryName?: string;
+  /**
+   * Preferred geometry id when the chosen property is generic Geometry.
+   * Omitted for a specific GML type, which SITNA reads from DescribeFeatureType.
+   */
+  preferredGeometryType?: string;
 }
 
 export interface AppService {

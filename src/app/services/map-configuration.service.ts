@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AppConfigService } from './app-config.service';
 import { ConfigLookupService } from './config-lookup.service';
 import { ControlRegistryService } from './control-registry.service';
+import { wfsLayerGeometryOptions } from './wfs-layer-geometry';
 import {
   sortBackgroundsByOrder,
   toDefaultBaseLayer
@@ -144,6 +145,7 @@ export class MapConfigurationService {
               if (featureType) {
                 a.featureType = featureType;
               }
+              Object.assign(a, wfsLayerGeometryOptions(layer));
               const minResolution = resolutionFromScaleDenominator(
                 layer.minScaleDenominator,
                 1

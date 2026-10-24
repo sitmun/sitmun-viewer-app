@@ -25,6 +25,19 @@ describe('buildFeatureInfoRows', () => {
     });
   });
 
+  it('skips a parameter whose format is Geometry and keeps a text parameter with a geometry-like name', () => {
+    const rows = buildFeatureInfoRows(
+      { shape: 'wkt', the_geom: 'label' },
+      [
+        { name: 'shape', label: 'Shape', format: 'Geometry' },
+        { name: 'the_geom', label: 'Name', format: 'T' }
+      ],
+      'en'
+    );
+
+    expect(rows.map((row) => row.path)).toEqual(['the_geom']);
+  });
+
   it('filters, orders, and replaces headers without changing feature data', () => {
     const data = {
       season: 'summer',

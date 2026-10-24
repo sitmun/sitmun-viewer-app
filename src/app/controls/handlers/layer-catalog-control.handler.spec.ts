@@ -1045,6 +1045,92 @@ describe('LayerCatalogControlHandler', () => {
         minResolution: (1000 * 0.00028) / 1,
         maxResolution: (500000 * 0.00028) / 1
       });
+      expect(addLayer.mock.calls[0][0]).not.toHaveProperty('geometryName');
+      expect(addLayer.mock.calls[0][0]).not.toHaveProperty('geometryType');
+    });
+
+    it('passes a published geometry property name and an explicit SITNA type when adding a WFS layer', async () => {
+      const addedLayer: any = {};
+      const { TC } = buildMockTC(addedLayer);
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      mockVirtualCapabilities.findRealLayerConfig = jest.fn().mockReturnValue({
+        url: 'https://proxy.example/wfs',
+        type: 'WFS',
+        layerNames: ['app:mixed'],
+        serviceId: 'service/9',
+        geometryName: 'shape',
+        preferredGeometryType: 'polygon'
+      });
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const addLayer = jest.fn().mockResolvedValue(addedLayer);
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map: {
+            crs: 'EPSG:25831',
+            getMetersPerUnit: () => 1,
+            addLayer
+          },
+          getUID: () => 'uid-wfs',
+          showProjectionChangeDialog: jest.fn()
+        },
+        {
+          title: 'Mixed',
+          url: 'virtual://stale',
+          type: 'WMS',
+          options: { url: 'virtual://stale', type: 'WMS' },
+          getLayerNodeByName: () => undefined
+        },
+        'node/wfs'
+      );
+
+      expect(addLayer.mock.calls[0][0]).toMatchObject({
+        type: 'WFS',
+        featureType: 'app:mixed',
+        geometryName: 'shape',
+        geometryType: 'polygon'
+      });
+    });
+
+    it('passes the geometry property name without a type when the profile has no explicit SITNA type', async () => {
+      const addedLayer: any = {};
+      const { TC } = buildMockTC(addedLayer);
+      mockSitnaApi.getTC.mockReturnValue(TC as any);
+      mockVirtualCapabilities.findRealLayerConfig = jest.fn().mockReturnValue({
+        url: 'https://proxy.example/wfs',
+        type: 'WFS',
+        layerNames: ['turisme:tu007poi_fars'],
+        serviceId: 'service/9',
+        geometryName: 'the_geom'
+      });
+      mockSitnaApi.setGlobal('currentAppCfg', minimalContext);
+      await handler['patchLayerCatalogAddLayerToMap']();
+
+      const addLayer = jest.fn().mockResolvedValue(addedLayer);
+      await TC.control.LayerCatalog.prototype.addLayerToMap.call(
+        {
+          map: {
+            crs: 'EPSG:25831',
+            getMetersPerUnit: () => 1,
+            addLayer
+          },
+          getUID: () => 'uid-wfs',
+          showProjectionChangeDialog: jest.fn()
+        },
+        {
+          title: 'Fars',
+          url: 'virtual://stale',
+          type: 'WMS',
+          options: { url: 'virtual://stale', type: 'WMS' },
+          getLayerNodeByName: () => undefined
+        },
+        'node/fars'
+      );
+
+      const options = addLayer.mock.calls[0][0];
+      expect(options.geometryName).toBe('the_geom');
+      expect(options).not.toHaveProperty('geometryType');
     });
 
     it('names a WFS leaf with the node title, not the catalog folder title', async () => {
