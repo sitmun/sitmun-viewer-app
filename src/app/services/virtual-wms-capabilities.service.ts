@@ -38,6 +38,10 @@ export interface RealLayerConfig {
    * reorder via the WorkLayerManager control bypasses `zIndex` and is not persisted.
    */
   order?: number;
+  /** Profile geometry property name. Absent when the administrator has not chosen one. */
+  geometryName?: string;
+  /** Preferred geometry id. Absent when DescribeFeatureType already names a specific type. */
+  preferredGeometryType?: string;
 }
 
 /**
@@ -251,7 +255,9 @@ export class VirtualWmsCapabilitiesService {
         layerNames: layer.layers, // Array of WMS layer names from the layer
         serviceId: service.id,
         transparency: layer.transparency,
-        order: layer.order
+        order: layer.order,
+        ...(layer.geometryName ? { geometryName: layer.geometryName } : {}),
+        ...(layer.preferredGeometryType ? { preferredGeometryType: layer.preferredGeometryType } : {})
       };
     }
 

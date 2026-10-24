@@ -628,6 +628,39 @@ describe('MapConfigurationService', () => {
       expect(wfs?.maxResolution).toBeCloseTo((500000 * 0.00028) / 1);
       expect(wfs?.overviewMapLayer).toBe(wms?.id);
       expect(wfs?.overviewMapLayer).not.toBe(wfs?.id);
+      expect(wfs).not.toHaveProperty('geometryName');
+      expect(wfs).not.toHaveProperty('geometryType');
+    });
+
+    it('passes a published WFS geometry property and explicit SITNA type onto the base layer', () => {
+      const cfg: AppCfg = {
+        ...mockAppCfg,
+        backgrounds: [{ id: 'bg-wfs', title: 'WFS background', thumbnail: '' }],
+        groups: [{ id: 'bg-wfs', title: 'WFS group', layers: ['layer-wfs'] }],
+        layers: [
+          {
+            id: 'layer-wfs',
+            title: 'WFS Layer',
+            layers: ['app:mixed'],
+            service: 'service-wfs',
+            geometryName: 'shape',
+            preferredGeometryType: 'polygon'
+          }
+        ],
+        services: [
+          {
+            id: 'service-wfs',
+            url: 'http://example.com/wfs',
+            type: 'WFS',
+            parameters: { format: 'text/xml' }
+          }
+        ]
+      };
+      configLookup.initialize(cfg);
+
+      const layer = service.toBaseLayers(cfg).find((item) => item.title === 'WFS Layer');
+      expect(layer?.geometryName).toBe('shape');
+      expect(layer?.geometryType).toBe('polygon');
     });
 
     it('should use thumbnail from background if available', () => {

@@ -80,6 +80,7 @@ export function buildFeatureInfoRows(
       }));
   }
   return fields
+    .filter((field) => field.format !== 'Geometry')
     .map((field, index) => ({ field, index }))
     .sort((left, right) => compareOrder(left, right))
     .map(({ field }) => ({

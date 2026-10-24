@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 
 - **Map**: A folder with a description, a metadata URL, or a dataset URL shows the same information button as a layer. The window shows the folder name, the description, and those links. An empty folder has no button ([#173](https://github.com/sitmun/sitmun-viewer-app/issues/173)).
+- **Map**: Adding a WFS layer passes `geometryName` to SITNA when the profile publishes one, and passes `geometryType` only when the profile publishes `preferredGeometryType`. A specific DescribeFeatureType kind is left for SITNA to read. The identify table skips a feature-information field whose format is `Geometry`. The geometry-property contract is the operator's change on top of [sitmun-admin-app#499](https://github.com/sitmun/sitmun-admin-app/issues/499).
 - **Map**: A layer with GetFeatureInfo fields shows only that include list, in order, with the translated label. `T`, `N`, `F`, `U`, `P`, and `I` format the cell in the map locale. `AUTO` keeps API-SITNA detection. `feature.data` is not rewritten. More-info reads `data-feature-path` and dotted paths such as `address.city` ([sitmun-application-stack#77](https://github.com/sitmun/sitmun-application-stack/issues/77)).
 - **Tests**: Field-list specs cover a tree-title heading and two WMS group children that share a title but use different profile layer ids.
 
