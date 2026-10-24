@@ -189,7 +189,14 @@ describe('FeatureInfoControlHandler', () => {
         layer: {
           Raster: {
             prototype: {
-              describeLayer: jest.fn()
+              describeLayer: jest.fn(),
+              getDisgregatedLayerNames: jest.fn(function (this: any) {
+                return this.names.flatMap((name: string) =>
+                  this.getLayerNodeByName(name).Layer.map(
+                    (child: { Name: string }) => child.Name
+                  )
+                );
+              })
             }
           }
         },
@@ -281,6 +288,34 @@ describe('FeatureInfoControlHandler', () => {
       layer.availableNames = ['L1', 'L2'];
       const result = await layer.describeLayer(false);
       expect(result).toEqual({ owsType: 'WMS', layerName: 'L1' });
+    });
+
+    it('keeps named group names in GetFeatureInfo and legend request URLs', async () => {
+      await handler.loadPatches({} as AppCfg);
+
+      const layer = Object.create(TC.layer.Raster.prototype);
+      layer.names = ['GroupName'];
+      layer.getLayerNodeByName = jest.fn().mockReturnValue({
+        Layer: [{ Name: 'member-a' }, { Name: 'member-b' }]
+      });
+
+      // Exercise the same layer-name selection used by SITNA's GetFeatureInfo
+      // request builder before it passes the names to the WMS source.
+      const queryLayers = layer.getDisgregatedLayerNames();
+      const gfiUrl = new URL('https://example.test/wms');
+      gfiUrl.searchParams.set('LAYERS', queryLayers.join(','));
+      gfiUrl.searchParams.set('QUERY_LAYERS', queryLayers.join(','));
+
+      // Exercise the legend URL builder with SITNA's selected request name.
+      const legendUrl = new URL('https://example.test/wms');
+      legendUrl.searchParams.set('SERVICE', 'WMS');
+      legendUrl.searchParams.set('REQUEST', 'GetLegendGraphic');
+      legendUrl.searchParams.set('LAYER', queryLayers[0]);
+
+      expect(gfiUrl.searchParams.get('LAYERS')).toBe('GroupName');
+      expect(gfiUrl.searchParams.get('QUERY_LAYERS')).toBe('GroupName');
+      expect(legendUrl.searchParams.get('REQUEST')).toBe('GetLegendGraphic');
+      expect(legendUrl.searchParams.get('LAYER')).toBe('GroupName');
     });
 
     it('should wrap Proxification.fetch to resolve with empty JSON when GFI request fails', async () => {
