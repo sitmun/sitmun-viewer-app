@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **About**: The About window shows the installed API SITNA version and the installed OpenLayers version. Both values are read from the installed packages when the viewer is built ([#218](https://github.com/sitmun/sitmun-viewer-app/issues/218)).
 - **Map**: A WFS row in Loaded Layers uses the root folder as its heading, the same folder path as a WMS row, and the leaf name as its title. The toolbar overflow control shows › when the extra tools are hidden and ‹ when they are open, on every Loaded Layers row that has that control.
 - **Map**: A WFS entry in the legend lists the root folder and each intermediate folder above the layer, the same way a WMS legend does. The point swatch stays on the layer.
 - **Map**: An identify field with format Image keeps the original address and SITNA's `img.tc-img-attr`. `maxWidth` and `maxHeight` on the field set those limits. A field without them stays `width:auto;height:auto`.

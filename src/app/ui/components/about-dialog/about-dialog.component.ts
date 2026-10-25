@@ -7,13 +7,10 @@ export interface AboutDialogData {
   environmentName: string;
   angularVersion: string;
   buildTimestamp?: string;
-  sitnaVersion?: string;
+  sitnaVersion: string;
+  openLayersVersion: string;
 }
 
-/**
- * Component for displaying application information dialog.
- * TODO: Add unit tests (about-dialog.component.spec.ts)
- */
 @Component({
   standalone: false,
   selector: 'app-about-dialog',

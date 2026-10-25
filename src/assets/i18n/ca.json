@@ -278,6 +278,7 @@
   "systemInfo.errorType.logger": "Error d'aplicació",
   "systemInfo.errorType.uncaught": "Excepció no capturada",
   "systemInfo.noErrors": "No hi ha errors registrats",
+  "systemInfo.openLayersVersion": "Versió d'OpenLayers",
   "systemInfo.recentErrors": "Errors recents",
   "systemInfo.sitnaVersion": "Versió API SITNA",
   "systemInfo.version": "Versió",

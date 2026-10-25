@@ -52,7 +52,7 @@ This frontend integrates with the [SITMUN Backend Core](https://github.com/sitmu
 - Internationalization (CA, ES, EN, FR)
 - Configurable UI components
 - Lazy loading and efficient rendering
-- SITNA integration (api-sitna 4.8.0)
+- SITNA integration (api-sitna 4.9.1, OpenLayers 10.5.0)
 - Service Worker for API auth token forwarding
 
 ## Quick Start
@@ -453,7 +453,10 @@ The application uses the **SITNA (Sistema de Información Territorial de Navarra
 
 **Version Information:**
 
-- **SITNA API Version**: Aligned with api-sitna 4.8.0
+- **SITNA API Version**: api-sitna 4.9.1
+- **OpenLayers**: 10.5.0, the version api-sitna 4.9.1 depends on
+
+The About window reads both versions from the installed packages when the viewer is built.
 
 #### **Core Mapping Features**
 
@@ -581,7 +584,7 @@ src/
 - **Modular Design**: Feature-based module organization
 - **Reactive Programming**: RxJS for asynchronous operations
 - **Material Design**: Angular Material for consistent UI
-- **SITNA Integration**: Advanced mapping through SITNA library (api-sitna 4.8.0)
+- **SITNA Integration**: Advanced mapping through SITNA library (api-sitna 4.9.1, OpenLayers 10.5.0)
 
 ## Contributing
 

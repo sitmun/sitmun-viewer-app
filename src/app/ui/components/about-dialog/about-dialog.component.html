@@ -40,17 +40,25 @@
       </div>
     </div>
 
-    @if (data.sitnaVersion) {
-      <div class="about-item">
-        <mat-icon class="about-icon">map</mat-icon>
-        <div class="about-info">
-          <span class="about-label">
-            {{ 'systemInfo.sitnaVersion' | translate }}:
-          </span>
-          <span class="about-value">{{ data.sitnaVersion }}</span>
-        </div>
+    <div class="about-item">
+      <mat-icon class="about-icon">map</mat-icon>
+      <div class="about-info">
+        <span class="about-label">
+          {{ 'systemInfo.sitnaVersion' | translate }}:
+        </span>
+        <span class="about-value">{{ data.sitnaVersion }}</span>
       </div>
-    }
+    </div>
+
+    <div class="about-item">
+      <mat-icon class="about-icon">layers</mat-icon>
+      <div class="about-info">
+        <span class="about-label">
+          {{ 'systemInfo.openLayersVersion' | translate }}:
+        </span>
+        <span class="about-value">{{ data.openLayersVersion }}</span>
+      </div>
+    </div>
 
     @if (data.buildTimestamp) {
       <div class="about-item">
