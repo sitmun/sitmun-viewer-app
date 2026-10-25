@@ -29,6 +29,10 @@ import {
   AboutDialogComponent,
   AboutDialogData
 } from '../about-dialog/about-dialog.component';
+import {
+  openLayersVersion,
+  sitnaVersion
+} from '../about-dialog/library-versions';
 
 @Component({
   standalone: false,
@@ -182,7 +186,8 @@ export class MenuComponent implements OnInit, OnDestroy {
       environmentName: this.environment.environmentName || 'N/A',
       angularVersion: this.angularVersion,
       buildTimestamp: (this.environment as any).buildTimestamp,
-      sitnaVersion: this.environment.sitnaVersion
+      sitnaVersion,
+      openLayersVersion
     };
 
     this.dialog.open(AboutDialogComponent, {

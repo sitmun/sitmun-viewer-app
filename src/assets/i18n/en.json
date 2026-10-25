@@ -278,6 +278,7 @@
   "systemInfo.errorType.logger": "Application Error",
   "systemInfo.errorType.uncaught": "Uncaught Exception",
   "systemInfo.noErrors": "No errors recorded",
+  "systemInfo.openLayersVersion": "OpenLayers Version",
   "systemInfo.recentErrors": "Recent Errors",
   "systemInfo.sitnaVersion": "API SITNA Version",
   "systemInfo.version": "Version",

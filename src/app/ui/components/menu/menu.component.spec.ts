@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { NgOptimizedImage } from '@angular/common';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -17,6 +20,17 @@ import { AuthenticationService } from '@auth/services/authentication.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { MenuComponent } from './menu.component';
+import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
+
+function installedPackageVersion(name: string): string {
+  const manifest = JSON.parse(
+    readFileSync(
+      join(process.cwd(), 'node_modules', name, 'package.json'),
+      'utf8'
+    )
+  ) as { version: string };
+  return manifest.version;
+}
 
 describe('MenuComponent', () => {
   let component: MenuComponent;
@@ -24,7 +38,7 @@ describe('MenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MenuComponent],
+      declarations: [MenuComponent, AboutDialogComponent],
       imports: [
         BrowserAnimationsModule,
         NgOptimizedImage,
@@ -91,5 +105,32 @@ describe('MenuComponent', () => {
 
   it('should initialize with default language', () => {
     expect(component.currentLang).toBe('en');
+  });
+
+  it('shows the installed SITNA and OpenLayers versions in About', () => {
+    const translate = TestBed.inject(TranslateService);
+    translate.setTranslation('en', {
+      'systemInfo.about': 'About',
+      'systemInfo.application': 'Application',
+      'systemInfo.applicationName': 'Visualizador SITMUN',
+      'systemInfo.version': 'Version',
+      'systemInfo.environment': 'Environment',
+      'systemInfo.angularVersion': 'Angular Version',
+      'systemInfo.sitnaVersion': 'API SITNA Version',
+      'systemInfo.openLayersVersion': 'OpenLayers Version',
+      'common.button.close': 'Close'
+    });
+    translate.use('en');
+
+    component.openAboutDialog();
+    fixture.detectChanges();
+
+    const text = (document.body.textContent ?? '').replace(/\s+/g, ' ');
+    expect(text).toContain(
+      `API SITNA Version: ${installedPackageVersion('api-sitna')}`
+    );
+    expect(text).toContain(
+      `OpenLayers Version: ${installedPackageVersion('ol')}`
+    );
   });
 });

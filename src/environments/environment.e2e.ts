@@ -8,7 +8,6 @@ export const environment = {
   apiUrl: '/backend',
   version: '1.2.9',
   environmentName: 'E2E',
-  sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: '',
   proxyTokenRefreshIntervalMs: 10 * 60 * 1000,

@@ -9,7 +9,6 @@ export const environment = {
   apiUrl: '/backend', // Change this when there is a real production environment
   version: '1.2.9',
   environmentName: 'Production',
-  sitnaVersion: '4.8.0',
   buildTimestamp: new Date().toISOString(),
   loginBackgroundImageUrl: 'assets/logos/barcelona_background.jpg',
   proxyTokenRefreshIntervalMs: 2 * 60 * 1000,
