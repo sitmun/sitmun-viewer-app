@@ -138,13 +138,18 @@ export interface AppLayer {
    */
   featureInfoFields?: FeatureInfoField[];
   /**
-   * DescribeFeatureType property SITNA should use as the layer geometry.
-   * Omitted when unset, so SITNA keeps the last geometry property.
+   * DescribeFeatureType property OpenLayers should draw.
+   * Omitted when unset, so the last geometry property stays selected.
    */
   geometryName?: string;
   /**
-   * Preferred geometry id when the chosen property is generic Geometry.
-   * Omitted for a specific GML type, which SITNA reads from DescribeFeatureType.
+   * Geometry kind of `geometryName`. Curve, MultiCurve, Surface, and MultiSurface
+   * make the viewer request GML 3.2. Omitted when unset.
+   */
+  geometryKind?: string;
+  /**
+   * Preferred geometry id when `geometryKind` is generic Geometry.
+   * The GML loader does not read it.
    */
   preferredGeometryType?: string;
 }

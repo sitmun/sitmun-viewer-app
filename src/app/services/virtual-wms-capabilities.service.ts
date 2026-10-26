@@ -40,7 +40,9 @@ export interface RealLayerConfig {
   order?: number;
   /** Profile geometry property name. Absent when the administrator has not chosen one. */
   geometryName?: string;
-  /** Preferred geometry id. Absent when DescribeFeatureType already names a specific type. */
+  /** Geometry kind of `geometryName`. Curve and surface kinds request GML 3.2. */
+  geometryKind?: string;
+  /** Preferred geometry id. Absent when the chosen property is not generic Geometry. */
   preferredGeometryType?: string;
 }
 
@@ -257,6 +259,7 @@ export class VirtualWmsCapabilitiesService {
         transparency: layer.transparency,
         order: layer.order,
         ...(layer.geometryName ? { geometryName: layer.geometryName } : {}),
+        ...(layer.geometryKind ? { geometryKind: layer.geometryKind } : {}),
         ...(layer.preferredGeometryType ? { preferredGeometryType: layer.preferredGeometryType } : {})
       };
     }
