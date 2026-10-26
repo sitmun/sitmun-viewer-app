@@ -42,7 +42,7 @@ export interface RealLayerConfig {
   geometryName?: string;
   /** Geometry kind of `geometryName`. Curve and surface kinds request GML 3.2. */
   geometryKind?: string;
-  /** Preferred geometry id. Absent when the chosen property is not generic Geometry. */
+  /** Preferred geometry id. Absent when DescribeFeatureType already names a specific type. */
   preferredGeometryType?: string;
 }
 

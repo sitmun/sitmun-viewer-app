@@ -7,7 +7,6 @@ const SITNA_WFS_GEOMETRY_TYPES = new Set([
   'multipolygon'
 ]);
 
-/** Kinds GML 2 cannot build. SITNA's format id for GML 3.2 is `GML32`. */
 const GML32_GEOMETRY_KINDS = new Set([
   'Curve',
   'MultiCurve',
@@ -23,23 +22,21 @@ export type WfsLayerGeometrySource = {
   preferredGeometryType?: string | null;
 };
 
-export type WfsLayerGeometryOptions = {
+/**
+ * Options SITNA reads when a WFS layer is added.
+ * `geometryName` is passed only to `ol.format.GeoJSON`. `outputFormat` is `GML32` for curve and surface kinds.
+ * `geometryType` is a `SITNA.Consts.geom` id, passed only for an explicit override.
+ */
+export function wfsLayerGeometryOptions(layer: WfsLayerGeometrySource): {
   geometryName?: string;
   geometryType?: string;
   outputFormat?: string;
-};
-
-/**
- * Options SITNA reads when a WFS layer is added.
- * `geometryName` reaches `ol.format.GeoJSON` only. The GML loader keeps the last geometry
- * element, so the chosen property is selected after the read.
- * `outputFormat` is `GML32` for curve and surface kinds. Other kinds stay on SITNA's GML 2 default.
- * `geometryType` is a `SITNA.Consts.geom` id, passed only for an explicit override.
- */
-export function wfsLayerGeometryOptions(
-  layer: WfsLayerGeometrySource
-): WfsLayerGeometryOptions {
-  const options: WfsLayerGeometryOptions = {};
+} {
+  const options: {
+    geometryName?: string;
+    geometryType?: string;
+    outputFormat?: string;
+  } = {};
   const name = layer.geometryName?.trim();
   if (name) {
     options.geometryName = name;
@@ -60,7 +57,6 @@ type ChosenGeometryFeature = {
   setGeometryName: (name: string) => void;
 };
 
-/** Selects the profile geometry after GML read, when that property holds an OpenLayers geometry. */
 export function applyChosenGeometryName(
   features: readonly ChosenGeometryFeature[],
   geometryName: string | null | undefined
@@ -76,18 +72,13 @@ export function applyChosenGeometryName(
   }
 }
 
-type ChosenGeometryLayer = {
-  id?: string;
-};
-
 type ChosenGeometryMap = {
   on?: (type: string, listener: (event: unknown) => void) => void;
 };
 
-/** Listens for `FEATURESADD` on one layer and selects its profile geometry. */
 export function attachChosenGeometry(
   map: ChosenGeometryMap | null | undefined,
-  layer: ChosenGeometryLayer | null | undefined,
+  layer: object | null | undefined,
   geometryName: string | null | undefined,
   eventName: string | null | undefined = FEATURES_ADD
 ): void {
@@ -95,21 +86,12 @@ export function attachChosenGeometry(
   if (!name || !layer || typeof map?.on !== 'function') {
     return;
   }
-  map.on(eventName || FEATURES_ADD, (event: unknown) => {
-    const record =
-      event && typeof event === 'object'
-        ? (event as { layer?: unknown; features?: unknown })
-        : undefined;
-    const eventLayer = record?.layer;
-    if (
-      eventLayer !== layer &&
-      !(
-        layer.id && (eventLayer as { id?: string } | undefined)?.id === layer.id
-      )
-    ) {
+  map.on(eventName || FEATURES_ADD, (event) => {
+    const record = event as { layer?: unknown; features?: unknown } | null;
+    if (!record || record.layer !== layer) {
       return;
     }
-    applyChosenGeometryName(openLayersFeatures(record?.features), name);
+    applyChosenGeometryName(openLayersFeatures(record.features), name);
   });
 }
 
