@@ -12,6 +12,7 @@ export interface SitnaBaseLayer {
   featureType?: string;
   geometryName?: string;
   geometryType?: string;
+  outputFormat?: string;
   minResolution?: number;
   maxResolution?: number;
   overviewMapLayer?: string;
@@ -40,6 +41,7 @@ export interface SitnaLayerOptions {
   featureType?: string;
   geometryName?: string;
   geometryType?: string;
+  outputFormat?: string;
   minResolution?: number;
   maxResolution?: number;
   opacity?: number;

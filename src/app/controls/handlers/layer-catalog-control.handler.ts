@@ -24,7 +24,10 @@ import { RasterLayerService } from '../../services/raster-layer.service';
 import { SitnaApiService } from '../../services/sitna-api.service';
 import { SitnaCapabilitiesInterceptor } from '../../services/sitna-capabilities-interceptor.service';
 import { VirtualWmsCapabilitiesService } from '../../services/virtual-wms-capabilities.service';
-import { wfsLayerGeometryOptions } from '../../services/wfs-layer-geometry';
+import {
+  attachChosenGeometry,
+  wfsLayerGeometryOptions
+} from '../../services/wfs-layer-geometry';
 import type { Meld, MeldJoinPoint } from '../../types/meld.types';
 import { WMSLayer } from '../../types/wms-capabilities';
 import { resolutionFromScaleDenominator } from '../../utils/scale-resolution';
@@ -653,6 +656,13 @@ export class LayerCatalogControlHandler extends ControlHandlerBase {
                   handler.syncRadioCheckedState(self);
                   return undefined;
                 }
+                const chosenGeometry = layerOptions['geometryName'];
+                attachChosenGeometry(
+                  self.map,
+                  addedWfs,
+                  typeof chosenGeometry === 'string' ? chosenGeometry : undefined,
+                  TC?.Consts?.event?.FEATURESADD
+                );
                 if (
                   addedWfs != null &&
                   wfsOpacity != null &&
