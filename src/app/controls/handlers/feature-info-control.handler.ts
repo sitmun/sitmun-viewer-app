@@ -249,6 +249,41 @@ export class FeatureInfoControlHandler extends ControlHandlerBase {
       // reply with a ServiceException, which Raster.describeLayer (Raster.js:2037) re-throws.
       // That throw propagates out of getFeatureInfo and breaks identify for every layer.
       const RasterProto = this.getRasterPrototype(TC);
+      if (
+        RasterProto?.getDisgregatedLayerNames &&
+        !RasterProto.__sitmunKeepNamedGroup
+      ) {
+        const disgregatedNamesAdvice = meld.around(
+          RasterProto,
+          'getDisgregatedLayerNames',
+          function (
+            this: {
+              names?: string[] | string;
+              getLayerNodeByName?: (name: string) => { Layer?: unknown[] } | null;
+            },
+            jp: MeldJoinPoint
+          ): unknown {
+            const names = Array.isArray(this.names)
+              ? this.names
+              : typeof this.names === 'string'
+                ? this.names.split(',')
+                : [];
+            const node = names.length === 1
+              ? this.getLayerNodeByName?.(names[0])
+              : null;
+            if (node?.Layer?.length) {
+              return [...names];
+            }
+            return jp.proceed();
+          }
+        );
+        RasterProto.__sitmunKeepNamedGroup = true;
+        this.patchManager.add(() => {
+          disgregatedNamesAdvice.remove();
+          delete RasterProto.__sitmunKeepNamedGroup;
+        });
+      }
+
       if (RasterProto?.describeLayer && !RasterProto.__sitmunDescribeLayerSafe) {
         const describeAdvice = meld.around(
           RasterProto,
