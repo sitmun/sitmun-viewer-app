@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 
+- **Map**: Hello World and the locator stay off the tools panel unless the map includes that task. `enabledByDefault` keeps only `sitna.loadingIndicator`. A locator task still opens the locator, and its search parameters stay on the task ([sitmun-application-stack#140](https://github.com/sitmun/sitmun-application-stack/issues/140)).
 - **About**: The About window shows the installed API SITNA version and the installed OpenLayers version. Both values are read from the installed packages when the viewer is built ([#218](https://github.com/sitmun/sitmun-viewer-app/issues/218)).
 - **Map**: A WFS row in Loaded Layers uses the root folder as its heading, the same folder path as a WMS row, and the leaf name as its title. The toolbar overflow control shows › when the extra tools are hidden and ‹ when they are open, on every Loaded Layers row that has that control.
 - **Map**: A WFS entry in the legend lists the root folder and each intermediate folder above the layer, the same way a WMS legend does. The point swatch stays on the layer.

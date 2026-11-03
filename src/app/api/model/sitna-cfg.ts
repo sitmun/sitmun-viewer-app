@@ -93,6 +93,8 @@ export interface SitnaControls {
   WFSQuery?: boolean | SitnaControlsWFSQuery;
   workLayerManager?: boolean | SitnaControlOptions;
   controlContainer?: boolean | SitnaControlContainerOptions;
+  helloWorld?: boolean | SitnaControlOptions;
+  locator?: boolean | SitnaControlOptions;
 }
 
 export interface SitnaControlOptions {

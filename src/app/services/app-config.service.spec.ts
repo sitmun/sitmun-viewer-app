@@ -288,4 +288,19 @@ describe('AppConfigService', () => {
       config.controlDefaults['sitna.multiFeatureInfo'].persistentHighlights
     ).toBe(false);
   });
+
+  it('does not force Hello World or the locator onto every map', () => {
+    const config = JSON.parse(
+      readFileSync(
+        join(process.cwd(), 'src/assets/config/app-config.json'),
+        'utf8'
+      )
+    );
+
+    expect(config.enabledByDefault).toEqual(['sitna.loadingIndicator']);
+    expect(config.controlDefaults['sitna.helloWorld'].div).toBe(
+      'tc-slot-hello-world'
+    );
+    expect(config.controlDefaults['sitmun.locator'].div).toBe('tc-slot-locator');
+  });
 });
