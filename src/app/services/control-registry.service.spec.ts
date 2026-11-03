@@ -370,6 +370,31 @@ describe('ControlRegistryService', () => {
       expect(Object.keys(result).length).toBe(0);
     });
 
+    it('enables a registered locator task that does not use the sitna prefix', async () => {
+      const handler = new MockHandler(
+        'sitmun.locator',
+        undefined,
+        'tc-slot-locator',
+        'locator'
+      );
+      service.register(handler);
+
+      const tasks: AppTasks[] = [
+        {
+          'ui-control': 'sitmun.locator',
+          parameters: { labelField: 'name' }
+        } as any
+      ];
+      const context: AppCfg = {} as any;
+
+      const result = await service.processControls(tasks, context);
+
+      expect(handler.buildConfigCalled).toBe(true);
+      expect(result.locator).toEqual(
+        expect.objectContaining({ div: 'tc-slot-locator' })
+      );
+    });
+
     it('should return empty config when no active controls', async () => {
       const tasks: AppTasks[] = [];
       const context: AppCfg = {} as any;

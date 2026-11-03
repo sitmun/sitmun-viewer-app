@@ -167,10 +167,9 @@ export class ControlRegistryService {
 
     // Filter out disabled controls first (takes precedence over backend configuration)
     const activeControlsWithHandlers = tasks
-      .filter((task) => task['ui-control']?.startsWith('sitna.'))
       .filter((task) => {
-        // Skip if control is disabled in app-config.json
-        return !this.appConfigService.isDisabled(task['ui-control']);
+        const controlId = task['ui-control'];
+        return !!controlId && !this.appConfigService.isDisabled(controlId);
       })
       .map((task) => ({
         task,

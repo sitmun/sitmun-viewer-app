@@ -46,9 +46,7 @@
     }
   ],
   "enabledByDefault": [
-    "sitna.loadingIndicator",
-    "sitna.helloWorld",
-    "sitmun.locator"
+    "sitna.loadingIndicator"
   ],
   "disabledControls": [
     "sitna.WFSEdit",

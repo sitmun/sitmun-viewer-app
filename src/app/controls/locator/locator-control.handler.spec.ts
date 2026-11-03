@@ -109,6 +109,21 @@ describe('LocatorControlHandler', () => {
     });
   });
 
+  describe('buildConfiguration()', () => {
+    it('places the control in its slot and leaves search parameters on the task', () => {
+      const config = handler.buildConfiguration(
+        {
+          id: 'task/41',
+          'ui-control': 'sitmun.locator',
+          parameters: { labelField: 'name', resultsPath: 'features' }
+        } as any,
+        mockAppCfg
+      );
+
+      expect(config).toEqual({ div: 'tc-slot-locator' });
+    });
+  });
+
   describe('applyBootstrap()', () => {
     it('registers the control shell and initializes LocatorService', async () => {
       const registerSpy = jest.spyOn(handler as any, 'registerCustomControl');
