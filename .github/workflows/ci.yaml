@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +32,7 @@ jobs:
     - name: Unit tests
       run: npm run test:coverage
 
-    - name: Build for deployment
+    - name: Build
       run: npm run build -- --configuration=production --base-href=/sitmun-viewer-app/
       env:
         NODE_OPTIONS: "--openssl-legacy-provider --max-old-space-size=8192"
@@ -48,12 +48,3 @@ jobs:
           exit 1
         fi
         echo "✓ Build artifacts validated"
-
-    - name: Deploy to GitHub pages
-      env:
-        USERNAME: ${{secrets.USERNAME_FOR_WORKFLOWS}}
-        GITHUB_API_KEY: ${{secrets.TOKEN_FOR_WORKFLOWS}}
-        GITHUB_WORKSPACE: ${{github.workspace}}
-        CI: true
-      run: ./scripts/deploy.sh
-      shell: bash
